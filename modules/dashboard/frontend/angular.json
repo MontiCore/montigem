@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": ".",
+  "schematics": {
+    "@schematics/angular:library": {
+      "entryFile": "index",
+      "prefix": "montigem"
+    }
+  },
+  "projects": {
+    "@montigem/dashboard": {
+      "projectType": "library",
+      "root": "dashboard",
+      "sourceRoot": "dashboard",
+      "prefix": "gem",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "options": {
+            "project": "dashboard/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "tsconfig.prod.json"
+            },
+            "development": {
+              "tsConfig": "tsconfig.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "tsconfig.spec.json",
+            "buildTarget": "@montigem/dashboard:build"
+          }
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": false
+  }
+}

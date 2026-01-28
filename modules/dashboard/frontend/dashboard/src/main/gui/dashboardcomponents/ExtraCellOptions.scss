@@ -1,0 +1,32 @@
+:host ::ng-deep .optionsColumn {
+  margin-top: 10px;
+}
+
+:host ::ng-deep .tutorialOptions {
+  margin-top: 10px !important;
+  border: 3px solid red;
+  border-radius: 3px !important;
+  animation: flash-border 1s ease-in-out infinite !important;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}
+
+:host ::ng-deep .tutorialDisplay {
+  border-radius: 3px;
+  border: 3px solid red;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}

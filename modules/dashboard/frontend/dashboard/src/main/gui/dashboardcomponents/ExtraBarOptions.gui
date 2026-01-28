@@ -1,0 +1,39 @@
+package dashboardcomponents;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemCard;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemButton;
+import mc.fenix.input.GemTextInput;
+import mc.fenix.input.GemAutocompleteInput;
+import mc.fenix.input.GemDropdownInput;
+import mc.fenix.input.GemDropdownInputTypes.Option;
+import mc.fenix.input.GemCheckBoxInput;
+import mc.fenix.arrange.GemColumn;
+
+component ExtraBarOptions(
+  ExtraData extra
+  ){
+      @GemColumn(rowGap = "10px", components = [
+        checkboxText1@GemCheckBoxInput(
+          labelPosition = "top",
+          labelText = "Stacked",
+          checked = extra.barextra.stacked
+        ),
+        checkboxText2@GemCheckBoxInput(
+          labelPosition = "top",
+          labelText = "Overlapping",
+          checked = extra.barextra.overlapping
+        ),
+        maxVal@GemTextInput(
+          inputType = "number",
+          labelText = "Maximum Value:",
+          entry = extra.barextra.maxValue
+        ),
+        @GemTextInput(
+          inputType = "number",
+          labelText = "Minimum Value:",
+          entry = extra.barextra.minValue
+        )
+      ]);
+}

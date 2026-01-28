@@ -1,0 +1,93 @@
+package dashboardcomponents;
+
+import DashboardModule.CellConfig;
+import DashboardModule.VewConfig;
+import DashboardModule.CellConfig;
+import DashboardModule.ExtraData;
+import DashboardModule.VizType;
+import DashboardModule.VizType.LINE;
+import DashboardModule.VizType.BAR;
+import DashboardModule.VizType.PIE;
+import DashboardModule.VizType.SPEED;
+import DashboardModule.VizType.NETWORK;
+
+import dashboardcomponents.CellDisplay;
+import dashboardcomponents.ExtraLineOptions;
+import dashboardcomponents.ExtraBarOptions;
+import dashboardcomponents.ExtraBoxOptions;
+import dashboardcomponents.ExtraSpeedOptions;
+import dashboardcomponents.ExtraScatterOptions;
+
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemButton;
+
+component ExtraCellOptions(
+     CellConfig cell,
+     int tutorialStep,
+     Event<Integer> changeTutorialStep
+   ) {
+
+      @GemColumn(components = [
+         @GemRow(colGap = "20px", components = [
+           @guard(checkIfTutorialStep14()) {
+             tutorialOptions@GemColumn(components = [
+                 @guard(compareViz(VizType.LINE)) {
+                    @ExtraLineOptions(extra = cell.extra);
+                 },
+                 @guard(compareViz(VizType.BAR)) {
+                    @ExtraBarOptions(extra = cell.extra);
+                 },
+                 @guard(compareViz(VizType.SPEED)) {
+                    @ExtraSpeedOptions(extra = cell.extra);
+                 },
+                 @guard(compareViz(VizType.SCATTER)) {
+                    @ExtraScatterOptions(extra = cell.extra);
+                 },
+                 @guard(compareViz(VizType.BOX)) {
+                   @ExtraBoxOptions(extra = cell.extra);
+                 },
+                 @guard(compareViz(VizType.NETWORK)) {
+                   @ExtraGraphOptions(extra = cell.extra);
+                 },
+                 @guard(compareViz(VizType.PIE)) {
+                   @ExtraPieOptions(extra = cell.extra);
+                 }
+             ]);
+           } else {
+              optionsColumn@GemColumn(components = [
+                   @guard(compareViz(VizType.LINE)) {
+                      @ExtraLineOptions(extra = cell.extra);
+                   },
+                   @guard(compareViz(VizType.BAR)) {
+                      @ExtraBarOptions(extra = cell.extra);
+                   },
+                   @guard(compareViz(VizType.SPEED)) {
+                      @ExtraSpeedOptions(extra = cell.extra);
+                   },
+                   @guard(compareViz(VizType.SCATTER)) {
+                      @ExtraScatterOptions(extra = cell.extra);
+                   },
+                   @guard(compareViz(VizType.BOX)) {
+                     @ExtraBoxOptions(extra = cell.extra);
+                   },
+                   @guard(compareViz(VizType.NETWORK)) {
+                     @ExtraGraphOptions(extra = cell.extra);
+                   },
+                   @guard(compareViz(VizType.PIE)) {
+                     @ExtraPieOptions(extra = cell.extra);
+                   }
+              ]);
+           },
+           @guard(checkIfTutorialStep15()) {
+             tutorialDisplay@GemColumn(components = [
+               @CellDisplay(cell = cell)
+             ]);
+           } else {
+              @GemColumn(components = [
+                 @CellDisplay(cell = cell)
+              ]);
+           }
+         ])
+      ]);
+}

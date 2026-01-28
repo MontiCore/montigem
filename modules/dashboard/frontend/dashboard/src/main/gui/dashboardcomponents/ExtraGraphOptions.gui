@@ -1,0 +1,44 @@
+package dashboardcomponents;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemCard;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemButton;
+import mc.fenix.input.GemTextInput;
+import mc.fenix.input.GemAutocompleteInput;
+import mc.fenix.input.GemDropdownInput;
+import mc.fenix.input.GemDropdownInputTypes.Option;
+import mc.fenix.input.GemCheckBoxInput;
+import mc.fenix.arrange.GemColumn;
+
+component ExtraGraphOptions(
+  ExtraData extra
+  ){
+      @GemColumn(rowGap = "10px", components = [
+        @GemTextInput(
+          inputType = "text",
+          labelText = "Minimal Height:",
+          entry = extra.graphextra.minHeight
+        ),
+        checkboxGraphText1@GemCheckBoxInput(
+          labelPosition = "top",
+          labelText = "Show Filtered Group",
+          checked = extra.graphextra.showFilterGroup
+        ),
+        checkboxGraphText2@GemCheckBoxInput(
+          labelPosition = "top",
+          labelText = "Show search node",
+          checked = extra.graphextra.showSearchNode
+        ),
+        checkboxGraphText3@GemCheckBoxInput(
+          labelPosition = "top",
+          labelText = "Show Control Buttons",
+          checked = extra.graphextra.showControlButtons
+        ),
+        checkboxGraphText4@GemCheckBoxInput(
+          labelPosition = "top",
+          labelText = "Show Information",
+          checked = extra.graphextra.showInformation
+        )
+      ]);
+}

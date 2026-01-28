@@ -5,6 +5,7 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   effect,
   ElementRef,
   EventEmitter,
@@ -61,14 +62,19 @@ export abstract class GemGraphBasis {
   /** Indicates whether the graph container has been initialized. */
   private containerInitialized: boolean = false;
 
+  /** Observes size changes of the graph container (e.g. a resized parent) to keep the canvas in sync. */
+  private containerResizeObserver?: ResizeObserver;
+
   constructor() {
     this.checkWebGLSupport();
     afterEveryRender((): void => {
       if (this.isContainerReadyForInit()) {
         this.containerInitialized = true;
         this.graphManager.setContainer(this.container?.nativeElement);
+        this.observeContainerSize(this.container.nativeElement);
       }
     });
+    inject(DestroyRef).onDestroy((): void => this.containerResizeObserver?.disconnect());
 
     effect((): void => {
       this.graphManager.needsInitializationSignalTracked;
@@ -88,6 +94,27 @@ export abstract class GemGraphBasis {
   /** Requests a resize operation through the `GraphManagerService`. */
   public resize(): void {
     this.graphManager.resize();
+  }
+
+  /**
+   * Resizes the graph whenever the container changes its size, since Sigma only adapts its canvas on explicit
+   * `resize()` calls. Resizes are batched per animation frame and run outside the Angular zone.
+   *
+   * @param {HTMLDivElement} container - The graph container to observe.
+   */
+  private observeContainerSize(container: HTMLDivElement): void {
+    if (typeof ResizeObserver === "undefined") return;
+    let frame: number | undefined;
+    this.ngZone.runOutsideAngular((): void => {
+      this.containerResizeObserver = new ResizeObserver((): void => {
+        if (frame !== undefined) cancelAnimationFrame(frame);
+        frame = requestAnimationFrame((): void => {
+          frame = undefined;
+          if (this.graphManager.renderer && container.offsetWidth > 0 && container.offsetHeight > 0) this.resize();
+        });
+      });
+      this.containerResizeObserver.observe(container);
+    });
   }
 
   /**

@@ -153,9 +153,10 @@ public class AngularSpecificsAdapter extends AbstractAdapter {
     if (adapterUtils.isHWCofDirective(type)) {
       String componentName = type.getSimpleName().toString() + "Component";
       print(" extends " + componentName);
-      String path = type.getQualifiedName().toString().replace(".", "/");
 
-      adapterUtils.importFromWithModule(componentName + ", config", path + "Component");
+      // The generated *Component.ts is located next to the transpiled HWC.
+      // A relative import also works within libraries (e.g., MontiGem modules), which have no path mapping
+      adapterUtils.importFromWithModule(componentName + ", config", "./" + componentName);
       adapterUtils.importFromWithModule("ActivatedRoute, Router", "@angular/router");
       return true;
     }

@@ -1,0 +1,60 @@
+package dashboardcomponents;
+
+import mc.fenix.charts.gemlinecharttypes.GemLineChartData;
+import mc.fenix.charts.GemLineChart;
+import mc.fenix.charts.GemGaugeChart;
+import mc.fenix.charts.GemBarChart;
+import mc.fenix.charts.GemPieChart;
+import mc.fenix.charts.GemScatterPlot;
+import mc.fenix.charts.GemBoxPlot;
+import mc.fenix.charts.GemNetworkGraph;
+import mc.fenix.networkgraph.GemGraph;
+import DashboardModule.CellConfig;
+import DashboardModule.VizType.LINE;
+import DashboardModule.VizType.BAR;
+import DashboardModule.VizType.PIE;
+import DashboardModule.VizType.SPEED;
+import DashboardModule.VizType.NETWORK;
+
+component CellDisplay(
+    CellConfig cell
+    ){
+
+      @guard(compareViz(VizType.LINE)) {
+        @guard(checkOptionalIntExtra(cell.extra.linextra.maxValue)) {
+          @GemLineChart(data = getLineData(), minValue = cell.extra.linextra.minValue);
+        } else {
+          @GemLineChart(data = getLineData(), minValue = cell.extra.linextra.minValue, maxValue = cell.extra.linextra.maxValue);
+        };
+      };
+      @guard(compareViz(VizType.SPEED)) {
+        @guard(checkOptionalIntExtra(cell.extra.speedextra.max)) {
+          @GemGaugeChart(data = getSpeedData(), min = cell.extra.speedextra.min, unit = cell.extra.speedextra.unit, textValue = cell.extra.speedextra.textValue, textPosition = cell.extra.speedextra.textPosition);
+         } else {
+          @GemGaugeChart(data = getSpeedData(), min = cell.extra.speedextra.min, max = cell.extra.speedextra.max, unit = cell.extra.speedextra.unit, textValue = cell.extra.speedextra.textValue, textPosition = cell.extra.speedextra.textPosition);
+         };
+      };
+      @guard(compareViz(VizType.BAR)) {
+        @guard(checkOptionalIntExtra(cell.extra.barextra.maxValue)) {
+         @GemBarChart(data = getBarData(), minValue = cell.extra.barextra.minValue, stacked = cell.extra.barextra.stacked, overlapping = cell.extra.barextra.overlapping);
+        } else {
+         @GemBarChart(data = getBarData(), minValue = cell.extra.barextra.minValue, maxValue = cell.extra.barextra.maxValue, stacked = cell.extra.barextra.stacked, overlapping = cell.extra.barextra.overlapping);
+        };
+      };
+      @guard(compareViz(VizType.PIE)) {
+         pieChart@GemPieChart(data = getPieData(), innerRadius = cell.extra.piextra.innerRadius);
+      };
+      @guard(compareViz(VizType.NETWORK)) {
+         @GemGraph(graph = getNetworkData(), minHeight = getGraphMinHeight(), showInformation = cell.extra.graphextra.showInformation, showSearchNode = cell.extra.graphextra.showSearchNode, showFilterGroup = cell.extra.graphextra.showFilterGroup);
+      };
+      @guard(compareViz(VizType.SCATTER)) {
+         @GemScatterPlot(data = getScatterData(), xAxis = defaultAxisTranslate(cell.extra.scatterextra.xAxis), yAxis = defaultAxisTranslate(cell.extra.scatterextra.yAxis));
+      };
+      @guard(compareViz(VizType.BOX)) {
+        @guard(checkOptionalDoubleExtra(cell.extra.boxextra.max)) {
+         @GemBoxPlot(data = getBoxData(), min = cell.extra.boxextra.min);
+        } else {
+         @GemBoxPlot(data = getBoxData(), min = cell.extra.boxextra.min, max = cell.extra.boxextra.max);
+        };
+      };
+    }

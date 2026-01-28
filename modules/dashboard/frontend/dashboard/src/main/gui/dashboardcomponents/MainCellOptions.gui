@@ -1,0 +1,71 @@
+package dashboardcomponents;
+
+import DashboardModule.CellConfig;
+import DashboardModule.VewConfig;
+
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemText;
+import mc.fenix.editor.MonacoEditor;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemButton;
+import mc.fenix.input.GemTextInput;
+import mc.fenix.input.GemAutocompleteInput;
+import mc.fenix.input.GemDropdownInput;
+import mc.fenix.input.GemDropdownInputTypes.Option;
+
+//At the moment problem with the VizType option input, as it is initialized as
+//empty and needs additional confirmation from user to set to some value; this
+//creates problems with finalizing "save" or canceling "abort" whole creation/
+//editing
+
+component MainCellOptions(
+    CellConfig cell,
+    int tutorialStep,
+    boolean night,
+    Event<Integer> changeTutorialStep
+  ) {
+
+    @GemColumn(rowGap = "35px", vAlign = "start", components = [
+      @GemRow(colGap = "5px", rowGap = "5px", hAlign = "space-evenly", components = [
+          labelText1@GemText(weight = "bold", size = "17px", value = "Name:"),
+          constrictedInput@GemTextInput(
+            labelText = "",//Name:",
+            entry = cell.name
+          ),
+          labelText2@GemText(weight = "bold", size = "17px", value = "Type of Visualization:"),
+          defaultValue@GemDropdownInput(
+            labelText = "",//Type of Visualization:",
+            entry = cell.viz,
+            options = [
+              Option("LINE", "Line Chart"),
+              Option("BAR", "Bar Chart"),
+              Option("SCATTER", "Scatter Graph"),
+              Option("SPEED", "Speedometer"),
+              Option("NETWORK", "Network Graph"),
+              Option("BOX", "Box Plot"),
+              Option("PIE", "Pie Chart")
+            ]
+          )
+      ]),
+      //editor
+      @GemRow(components = [
+        @guard(checkIfTutorialStep1112()) {
+          tutorialData@GemColumn(vAlign = "top", rowGap = "10px", components = [
+              editorLabel2@GemText(size = "17px", weight = "bold", value = "Create and select data"),
+              editor2@MonacoEditor(entry = cell.data, showMinimap = false, theme = getColorScheme(), autoHeight = true, width = "100%")
+          ]);
+        } else {
+          @GemColumn(vAlign = "top", rowGap = "10px", components = [
+              @GemRow(hAlign = "space-between", components = [
+                editorLabel@GemText(size = "17px", weight = "bold", value = "Create and select data"),
+                @GemButton(width = "50px", height = "35px", margin = "0px", leftClick = downloadClassDiagram(), content = [
+                  diagramIcon@GemImage(width = "22px", source = "assets/images/file-chart-line.svg")
+                ])
+              ]),
+              editor@MonacoEditor(entry = cell.data, showMinimap = false, theme = getColorScheme(), autoHeight = true, width = "100%")
+          ]);
+        }
+      ])
+    ]);
+}

@@ -1,0 +1,188 @@
+package dashboardcomponents;
+
+import DashboardModule.CellConfig;
+import DashboardModule.VewConfig;
+import mc.fenix.basic.GemIcon;
+import component.MainCellOptions;
+import component.ExtraCellOptions;
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+
+//-------------------------------------------------------------------------
+//Same dialog for both creating and editing new cell as to not have repeat
+//definitions of the same input checking functions and because the UI xp
+//is almost the same in both cases
+//-------------------------------------------------------------------------
+component CellDialog(
+  boolean edit,
+  boolean night,
+  CellConfig cell,
+  CellConfig cellForEdit,
+  ViewConfig view,
+  Event<Void> close,
+  boolean first = true,
+  //error
+  String message = "Error",
+  boolean error = false,
+  //
+  //tutorial
+  int tutorialStep,
+  Event<Integer> changeTutorialStep
+  //
+  ) {
+      //header
+      @guard(edit) {
+        tabsRow@GemRow(hAlign = "center", vAlign = "bottom", components = [
+          @guard(first) {
+           tabButton1Active@GemButton(
+            leftClick = changeCurrentTab(),
+            width = "90px",
+            margin = "0px",
+            height = "40px",
+            content = [
+              @GemRow(hAlign = "space-between", vAlign = "bottom", components = [
+                tabText1@GemText(weight = "bold", size = "16px", value = "Main")
+              ])
+            ]
+           );
+          } else {
+            tabButton1Passive@GemButton(
+              leftClick = changeCurrentTab(),
+              width = "80px",
+              margin = "0px",
+              height = "30px",
+              content = [
+                @GemRow(hAlign = "space-between", vAlign = "bottom", components = [
+                  tabText2@GemText(weight = "bold", size = "14px", value = "Main")
+                ])
+              ]
+            );
+          },
+          @guard(first) {
+           tabButton2Passive@GemButton(
+            leftClick = changeCurrentTab(),
+            margin = "0px",
+            width = "80px",
+            height = "30px",
+            content = [
+              @GemRow(hAlign = "space-between", vAlign = "bottom", components = [
+                tabText3@GemText(weight = "bold", size = "14px", value = "Extra")
+              ])
+            ]
+           );
+          } else {
+            tabButton2Active@GemButton(
+              leftClick = changeCurrentTab(),
+              margin = "0px",
+              width = "90px",
+              height = "40px",
+              content = [
+                @GemRow(hAlign = "space-between", vAlign = "bottom", components = [
+                  tabText4@GemText(weight = "bold", size = "16px", value = "Extra")
+                ])
+              ]
+             );
+          }
+        ]);
+      };
+      //error
+      @GemRow(hAlign = "center", components = [
+        @guard(error) {
+            errorMessage@GemText(weight = "bold", color = "red", value = message);
+        }
+      ]);
+      //content
+      @GemRow(components = [
+          @guard(first) {
+            @MainCellOptions(cell = cellForEdit, night = night, tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep);
+          }else{
+            @ExtraCellOptions(cell = cellForEdit, tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep);
+          }
+      ]);
+      //footer buttons
+      @guard(edit) {
+        @GemRow(hAlign = "center", colGap = "10px", components = [
+          abortButton1@GemButton(height = "48px", width = "70px", disabled = alwaysDisabledByTutorial(), leftClick = abortEdit(cell, cellForEdit, close), content = [
+           @GemRow(vAlign = "center", components = [
+            @GemIcon(size = "15px", color = "white", name = "delete"),
+            @GemText(value = "Abort")
+           ])
+          ]),
+          @guard(checkIfTutorialStep26()) {
+            tutorialSave@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = completeEdit(cell, cellForEdit, close, changeTutorialStep), content = [
+             @GemRow(vAlign = "center", components = [
+                squareIcon2@GemImage(source = "assets/images/square-pen.png"),
+                @GemText(value = "Save")
+               ])
+            ]);
+          } else {
+             finishButton1@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = completeEdit(cell, cellForEdit, close, changeTutorialStep), content = [
+              @GemRow(vAlign = "center", components = [
+                 squareIcon@GemImage(source = "assets/images/square-pen.png"),
+                 @GemText(value = "Save")
+                ])
+             ]);
+          }
+        ]);
+      } else {
+        @guard(first) {
+          @GemRow(hAlign = "center", colGap = "10px", components = [
+             abortButton2@GemButton(height = "48px", width = "70px", disabled = alwaysDisabledByTutorial(), leftClick = abortCreate(close), content = [
+              @GemRow(vAlign = "center", components = [
+               @GemIcon(size = "15px", color = "white", name = "delete"),
+               @GemText(value = "Abort")
+              ])
+             ]),
+             @guard(checkIfTutorialStep13()) {
+               tutorialNext@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = nextCreate(cellForEdit, changeTutorialStep), content = [
+                  @GemRow(vAlign = "center", components = [
+                   @GemText(value = "Next"),
+                   rightIcon2@GemImage(source = "assets/images/chevron-right.png")
+                  ])
+               ]);
+             } else {
+               endButton1@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = nextCreate(cellForEdit, changeTutorialStep), content = [
+                 @GemRow(vAlign = "center", components = [
+                  @GemText(value = "Next"),
+                  rightIcon@GemImage(source = "assets/images/chevron-right.png")
+                 ])
+               ]);
+             }
+          ]);
+        } else {
+         @GemRow(hAlign = "center", colGap = "10px", components = [
+            abortButton3@GemButton(height = "48px", width = "70px", disabled = alwaysDisabledByTutorial(), leftClick = abortCreate(close), content = [
+             @GemRow(vAlign = "center", components = [
+              @GemIcon(size = "15px", color = "white", name = "delete"),
+              @GemText(value = "Abort")
+             ])
+            ]),
+            endButton2@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = stepBack(), content = [
+             @GemRow(vAlign = "center", components = [
+              leftIcon@GemImage(source = "assets/images/chevron-left.png"),
+              @GemText(value = "Back")
+             ])
+            ]),
+            @guard(checkIfTutorialStep16()) {
+              tutorialFinish@GemButton(height = "48px", width = "80px", disabled = disabledByTutorial(), leftClick = completeCreate(cellForEdit, close, changeTutorialStep), content = [
+               @GemRow(vAlign = "center", components = [
+                saveIcon2@GemImage(height = "15px", source = "assets/images/save.png"),
+                @GemText(value = "Create")
+               ])
+              ]);
+            } else {
+              finishButton2@GemButton(height = "48px", width = "80px", disabled = disabledByTutorial(), leftClick = completeCreate(cellForEdit, close, changeTutorialStep), content = [
+               @GemRow(vAlign = "center", components = [
+                saveIcon@GemImage(height = "15px", source = "assets/images/save.png"),
+                @GemText(value = "Create")
+               ])
+              ]);
+            }
+         ]);
+        }
+      };
+
+}

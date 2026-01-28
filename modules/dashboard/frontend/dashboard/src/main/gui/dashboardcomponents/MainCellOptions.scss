@@ -1,0 +1,71 @@
+:host ::ng-deep .endButtons .gem-button{
+  margin-top: 10px !important;
+  background-color: red;
+}
+
+:host ::ng-deep .endButtons2 .gem-button{
+  margin-top: 10px !important;
+}
+
+:host ::ng-deep .editor {
+  min-width: 800px;
+  border-radius: 5px;
+}
+
+:host ::ng-deep .editor2 {
+  min-width: 800px;
+  border-radius: 5px;
+}
+
+:host ::ng-deep .editorLabel{
+  margin-left: 320px;
+}
+
+:host ::ng-deep .editorLabel2{
+  margin-left: 320px;
+}
+
+:host ::ng-deep .constrictedInput {
+  max-height: 38px;
+  min-width: 150px;
+  max-width: 150px;
+  min-height: 38px;
+}
+
+:host ::ng-deep .labelText2 {
+  margin-top: 9px;
+  min-width: 120px;
+  max-width: 180px;
+  margin-right: -90px;
+}
+
+:host ::ng-deep .labelText1 {
+  margin-top: 9px;
+  max-width: 60px;
+  margin-right: -90px;
+}
+
+:host ::ng-deep .defaultValue {
+  min-width: 150px;
+  z-index: 2000;
+}
+
+:host ::ng-deep .diagramIcon {
+  filter: brightness(0) saturate(100%) invert(100%);
+  border-radius: 3px;
+  min-height: 26px;
+}
+
+:host ::ng-deep .tutorialData {
+  border: 4px solid red;
+  border-radius: 3px;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}

@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.parent{
+  text-color: var(--text-color);
+  background-color: var(--view-background);
+  height: 100%;
+  padding-left: 5px;
+  padding-right: 5px;
+}

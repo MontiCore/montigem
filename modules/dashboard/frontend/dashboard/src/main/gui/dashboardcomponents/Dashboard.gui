@@ -1,0 +1,190 @@
+package dashboardcomponents;
+
+import DashboardModule.DashboardModuleConfig;
+import DashboardModule.ViewConfig;
+import DashboardModule.TutorialStep;
+
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemGrid;
+import mc.fenix.arrange.GemGridCell;
+import mc.fenix.arrange.GemCard;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemButton;
+import mc.fenix.charts.GemLineChart;
+import mc.fenix.input.GemTextInput;
+
+import dashboardcomponents.View;
+import dashboardcomponents.InfoDialog;
+import dashboardcomponents.ViewDialog;
+
+component Dashboard(
+  DashboardModuleConfig config,
+  int currentView = 0,
+  boolean info = false,
+  boolean createView = false,
+  boolean night = false,
+  //
+  //boolean flags used for dialogs/functions in lower components but needed to be initialized here
+  //so we can keep track for button disabling
+  //
+  boolean delete = false,
+  boolean download = false,
+  boolean running = false,
+  //
+  //boolean flags for cell dialog to signal if it is open in which mode
+  //
+  boolean editCellFlag = false,
+  boolean createCell = false,
+  //
+  boolean edit = false,
+  //tutorial
+  int tutorialStep = 0
+  ) {
+
+    @guard(info) {
+      infoDialog@InfoDialog(info = "You already have the maximum allowed number of views", close = closeInfo());
+    };
+    @guard(createView) {
+       viewDialog@ViewDialog(createView = createNewView(), close = closeViewDialog(), tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep());
+    }
+    @guard(checkTutorial()) {
+       @guard(checkIfTutorialHasBackdrop()) {
+          backdrop@GemText();
+       }
+       @guard(checkIfTutorialDialogIsTop()) {
+          tutorialDialog@TutorialDialog(tutorialStep = tutorialStep, tutorialSteps = getTutorialSteps(), changeTutorialStep = changeTutorialStep());
+       } else {
+          tutorialDialogBottom@TutorialDialog(tutorialStep = tutorialStep, tutorialSteps = getTutorialSteps(), changeTutorialStep = changeTutorialStep());
+       }
+    };
+    @GemRow(hAlign = "space-between", vAlign = "bottom", components = [
+      @guard(checkIfTutorialStep45()) {
+        @GemColumn(components = [
+          tutorialViews@GemRow(hAlign = "left", vAlign = "bottom", components = [
+            @iterate(ViewConfig view: config.views) {
+                //currently selected view
+                 @guard(checkCurrentView(view)) {
+                     buttonSelected@GemButton(
+                      leftClick = changeCurrentView(view),
+                      width = getCurrentViewWidth(currentView, view),
+                      disabled = checkIfDialogOpen(),
+                      margin = "0px",
+                      height = "35px",
+                      content = [
+                        @GemRow(hAlign = "space-between", components = [
+                            inputSelected@GemTextInput(disabled = checkIfDialogOpen(), entry = view.name),
+                            @guard(checkIfSingleView()) {
+                              closeButton@GemButton(disabled = checkIfDialogOpen(), leftClick = deleteView(view), label = "X");
+                            }
+                        ])
+                      ]);
+                 } else {
+                      buttonUnselected@GemButton(
+                        leftClick = changeCurrentView(view),
+                        width = getCurrentViewWidth(currentView, view),
+                        disabled = checkIfDialogOpen(),
+                        margin = "0px",
+                        height = "35px",
+                        content = [
+                          @GemRow(hAlign = "space-between", components = [
+                              input@GemTextInput(disabled = checkIfDialogOpen(), entry = view.name)
+                          ])
+                        ]);
+                 };
+            },
+            //createview
+            addView@GemButton(leftClick = openViewDialog(), margin = "0px", disabled = checkIfDialogOpen(), height = "35px", width = "70px", content = [@GemIcon(name="add")])
+          ])
+        ]);
+      } else {
+        @GemColumn(components = [
+          @GemRow(hAlign = "left", vAlign = "bottom", components = [
+            @iterate(ViewConfig view: config.views) {
+                //currently selected view
+                 @guard(checkCurrentView(view)) {
+                     buttonSelected2@GemButton(
+                      leftClick = changeCurrentView(view),
+                      width = getCurrentViewWidth(currentView, view),
+                      disabled = checkIfDialogOpenCurrentViewTutorialStep7(),
+                      margin = "0px",
+                      height = "35px",
+                      content = [
+                        @GemRow(hAlign = "space-between", components = [
+                            inputSelected2@GemTextInput(disabled = checkIfDialogOpenCurrentViewTutorialStep7(), entry = view.name),
+                            @guard(checkIfSingleView()) {
+                              closeButton2@GemButton(disabled = checkIfDialogOpen(), leftClick = deleteView(view), label = "X");
+                            }
+                        ])
+                      ]);
+                 } else {
+                      buttonUnselected2@GemButton(
+                        leftClick = changeCurrentView(view),
+                        width = getCurrentViewWidth(currentView, view),
+                        disabled = checkIfDialogOpen(),
+                        height = "35px",
+                        margin = "0px",
+                        content = [
+                          @GemRow(hAlign = "space-between", components = [
+                              input2@GemTextInput(disabled = checkIfDialogOpen(), entry = view.name)
+                          ])
+                        ]);
+                 };
+            },
+            //createView
+            @guard(checkIfTutorialStep6()) {
+              tutorialAdd@GemButton(leftClick = openViewDialog(), margin = "0px", height = "35px", width = "50px", content = [@GemIcon(name="add")]);
+            } else {
+              addView2@GemButton(leftClick = openViewDialog(), margin = "0px", disabled = checkIfDialogOpen(), height = "35px", width = "50px", content = [@GemIcon(name="add")]);
+            }
+          ])
+        ]);
+      },
+      //right side buttons of the top bar
+      @GemColumn(components = [
+        @GemRow(colGap = "5px", hAlign = "right", components = [
+          @guard(checkIfTutorialStep18()) {
+            tutorialEdit@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = changeEdit(), content = [@GemIcon(name = "edit")]);
+          } else {
+            editButton@GemButton(width = "50px", margin = "0px", height = "35px", leftClick = changeEdit(), disabled = checkIfDialogOpen(), content = [@GemIcon(name = "edit")]);
+          },
+          @guard(checkIfTutorialStep8()) {
+            tutorialCreate@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = changeCreate(), content = [@GemIcon(name = "add")]);
+          } else {
+            createButton@GemButton(width = "50px", margin = "0px", height = "35px", leftClick = changeCreate(), disabled = checkIfDialogOpen(), content = [@GemIcon(name = "add")]);
+          },
+          @guard(checkTutorial()) {
+            endTutorial@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = switchTutorial(), content = [infoIcon@GemImage(source = "assets/images/info.png", width = "22px")]);
+          } else {
+            @GemButton(width = "50px", margin = "0px", height = "35px", leftClick = switchTutorial(), disabled = checkIfDialogOpen(), content = [infoIcon2@GemImage(source = "assets/images/info.png", width = "22px")]);
+          },
+          colorButton@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = toggleColors(), disabled = running, content = [colorIcon@GemImage(source = "assets/images/sun-moon.png", width = "22px")])
+        ])
+      ])
+    ]);
+    @iterate(ViewConfig view: config.views) {
+      @guard(checkCurrentView(view)) {
+        container@View(
+          view = view,
+          create = createCell,
+          edit = edit,
+          delete = delete,
+          download = download,
+          night = night,
+          editCellFlag = editCellFlag,
+          closeEdit = closeEdit(),
+          closeCreate = setCreateFalse(),
+          //tutorial
+          tutorialStep = tutorialStep,
+          tutorialSteps = getTutorialSteps(),
+          changeTutorialStep = changeTutorialStep(),
+          //
+          changeRunning = changeRunning(),
+          changeDelete = changeDelete(),
+          changeDownload = changeDownload()
+        );
+      }
+    };
+}

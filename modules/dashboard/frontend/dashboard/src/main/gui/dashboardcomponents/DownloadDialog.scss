@@ -1,0 +1,39 @@
+:host ::ng-deep .closeDialog .gem-button{
+  background-color: red !important;
+  margin-top: 10px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+:host ::ng-deep .downloadButton1 .gem-button{
+  min-width: 150px;
+  min-height: 30px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 1px;
+}
+
+:host ::ng-deep .downloadButton2 .gem-button{
+  min-width: 150px;
+  min-height: 30px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 1px;
+}
+
+:host ::ng-deep .downloadButton3 .gem-button{
+  min-width: 150px;
+  min-height: 30px;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 1px;
+}
+
+:host ::ng-deep .downloadError {
+  background-color: lighten(red, 40%) !important;
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-radius: 2px;
+  margin-bottom: 15px;
+}

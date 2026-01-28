@@ -1,0 +1,356 @@
+.container{
+  padding-top: 2px;
+  background-color: var(--view-background);
+}
+
+body.dark-theme :host ::ng-deep .gem-button {
+  border: 1px solid #e0e0e0;
+}
+
+:host ::ng-deep .gem-label-text-input {
+  color: var(--text-color) !important;
+  background-color: var(--background-color);
+}
+
+:host ::ng-deep .gem-text-input  {
+  color: var(--text-color) !important;
+  background-color: var(--background-color);
+  text-align: center !important;
+}
+
+:host ::ng-deep .gem-dropdown-option  {
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+:host ::ng-deep .gem-dropdown-input  {
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+:host ::ng-deep .input .gem-text-input {
+ background-color: #2F5F9F;
+ border: none !important;
+ outline: none;
+ color: white !important;
+ transition: all 0.25s ease;
+}
+
+:host ::ng-deep .input .gem-text-input:hover{
+  background-color: #294F85;
+  color: white !important;
+}
+
+:host ::ng-deep .input2 .gem-text-input {
+ background-color: #2F5F9F;
+ border: none !important;
+ outline: none;
+ color: white !important;
+ transition: all 0.25s ease;
+}
+
+:host ::ng-deep .input2 .gem-text-input:hover{
+  background-color: #294F85;
+  color: white !important;
+}
+
+:host ::ng-deep .inputSelected .gem-text-input {
+ background-color: #5B8ACB;
+ border: none !important;
+ outline: none;
+ color: white !important;
+ transition: all 0.25s ease;
+ margin-bottom: 3px  !important;
+}
+
+:host ::ng-deep .inputSelected .gem-text-input:hover{
+  background-color: #294F85;
+  color: white !important;
+}
+
+:host ::ng-deep .inputSelected2 .gem-text-input {
+ background-color: #5B8ACB;
+ border: none !important;
+ outline: none;
+ color: white !important;
+ transition: all 0.25s ease;
+ margin-bottom: 3px  !important;
+}
+
+:host ::ng-deep .inputSelected2 .gem-text-input:hover{
+  background-color: #294F85;
+  color: white !important;
+}
+
+:host ::ng-deep .gem-button {
+ background-color: #2F5F9F;
+}
+
+
+:host ::ng-deep .buttonSelected .gem-button {
+  position: relative;
+  margin: 0px !important;
+  border-radius: 0px !important;
+  background-color:  #5B8ACB;
+}
+
+:host ::ng-deep .buttonSelected2 .gem-button {
+  position: relative;
+  margin: 0px !important;
+  border-radius: 0px !important;
+  background-color: #5B8ACB;
+}
+
+:host ::ng-deep .buttonUnselected2 .gem-button {
+  border-radius: 0px;
+}
+
+:host ::ng-deep .buttonUnselected .gem-button {
+  border-radius: 0px;
+}
+
+:host ::ng-deep .gem-button:hover {
+  background-color: #294F85;
+}
+
+:host ::ng-deep .infoIcon {
+  filter: brightness(0) saturate(100%) invert(100%);
+  margin-left: 7px;
+  margin-bottom: 1px;
+  min-height: 26px;
+}
+
+:host ::ng-deep .endTutorial .gem-button{
+  background-color: red;
+  z-index: 1000;
+}
+
+:host ::ng-deep .infoIcon2 {
+  filter: brightness(0) saturate(100%) invert(100%);
+  margin-left: 7px;
+  margin-bottom: 1px;
+  min-height: 26px;
+}
+
+:host ::ng-deep .colorIcon {
+  filter: brightness(0) saturate(100%) invert(100%);
+  margin-left: 7px;
+  margin-bottom: 1px;
+  min-height: 26px;
+}
+
+body.dark-theme :host ::ng-deep .closeButton .gem-button{
+  border: none !important;
+}
+
+body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
+  border: none !important;
+}
+
+:host ::ng-deep .closeButton .gem-button{
+  border: none !important;
+  margin-top: -1px !important;
+}
+
+:host ::ng-deep .closeButton2 .gem-button{
+  border: none !important;
+  margin-top: -1px !important;
+}
+
+:host ::ng-deep .colorButton .gem-button{
+  z-index: 1001;
+}
+
+:host ::ng-deep .addView .gem-button{
+  border-radius: 0px !important;
+}
+
+:host ::ng-deep .addView2 .gem-button{
+  border-radius: 0px !important;
+}
+
+:host ::ng-deep .tutorialViews{
+  border: 4px solid red;
+  border-radius: 3px;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}
+
+:host ::ng-deep .tutorialAdd .gem-button{
+  border: 3px solid red;
+  border-radius: 3px;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}
+
+:host ::ng-deep .tutorialCreate{
+  border: 3px solid red;
+  border-radius: 3px;
+  margin-top: -3px !important;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}
+
+:host ::ng-deep .tutorialEdit{
+  border: 3px solid red;
+  border-radius: 3px;
+  margin-top: -3px !important;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}
+
+.infoDialog{
+   position: fixed;
+   top: 300px;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1000;
+   color: var(--text-color);
+   background-color: var(--background-color);
+ }
+
+ .viewDialog{
+    position: fixed;
+    top: 300px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    z-index: 1000;
+    color: var(--text-color);
+    background-color: var(--background-color);
+  }
+
+.tutorialDialog{
+   width: 500px;
+   position: fixed;
+   top: 150px;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1002;
+   color: var(--text-color);
+   background-color: var(--background-color);
+ }
+
+// centred a bit below the middle of the window, independent of the screen height (was top: 700px,
+// which put it at or below the bottom edge on smaller screens)
+.tutorialDialogBottom{
+   width: 500px;
+   position: fixed;
+   top: 60%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1002;
+   color: var(--text-color);
+   background-color: var(--background-color);
+ }
+
+// The MontiGem default theme gives .gem-button min-width: 8rem, padding and margin, and the
+// text inputs/images inside it extra margins. Let the buttons of the top bar (direct gem-row child) fill the size set in the model again.
+:host > gem-row ::ng-deep gem-button .gem-button {
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0 4px;
+}
+
+:host > gem-row ::ng-deep .closeButton .gem-button,
+:host > gem-row ::ng-deep .closeButton2 .gem-button {
+  width: auto;
+  height: auto;
+  padding: 2px 8px;
+}
+
+:host > gem-row ::ng-deep gem-button .gem-button gem-image {
+  margin: 0 !important;
+  min-height: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+:host > gem-row ::ng-deep gem-button .gem-button gem-text-input {
+  margin: 0 !important;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+// the view name inputs have no label, but the theme still gives the empty label a bottom margin,
+// which pushed the text below the button's centre
+:host > gem-row ::ng-deep gem-button .gem-button gem-text-input .gem-label-text-input {
+  display: none;
+}
+
+:host > gem-row ::ng-deep gem-button .gem-button gem-text-input input {
+  margin: 0 !important;
+  padding: 0 6px !important;
+  height: 100%;
+}
+
+// top bar keeps its natural height (GemRow defaults to height: 100%), the view takes the remaining height
+:host > gem-row {
+  flex: 0 0 auto;
+  height: auto !important;
+}
+
+:host > view {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+// small gap above the top bar (view tabs and edit buttons)
+:host {
+  padding-top: 4px;
+}
+
+// the tutorial backdrop is an empty GemText without own styling; keep it from taking space in the
+// full-height flex layout, otherwise it pushes the top bar and the view down while the tutorial is open
+:host > .backdrop {
+  flex: 0 0 0;
+  height: 0 !important;
+  min-height: 0;
+  overflow: hidden;
+}

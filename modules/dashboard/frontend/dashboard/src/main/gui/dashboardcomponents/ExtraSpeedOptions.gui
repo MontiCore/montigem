@@ -1,0 +1,42 @@
+package dashboardcomponents;
+
+import DashboardModule.ExtraData;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.input.GemTextInput;
+import mc.fenix.input.GemDropdownInput;
+import mc.fenix.input.GemDropdownInputTypes.Option;
+
+component ExtraSpeedOptions(
+   ExtraData extra
+   ){
+      @GemColumn(rowGap = "10px", components = [
+        maxVal@GemTextInput(
+          inputType = "number",
+          labelText = "Maximum Value:",
+          entry = extra.speedextra.max
+        ),
+        @GemTextInput(
+          inputType = "number",
+          labelText = "Minimum Value:",
+          entry = extra.speedextra.min
+        ),
+        @GemTextInput(
+          labelText = "Name of Unit:",
+          entry = extra.speedextra.unit
+        ),
+        @GemTextInput(
+          labelText = "Description:",
+          entry = extra.speedextra.textValue
+        ),
+        @GemDropdownInput(
+          labelText = "Position of Legend:",
+          entry = extra.speedextra.textPosition,
+          options = [
+            Option("Left"),
+            Option("Right"),
+            Option("Up"),
+            Option("Down")
+          ]
+        )
+      ]);
+}
