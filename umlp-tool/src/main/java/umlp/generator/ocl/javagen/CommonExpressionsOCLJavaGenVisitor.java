@@ -272,12 +272,8 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
       return;
     }
 
-    // UMLP specific field access
-    node.getExpression().accept(getTraverser());
-
     SymTypeExpression lhsType = TypeCheck3.typeOf(node.getExpression());
     SymTypeExpression fullType = nodeType;
-    FieldAccessInfo info = FieldAccessInfo.from(node, lhsType, fullType);
     if (OCLCollectionSymTypeRelations.isOCLCollection(lhsType) && OCLCollectionSymTypeRelations.isOCLCollection(fullType)) {
       // flattening
 
@@ -300,15 +296,18 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
         isBoolean = SymTypeRelations.isBoolean(varType);
       }
 
-      // - variable with simple type
-      if (!isCollectionType && !isDomainType) {
-        printFlatteningMap(node.getName(), isBoolean ? "is" : "get", lhsType);
-      }
-
       // - variable with collection simple type
       if (isCollectionType && !isDomainType) {
         Log.warn("Not translating flattening for attribute list of simple type");
         return;
+      }
+
+      printStreamCollectionStart(lhsType);
+      node.getExpression().accept(getTraverser());
+
+      // - variable with simple type
+      if (!isCollectionType && !isDomainType) {
+        printFlatteningMap(node.getName(), isBoolean ? "is" : "get", lhsType);
       }
 
       // - association with opt or one cardinality
@@ -322,11 +321,13 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
         getPrinter().print(".stream().flatMap(it -> it.");
         getPrinter().print("get");
         getPrinter().print(StringTransformations.capitalize(node.getName()));
-        getPrinter().print("List().stream()).to");
-        printCollectorFor(lhsType);
+        getPrinter().print("List().stream())");
+        printStreamCollectionEnd(lhsType);
       }
     } else {
       // normal access
+      node.getExpression().accept(getTraverser());
+      FieldAccessInfo info = FieldAccessInfo.from(node, lhsType, fullType);
       printFieldAccess(info, node.getName());
     }
   }
@@ -335,17 +336,20 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
     getPrinter().print(".stream().map(it -> it.");
     getPrinter().print(accessorPrefix);
     getPrinter().print(StringTransformations.capitalize(fieldName));
-    getPrinter().print("()).to");
-    printCollectorFor(lhsType);
+    getPrinter().print("())");
+    printStreamCollectionEnd(lhsType);
   }
 
-  private void printCollectorFor(SymTypeExpression lhsType) {
-    if (OCLCollectionSymTypeRelations.isList(lhsType)) {
-      getPrinter().print("List()");
-    } else if (OCLCollectionSymTypeRelations.isSet(lhsType)) {
-      getPrinter().print("Set()");
-    } else {
-      getPrinter().print("Collection()");
+  private void printStreamCollectionStart(SymTypeExpression lhsType) {
+    if (OCLCollectionSymTypeRelations.isSet(lhsType)) {
+      getPrinter().print("new java.util.HashSet<>(");
+    }
+  }
+
+  private void printStreamCollectionEnd(SymTypeExpression lhsType) {
+    getPrinter().print(".toList()");
+    if (OCLCollectionSymTypeRelations.isSet(lhsType)) {
+      getPrinter().print(")");
     }
   }
 

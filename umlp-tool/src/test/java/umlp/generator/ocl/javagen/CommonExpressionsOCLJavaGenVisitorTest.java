@@ -6,6 +6,7 @@ import de.monticore.expressions.commonexpressions._ast.ASTFieldAccessExpression;
 import de.monticore.ocl.ocl.OCLMill;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.symbols.basicsymbols._symboltable.TypeSymbol;
+import de.monticore.symbols.basicsymbols._symboltable.VariableSymbol;
 import de.monticore.symbols.oosymbols._symboltable.FieldSymbol;
 import de.monticore.symbols.oosymbols._symboltable.IOOSymbolsScope;
 import de.monticore.symbols.oosymbols._symboltable.MethodSymbol;
@@ -114,6 +115,27 @@ class CommonExpressionsOCLJavaGenVisitorTest {
     assertEquals("Eintragstyp.PAUSE", print(staticAccess));
   }
 
+  @Test
+  void collectsFlattenedListWithToList() {
+    assertEquals(
+        "items.stream().map(it -> it.getValue()).toList()",
+        printFlattenedFieldAccess("List"));
+  }
+
+  @Test
+  void wrapsFlattenedSetListInHashSet() {
+    assertEquals(
+        "new java.util.HashSet<>(items.stream().map(it -> it.getValue()).toList())",
+        printFlattenedFieldAccess("Set"));
+  }
+
+  @Test
+  void collectsFlattenedCollectionWithToList() {
+    assertEquals(
+        "items.stream().map(it -> it.getValue()).toList()",
+        printFlattenedFieldAccess("Collection"));
+  }
+
   private TypeSymbol mockOwnerType(String fullName) {
     TypeSymbol owner = mock(TypeSymbol.class);
     when(owner.getFullName()).thenReturn(fullName);
@@ -131,6 +153,30 @@ class CommonExpressionsOCLJavaGenVisitorTest {
     IndentPrinter printer = new IndentPrinter();
     var visitor = new CommonExpressionsOCLJavaGenVisitor(new JavaGenVisitorState(printer));
     visitor.handle(node);
+    return printer.getContent();
+  }
+
+  private String printFlattenedFieldAccess(String collectionName) {
+    var itemType = SymTypeExpressionFactory.createTypeObject(new TypeSymbol("Item"));
+    var collectionType = SymTypeExpressionFactory.createGenerics(
+        new TypeSymbol(collectionName), List.of(itemType));
+    var field = new VariableSymbol("value");
+    field.setType(itemType);
+    collectionType.getSourceInfo().setSourceSymbol(field);
+
+    var receiver = OCLMill.nameExpressionBuilder().setName("items").build();
+    var fieldAccess = OCLMill.fieldAccessExpressionBuilder()
+        .setExpression(receiver)
+        .setName("value")
+        .build();
+    NoRegexOCLTypeCheck3.getDelegate().getType4Ast()
+        .setTypeOfExpression(receiver, collectionType);
+    NoRegexOCLTypeCheck3.getDelegate().getType4Ast()
+        .setTypeOfExpression(fieldAccess, collectionType);
+
+    IndentPrinter printer = new IndentPrinter();
+    var generator = new OCL2UMLPJavaCodeGenerator(printer);
+    fieldAccess.accept(generator.getTraverser());
     return printer.getContent();
   }
 }
