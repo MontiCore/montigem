@@ -1,0 +1,7 @@
+{
+  "adapters": [
+    "umlp.jsweet.extension.ModuleUMLPAdapter",
+    "domainAdapter.CommentModuleDomainImportAdapter"
+  ],
+  "domainName": "CommentModule"
+}

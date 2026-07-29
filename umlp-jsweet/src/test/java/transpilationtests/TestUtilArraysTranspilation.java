@@ -5,7 +5,7 @@ import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.jupiter.api.Test;
-import testutil.Util;
+import util.TranspilerSetupUtil;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -21,7 +21,7 @@ public class TestUtilArraysTranspilation {
   public void test() throws Exception {
     File input = Paths.get("src/test/resources/java/arrays/UtilArrays.java").toFile();
 
-    JSweetTranspiler transpiler = Util.getGUITranspiler();
+    JSweetTranspiler transpiler = TranspilerSetupUtil.getGUITranspiler();
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
         new ConsoleTranspilationHandler());
 
@@ -50,7 +50,7 @@ public class TestUtilArraysTranspilation {
   public void testUnsupportedErrors() throws Exception {
     File input = Paths.get("src/test/resources/java/arrays/UtilArraysUnsupported.java").toFile();
 
-    JSweetTranspiler transpiler = Util.getGUITranspiler();
+    JSweetTranspiler transpiler = TranspilerSetupUtil.getGUITranspiler();
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
         new ConsoleTranspilationHandler());
 

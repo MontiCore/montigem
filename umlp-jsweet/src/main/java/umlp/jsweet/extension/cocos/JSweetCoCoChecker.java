@@ -174,8 +174,7 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
 
     // 1) Java 9+ factory methods like List.of / Map.of / Set.of
     if (methodName.equals("of")
-        && ("java.util.List".equals(ownerFqn)
-        || "java.util.Map".equals(ownerFqn)
+        && ( "java.util.Map".equals(ownerFqn)
         || "java.util.Set".equals(ownerFqn))) {
       Log.warn("0xEE005: " + ownerFqn + ".of(...) is not supported by our transpilation. "
               + "Use Collections.* helpers (e.g., Collections.emptyList/singletonList) "

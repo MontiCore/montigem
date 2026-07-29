@@ -188,7 +188,7 @@ public class OptionalAdapter extends AbstractAdapter {
         return true;
       case "stream":
         printMacroName(methodName);
-        print("AsyncStream.of(").print(target).print("? [").print(target).print("] : [])");
+        print("AsyncStream.ofOptional(").print(target).print(")");
         getPrinter().useModule(new ModuleImportDescriptor(CollectionsAdapter.STREAM, getLibraryLocation()));
         return true;
     }

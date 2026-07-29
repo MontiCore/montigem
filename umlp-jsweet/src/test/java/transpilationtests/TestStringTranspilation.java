@@ -5,7 +5,7 @@ import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.jupiter.api.Test;
-import testutil.Util;
+import util.TranspilerSetupUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,8 +22,8 @@ public class TestStringTranspilation {
   public void testStringEquals() throws IOException {
     File input = Paths.get("src/test/resources/java/string/TestStringTranspilation.java").toFile();
 
-    testStringEqualsPerConfig(input, Util.getDomainTranspiler());
-    testStringEqualsPerConfig(input, Util.getGUITranspiler());
+    testStringEqualsPerConfig(input, TranspilerSetupUtil.getDomainTranspiler());
+    testStringEqualsPerConfig(input, TranspilerSetupUtil.getGUITranspiler());
   }
 
   public void testStringEqualsPerConfig(File input, JSweetTranspiler transpiler) throws IOException {
@@ -54,8 +54,8 @@ public class TestStringTranspilation {
   public void testStringSplit() throws IOException {
     File input = Paths.get("src/test/resources/java/string/TestStringTranspilation.java").toFile();
 
-    testStringSplitPerConfig(input, Util.getDomainTranspiler());
-    testStringSplitPerConfig(input, Util.getGUITranspiler());
+    testStringSplitPerConfig(input, TranspilerSetupUtil.getDomainTranspiler());
+    testStringSplitPerConfig(input, TranspilerSetupUtil.getGUITranspiler());
   }
 
   public void testStringSplitPerConfig(File input, JSweetTranspiler transpiler) throws IOException {

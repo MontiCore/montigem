@@ -1,4 +1,4 @@
-package testutil;
+package util;
 
 import org.jsweet.transpiler.EcmaScriptComplianceLevel;
 import org.jsweet.transpiler.JSweetFactory;
@@ -11,12 +11,12 @@ import java.io.IOException;
 import java.util.Objects;
 import java.util.Properties;
 
-public class Util {
+public class TranspilerSetupUtil {
 
-  public static final String domainConfig = "src/test/resources/defaultJsweetConfig/domainConfig.json";
+  public static final String domainConfig = "src/test/resources/jsweetconfigs/domainConfig.json";
   public static final String defaultDomainOutput = "build/transpile/domainout";
 
-  public static final String guiConfig = "src/test/resources/defaultJsweetConfig/guiConfig.json";
+  public static final String guiConfig = "src/test/resources/jsweetconfigs/guiConfig.json";
   public static final String defaultGUIOutput = "build/transpile/guiout";
 
   public static JSweetTranspiler getGUITranspiler() {
@@ -29,7 +29,7 @@ public class Util {
 
   public static JSweetTranspiler transpilerModuleUMLPAdapter() {
     return getTranspilerFromConfigFile(
-        new File("src/test/resources/defaultJsweetConfig/ModuleUMLPAdapter.json"),
+        new File("src/test/resources/jsweetconfigs/ModuleUMLPAdapter.json"),
         new File("build/transpile/umlpmodule")
     );
   }
@@ -46,7 +46,7 @@ public class Util {
     // Load node dir from props(see build.gradle)
     Properties nodeDirProps = new Properties();
     try {
-      nodeDirProps.load(Util.class.getResourceAsStream("/nodeDir.properties"));
+      nodeDirProps.load(TranspilerSetupUtil.class.getResourceAsStream("/nodeDir.properties"));
     } catch (IOException e) {
       throw new RuntimeException("Can not load node path from properties", e);
     }
@@ -70,19 +70,6 @@ public class Util {
         null,
         System.getProperty("java.class.path")
     );
-/*    try {
-      transpiler = new JSweetTranspiler(
-          configuration,
-          factory,
-          null,
-          outputDir,
-          null,
-          null,
-          System.getProperty("java.class.path")
-      );
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }*/
 
     // Set according to our JSweet Plugin
     transpiler.setTscWatchMode(false);

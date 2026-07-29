@@ -1,6 +1,6 @@
 package test;
 
-import domain.Person;
+import resources.domain.Person;
 
 import java.util.ArrayList;
 import java.util.List;

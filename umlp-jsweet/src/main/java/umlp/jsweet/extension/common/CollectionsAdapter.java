@@ -168,6 +168,12 @@ public class CollectionsAdapter extends AbstractAdapter {
           }
           break;
         case "java.util.List":
+          if(targetMethodName.equals("of")) {
+            print("(await new " + CustomAsyncListImplementationConstructor + "(")
+                .printArgList(invocation.getArguments()).print("))");
+            getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncListImplementationName, getLibraryLocation()));
+            return true;
+          }
         case "java.util.AbstractList":
         case "java.util.LinkedList":
         case "java.util.ArrayList":

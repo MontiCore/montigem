@@ -1,6 +1,6 @@
 package string;
 
-import domain.Person;
+import resources.domain.Person;
 
 public class TestStringTranspilation {
 

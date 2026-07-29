@@ -4,7 +4,7 @@ import org.jsweet.transpiler.JSweetTranspiler;
 import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.junit.jupiter.api.Test;
-import testutil.Util;
+import util.TranspilerSetupUtil;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -21,7 +21,7 @@ public class TestInnerClassTranspilation {
     File input2 = Paths.get("src/test/resources/java/innerclasses/HelperClass.java").toFile();
     File input3 = Paths.get("src/test/resources/java/innerclasses/HelperClass2.java").toFile();
 
-    JSweetTranspiler transpiler = Util.getDomainTranspiler();
+    JSweetTranspiler transpiler = TranspilerSetupUtil.getDomainTranspiler();
 
     SourceFile[] sourceFiles = getSourceFiles(input, input2, input3);
     transpiler.transpile(new ConsoleTranspilationHandler(), sourceFiles);

@@ -33,7 +33,6 @@ export class AsyncStream<T> implements AsyncIterable<T> {
   }
 
   private static _fromArray<T>(arr: T[]): AsyncStream<T> {
-    console.warn("fromArray is called")
     return new AsyncStream<T>({
       async *[Symbol.asyncIterator]() {
         for (const item of arr) {
@@ -351,6 +350,12 @@ export class AsyncStream<T> implements AsyncIterable<T> {
       return (await this.count()) as unknown as R;
     }
     return (await this.toList()) as unknown as R;
+  }
+
+
+  // Stream of Optional has to be treated differently
+  public static ofOptional<T>(arg: T | null): AsyncStream<T> {
+    return AsyncStream._fromArray(arg? [arg] : []);
   }
 }
 

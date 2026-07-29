@@ -5,7 +5,7 @@ import org.jsweet.transpiler.SourceFile;
 import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.jupiter.api.Test;
-import testutil.Util;
+import util.TranspilerSetupUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ public class QNameCastTest {
     inputs.add(Paths.get("src/test/resources/java/loginmodule/LoginModuleUser.java").toFile());
     inputs.add(Paths.get("src/test/resources/java/loginmodule/LoginModuleUserDeSer.java").toFile());
 
-    checkQNameCast(inputs, Util.transpilerModuleUMLPAdapter());
+    checkQNameCast(inputs, TranspilerSetupUtil.transpilerModuleUMLPAdapter());
   }
 
   public void checkQNameCast(List<File> input, JSweetTranspiler transpiler) throws IOException {

@@ -1,4 +1,4 @@
-package testutil;
+package cocos;
 
 import de.se_rwth.commons.logging.Log;
 import de.se_rwth.commons.logging.Finding;
@@ -8,6 +8,7 @@ import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import util.TranspilerSetupUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class JSweetCoCoCheckerTest {
     assertTrue(input.exists(), "Input file must exist: " + input.getAbsolutePath());
 
     // Use the transpiler that has the ModuleUMLPAdapter configured (which adds JSweetCoCoChecker)
-    JSweetTranspiler transpiler = Util.transpilerModuleUMLPAdapter();
+    JSweetTranspiler transpiler = TranspilerSetupUtil.transpilerModuleUMLPAdapter();
 
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
         new ConsoleTranspilationHandler());
@@ -65,7 +66,7 @@ public class JSweetCoCoCheckerTest {
     assertTrue(input.exists(), "Input file must exist: " + input.getAbsolutePath());
 
     // Use the transpiler that has the ModuleUMLPAdapter configured (which adds JSweetCoCoChecker)
-    JSweetTranspiler transpiler = Util.getGUITranspiler();
+    JSweetTranspiler transpiler = TranspilerSetupUtil.getGUITranspiler();
 
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
         new ConsoleTranspilationHandler());
@@ -90,7 +91,7 @@ public class JSweetCoCoCheckerTest {
     assertTrue(input.exists(), "Input file must exist: " + input.getAbsolutePath());
 
     // Use the transpiler that has the ModuleUMLPAdapter configured (which adds JSweetCoCoChecker)
-    JSweetTranspiler transpiler = Util.transpilerModuleUMLPAdapter();
+    JSweetTranspiler transpiler = TranspilerSetupUtil.transpilerModuleUMLPAdapter();
 
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
         new ConsoleTranspilationHandler());
