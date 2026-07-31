@@ -35,9 +35,27 @@ For MontiGem users:
   * line 9 - allow list comprehensions
   * line 11 - allow lists in `iterate`
   
-
-- Context Conditions for unsupported Java Code (e.g. the Stream API) that is transpiled by JSweet. This should stop the current need to guess which code can be transpiled and which not. 
 -->
+
+## 2026-07-31
+
+- Upgraded MontiGem to version 7.9.1-SNAPSHOT
+  - frontend TypeScript libraries moved to version >8.0.0  
+
+- JSweet transpilation updates which may require adaptations of handwritten typescript:
+  - GUI-DSL Lists are now `IUMLPList` (async) in TypeScript. 
+    - if you need a TypeScript array in TypeScript you should use `GemListUtil.toArray(list)`
+  - List, Set, and Stream are not transpiled to JavaScript native array operations 
+    anymore and instead use `AsyncList.ts`, `AsyncSet.ts`, `AsynStream.ts` implementations
+    this enables correct behavior of GemLists 
+  - any constructor call is now async by default this is achieved by generating 
+    replacing any constructor call with the generated __<ClassName>Constructor
+
+- Client GemLists are now loaded in batches from the Backend
+
+- Context Conditions for unsupported Java Code that is transpiled by JSweet. This should stop the current need to guess which code can be transpiled and which not.
+
+
 ## 2025-09-25
 
 ### Changes

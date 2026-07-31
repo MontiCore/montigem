@@ -15,8 +15,8 @@ module.exports = function (config) {
       require('@angular-devkit/build-angular/plugins/karma')
     ],
     files: [
-      { pattern: 'src/**/*.spec.ts', type: 'js' },
-      { pattern: '../../src/**/*.spec.ts', type: 'js' }
+      { pattern: '../src/**/*.spec.ts', type: 'js' },
+      { pattern: '../../../src/**/*.spec.ts', type: 'js' }
     ],
     client: {
       jasmine: {

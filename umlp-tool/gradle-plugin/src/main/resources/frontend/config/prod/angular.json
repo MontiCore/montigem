@@ -72,7 +72,7 @@
           },
           "defaultConfiguration": "development",
           "options": {
-            "proxyConfig": "./proxy.conf.js",
+            "proxyConfig": "./configs/proxy.conf.js",
             "prebundle": {
               "exclude": ["d3"]
             }
@@ -101,7 +101,7 @@
               "src/styles.scss"
             ],
             "scripts": [],
-            "karmaConfig": "karma.conf.js",
+            "karmaConfig": "./configs/karma.conf.js",
             "include": [
               "src/**/*.spec.ts",
               "../../../src/**/*.spec.ts"

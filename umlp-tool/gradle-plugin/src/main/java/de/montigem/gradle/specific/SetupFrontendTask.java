@@ -6,13 +6,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.work.ChangeType;
 import org.gradle.work.Incremental;
@@ -32,6 +36,7 @@ import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -42,14 +47,63 @@ import static de.montigem.gradle.FrontendBasePlugin.useLocalDependencies;
 
 public abstract class SetupFrontendTask extends DefaultTask {
 
+  private static final List<String> EXPECTED_FILES = List.of(
+      "package.json", "angular.json",
+      "tsconfig.json", "tsconfig.app.json", "tsconfig.prod.json", "ts.config.spec.json");
+  private static final List<String> EXPECTED_DIRS = List.of(
+      "src", "configs");
+
   private static final String FRONTEND_CONFIG_COMMON = "frontend/config/common/";
   // config for projects inside umlp (examples, products, ...)
   private static final String FRONTEND_CONFIG_DEV = "frontend/config/dev/";
   // config for projects outside umlp
   private static final String FRONTEND_CONFIG_PROD = "frontend/config/prod/";
 
+  // Explicit on @OutputDirectory so Gradle does not delete or check the whole app dir
+  @Internal
+  public abstract DirectoryProperty getOutputRoot();
+
+  // ---- Tracked outputs: exactly these paths ----
+
+  @OutputFile
+  public Provider<RegularFile> getPackageJson() {
+    return getOutputRoot().file("package.json");
+  }
+
+  @OutputFile
+  public Provider<RegularFile> getAngularJson() {
+    return getOutputRoot().file("angular.json");
+  }
+
+  @OutputFile
+  public Provider<RegularFile> getTsconfigJson() {
+    return getOutputRoot().file("tsconfig.json");
+  }
+
+  @OutputFile
+  public Provider<RegularFile> getTsconfigAppJson() {
+    return getOutputRoot().file("tsconfig.app.json");
+  }
+
+  @OutputFile
+  public Provider<RegularFile> getTsconfigProdJson() {
+    return getOutputRoot().file("tsconfig.prod.json");
+  }
+
+  @OutputFile
+  public Provider<RegularFile> getTsconfigSpecJson() {
+    return getOutputRoot().file("tsconfig.spec.json");
+  }
+
   @OutputDirectory
-  public abstract DirectoryProperty getOutput();
+  public Provider<Directory> getSrcDir() {
+    return getOutputRoot().dir("src");
+  }
+
+  @OutputDirectory
+  public Provider<Directory> getConfigsDir() {
+    return getOutputRoot().dir("configs");
+  }
 
   @InputFiles
   @Incremental
@@ -72,19 +126,21 @@ public abstract class SetupFrontendTask extends DefaultTask {
 
   @TaskAction
   public void run(InputChanges changes) throws IOException, URISyntaxException {
+    getOutputRoot().getAsFile().get().mkdirs();
+
     if (getInput().isPresent()) {
       // Delete files in output, if file in input was deleted
       StreamSupport.stream(changes.getFileChanges(getInput()).spliterator(), false)
           .filter(ch -> ch.getChangeType().equals(ChangeType.REMOVED))
           .forEach(ch -> {
             String filename = getInput().getAsFile().get().toPath().relativize(ch.getFile().toPath()).toString();
-            FileUtils.deleteQuietly(getOutput().file(filename).get().getAsFile());
+            FileUtils.deleteQuietly(getOutputRoot().file(filename).get().getAsFile());
           });
     }
 
     if (getCreateNpmrc().get()) {
       String data = CreateNpmrcTask.getNpmrcContent(getProject(), getUnscopedNpmrc().get());
-      FileUtils.writeStringToFile(getOutput().get().file(".npmrc").getAsFile(), data, StandardCharsets.UTF_8);
+      FileUtils.writeStringToFile(getOutputRoot().get().file(".npmrc").getAsFile(), data, StandardCharsets.UTF_8);
     }
 
     // Avoid duplicate copy operations
@@ -101,7 +157,7 @@ public abstract class SetupFrontendTask extends DefaultTask {
       // if a handwritten file exists, use that instead
       if (doOverrideWithHWC(filename, file)) continue;
 
-      FileUtils.copyInputStreamToFile(file, getOutput().file(filename).get().getAsFile());
+      FileUtils.copyInputStreamToFile(file, getOutputRoot().file(filename).get().getAsFile());
     }
 
     // copy dev or prod config
@@ -116,15 +172,27 @@ public abstract class SetupFrontendTask extends DefaultTask {
       // if a handwritten file exists, use that instead
       if (doOverrideWithHWC(filename, file)) continue;
 
-      FileUtils.copyInputStreamToFile(file, getOutput().file(filename).get().getAsFile());
+      FileUtils.copyInputStreamToFile(file, getOutputRoot().file(filename).get().getAsFile());
     }
 
     if (getInput().isPresent()) {
       // Then Copy User-Defined Files (which were not handled previously)
       for (File f : getInput().getAsFileTree()) {
-        String filename = getInput().getAsFile().get().toPath().relativize(f.toPath()).toString();
-        if (!usedHandwrittenFiles.contains(filename))
-          FileUtils.copyFile(f, getOutput().file(filename).get().getAsFile());
+        Path rel = getInput().getAsFile().get().toPath().relativize(f.toPath());
+        String relString = rel.toString();
+        String first = rel.getName(0).toString();
+
+        boolean isExpectedRootFile = rel.getNameCount() == 1 && EXPECTED_FILES.contains(first);
+        boolean isInExpectedDir    = rel.getNameCount() > 1 && EXPECTED_DIRS.contains(first);
+
+        if (isExpectedRootFile || isInExpectedDir) {
+          FileUtils.copyFile(f, new File(getOutputRoot().getAsFile().get(), relString));
+        } else {
+          getLogger().warn(
+              "setupFrontend: unexpected entry '{}' in input directory {} – "
+                  + "only {} (files at the root) and {} (directories) are used; ignoring it.",
+              first, getInput(), EXPECTED_FILES, EXPECTED_DIRS);
+        }
       }
     }
   }
@@ -137,7 +205,7 @@ public abstract class SetupFrontendTask extends DefaultTask {
 
       if (dot >= 0 && hwcOverride.toFile().exists()) {
         if (!filename.endsWith(".json")) {
-          getLogger().error("Failed to merge config file {}, as its file endinging is not supported )(.json)", filename);
+          getLogger().error("Failed to merge config file {}, as its file ending is not supported )(.json)", filename);
           return false;
         }
         getLogger().info("Merging JSON-based file with hand-written overrides one{}", filename);
@@ -146,14 +214,14 @@ public abstract class SetupFrontendTask extends DefaultTask {
         try (BufferedReader reader = new BufferedReader(new FileReader(hwcOverride.toFile()))) {
           JsonElement override = JsonParser.parseReader(reader);
           JsonElement merged = merge(base, override);
-          FileUtils.writeStringToFile(getOutput().file(filename).get().getAsFile(), merged.toString(), StandardCharsets.UTF_8);
+          FileUtils.writeStringToFile(getOutputRoot().file(filename).get().getAsFile(), merged.toString(), StandardCharsets.UTF_8);
         }
         return true;
       }
       Path hwc = getInput().getAsFile().get().toPath().resolve(filename);
       if (hwc.toFile().exists()) {
         getLogger().info("Overriding config file {} with hand-written one", filename);
-        FileUtils.copyFile(hwc.toFile(), getOutput().file(filename).get().getAsFile());
+        FileUtils.copyFile(hwc.toFile(), getOutputRoot().file(filename).get().getAsFile());
         return true;
       }
     }

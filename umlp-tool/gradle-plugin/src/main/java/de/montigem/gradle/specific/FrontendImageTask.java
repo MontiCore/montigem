@@ -56,7 +56,8 @@ public abstract class FrontendImageTask extends DefaultTask {
   public abstract Property<String> getRegistryPassword();
 
   public FrontendImageTask() {
-    getCaddyfile().convention(getProject().getLayout().file(getProject().provider(() -> getProject().getBuildDir().toPath().resolve("app").resolve("Caddyfile").toFile())));
+    getCaddyfile().convention(getProject().getLayout().file(getProject().provider(() -> getProject()
+        .getBuildDir().toPath().resolve("app").resolve("configs").resolve("Caddyfile").toFile())));
     getServedFiles().convention(
         getProject().getLayout().getBuildDirectory().dir("app/dist/client/browser")
     );

@@ -79,7 +79,7 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
         SETUP_FRONTEND_TASK, SetupFrontendTask.class, task -> {
           task.setGroup(UMLP_GROUP_NAME);
           task.getInput().set(config);
-          task.getOutput().set(project.getLayout().getBuildDirectory().dir("app"));
+          task.getOutputRoot().set(project.getLayout().getBuildDirectory().dir("app"));
 
           task.onlyIf(t -> config.getAsFile().exists());
         });
@@ -222,7 +222,7 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
 
         // Copy websources into jar
         task.from(
-            setupFrontend.map(t -> t.getOutput().dir("dist/client")),
+            setupFrontend.map(t -> t.getOutputRoot().dir("dist/client")),
             copySpec -> copySpec.into("BOOT-INF/classes")
         );
 
