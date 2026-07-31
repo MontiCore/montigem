@@ -65,14 +65,8 @@ build_no_containers:
   script:
     - export CHROME_BIN=/usr/bin/google-chrome-stable
     - "gradle --version 2>&1 | tee $CI_PROJECT_DIR/build.log"
-    - "gradle build testCodeCoverageReport --refresh-dependencies --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log >&2)"
-    # add one of the downloaded nodejs distributions to PATH, so we can build the vscode plugin
-    - export PATH="$PATH:$(dirname $(find $(pwd) -type f -name "node" -print -quit))"
-    - "cd umlp-tool"
-    - "gradle packageUMLPWithGUIVscodePlugin -P buildVscodePlugin=true --info --refresh-dependencies $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log) >&2"
-    - "mv build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp-*.vsix build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp.vsix"
-    - echo "packageUMLPWithGUIVscodePlugin finished"
-    - "cd .."
+    - "gradle build testCodeCoverageReport umlp-tool:packageUMLPWithGUIVscodePlugin -P buildVscodePlugin=true --refresh-dependencies --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log >&2)"
+    - "mv umlp-tool/build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp-*.vsix umlp-tool/build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp.vsix"
     # >(tee -a ...) starts tee background process, wait to ensure everything is written to
     - wait
     # Parse CSV for coverage info
@@ -140,15 +134,8 @@ build_with_deploy:
     - "gradle --version 2>&1 | tee $CI_PROJECT_DIR/build.log"
     - "gradle build testCodeCoverageReport --refresh-dependencies --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 $ARGS3 >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log >&2)"
     - "gradle ciDeployRTE ciDeployImages :examples:vis-lib:frontend:screenshot --refresh-dependencies --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 $ARGS3 >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log >&2)"
-    - "gradle :umlp-tool:publish :umlp-tool:gradle-plugin:publish $GRADLE_COMMON_ARGS >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log >&2)"
-    # Build editor plugin
-    # add one of the downloaded nodejs distributions to PATH, so we can build the vscode plugin
-    - export PATH="$PATH:$(dirname $(find $(pwd) -type f -name "node" -print -quit))"
-    - "cd umlp-tool"
-    - "gradle packageUMLPWithGUIVscodePlugin -P buildVscodePlugin=true --info --refresh-dependencies $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log >&2)"
-    - "mv build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp-*.vsix build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp.vsix"
-    - echo "packageUMLPWithGUIVscodePlugin finished"
-    - "cd .."
+    - "gradle :umlp-tool:publish :umlp-tool:gradle-plugin:publish umlp-tool:packageUMLPWithGUIVscodePlugin -P buildVscodePlugin=true $GRADLE_COMMON_ARGS >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log >&2)"
+    - "mv umlp-tool/build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp-*.vsix umlp-tool/build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp.vsix"
     # >(tee -a ...) starts tee background process, wait to ensure everything is written to
     - wait
     # Parse CSV for coverage info

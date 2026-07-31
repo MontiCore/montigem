@@ -9,9 +9,15 @@ plugins {
   id 'maven-publish'
   id 'de.monticore.generator' version "$mc_version"
   id 'com.gradleup.shadow' version "$shadow_plugin_version"
-
   id 'de.monticore.language-server' version "$mclsg_version"
+  id 'de.monticore.language-server-vscode' version "$mclsg_version" apply(false)
   id "io.github.themrmilchmann.ecj" version "0.2.0"
+}
+
+def shouldBuildVscodePlugin = ("true").equals(getProperty('buildVscodePlugin'))
+
+if(shouldBuildVscodePlugin) {
+  apply plugin: "de.monticore.language-server-vscode"
 }
 
 jacoco{
@@ -33,8 +39,6 @@ java {
     languageVersion = JavaLanguageVersion.of(21)
   }
 }
-
-def shouldBuildVscodePlugin = ("true").equals(getProperty('buildVscodePlugin'))
 
 configurations {
   guiDefaultTypes
