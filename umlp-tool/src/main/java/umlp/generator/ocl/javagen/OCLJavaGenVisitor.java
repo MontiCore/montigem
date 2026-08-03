@@ -44,7 +44,9 @@ public class OCLJavaGenVisitor implements OCLHandler {
       printer.println();
     }
 
-    // Skip model import statements
+    for (String importedType : OCLJavaImportCollector.collect(node)) {
+      printer.println("import " + importedType + ";");
+    }
 
     // Default imports
     printer.println("import java.util.List;");

@@ -1,0 +1,9 @@
+package enumExpressions;
+
+import Mydomain.*;
+
+
+ocl EnumNotEquals {
+  context TrafficLight light inv:
+    light.color != TrafficLightColor.RED;
+}

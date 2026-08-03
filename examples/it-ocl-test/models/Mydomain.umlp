@@ -83,5 +83,14 @@ umlp Mydomain {
   association [1] FieldAccess -> (iNumAssoc) IntNumber [1];
   association [1] FieldAccess -> (iNumAssocList) IntNumber [*];
 
+  class TrafficLight {
+    TrafficLightColor color;
+  }
+
+  enum TrafficLightColor {
+    RED,
+    YELLOW,
+    GREEN;
+  }
 
 }

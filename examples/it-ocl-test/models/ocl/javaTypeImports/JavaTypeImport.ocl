@@ -1,0 +1,9 @@
+package javaTypeImports;
+
+import Mydomain.*;
+import java.time.LocalDate;
+
+ocl JavaTypeImport {
+  context Person person inv:
+    LocalDate.now().getYear() > 0;
+}

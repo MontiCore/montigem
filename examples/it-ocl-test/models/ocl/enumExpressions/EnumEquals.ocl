@@ -1,0 +1,9 @@
+package enumExpressions;
+
+import Mydomain.*;
+
+
+ocl EnumEquals {
+  context TrafficLight light inv:
+    light.color == TrafficLightColor.GREEN;
+}

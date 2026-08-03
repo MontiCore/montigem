@@ -2,16 +2,19 @@ package umlp.generator.ocl;
 
 import de.monticore.expressions.commonexpressions._ast.ASTFieldAccessExpression;
 import de.monticore.expressions.commonexpressions._visitor.CommonExpressionsVisitor2;
+import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
 import de.monticore.expressions.expressionsbasis._ast.ASTNameExpression;
 import de.monticore.expressions.expressionsbasis._visitor.ExpressionsBasisVisitor2;
 import de.monticore.ocl.ocl._ast.ASTOCLContextDefinition;
 import de.monticore.ocl.ocl._ast.ASTOCLInvariant;
+import de.monticore.symbols.basicsymbols._symboltable.IBasicSymbolsScope;
 import de.monticore.symbols.basicsymbols._symboltable.VariableSymbol;
 import de.monticore.symboltable.ISymbol;
 import de.monticore.symboltable.modifiers.AccessModifier;
 import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types3.TypeCheck3;
 import de.monticore.types3.util.OOWithinTypeBasicSymbolsResolver;
+import de.monticore.types3.util.WithinScopeBasicSymbolsResolver;
 import oclwitherrormessages.OCLWithErrorMessagesMill;
 import oclwitherrormessages._visitor.OCLWithErrorMessagesTraverser;
 import oclwitherrormessages._visitor.OCLWithErrorMessagesVisitor2;
@@ -47,10 +50,42 @@ public class OCLAttributeExtractor implements CommonExpressionsVisitor2, Express
 
   @Override
   public void visit(ASTFieldAccessExpression node) {
-    SymTypeExpression ownerType = TypeCheck3.typeOf(node.getExpression());
-    if (isContextType(ownerType)) {
+    Optional<SymTypeExpression> ownerType = resolveExpressionType(node.getExpression());
+    if (ownerType.filter(this::isContextType).isPresent()) {
       usedAttributes.add(node.getName());
     }
+  }
+
+  protected Optional<SymTypeExpression> resolveExpressionType(ASTExpression expression) {
+    Optional<String> qualifiedName = getQualifiedName(expression);
+    if (qualifiedName.isPresent()
+        && expression.getEnclosingScope() instanceof IBasicSymbolsScope enclosingScope) {
+      Optional<SymTypeExpression> expressionType = WithinScopeBasicSymbolsResolver.resolveNameAsExpr(
+          enclosingScope,
+          qualifiedName.get()
+      );
+      if (expressionType.isPresent()) {
+        return expressionType;
+      }
+      if (WithinScopeBasicSymbolsResolver.resolveType(
+          enclosingScope,
+          qualifiedName.get()
+      ).isPresent()) {
+        return Optional.empty();
+      }
+    }
+    return Optional.of(TypeCheck3.typeOf(expression));
+  }
+
+  protected Optional<String> getQualifiedName(ASTExpression expression) {
+    if (expression instanceof ASTNameExpression name) {
+      return Optional.of(name.getName());
+    }
+    if (expression instanceof ASTFieldAccessExpression fieldAccess) {
+      return getQualifiedName(fieldAccess.getExpression())
+          .map(qualifier -> qualifier + "." + fieldAccess.getName());
+    }
+    return Optional.empty();
   }
 
   @Override
