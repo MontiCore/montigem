@@ -1,7 +1,7 @@
 import json
 import typing
 import sys
-from asyncio import gather, create_task, Future
+from asyncio import gather, create_task, Future, sleep
 # from gembase import GemBase
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -80,6 +80,8 @@ class CommandManager:
       await asyncio.gather(receive_task, send_task)
 
   async def send(self, msg: 'Command'):
+    while self.participantId is None:
+      await sleep(0.1) # not yet connected -> spin until the participant id is set
     used_cmd_id = self.commandId
     msg.commandId = used_cmd_id
     msg.participantId = self.participantId
