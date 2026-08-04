@@ -5,6 +5,7 @@ import resources.exectests.AnonymousInnerClassRuntimeCheck;
 import resources.exectests.ArrayStreamAdapterRuntimeCheck;
 import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
+import resources.exectests.LocalDateRuntimeCheck;
 import resources.exectests.OptionalAdapterRuntimeCheck;
 import resources.exectests.StringSplitRuntimeCheck;
 import resources.exectests.UtilArraysRuntimeCheck;
@@ -45,5 +46,10 @@ public class ExecutionTests {
   @Test
   public void testStringSplit() {
     ExecTestRunner.runExecutionTest(StringSplitRuntimeCheck.class);
+  }
+
+  @Test
+  public void testLocalDate() {
+    ExecTestRunner.runExecutionTest(LocalDateRuntimeCheck.class);
   }
 }

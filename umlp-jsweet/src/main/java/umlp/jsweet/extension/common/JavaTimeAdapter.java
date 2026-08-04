@@ -81,6 +81,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
     String methodName = invocation.getMethodName();
     String targetType = invocation.getTargetType().toString();
     boolean isLocalDateTime = targetType.contains("LocalDateTime");
+    boolean isLocalDate = targetType.equals("java.time.LocalDate");
 
     // ==========================================================================================
     // FACTORY METHOD: LocalDateTime.of(...)
@@ -182,6 +183,17 @@ public class JavaTimeAdapter extends AbstractAdapter {
     }
 
     // ==========================================================================================
+    // equals
+    // ==========================================================================================
+    if ("equals".equals(methodName)) {
+      printMacroName(methodName);
+      this.print("((a, b) => b instanceof Date && a.getTime() === b.getTime())(")
+          .print(invocation.getTargetExpression()).print(", ")
+          .printArgList(invocation.getArguments()).print(")");
+      return true;
+    }
+
+    // ==========================================================================================
     // isAfter, isBefore, isEqual
     // ==========================================================================================
     if ("isAfter".equals(methodName) || "isBefore".equals(methodName) || "isEqual".equals(methodName)) {
@@ -276,10 +288,12 @@ public class JavaTimeAdapter extends AbstractAdapter {
         if (!targetType.equals("java.time.LocalDate")) {
           this.print("  s += 'T' + ").println();
           this.print("         pad(d.getUTCHours()) + ':' + ").println();
-          this.print("         pad(d.getUTCMinutes()) + ':' + ").println();
-          this.print("         pad(d.getUTCSeconds()); ").println();
+          this.print("         pad(d.getUTCMinutes()); ").println();
+          this.print("  if (d.getUTCSeconds() > 0 || d.getUTCMilliseconds() > 0) { ").println();
+          this.print("    s += ':' + pad(d.getUTCSeconds()); ").println();
+          this.print("  } ").println();
           this.print("  if (d.getUTCMilliseconds() > 0) { ").println();
-          this.print("    s += '.' + ('00' + d.getUTCMilliseconds()).slice(-3) + 'Z'; ").println();
+          this.print("    s += '.' + ('00' + d.getUTCMilliseconds()).slice(-3); ").println();
           this.print("  } ").println();
         }
         this.print("  return s; ").println();
@@ -291,7 +305,11 @@ public class JavaTimeAdapter extends AbstractAdapter {
       case "now":
         this.print("((() => { ").println();
         this.print("  const now = new Date(); ").println();
-        this.print("  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds())); ").println();
+        this.print("  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()");
+        if (!isLocalDate) {
+          this.print(", now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()");
+        }
+        this.print(")); ").println();
         this.print("})())").println();
         return true;
 
@@ -316,6 +334,10 @@ public class JavaTimeAdapter extends AbstractAdapter {
         return true;
 
       case "toLocalDate":
+        print("((d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())))(")
+            .print(invocation.getTargetExpression()).print(")");
+        return true;
+
       case "toLocalTime":
         print(invocation.getTargetExpression());
         return true;
