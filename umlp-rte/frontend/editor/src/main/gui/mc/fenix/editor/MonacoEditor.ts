@@ -34,7 +34,7 @@ import {LineClickEventBuilder} from "../../../../../../build/gui2java2ts/mc/feni
     })
   ],
   templateUrl: "MonacoEditor.html",
-  styleUrls: ["MonacoEditor.scss"]
+  styleUrls: []
 })
 
 export class MonacoEditor extends MonacoEditorComponent implements AfterViewInit, OnDestroy {

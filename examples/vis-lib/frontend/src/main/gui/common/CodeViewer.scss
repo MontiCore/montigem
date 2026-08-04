@@ -26,15 +26,15 @@
   .activeGuiBtn .gem-button,
   .activeJavaBtn .gem-button,
   .activeScssBtn .gem-button {
-    background-color: #0056b3;
-    color: white;
+    background-color: var(--color-primary);
+    color: var(--text-on-primary);
   }
 
   .inactiveGuiBtn .gem-button,
   .inactiveJavaBtn .gem-button,
   .inactiveScssBtn .gem-button {
-    background-color: #6c757d;
-    color: white;
+    background-color: var(--text-muted);
+    color: var(--text-on-primary);
   }
 
   .gem-button {

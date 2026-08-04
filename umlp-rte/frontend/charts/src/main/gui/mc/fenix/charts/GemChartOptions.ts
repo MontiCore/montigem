@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
   standalone: true,
   imports: [CommonModule, OverlayModule],
   selector: 'gem-chart-options',
-  styleUrls: ['./GemChartOptions.scss'],
+  styleUrls: [],
   templateUrl: './GemChartOptions.html'
 })
 export class GemChartOptions {

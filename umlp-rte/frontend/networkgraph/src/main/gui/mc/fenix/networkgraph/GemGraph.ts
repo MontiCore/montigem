@@ -102,7 +102,7 @@ import {
     GraphSettingsService,
   ],
   templateUrl: "./GemGraph.html",
-  styleUrls: ["./GemGraph.scss"],
+  styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 @AutoUnsubscribe()

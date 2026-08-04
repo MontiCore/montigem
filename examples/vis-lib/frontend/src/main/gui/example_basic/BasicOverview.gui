@@ -14,6 +14,7 @@ import example_basic.GemLinkExample;
 import example_basic.GemLoadingSpinnerExample;
 import example_basic.GemAudioExample;
 import example_basic.GemVideoExample;
+import example_basic.GemDarkModeSwitchExample;
 
 page BasicOverview() {
   @GemColumn(
@@ -36,7 +37,8 @@ page BasicOverview() {
             @ComponentCard(title = "Link", icon = "link", description = "Hyperlinks to other pages.", click = navigate(@GemLinkExample())),
             @ComponentCard(title = "Loading Spinner", icon = "loop", description = "Indicate loading state.", click = navigate(@GemLoadingSpinnerExample())),
             @ComponentCard(title = "Audio", icon = "audiotrack", description = "Play audio files.", click = navigate(@GemAudioExample())),
-            @ComponentCard(title = "Video", icon = "videocam", description = "Play video files.", click = navigate(@GemVideoExample()))
+            @ComponentCard(title = "Video", icon = "videocam", description = "Play video files.", click = navigate(@GemVideoExample())),
+            @ComponentCard(title = "Dark Mode Switch", icon = "dark_mode", description = "Toggle between light and dark themes.", click = navigate(@GemDarkModeSwitchExample()))
         ]
       )
     ]

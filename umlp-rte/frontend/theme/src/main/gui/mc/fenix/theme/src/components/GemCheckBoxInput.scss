@@ -1,0 +1,58 @@
+@mixin checkbox-input-theme(
+  $text-color: var(--text-main),
+  $background-color: var(--color-surface),
+  $checkmark-color: var(--color-primary),
+  $border-radius: var(--input-border-radius)
+) {
+  .gem-label-checkbox {
+    font-size: 1rem;
+    font-weight: 600;
+    display: grid;
+    line-height: 1.25;
+    grid-template-columns: min-content auto;
+    gap: 0.5em;
+    margin: 0.25rem;
+    align-items: center;
+    color: $text-color;
+  }
+
+  .gem-checkbox {
+    margin: 0;
+    appearance: none;
+    background-color: $background-color;
+    font: inherit;
+    color: $text-color;
+    width: 1.15em;
+    height: 1.15em;
+    border: 1.5px solid currentColor;
+    border-radius: $border-radius;
+    transform: translateY(-0.075em);
+    display: grid;
+    place-content: center;
+  }
+
+  .gem-checkbox:disabled {
+    cursor: not-allowed;
+  }
+
+  .gem-checkbox::before {
+    content: "";
+    width: 0.65em;
+    height: 0.65em;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em $checkmark-color;
+    background-color: $background-color;
+    transform-origin: bottom left;
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+
+  .gem-checkbox:checked::before {
+    transform: scale(1);
+  }
+
+  .gem-checkbox:focus {
+    outline: max(2px, 0.15em) solid currentColor;
+    outline-offset: max(2px, 0.15em);
+  }
+}

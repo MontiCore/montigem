@@ -2,18 +2,18 @@
 
 :host ::ng-deep {
   .activeBtn .gem-button {
-    background-color: #0056b3;
-    border-color: #0056b3;
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
   }
 
   .inactiveBtn .gem-button {
-    background-color: #f8f9fa;
-    border-color: #ddd;
-    color: #333;
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+    color: var(--text-main);
   }
 
   .inactiveBtn .gem-button:hover {
-      background-color: #e2e6ea;
+      background-color: var(--navbar-hover);
   }
 
   .gem-text {

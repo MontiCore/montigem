@@ -1,0 +1,8 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+@mixin gem-grid-cell-theme() {
+  gem-grid-cell {
+    display: grid;
+    overflow: auto;
+  }
+}

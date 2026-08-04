@@ -8,7 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [...config.imports, MatIconModule],
   selector: config.selector,
-  styleUrls: config.styleUrls,
+  styles: [...config.styles, '.gem-icon { width: 100%; height: 100%; }'],
   templateUrl: config.templateUrl,
 })
 export class GemIcon extends GemIconComponent {

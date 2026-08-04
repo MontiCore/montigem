@@ -18,7 +18,7 @@ import { AutoUnsubscribe } from "../shared/decorators/auto-unsubscribe.decorator
   standalone: true,
   imports: [CommonModule, MultiSelectModule, FormsModule, DropdownModule, CapitalizeFirstLetterPipe],
   templateUrl: "./filter-group.component.html",
-  styleUrls: ["./filter-group.component.scss"],
+  styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 @AutoUnsubscribe()

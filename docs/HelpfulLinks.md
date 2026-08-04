@@ -14,6 +14,7 @@ If you find any errors or outdated information please let us know.
 * [Tagging in UMLP Models](./unstructured/Tags.md)
 * [Testing in MontiGem](./unstructured/Testing.md)
 * [GUI Patterns](./designpatterns/GUIPatterns.md)
+* [Working with the MontiGem Theming](./unstructured/MontiGemTheming.md)
 
 # Development configuration
 

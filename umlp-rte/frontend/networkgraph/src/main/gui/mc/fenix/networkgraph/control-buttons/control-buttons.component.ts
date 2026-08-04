@@ -31,7 +31,7 @@ import {
 @Component({
   selector: "graph-control-buttons",
   templateUrl: "./control-buttons.component.html",
-  styleUrls: ["./control-buttons.component.scss"],
+  styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   imports: [CommonModule, ButtonModule, TooltipModule, SpeedDialModule],

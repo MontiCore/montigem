@@ -1,0 +1,9 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+@mixin gem-row-theme() {
+  gem-row {
+    display: flex;
+    flex-direction: row;
+    // overflow: auto;
+  }
+}

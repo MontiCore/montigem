@@ -1,0 +1,13 @@
+<!-- (c) https://github.com/MontiCore/monticore -->
+
+<button
+  type="button"
+  role="switch"
+  [attr.aria-checked]="isDarkMode"
+  [attr.aria-label]="tooltipText"
+  [title]="tooltipText"
+  class="gem-dark-mode-switch"
+  (click)="toggleTheme()"
+>
+  <span class="material-icons">{{ isDarkMode ? 'sunny' : 'dark_mode' }}</span>
+</button>

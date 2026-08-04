@@ -1,0 +1,65 @@
+@mixin radio-input-theme(
+  $border-color: var(--color-primary),
+  $dot-color: var(--color-primary),
+  $text-color: var(--text-main),
+  $background-color: var(--color-surface),
+  $border-radius: 50%
+) {
+
+  .gem-label-radio {
+    font-size: 16px;
+    font-weight: bold;
+    color: $text-color !important;
+    display: grid;
+    line-height: 21px;
+    grid-template-columns: min-content auto;
+    align-items: center;
+    gap: 0.4em;
+    margin: 4px;
+  }
+
+  .gem-radio {
+    appearance: none;
+    margin: 0;
+    background-color: $background-color;
+    font: inherit;
+    color: $border-color !important;
+    width: 1.15em;
+    height: 1.15em;
+    border: 1.5px solid currentColor;
+    border-radius: $border-radius;
+    transform: translateY(-0.075em);
+    display: grid;
+    place-content: center;
+  }
+
+  .gem-radio:disabled {
+    cursor: not-allowed !important;
+  }
+
+  .gem-radio::before {
+    content: "" ;
+    width: 0.65em;
+    height: 0.65em;
+    border-radius: $border-radius;
+    transform: scale(0);
+    transition: 120ms transform ease-in-out;
+    box-shadow: inset 1em 1em $dot-color !important;
+    background-color: $dot-color !important;
+  }
+
+  .gem-radio:checked::before {
+    transform: scale(1);
+  }
+
+  .gem-radio:focus {
+    outline: max(2px, 0.15em) solid $border-color !important;
+    outline-offset: max(2px, 0.15em);
+  }
+
+  .gem-label-radio:focus-within {
+    color: $border-color !important;
+
+  }
+
+}

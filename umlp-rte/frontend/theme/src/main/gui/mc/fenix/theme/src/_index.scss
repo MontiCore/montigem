@@ -1,0 +1,85 @@
+@import "../variables";
+@import "./components/GemButton";
+@import "./ActionButtons";
+@import "./components/GemCard";
+@import "./components/GemTextInput";
+@import "./components/GemLoadingSpinner";
+@import "./components/GemAudio";
+@import "./components/GemIcon";
+@import "./components/GemNavItem";
+@import "./components/GemNavList";
+@import "./components/GemMarkdown";
+@import "./components/GemColumn";
+@import "./Dialog";
+@import "./components/GemGrid";
+@import "./components/GemGridCell";
+@import "./components/GemOverlay";
+@import "./components/GemOverlayItem";
+@import "./components/GemRow";
+@import "./components/GemTreeNode";
+@import "./components/GemCheckBoxInput";
+@import "./components/GemDateInput";
+@import "./components/GemDropdownInput";
+@import "./components/GemDualRangeInput";
+@import "./components/GemRadioInput";
+@import "./components/GemRangeInput";
+@import "./components/GemTextareaInput";
+@import "./components/GemVideo";
+@import "./components/GemImage";
+@import "./Table";
+
+
+@mixin apply-all-gem-components(
+  $primary-color: $acronio-blue-2,
+  $button-hover-color: $acronio-blue-1
+) {
+  @include gem-button-theme();
+  @include action-buttons-theme($primary-color);
+  @include gem-card-theme();
+  @include text-input-theme(1px solid $rwth-black-3, column, flex-start, 0, $brand-danger, $brand-warning, $rwth-black-3, $btn-default-color);
+  @include loading-spinner-theme();
+  @include gem-audio-theme();
+  @include gem-image-theme();
+  @include gem-nav-item-theme();
+  @include gem-video-theme();
+  @include gem-nav-list-theme();
+  @include gem-markdown-theme();
+  @include gem-column-theme();
+  @include dialog-theme($rwth-blue-2, $rwth-black, $rwth-black-4);
+  @include gem-grid-theme();
+  @include gem-grid-cell-theme();
+  @include gem-overlay-theme();
+  @include gem-overlay-item-theme();
+  @include gem-row-theme();
+  @include gem-tree-node-theme();
+  @include checkbox-input-theme($rwth-black-3, $montigem-white);
+  @include gem-date-input-theme();
+  @include dropdown-input-theme($gray-dark, $rwth-black-3, $rwth-black-5, $rwth-black-4, $brand-danger, $brand-warning);
+  @include range-two-thumbs-input-theme(
+      $rwth-black-3,
+      $rwth-blue,
+      row,
+      center,
+      0,
+      1%,
+      0,
+      flex-start,
+      $rwth-blue,
+      $montigem-white
+  );
+  @include radio-input-theme($rwth-black-3, $montigem-white);
+  @include range-input-theme(
+      $rwth-black-3,
+      $rwth-blue,
+      row,
+      center,
+      0,
+      1%,
+      0,
+      flex-start,
+      $rwth-blue,
+      $montigem-white
+  );
+  @include textarea-input-theme(auto, 1px solid $rwth-black-3, column, flex-start, 0);
+  @include table-theme($rwth-black-3);
+}

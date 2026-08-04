@@ -1,0 +1,15 @@
+package example_basic;
+
+import mc.fenix.basic.GemDarkModeSwitch;
+import common.ExamplePage;
+import mc.fenix.arrange.GemColumn;
+
+page GemDarkModeSwitchExample() {
+  @ExamplePage(
+    component = @GemColumn(components = [
+      @GemDarkModeSwitch()
+    ]),
+    basePath = "example_basic",
+    componentName = "GemDarkModeSwitchExample"
+  );
+}

@@ -15,7 +15,7 @@ import { GraphManagerService } from "../data/graph-manager.service";
   selector: "graph-metric-information",
   standalone: true,
   templateUrl: "./metric-information.component.html",
-  styleUrls: ["./metric-information.component.scss"],
+  styleUrls: [],
   imports: [CommonModule, ButtonModule, OverlayPanelModule, FormatValuePipe, ObjectKeysPipePipe, TooltipModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

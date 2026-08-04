@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+@import "../../variables";
+
+@mixin gem-nav-list-theme($background-color: white) {
+
+  .gem-nav-list {
+    display: flex;
+    flex-direction: column;
+    border-width: 0 1px 0 0;
+    border-style: solid;
+    border-color: rgba($acronio-black-1, 0.2);
+    background-color: $background-color;
+    width: 100%;
+  }
+
+}

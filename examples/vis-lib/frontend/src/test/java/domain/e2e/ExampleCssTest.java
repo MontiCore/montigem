@@ -49,8 +49,10 @@ public class ExampleCssTest extends AbstractDomainE2ETest {
     String fontWeight = CssUtil.getFontWeight(page, element);
     assertEquals(fontWeight, "200");
 
+    // Inherited from the theme's base typography (body { line-height: 1.6 } in
+    // theme/base/_base.scss), resolved against the 1rem font size above: 1.6 * 16px.
     String lineHeight = CssUtil.getLineHeight(page, element);
-    assertEquals(lineHeight, "normal");
+    assertEquals(lineHeight, "25.6px");
 
     String background = CssUtil.getBackground(page, element);
     assertTrue(background.contains("rgba(0, 0, 0, 0)"));

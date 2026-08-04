@@ -1,6 +1,9 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-@import "variables";
+@import "./variables";
+@import "./base/theme-designs/tokens";
+@import "./base/theme-designs/rwth-blue";
+@import "./base/base";
 // @import "bootstrap-custom";
 // TODO: doesn't work
 /*
@@ -9,34 +12,23 @@
 @import "node_modules/@swimlane/ngx-datatable/assets/icons.css";
 /**/
 @import "./src/auth";
-@import "./src/auth.component";
-@import "./src/forgot.component";
-@import "./src/login.component";
-@import "./src/gem-button.component";
-@import "./src/gem-card.component";
-@import "./src/breadcrumb.component";
-@import "./src/gem-tree-node.component";
-@import "./src/action-buttons.component";
-@import "./src/header.component";
-@import "./src/horizontal-navigation-bar.component";
-@import "./src/loading-bar.component";
-@import "./src/vertical-sidebar-navigation.component";
-@import "./src/main.component";
+@import "./src/AuthForm";
+@import "./src/Forgot";
+@import "./src/Login";
+@import "./src/components/GemDarkModeSwitch";
+@import "./src/Breadcrumb";
+@import "./src/Header";
+@import "./src/HorizontalNavigationBar";
+@import "./src/LoadingBar";
+@import "./src/VerticalSidebarNavigation";
+@import "./src/Main";
 // @import "font-awesome";
 // @import "../../../../../node_modules/@angular/cdk/overlay-prebuilt.css";
 // @import "node_modules/@perfectmemory/ngx-contextmenu/src/assets/stylesheets/base.scss";
-@import "./src/gem-text-input.component";
-@import "./src/gem-textarea-input.component";
-@import "./src/gem-range-input.component";
-@import "./src/gem-radio-input.component";
-@import "./src/gem-check-box-input.component";
-@import "./src/gem-nav-item.component";
-@import "./src/gem-nav-list.component";
-@import "./src/dialog.component";
-@import "./src/gem-dual-range-input.component";
-@import "./src/gem-dropdown-input.component";
-@import "./src/table.component";
-@import "./src/gem-date-input.component";
+
+// Shared component library (buttons, cards, inputs, layout, dialog, table, ...) and
+// the apply-all-gem-components() mixin used by montigem-theme() below.
+@import "./src/index";
 
 * {
   font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
@@ -56,53 +48,11 @@
   @include forgot-theme($primary-color);
   @include login-theme($primary-color);
 
-  /* ##### Basic ##### */
-  @include gem-tree-node-theme();
-  @include gem-button-theme($primary-color, $button-hover-color);
-
-  /* ##### Layout ##### */
-  @include gem-card-theme();
-  @include gem-nav-item-theme();
-  @include gem-nav-list-theme();
+  /* ##### Navigation & Chrome ##### */
   @include breadcrumb-theme($primary-color);
   @include header-theme($primary-color);
   @include loadingbar-theme($primary-color);
   @include navigationbar-theme($primary-color);
-  @include action-buttons-theme($primary-color);
-
-  /* #### Input ####  */
-  @include text-input-theme(1px solid $rwth-black-3, column, flex-start, 0, $brand-danger, $brand-warning, $rwth-black-3, $btn-default-color);
-  @include textarea-input-theme(auto, 1px solid $rwth-black-3, column, flex-start, 0);
-  @include range-input-theme(
-      $rwth-black-3,
-      $rwth-blue,
-      row,
-      center,
-      0,
-      1%,
-      0,
-      flex-start,
-      $rwth-blue,
-      $montigem-white
-  );
-  @include radio-input-theme($rwth-black-3, $montigem-white);
-  @include checkbox-input-theme($rwth-black-3, $montigem-white);
-  @include range-two-thumbs-input-theme(
-      $rwth-black-3,
-      $rwth-blue,
-      row,
-      center,
-      0,
-      1%,
-      0,
-      flex-start,
-      $rwth-blue,
-      $montigem-white
-  );
-
-
-  @include dropdown-input-theme($gray-dark, $rwth-black-3, $rwth-black-5, $rwth-black-4, $brand-danger, $brand-warning);
-  @include date-input-theme($btn-default-color, $rwth-black-3, red, $brand-warning);
 
   @if $horizontal-layout {
     @include gem-main();
@@ -112,8 +62,8 @@
     @include sidebar-theme($primary-color, $secondary-color, 100%, row);
   }
 
-  @include dialog-theme($rwth-blue-2, $rwth-black, $rwth-black-4);
-  @include table-theme($rwth-black-3);
+  /* ##### Shared component library (buttons, cards, inputs, layout, dialog, table, ...) ##### */
+  @include apply-all-gem-components($primary-color, $button-hover-color);
 }
 
 body {

@@ -1,0 +1,10 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+@mixin gem-column-theme() {
+  gem-column {
+    display: flex;
+    flex-direction: column;
+    // overflow: auto;
+    // flex-wrap: wrap;
+  }
+}

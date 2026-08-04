@@ -1,0 +1,14 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.basic;
+
+/**
+  A switch component to toggle between light and dark modes.
+*/
+component GemDarkModeSwitch(
+  /** Height of the component in `px`, `%`, `vh`. */
+  String height = "auto",
+  /** Width of the component in `px`, `%`, `vh`. */
+  String width = "auto",
+  /** Optional callback that is executed when the theme is toggled. */
+  Event<Void> toggled
+)

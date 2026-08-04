@@ -1,0 +1,50 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+:root {
+  color-scheme: light dark;
+
+  /* SURFACE / TEXT */
+  --color-bg:      light-dark(#fabee0, #23101d);
+  --color-surface: light-dark(#fbb0dd, #341527);
+  --color-border:  light-dark(#f7c6e3, #4d2440);
+
+  --text-main:     light-dark(#5c1149, #fbe0f2);
+  --text-muted:    light-dark(#a8628f, #c98cb0);
+
+  /* BRAND */
+  --color-primary: light-dark(#e6007e, #d1179e);
+  --color-primary-hover: light-dark(#00897b, #2de2c7);
+  --text-on-primary: #fff0f8;
+
+  /* STATUS */
+  --color-error:   light-dark(#dc3545, #f87171);
+  --color-success: light-dark(#28a745, #4bd671);
+  --color-warning: light-dark(#f6a800, #ffc94d);
+
+  /* BUTTON */
+  --btn-hover-bg: light-dark(var(--color-primary-hover), #4a2540);
+  --btn-hover-text: light-dark(var(--text-on-primary), var(--text-muted));
+
+  /* CARD */
+  --card-header-bg: light-dark(rgba(230, 0, 126, 0.05), rgba(255, 240, 248, 0.05));
+  --card-shadow: light-dark(0 4px 6px -1px rgba(0,0,0,0.1), 0 10px 15px -3px rgba(0,0,0,0.5));
+
+  --card-shadow-hover-color-1: light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.45));
+  --card-shadow-hover-color-2: light-dark(rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.3));
+  --card-shadow-hover: 0 4px 6px -1px var(--card-shadow-hover-color-1), 0 2px 4px -1px var(--card-shadow-hover-color-2);
+
+  /* INPUT */
+  --input-bg: var(--color-surface);
+  --input-border: var(--color-border);
+  --input-focus-shadow: light-dark(rgba(230, 0, 126, 0.15), rgba(209, 23, 158, 0.25));
+
+  /* LINK */
+  --link-color: var(--color-primary);
+  --link-hover-color: var(--color-primary-hover);
+
+  /* NAVBAR ITEM */
+  --navbar-bg: light-dark(#fff5fb, #2b1220);
+  --navbar-border: light-dark(#f7c6e3, #45213a);
+  --navbar-text: light-dark(var(--text-main), #fbe0f2);
+  --navbar-hover: light-dark(rgba(230, 0, 126, 0.05), #3a1a30);
+}

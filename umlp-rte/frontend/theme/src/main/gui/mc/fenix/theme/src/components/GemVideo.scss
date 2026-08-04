@@ -1,0 +1,20 @@
+@mixin gem-video-theme() {
+  gem-video {
+    display: block;
+    margin: var(--image-margin) 0;
+
+    overflow: hidden;
+    border-radius: var(--image-border-radius);
+
+    video {
+      width: 100%;
+      height: auto;
+      display: block;
+
+      border-radius: var(--image-border-radius);
+      border: 1px solid var(--color-border);
+
+      object-fit: cover;
+    }
+  }
+}

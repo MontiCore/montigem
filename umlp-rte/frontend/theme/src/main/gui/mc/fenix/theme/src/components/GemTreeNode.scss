@@ -1,0 +1,30 @@
+@import "../../variables";
+@import "../../mixins";
+
+@mixin gem-tree-node-theme () {
+  .gem-tree-root {
+    padding-left: 0;
+    margin: 0;
+    list-style-type: none;
+  }
+
+  .gem-sub-tree-root {
+    padding-left: 20px;
+    margin: 0;
+    list-style-type: none;
+  }
+
+  .gem-tree-node {
+    display: flex;
+    align-items: center;
+    padding: 1px 5px;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  .gem-tree-item-icon {
+    margin-right: 5px;
+  }
+}

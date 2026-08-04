@@ -49,7 +49,7 @@ component ExamplePage(
       @guard(layoutMode == "right") {
         @GemRow(wrap = "wrap", vAlign = "stretch", components = [
           @GemColumn(width = "50%", components = [
-            component
+            @GemColumn(style = "example-preview", width = "100%", height = "100%", component = component)
           ]),
           @GemColumn(width = "48%", height = "100%", components = [
             @CodeViewer(basePath = basePath, componentName = componentName, height = "100%", vertical = true)
@@ -58,12 +58,12 @@ component ExamplePage(
       } else {
           @guard(layoutMode == "bottom") {
             @GemColumn(components = [
-              component,
+              @GemColumn(style = "example-preview", width = "100%", height = "auto", component = component),
               @CodeViewer(basePath = basePath, componentName = componentName, vertical = false)
             ]);
           } else {
               // hidden
-              component;
+              @GemColumn(style = "example-preview", width = "100%", height = "auto", component = component);
           };
       };
   };

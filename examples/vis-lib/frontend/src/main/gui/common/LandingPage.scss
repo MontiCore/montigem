@@ -2,7 +2,7 @@
 
 :host ::ng-deep {
   .landingPageContainer {
-      background-color: #ffffff;
+      background-color: var(--color-bg);
   }
 
   .heroSection {
@@ -18,7 +18,7 @@
 
   .sectionContainerLight {
       padding: 60px 0;
-      background-color: #f8f9fa;
+      background-color: var(--color-surface);
   }
 
   .demoRow {
@@ -26,19 +26,19 @@
   }
 
   .codeBlock {
-      background-color: #f5f5f5;
+      background-color: var(--color-surface);
       padding: 20px;
       border-radius: 8px;
       font-family: 'Courier New', monospace;
-      border: 1px solid #ddd;
+      border: 1px solid var(--color-border);
       overflow: auto;
   }
 
   .previewBlock {
       padding: 20px;
-      border: 1px dashed #ccc;
+      border: 1px dashed var(--color-border);
       border-radius: 8px;
-      background-color: white;
+      background-color: var(--color-surface);
   }
 
   .gem-card {

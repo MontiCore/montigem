@@ -42,8 +42,8 @@ page LandingPage(
         width = "80%",
         hAlign = "center",
         components = [
-            @GemText(value = "Write Models, Generate UI", size = "2.5rem", weight = "bold", color = "#333", height = "auto", width = "auto"),
-            @GemText(value = "Define your user interface in the concise GUI DSL. MontiGem generates the Angular code for you.", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+            @GemText(value = "Write Models, Generate UI", size = "2.5rem", weight = "bold", color = "var(--text-main)", height = "auto", width = "auto"),
+            @GemText(value = "Define your user interface in the concise GUI DSL. MontiGem generates the Angular code for you.", size = "1.2rem", color = "var(--text-muted)", height = "auto", width = "auto"),
 
             demoRow@GemRow(
                 width = "100%",
@@ -95,7 +95,7 @@ page LandingPage(
         width = "100%",
         hAlign = "center",
         components = [
-            @GemText(value = "Comprehensive Component Library", size = "2.5rem", weight = "bold", color = "#333", height = "auto", width = "auto"),
+            @GemText(value = "Comprehensive Component Library", size = "2.5rem", weight = "bold", color = "var(--text-main)", height = "auto", width = "auto"),
             @GemRow(
                 wrap = "wrap",
                 hAlign = "center",

@@ -30,7 +30,7 @@ import { MultiSelectModule } from "primeng/multiselect";
     MultiSelectModule,
   ],
   templateUrl: "./search-node.component.html",
-  styleUrls: ["./search-node.component.scss"],
+  styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 @AutoUnsubscribe()
