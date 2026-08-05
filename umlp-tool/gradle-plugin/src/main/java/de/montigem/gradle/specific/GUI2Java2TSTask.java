@@ -243,6 +243,40 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
           .filter(p -> excludeMatchers.stream().noneMatch(pm -> pm.matches(p)))
           .forEach(cd2javaSources::from);
 
+      // Long log: usage counter - 1 (05.08.2026).
+      // Increase usage counter by 1 if you stumble on this code and need it.
+      // Permanently comment in the block if usage counter is > 2 after 01.01.2027
+      // Permanently remove if usage counter is < 3 after 01.01.2027
+      {
+        String cliCommand = "Java2TSAction (cdJava2ts):\n" +
+            "- Input\n\t" +
+            cd2javaSources.getAsPath()
+                .replace(File.pathSeparator, "\n\t") +
+            "\n" +
+            "- ExcludedFromTranspilation\n\t" +
+            excludedFromTr.getAsPath()
+                .replace(File.pathSeparator, "\n\t") +
+            "\n" +
+            "- BaseDirectory\n\t" +
+            cd2javaBaseDirectory +
+            "\n" +
+            "- WorkingDirectory\n\t" +
+            workingDir +
+            "\n" +
+            "- OutputDir\n\t" +
+            inputOutputDir +
+            "\n" +
+            "- ExtractedCandiesJavascriptDir\n\t" +
+            candiesJsOut +
+            "\n" +
+            "- NodeVersion\n\t" +
+            getNodeVersion().orElse(Java2TSTask.NODE_VERSION) +
+            "\n";
+
+        Log.info(cliCommand, Java2TSAction.class.getName());
+      }
+      /**/
+
       jsweetQueue.submit(Java2TSAction.class, params -> {
         params.getInput().setFrom(cd2javaSources);
         params.getExcludedFromTranspilation().setFrom(excludedFromTr);
@@ -268,6 +302,40 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
       cd2javaPaths.forEach(excludedFromTr::from);
     }
 
+    // Long log: usage counter - 1 (05.08.2026).
+    // Increase usage counter by 1 if you stumble on this code and need it.
+    // Permanently comment in the block if usage counter is > 2 after 01.01.2027
+    // Permanently remove if usage counter is < 3 after 01.01.2027
+    {
+      String cliCommand = "Java2TSAction (guiJava2ts):\n" +
+         	"- Input\n\t" +
+          filteredSources.getAsPath()
+              .replace(File.pathSeparator, "\n\t") +
+          "\n" +
+          "- ExcludedFromTranspilation\n\t" +
+          excludedFromTr.getAsPath()
+              .replace(File.pathSeparator, "\n\t") +
+         	"\n" +
+         	"- BaseDirectory\n\t" +
+          baseDirectory +
+         	"\n" +
+         	"- WorkingDirectory\n\t" +
+          workingDir +
+         	"\n" +
+         	"- OutputDir\n\t" +
+          inputOutputDir +
+         	"\n" +
+         	"- ExtractedCandiesJavascriptDir\n\t" +
+          candiesJsOut +
+         	"\n" +
+         	"- NodeVersion\n\t" +
+          getNodeVersion().orElse(Java2TSTask.NODE_VERSION) +
+         	"\n";
+
+      Log.info(cliCommand, Java2TSAction.class.getName());
+    }
+    /**/
+
     jsweetQueue.submit(Java2TSAction.class, params -> {
       params.getInput().setFrom(filteredSources);
       params.getExcludedFromTranspilation().setFrom(excludedFromTr);
@@ -276,7 +344,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
       params.getWorkingDirectory().set(workingDir);
       params.getOutputDir().set(inputOutputDir);
       params.getExtractedCandiesJavascriptDir().set(candiesJsOut);
-      params.getClassPath().set(String.join(File.pathSeparator, classPath));
+      params.getClassPath().set(classPathStr);
       params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
     });
 
