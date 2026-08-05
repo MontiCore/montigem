@@ -132,23 +132,6 @@ public class CollectionsAdapter extends AbstractAdapter {
         return mapped;
       }
     }
-    if (type instanceof DeclaredType) {
-      DeclaredType declaredType = (DeclaredType) type;
-      StringBuilder result = new StringBuilder(getPrinter().getQualifiedTypeName(
-          declaredType.asElement(), false, false));
-      List<? extends TypeMirror> typeArguments = declaredType.getTypeArguments();
-      if (!typeArguments.isEmpty()) {
-        result.append("<");
-        for (int i = 0; i < typeArguments.size(); i++) {
-          result.append(getMappedTypeArgument(typeArguments.get(i)));
-          if (i < typeArguments.size() - 1) {
-            result.append(", ");
-          }
-        }
-        result.append(">");
-      }
-      return result.toString();
-    }
     return getMappedType(type);
   }
 
@@ -499,8 +482,7 @@ public class CollectionsAdapter extends AbstractAdapter {
     print("for await(" + Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " ")
         // Rename JS keywords (e.g. a variable named "function") like the body does
         .print(adapterUtils.getJSweetVariableName(loop.getVariable().getName().toString()) + " of <AsyncIterable<");
-    TypeMirror variableType = ((JCTree.JCVariableDecl) loop.getVariable()).sym.asType();
-    print(getMappedTypeArgument(variableType)).print(">>(");
+    getPrinter().substituteAndPrintType(((JCTree.JCVariableDecl) loop.getVariable()).getType()).print(">>(");
     print(loop.getExpression()).print(" ?? (async function* () {})())");
     getPrinter().print(") {").println().startIndent().printIndent()
         .printIndent().print(loop.getStatement())

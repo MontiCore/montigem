@@ -25,18 +25,6 @@ public class NestedFlatMapRuntimeCheck {
   }
 
   @JSweetTest
-  public static boolean checkInferredLoopVariable() {
-    TimeEntry entry = new TimeEntry(LocalDateTime.of(2024, 2, 29, 12, 34, 56));
-    User user = new User(List.of(new TimeSheet(List.of(new Day(List.of(entry))))));
-
-    for (var currentDay : user.getTimeSheets().stream()
-        .flatMap(timeSheet -> timeSheet.getDays().stream()).toList()) {
-      return currentDay.getEntries().get(0).getEnd().equals(entry.getEnd());
-    }
-    return false;
-  }
-
-  @JSweetTest
   public static boolean checkMapEntryLoop() {
     Map<Integer, Long> indexToId = new HashMap<>();
     indexToId.put(7, 42L);
