@@ -135,7 +135,17 @@ public final class RealTscCheck {
   private static final Path RUNTIME_FIXTURES_DIR = Paths.get("src/test/java/resources/exectests");
 
   public static Result compileAndRun(Class<?> fixtureClass, String runJs) throws IOException {
-    return compileAndRun(fixtureClass.getSimpleName(), RUNTIME_FIXTURES_DIR.resolve(fixtureClass.getSimpleName() + ".java"), runJs);
+    return compileAndRun(fixtureClass, runJs, new Class<?>[0]);
+  }
+
+  public static Result compileAndRun(Class<?> fixtureClass, String runJs,
+      Class<?>... supportingClasses) throws IOException {
+    List<Path> sources = new ArrayList<>();
+    sources.add(RUNTIME_FIXTURES_DIR.resolve(fixtureClass.getSimpleName() + ".java"));
+    for (Class<?> supportingClass : supportingClasses) {
+      sources.add(RUNTIME_FIXTURES_DIR.resolve(supportingClass.getSimpleName() + ".java"));
+    }
+    return compileAndRun(fixtureClass.getSimpleName(), sources, runJs);
   }
 
   /**
@@ -159,15 +169,20 @@ public final class RealTscCheck {
    *                  the compiled fixture as {@code "./<FixtureClassName>"}
    */
   public static Result compileAndRun(String checkName, Path fixture, String runJs) throws IOException {
+    return compileAndRun(checkName, List.of(fixture), runJs);
+  }
+
+  private static Result compileAndRun(String checkName, List<Path> fixtures, String runJs)
+      throws IOException {
     JSweetTranspiler transpiler = TranspilerSetupUtil.getGUITranspiler(
         Paths.get("build/transpile/" + checkName).toFile());
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
         new ConsoleTranspilationHandler());
-    SourceFile[] sourceFiles = getSourceFiles(fixture.toFile());
+    SourceFile[] sourceFiles = getSourceFiles(
+        fixtures.stream().map(Path::toFile).toArray(File[]::new));
     transpiler.transpile(handler, sourceFiles);
-    assertEquals(0, handler.getErrorCount(), "JSweet transpilation of " + fixture + " reported errors");
-    assertNotNull(sourceFiles[0].getTsFile());
-    Path generatedTs = sourceFiles[0].getTsFile().toPath();
+    assertEquals(0, handler.getErrorCount(),
+        "JSweet transpilation of " + fixtures + " reported errors");
 
     // Stage a self-contained directory: the real commonj2ts source (via link), our facade, the
     // generated fixture, the runner script and the shared tsconfig.
@@ -184,10 +199,14 @@ public final class RealTscCheck {
         facadeDir.resolve("index.ts"),
         StandardCopyOption.REPLACE_EXISTING);
 
-    Files.copy(
-        generatedTs,
-        tscCheckDir.resolve(generatedTs.getFileName()),
-        StandardCopyOption.REPLACE_EXISTING);
+    for (SourceFile sourceFile : sourceFiles) {
+      assertNotNull(sourceFile.getTsFile());
+      Path generatedTs = sourceFile.getTsFile().toPath();
+      Files.copy(
+          generatedTs,
+          tscCheckDir.resolve(generatedTs.getFileName()),
+          StandardCopyOption.REPLACE_EXISTING);
+    }
 
     Files.writeString(tscCheckDir.resolve("out/run.js"), runJs);
 

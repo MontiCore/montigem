@@ -37,6 +37,14 @@ public class NestedFlatMapRuntimeCheck {
   }
 
   @JSweetTest
+  public static boolean checkInferredExternalLoopElement() {
+    for (var element : NestedFlatMapElementSource.elements()) {
+      return element.getValue() == 42;
+    }
+    return false;
+  }
+
+  @JSweetTest
   public static boolean checkMapEntryLoop() {
     Map<Integer, Long> indexToId = new HashMap<>();
     indexToId.put(7, 42L);

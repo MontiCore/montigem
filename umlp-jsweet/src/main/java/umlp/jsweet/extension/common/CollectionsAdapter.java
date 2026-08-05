@@ -28,6 +28,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -494,11 +495,27 @@ public class CollectionsAdapter extends AbstractAdapter {
         // Rename JS keywords (e.g. a variable named "function") like the body does
         .print(adapterUtils.getJSweetVariableName(loop.getVariable().getName().toString()) + " of <AsyncIterable<");
     TypeMirror variableType = ((JCTree.JCVariableDecl) loop.getVariable()).sym.asType();
+    // The inferred type may not occur anywhere in the Java source (for example with var), so
+    // explicitly register every type named by the generated AsyncIterable cast.
+    ensureTypeModulesUsed(variableType);
     print(getMappedTypeArgument(variableType)).print(">>(");
     print(loop.getExpression()).print(" ?? (async function* () {})())");
     getPrinter().print(") {").println().startIndent().printIndent()
         .printIndent().print(loop.getStatement())
         .endIndent().println().printIndent().print("}");
+  }
+
+  private void ensureTypeModulesUsed(TypeMirror type) {
+    if (type instanceof DeclaredType) {
+      DeclaredType declaredType = (DeclaredType) type;
+      getPrinter().ensureModuleIsUsed(declaredType.asElement());
+      for (TypeMirror typeArgument : declaredType.getTypeArguments()) {
+        ensureTypeModulesUsed(typeArgument);
+      }
+    }
+    else if (type instanceof ArrayType) {
+      ensureTypeModulesUsed(((ArrayType) type).getComponentType());
+    }
   }
 
   @Override

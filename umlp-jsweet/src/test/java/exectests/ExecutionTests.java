@@ -6,6 +6,8 @@ import resources.exectests.ArrayStreamAdapterRuntimeCheck;
 import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
+import resources.exectests.NestedFlatMapElement;
+import resources.exectests.NestedFlatMapElementSource;
 import resources.exectests.NestedFlatMapRuntimeCheck;
 import resources.exectests.OptionalAdapterRuntimeCheck;
 import resources.exectests.StringSplitRuntimeCheck;
@@ -56,6 +58,7 @@ public class ExecutionTests {
 
   @Test
   public void testNestedFlatMap() {
-    ExecTestRunner.runExecutionTest(NestedFlatMapRuntimeCheck.class);
+    ExecTestRunner.runExecutionTest(NestedFlatMapRuntimeCheck.class,
+        NestedFlatMapElement.class, NestedFlatMapElementSource.class);
   }
 }
