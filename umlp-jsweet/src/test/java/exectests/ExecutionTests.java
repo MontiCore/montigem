@@ -6,6 +6,7 @@ import resources.exectests.ArrayStreamAdapterRuntimeCheck;
 import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
+import resources.exectests.NestedFlatMapRuntimeCheck;
 import resources.exectests.OptionalAdapterRuntimeCheck;
 import resources.exectests.StringSplitRuntimeCheck;
 import resources.exectests.UtilArraysRuntimeCheck;
@@ -51,5 +52,10 @@ public class ExecutionTests {
   @Test
   public void testLocalDate() {
     ExecTestRunner.runExecutionTest(LocalDateRuntimeCheck.class);
+  }
+
+  @Test
+  public void testNestedFlatMap() {
+    ExecTestRunner.runExecutionTest(NestedFlatMapRuntimeCheck.class);
   }
 }

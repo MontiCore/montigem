@@ -18,6 +18,7 @@ import standalone.com.sun.source.tree.ExpressionTree;
 import standalone.com.sun.source.tree.MemberSelectTree;
 import standalone.com.sun.source.tree.MethodInvocationTree;
 import standalone.com.sun.source.tree.MethodTree;
+import standalone.com.sun.tools.javac.tree.JCTree;
 import umlp.jsweet.extension.AbstractAdapter;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 import umlp.jsweet.extension.util.RTEPathUtil;
@@ -66,6 +67,7 @@ public class CollectionsAdapter extends AbstractAdapter {
     super.addTypeMappings(getStaticLibrary());
     getTypeMirrorMappings().add(0, computeUMLPGuiArrayTypeMapping());
     getTypeMirrorMappings().add(0, computeMapTypeMapping());
+    getTypeMirrorMappings().add(0, computeMapEntryTypeMapping());
     this.adapterUtils = new GUIAdapterUtils(this, types(), context, util());
   }
 
@@ -104,6 +106,20 @@ public class CollectionsAdapter extends AbstractAdapter {
         }
         result.append(">");
         return result.toString();
+      }
+      return null;
+    };
+  }
+
+  public Function<TypeMirror, String> computeMapEntryTypeMapping() {
+    return (TypeMirror type) -> {
+      if (type instanceof DeclaredType
+          && "java.util.Map.Entry".equals(this.types().erasure(type).toString())) {
+        List<? extends TypeMirror> typeArgs = ((DeclaredType) type).getTypeArguments();
+        if (typeArgs.size() == 2) {
+          return "[" + getMappedTypeArgument(typeArgs.get(0)) + ", "
+              + getMappedTypeArgument(typeArgs.get(1)) + "]";
+        }
       }
       return null;
     };
@@ -465,8 +481,9 @@ public class CollectionsAdapter extends AbstractAdapter {
   protected void printAwaitForEachLoop(EnhancedForLoopTree loop, String indexVarName) {
     print("for await(" + Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " ")
         // Rename JS keywords (e.g. a variable named "function") like the body does
-        .print(adapterUtils.getJSweetVariableName(loop.getVariable().getName().toString()) + " of ");
-    print(loop.getExpression()).print(" ?? (async function* () {})()");
+        .print(adapterUtils.getJSweetVariableName(loop.getVariable().getName().toString()) + " of <AsyncIterable<");
+    getPrinter().substituteAndPrintType(((JCTree.JCVariableDecl) loop.getVariable()).getType()).print(">>(");
+    print(loop.getExpression()).print(" ?? (async function* () {})())");
     getPrinter().print(") {").println().startIndent().printIndent()
         .printIndent().print(loop.getStatement())
         .endIndent().println().printIndent().print("}");
