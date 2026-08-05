@@ -1,0 +1,11 @@
+package person;
+
+// tests MontiGem gradle plugin: reproduces monticore#5144
+classdiagram RowConfig {
+  class RowStyle {
+    +String colGap;
+    +String hAlign;
+
+    +RowStyle(String colGap, String hAlign);
+  }
+}
