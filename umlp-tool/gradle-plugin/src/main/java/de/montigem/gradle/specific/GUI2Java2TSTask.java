@@ -238,6 +238,8 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
           : baseDirectory;
 
       // collection for the .java sources
+      // cd2javaSources include ALL Java sources, including GUI Java.
+      // Those are filtered by JSweet using CD2Java annotation
       ConfigurableFileCollection cd2javaSources = getProject().getObjects().fileCollection();
       cd2javaPaths.stream()
           .filter(p -> excludeMatchers.stream().noneMatch(pm -> pm.matches(p)))
@@ -275,7 +277,6 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
 
         Log.info(cliCommand, Java2TSAction.class.getName());
       }
-      /**/
 
       jsweetQueue.submit(Java2TSAction.class, params -> {
         params.getInput().setFrom(cd2javaSources);
@@ -292,13 +293,15 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
     }
 
     // Second action: all sources; cd2java files present as sources but excluded from transpilation
+    // filteredSources include ALL Java sources, including GUI Java.
+    // Those are filtered by JSweet using CD2Java annotation
     ConfigurableFileCollection filteredSources = getProject().getObjects().fileCollection();
-    individualInputPaths.stream().filter(p -> excludeMatchers.stream().noneMatch(pm -> pm.matches(p)))
+    individualInputPaths.stream()
+        .filter(p -> excludeMatchers.stream().noneMatch(pm -> pm.matches(p)))
         .forEach(filteredSources::from);
 
     // cd2java files are excluded from transpilation in the second action (still available as sources)
-    if(!cd2javaPaths.isEmpty()) {
-      System.out.println("CDJavaPaths"+cd2javaPaths);
+    if (!cd2javaPaths.isEmpty()) {
       cd2javaPaths.forEach(excludedFromTr::from);
     }
 
@@ -334,7 +337,6 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
 
       Log.info(cliCommand, Java2TSAction.class.getName());
     }
-    /**/
 
     jsweetQueue.submit(Java2TSAction.class, params -> {
       params.getInput().setFrom(filteredSources);
