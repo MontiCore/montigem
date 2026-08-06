@@ -41,7 +41,7 @@ A full standard MontiGem app folder structure:
     - ...
   - config // copied to frontend/build/app
     - tsconfig.json
-    - package.overrides.json // overrides the default package.json
+    - package.override.json // overrides the default package.json
     - ...
   - src // hwc, extends generated sources from frontend/build
     - main

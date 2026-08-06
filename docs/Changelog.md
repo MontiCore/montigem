@@ -37,6 +37,11 @@ For MontiGem users:
   
 -->
 
+## 2026-08-06
+
+- enable package, tsconfig and angular.json override. This will greatly improve frontend dependency update roll-outs for the MontiGem team  
+  - see ProjectSetup.md on how to use them 
+
 ## 2026-07-31
 
 - Upgraded MontiGem to version 7.9.1-SNAPSHOT
