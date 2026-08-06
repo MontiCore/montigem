@@ -2,7 +2,6 @@
 package umlp.jsweet.extension;
 
 import org.jsweet.transpiler.AsyncAwaitPropagationScanner;
-import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import standalone.com.sun.source.tree.CompilationUnitTree;
 import umlp.jsweet.extension.cocos.JSweetCoCoChecker;
@@ -21,11 +20,6 @@ import umlp.jsweet.extension.common.UMLPRTEImportAdapter;
 import umlp.jsweet.extension.gui.GUITypesImportAdapter;
 import umlp.jsweet.extension.umlp.BackendOnlyAdapter;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
-
-import javax.lang.model.element.Element;
-
-import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
-import static umlp.jsweet.extension.util.GUIAdapterUtils.CD2JAVA_ANNOTATION;
 
 /**
  * This adapter combines the adapters for domain classes transpilation
@@ -50,25 +44,6 @@ public class UMLPAdapter extends PrinterAdapter {
         new UMLPEnumAdapter(
         parentAdapter
     ))))))))))))));
-    addAnnotationManager(getSynchronizedAnnotationManager());
-  }
-
-  private AnnotationManager getSynchronizedAnnotationManager() {
-    return new AnnotationManager() {
-      // Specifies if the `annotation` should be added to, removed from, be left alone
-      // for the `element` depending on the return value
-      @Override
-      public Action manageAnnotation(Element element, String annotation) {
-        if (ANNOTATION_ERASED.equals(annotation) && element.getKind().isClass()) {
-          return isAnnotatedWithCD2Java(element) ? Action.VOID : Action.ADD;
-        }
-        return Action.VOID;
-      }
-
-      private boolean isAnnotatedWithCD2Java(Element element) {
-        return getContext().elementHasAnnotationType(element, CD2JAVA_ANNOTATION);
-      }
-    };
   }
 
   @Override
