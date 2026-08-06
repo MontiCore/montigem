@@ -44,6 +44,10 @@ public class CDGenerator4RTE {
     genSetup.getGlex().setGlobalValue("UMLPGeneratorConfig", config);
     genSetup.getGlex().addAfterTemplate("ClassContent:Annotations",
         new StringHookPoint("@umlp.jsweet.extension.annotation.CD2Java"));
+    genSetup.getGlex().addAfterTemplate("EnumContent:Annotations",
+        new StringHookPoint("@umlp.jsweet.extension.annotation.CD2Java"));
+    genSetup.getGlex().addAfterTemplate("InterfaceContent:Annotations",
+        new StringHookPoint("@umlp.jsweet.extension.annotation.CD2Java"));
 
     TemplateController tc = genSetup.getNewTemplateController(configTemplate);
     TemplateHookPoint hpp = new TemplateHookPoint(configTemplate);

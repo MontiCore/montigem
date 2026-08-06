@@ -63,15 +63,10 @@ public class ModuleGUIAdapter extends PrinterAdapter {
       // for the `element` depending on the return value
       @Override
       public Action manageAnnotation(Element element, String annotation) {
-        if (element.getKind().toString().equals("CLASS") && ANNOTATION_ERASED.equals(annotation)) {
-          System.out.println("GUIAdapter");
-          System.out.println(element.getSimpleName() + (isAnnotatedWithCD2Java(element) ? " (CD2JAVA)" : ""));
+        if (ANNOTATION_ERASED.equals(annotation) && element.getKind().isClass()) {
+          return isAnnotatedWithCD2Java(element) ? Action.ADD : Action.VOID;
         }
-        return ANNOTATION_ERASED.equals(annotation) &&
-            element.getKind().toString().equals("CLASS") &&
-            isAnnotatedWithCD2Java(element) ?
-            Action.ADD :
-            Action.VOID;
+        return Action.VOID;
       }
 
       private boolean isAnnotatedWithCD2Java(Element element) {
