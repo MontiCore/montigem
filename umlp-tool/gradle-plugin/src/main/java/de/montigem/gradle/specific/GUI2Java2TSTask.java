@@ -241,10 +241,6 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
           ? getCD2JavaJSweetAdapterDir().get().getAsFile()
           : baseDirectory;
 
-      // Long log: usage counter - 1 (05.08.2026).
-      // Increase usage counter by 1 if you stumble on this code and need it.
-      // Permanently comment in the block if usage counter is > 2 after 01.01.2027
-      // Permanently remove if usage counter is < 3 after 01.01.2027
       {
         String cliCommand = "Java2TSAction (cdJava2ts):\n" +
             "- Input\n\t" +
@@ -271,7 +267,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
             getNodeVersion().orElse(Java2TSTask.NODE_VERSION) +
             "\n";
 
-        Log.info(cliCommand, Java2TSAction.class.getName());
+        Log.debug(cliCommand, Java2TSAction.class.getName());
       }
 
       jsweetQueue.submit(Java2TSAction.class, params -> {
@@ -288,10 +284,6 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
       jsweetQueue.await();
     }
 
-    // Long log: usage counter - 1 (05.08.2026).
-    // Increase usage counter by 1 if you stumble on this code and need it.
-    // Permanently comment in the block if usage counter is > 2 after 01.01.2027
-    // Permanently remove if usage counter is < 3 after 01.01.2027
     {
       String cliCommand = "Java2TSAction (guiJava2ts):\n" +
          	"- Input\n\t" +
@@ -318,7 +310,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
           getNodeVersion().orElse(Java2TSTask.NODE_VERSION) +
          	"\n";
 
-      Log.info(cliCommand, Java2TSAction.class.getName());
+      Log.debug(cliCommand, Java2TSAction.class.getName());
     }
 
     jsweetQueue.submit(Java2TSAction.class, params -> {
