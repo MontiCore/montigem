@@ -5,20 +5,20 @@ import org.jsweet.transpiler.AsyncAwaitPropagationScanner;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import standalone.com.sun.source.tree.CompilationUnitTree;
 import umlp.jsweet.extension.cocos.JSweetCoCoChecker;
-import umlp.jsweet.extension.common.BasicsAdapter;
-import umlp.jsweet.extension.common.UMLPEnumAdapter;
-import umlp.jsweet.extension.gui.GUITypesImportAdapter;
 import umlp.jsweet.extension.common.AdditionalAsyncAwaitPropagationScanner;
-import umlp.jsweet.extension.umlp.BackendOnlyAdapter;
-import umlp.jsweet.extension.common.CollectionsAdapter;
 import umlp.jsweet.extension.common.AsyncConstructorAdapter;
+import umlp.jsweet.extension.common.BasicsAdapter;
+import umlp.jsweet.extension.common.CollectionsAdapter;
 import umlp.jsweet.extension.common.FutureAdapter;
 import umlp.jsweet.extension.common.JavaBasicsAdapter;
 import umlp.jsweet.extension.common.JavaTimeAdapter;
 import umlp.jsweet.extension.common.MutexAdapter;
 import umlp.jsweet.extension.common.OptionalAdapter;
 import umlp.jsweet.extension.common.UMLPAsyncAwaitPropagationScanner;
+import umlp.jsweet.extension.common.UMLPEnumAdapter;
 import umlp.jsweet.extension.common.UMLPRTEImportAdapter;
+import umlp.jsweet.extension.gui.GUITypesImportAdapter;
+import umlp.jsweet.extension.umlp.BackendOnlyAdapter;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
 
 /**

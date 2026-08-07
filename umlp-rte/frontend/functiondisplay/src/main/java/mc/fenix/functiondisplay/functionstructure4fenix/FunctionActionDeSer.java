@@ -4,6 +4,7 @@ import de.monticore.symboltable.serialization.JsonPrinter;
 import de.monticore.symboltable.serialization.json.JsonObject;
 import java.util.function.Consumer;
 
+@umlp.jsweet.extension.annotation.CD2Java
 public class FunctionActionDeSer extends FunctionActionDeSerTOP {
 
     @Override

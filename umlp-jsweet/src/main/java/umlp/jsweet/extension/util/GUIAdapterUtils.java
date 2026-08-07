@@ -46,7 +46,7 @@ public class GUIAdapterUtils extends UMLPAdapterUtils {
   public static final String NOTIFY_ABOUT_FIELD_UPDATE_ANNOTATION_OBSERVED_FIELD = "observedField";
   public static final String NOTIFY_ABOUT_FIELD_UPDATE_ANNOTATION_METHOD = "methodRequiringUpdate";
 
-  public static final String ERASED_ANNOTATION = "jsweet.lang.Replace";
+  public static final String REPLACE_ANNOTATION = "jsweet.lang.Replace";
 
   public static final String AMODULE_ANNOTATION = "umlp.jsweet.extension.annotation.AnnotationModule";
 
@@ -123,7 +123,7 @@ public class GUIAdapterUtils extends UMLPAdapterUtils {
     if (context.hasAnnotationType(executable, annotation)) {
       return true;
     }
-    if (context.hasAnnotationType(executable, ERASED_ANNOTATION)) {
+    if (context.hasAnnotationType(executable, REPLACE_ANNOTATION)) {
       return false;
     }
     OverloadScanner.Overload overload = context.getOverload(

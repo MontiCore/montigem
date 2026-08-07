@@ -1,5 +1,6 @@
 package commentmodule;
 
+@umlp.jsweet.extension.annotation.CD2Java
 public class Importer {
 
   public void test(Object foo) {
