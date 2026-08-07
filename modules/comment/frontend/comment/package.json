@@ -2,16 +2,16 @@
   "peerDependencies": {
     "@angular/common": "^17.0.7",
     "@angular/core": "^17.0.7",
-    "@umlp/arrange": "^7.9.0",
+    "@umlp/arrange": "^8.0.0",
     "@umlp/input": "^8.0.0",
-    "@umlp/common": "^8.0.0",
+    "@umlp/commonj2ts": "^8.0.0",
     "@umlp/basic": "^8.0.0",
     "many-keys-map": "2.0.1",
     "async-mutex": "^0.5.0",
     "rxjs": "~7.8.0"
   },
   "name": "@montigem/comment",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "sideEffects": false,
   "dependencies": {"tslib": "^2.3.0"}
 }
