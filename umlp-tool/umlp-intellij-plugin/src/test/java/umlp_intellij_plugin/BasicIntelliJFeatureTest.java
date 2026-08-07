@@ -313,6 +313,8 @@ public class BasicIntelliJFeatureTest extends AbstractIntelliJPluginTest {
     String content = getDocumentText(newFile);
     assertTrue(content.contains("package gui;"), "Package statement missing. Content: " + content);
     assertTrue(content.contains("page NewComponent"), "Component name missing. Content: " + content);
+
+    Thread.sleep(1000L);
     assertTrue(getCodeVisionLenses("Add basic GUI content").isEmpty(),
         "The GUI initialization code lens must disappear after it was executed");
   }
@@ -350,6 +352,8 @@ public class BasicIntelliJFeatureTest extends AbstractIntelliJPluginTest {
     String content = getDocumentText(newFile);
     assertTrue(content.contains("package newpackage;"), "Package statement missing. Content: " + content);
     assertTrue(content.contains("classdiagram NewModel {"), "Umlp model name missing. Content: " + content);
+
+    Thread.sleep(1000L);
     assertTrue(getCodeVisionLenses("Add basic classdiagram").isEmpty(),
         "The UML/P initialization code lens must disappear after it was executed");
   }
