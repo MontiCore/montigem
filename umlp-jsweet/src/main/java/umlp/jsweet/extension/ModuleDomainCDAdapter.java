@@ -29,7 +29,7 @@ import umlp.jsweet.extension.util.UMLPAdapterUtils;
 public class ModuleDomainCDAdapter extends PrinterAdapter {
   public ModuleDomainCDAdapter(PrinterAdapter parentAdapter) {
     super(
-//        new PrintImportsAtBottomAdapter(
+        //new PrintImportsAtBottomAdapter(
         //new JavaStreamAdapter(
         new RelativeImportAdapter(
         new GUITypesImportAdapter(

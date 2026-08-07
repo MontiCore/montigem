@@ -4,7 +4,7 @@
     "@angular/core": "^17.0.7",
     "@umlp/arrange": "^8.0.0",
     "@umlp/input": "^8.0.0",
-    "@umlp/common": "^8.0.0",
+    "@umlp/commonj2ts": "^8.0.0",
     "@umlp/basic": "^8.0.0",
     "many-keys-map": "2.0.1",
     "async-mutex": "^0.5.0",
