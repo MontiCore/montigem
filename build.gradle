@@ -337,8 +337,6 @@ subprojects {
 
 // CI specific tasks and configuration
 tasks.register("ciDeployImages"){
-  dependsOn project(":examples:weather:backend").tasks.jib
-  dependsOn project(":examples:weather:frontend").tasks.deployImageCI
 
   dependsOn project(":examples:sehub:backend").tasks.jib
   dependsOn project(":examples:sehub:frontend").tasks.deployImageCI
