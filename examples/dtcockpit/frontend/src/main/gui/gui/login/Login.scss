@@ -1,8 +1,0 @@
-@import "../../../../config/src/variables";
-
-:host ::ng-deep .error {
-  div {
-    color: $acronio-red-2;
-    font-size: 1.5rem;
-  }
-}

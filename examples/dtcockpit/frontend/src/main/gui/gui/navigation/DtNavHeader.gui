@@ -1,5 +1,0 @@
-/* (c) https://github.com/MontiCore/monticore */
-package gui.navigation;
-
-// Reused old navigation. Should normally be implemented in GUI model
-component DtNavHeader()

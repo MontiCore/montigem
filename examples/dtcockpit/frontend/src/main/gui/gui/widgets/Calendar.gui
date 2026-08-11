@@ -1,6 +1,0 @@
-/* (c) https://github.com/MontiCore/monticore */
-package gui.widgets;
-
-import Dtcockpit.Meeting;
-
-component Calendar(List<Meeting> meetings)
