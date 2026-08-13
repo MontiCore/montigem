@@ -33,12 +33,9 @@ import java.util.stream.Collectors;
 
 // TODO: cardinality constraints?
 public class SQLSchemaGenerator {
-  public static final String ASSOC_TABLE_PREFIX = "assoc_";
-
   protected GeneratorSetup generatorSetup;
   protected GeneratorEngine generatorEngine;
   protected Map<String, String> fqnClassNameToType;
-  protected SQLRenameGenerator renames = new SQLRenameGenerator();
 
   public SQLSchemaGenerator(GeneratorSetup generatorSetup) {
     this.generatorSetup = generatorSetup;
@@ -47,61 +44,25 @@ public class SQLSchemaGenerator {
   }
 
   public static String convertAttributeName(String name, AttributeType type) {
-    return type.format(SQLNames.shorten(rawAttributeName(name)));
+    String attrName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
+    return type.format(attrName);
   }
 
   public static String convertClassName(String name, AttributeType type) {
-    return type.format(SQLNames.shorten(rawClassName(name)));
+    String clsName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
+    return type.format(clsName);
   }
 
   public static String convertAssociationRollName(String name) {
-    // the result is always used as "<roll>_id", so that suffix has to fit as well
-    return SQLNames.shortenReserving(rawAssociationRollName(name), "_id");
+    return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
   }
 
   public static String convertAssocName(String name) {
-    // the prefix marks the table as an association table and must survive shortening
-    return SQLNames.shorten(ASSOC_TABLE_PREFIX, normalizeAssocName(name), "");
-  }
-
-  /**
-   * Table holding the values of a list valued attribute. Used by the schema and by the DAO generation,
-   * so that both derive the very same name.
-   */
-  public static String convertListAttributeTableName(String className, String attributeName) {
-    return SQLNames.shorten(rawListAttributeTableName(className, attributeName));
-  }
-
-  /**
-   * The identifiers as they were built before shortening was introduced. Only needed to derive the
-   * names an already deployed database still carries, see {@link SQLRenameGenerator}.
-   */
-  public static String rawAttributeName(String name) {
-    return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
-  }
-
-  public static String rawClassName(String name) {
-    return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
-  }
-
-  public static String rawAssociationRollName(String name) {
-    return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
-  }
-
-  public static String rawAssocName(String name) {
-    return ASSOC_TABLE_PREFIX + normalizeAssocName(name);
-  }
-
-  protected static String normalizeAssocName(String name) {
     String res = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
     res = res.replaceAll("\\s", "_");
     res = res.replaceAll("_+", "_");
     res = res.replaceAll("_$", "");
-    return res;
-  }
-
-  public static String rawListAttributeTableName(String className, String attributeName) {
-    return rawClassName(className) + "$" + rawAttributeName(attributeName);
+    return "assoc_" + res;
   }
 
   protected void initClassNameToType() {
@@ -146,12 +107,7 @@ public class SQLSchemaGenerator {
 
   public void generate(ASTCDCompilationUnit cdAST) {
     String templateName = "umlp.sql.Schema";
-    String cdName = cdAST.getCDDefinition().getName();
-    renames.clear();
-    generatorEngine.generate(templateName, Paths.get("resources", cdName + ".sql"), cdAST, generateContent(cdAST));
-    if (!renames.isEmpty()) {
-      generatorEngine.generate(templateName, Paths.get("resources", cdName + "_rename.sql"), cdAST, renames.render(cdName));
-    }
+    generatorEngine.generate(templateName, Paths.get("resources", cdAST.getCDDefinition().getName() + ".sql"), cdAST, generateContent(cdAST));
   }
 
   protected String generateContent(ASTCDCompilationUnit cd) {
@@ -210,7 +166,6 @@ public class SQLSchemaGenerator {
   public void generateClassSchema(ASTCDDefinition cd, ASTCDClass node, IndentPrinter p) {
     p.print("CREATE TABLE ");
     String tableName = convertClassName(node.getName(), AttributeType.QUOTED);
-    renames.addTable(rawClassName(node.getName()), convertClassName(node.getName(), AttributeType.PLAIN));
     p.print(tableName);
     p.println("(");
     p.indent();
@@ -221,7 +176,7 @@ public class SQLSchemaGenerator {
         .filter(a -> !a.getModifier().isDerived())
         .collect(Collectors.toList());
 
-    generateIdField(p);
+    generateIdField(convertClassName(node.getName(), AttributeType.PLAIN), p);
     for (ASTCDAttribute attribute : relevantAttributes) {
       Optional<? extends ISymbol> typeSym = attribute.getMCType().getDefiningSymbol();
       if (!GenService.isList(attribute)
@@ -261,8 +216,7 @@ public class SQLSchemaGenerator {
 
   protected void generateListFieldTable(ASTCDDefinition cd, ASTCDType typeNode, ASTCDAttribute attribute, IndentPrinter p) {
     p.print("CREATE TABLE ");
-    String tableName = convertListAttributeTableName(typeNode.getName(), attribute.getName());
-    renames.addTable(rawListAttributeTableName(typeNode.getName(), attribute.getName()), tableName);
+    String tableName = convertClassName(typeNode.getName(), AttributeType.PLAIN) + "$" + convertAttributeName(attribute.getName(), AttributeType.PLAIN);
     p.print(tableName);
     p.println("(");
     p.indent();
@@ -288,22 +242,18 @@ public class SQLSchemaGenerator {
     p.print(r3);
     p.println(" BIGINT NOT NULL,");
 
-    p.println("PRIMARY KEY (" + r1 + "," + r3 + ")");
+    p.println("CONSTRAINT pk_" + tableName + " PRIMARY KEY (" + r1 + "," + r3 + ")");
 
     p.unindent();
     p.println(");");
   }
 
-  protected void generateIdField(IndentPrinter p) {
+  protected void generateIdField(String tableName, IndentPrinter p) {
     p.println("id BIGINT NOT NULL,");
-    // unnamed on purpose: nothing ever refers to the constraint, and PostgreSQL derives a name
-    // that respects the 63 byte limit by itself
-    p.println("PRIMARY KEY (id)");
+    p.println("CONSTRAINT pk_" + tableName + " PRIMARY KEY (id)");
   }
 
   protected void generateOptionalField(ASTCDDefinition cd, ASTCDClass classNode, ASTCDAttribute attribute, IndentPrinter p) {
-    renames.addColumn(convertClassName(classNode.getName(), AttributeType.PLAIN),
-        rawAttributeName(attribute.getName()), convertAttributeName(attribute.getName(), AttributeType.PLAIN));
     p.print(convertAttributeName(attribute.getName(), AttributeType.QUOTED));
     p.print(" ");
     Optional<? extends ISymbol> typeSymbolOpt = attribute.getMCType().getDefiningSymbol();
@@ -371,7 +321,6 @@ public class SQLSchemaGenerator {
 
     p.print("CREATE TABLE ");
     String tableName = convertAssocName(association.getName());
-    renames.addTable(rawAssocName(association.getName()), tableName);
     p.print(tableName);
     p.println("(");
     p.indent();
@@ -379,8 +328,6 @@ public class SQLSchemaGenerator {
     // TODO: use roll names: Person -> Person
     String r1 = convertAssociationRollName(association.getLeft().getName());
     String r2 = convertAssociationRollName(association.getRight().getName());
-    renames.addColumn(tableName, rawAssociationRollName(association.getLeft().getName()) + "_id", r1 + "_id");
-    renames.addColumn(tableName, rawAssociationRollName(association.getRight().getName()) + "_id", r2 + "_id");
 
     p.print(r1 + "_id");
     p.println(" BIGINT NOT NULL,");
@@ -394,7 +341,7 @@ public class SQLSchemaGenerator {
 
     //p.println("CONSTRAINT fk_" + r2 + "_" + tableName + " FOREIGN KEY (" + r2 + "_id) REFERENCES " + convertClassName(rSymbolOpt.get().getName(), AttributeType.QUOTED) + ",");
 
-    p.println("PRIMARY KEY (" + r1 + "_id, " + r2 + "_id)");
+    p.println("CONSTRAINT pk_" + tableName + " PRIMARY KEY (" + r1 + "_id, " + r2 + "_id)");
 
     p.unindent();
     p.println(");");

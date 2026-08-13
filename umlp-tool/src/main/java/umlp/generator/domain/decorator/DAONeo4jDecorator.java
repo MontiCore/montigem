@@ -181,7 +181,8 @@ public class DAONeo4jDecorator extends DAODecorator {
         .filter(a -> !a.getModifier().isDerived() && GenService.isList(a)).forEach(attr -> {
               GenService.createType(attr);
               String innerType = GenService.getInnerType(GenService.createType(attr));
-              String tableName = SQLSchemaGenerator.convertListAttributeTableName(domainClass.getName(), attr.getName());
+              String tableName = SQLSchemaGenerator.convertClassName(domainClass.getName(), SQLSchemaGenerator.AttributeType.PLAIN)+
+                  "$"+SQLSchemaGenerator.convertAttributeName(attr.getName(), SQLSchemaGenerator.AttributeType.PLAIN);
               String dbType = GenService.getDBType(attr.getSymbol().getType());
               getCD4C().addMethod(doaClass, "umlp.dao.UpdateListAttrNeo4j", domainClass.getName(), tableName, attr, innerType, dbType);
               getCD4C().addMethod(doaClass, "umlp.dao.SelectListAttrNeo4j", domainClass.getName(), tableName, attr, innerType, dbType);
