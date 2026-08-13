@@ -352,7 +352,6 @@ tasks.register("ciDeployImages"){
 
   // no frontend
   dependsOn project(":experiments:server-performance:backend").tasks.jib
-  dependsOn project(":examples:stat").tasks.jib
 }
 
 tasks.register("ciDeployRTE"){

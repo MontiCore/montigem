@@ -59,7 +59,6 @@ include ':experiments:server-performance'
 include ':experiments:server-performance:backend'
 
 include ":examples"
-include ':examples:stat'
 include ':examples:flensburg-test:backend'
 include ':examples:it-test'
 include ':examples:it-sync-protocol-test'
