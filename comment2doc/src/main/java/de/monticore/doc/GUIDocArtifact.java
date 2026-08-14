@@ -206,9 +206,9 @@ public class GUIDocArtifact {
   }
 
   public boolean isExample(String componentName) {
-    return componentName.contains(getComponentAST().getComponentName())
-        && (componentName.contains("Example")
-        || componentName.contains("My")
+    Pattern pattern = Pattern.compile(
+        "^My" + Pattern.quote(getComponentAST().getComponentName()) + "Example.*$"
     );
+    return pattern.matcher(componentName).matches();
   }
 }
