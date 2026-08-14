@@ -42,5 +42,8 @@ component GemTextInput(
   /** Callback that is executed when a key is released. */
   Event<Object> keyRelease,
   /** Callback that is executed when a key is pressed. */
-  Event<Object> keyPress
+  Event<Object> keyPress,
+  /**The maximum number of characters allowed in the input field. When set,
+       the user will not be able to enter more characters than this limit.*/
+  int maxLength
 )

@@ -19,6 +19,7 @@ export class GemTextInput extends GemTextInputComponent {
   override _inputType: string = "text";
   override _disabled: boolean = false;
   override _placeholder: string = "";
+  override _maxLength: number = 524800;
 
   isNumeric: boolean = false;
 

@@ -19,4 +19,5 @@
   (ngModelChange)="onEntryChange($event)"
   (keyup)="keyRelease.emit($event)"
   (keydown)="keyPress.emit($event)"
+  [maxLength] = "maxLength"
 />

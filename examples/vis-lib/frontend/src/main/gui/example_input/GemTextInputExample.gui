@@ -10,6 +10,11 @@ import mc.fenix.arrange.GemColumn;
 page GemTextInputExample(List<Person> persons) {
   @ExamplePage(
     component = @GemColumn(components = [
+      @GemTextInput(
+        inputType = "text",
+        labelText = "Max length 3",
+        maxLength = 3
+      ),
       @iterate(Person p : persons) {
         @GemTextInput(
           id = "name",
