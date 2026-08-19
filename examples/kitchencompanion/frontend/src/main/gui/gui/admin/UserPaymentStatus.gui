@@ -21,15 +21,15 @@ component UserPaymentStatus(User user, Receipt receipt){
         disabled = receipt.confirmed
       ),
       @guard(receipt.paid){
-         amountPaid@GemTextInput(
-           inputType = "number",
-           disabled = receipt.confirmed,
-           entry = receipt.amountPaid
-         );
-         @GemRow(components = [
-           @GemButton(label = "confirm", leftClick = confirm()),
-           @GemButton(label = "reset", leftClick = reset())
-         ]);
+        amountPaid@GemTextInput(
+          inputType = "number",
+          disabled = receipt.confirmed,
+          entry = receipt.amountPaid
+        );
+        @GemRow(components = [
+          @GemButton(label = "confirm", leftClick = confirm()),
+          @GemButton(label = "reset", leftClick = reset())
+        ]);
       }
     ])
   );

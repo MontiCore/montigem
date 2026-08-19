@@ -10,8 +10,8 @@ import mc.fenix.navigation.GemNavItem;
 import mc.fenix.arrange.GemGrid;
 import mc.fenix.basic.GemLoadingSpinner;
 
-component Header(String headline, float progress, boolean backBtnNeeded = true, boolean timerNeeded = true){
- @GemColumn(components =[
+component Header(String headline, float progress, boolean backBtnNeeded, boolean timerNeeded){
+  @GemColumn(components =[
     row@GemRow(hAlign = "center", components = [
       grid@GemGrid(
         height = "10%",
@@ -23,42 +23,41 @@ component Header(String headline, float progress, boolean backBtnNeeded = true, 
         colGap = "20px",
         rows = [
           [
-            @GemColumn(vAlign = "center", hAlign = "stretch", components = [
-              @GemRow(hAlign = "space-between",components = [
-                img@GemImage(
-                  source = "assets/images/se-kaffeekasse-logo.png",
-                  alt = "SE KitchenCompanion logo",
-                  height = "70px",
-                  width = "70px"
-                ),
-                @guard(backBtnNeeded){
-                  backBtn@GemButton(
-                    content = [
-                      @GemIcon(
-                        name = "arrow_circle_left"
-                      )
-                    ],
-                    leftClick = navigateBack()
-                  );
-                }
-              ]
+            backSlot@GemRow(hAlign = "start", vAlign = "center", components = [
+              @guard(backBtnNeeded){
+                backBtn@GemButton(
+                  content = [
+                    @GemIcon(
+                      name = "arrow_circle_left"
+                    )
+                  ],
+                  leftClick = navigateBack()
+                );
+              }
+            ]),
+            titleSlot@GemRow(hAlign = "center", vAlign = "center", colGap = "20px", components = [
+              img@GemImage(
+                source = "assets/images/se-kaffeekasse-logo.png",
+                alt = "SE KitchenCompanion logo",
+                height = "70px",
+                width = "70px"
+              ),
+              mainText@GemText(
+                value = headline,
+                width = "auto",
+                size = "3rem",
+                weight = "bold"
               )
             ]),
-            @GemColumn(vAlign = "center", components = [
-              mainText@GemText(
-               value = headline,
-               width = "auto",
-               size = "3rem",
-               weight = "bold"
-             )
-            ]),
-           @guard(timerNeeded){
-             @GemLoadingSpinner(
-                 color = "green",
-                 intermediate = false,
-                 progress = progress
-             );
-           }
+            timerSlot@GemRow(hAlign = "end", vAlign = "center", components = [
+              @guard(timerNeeded){
+                timer@GemLoadingSpinner(
+                    color = "green",
+                    intermediate = false,
+                    progress = null
+                );
+              }
+            ])
           ]
         ]
       )

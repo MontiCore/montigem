@@ -2,61 +2,61 @@
   gem-row.ReceiptList,
   .ReceiptList,
   div:has(> gem-checkbox-input) {
-    display: flex !important;
+    display: flex;
     flex-wrap: wrap !important;
     align-items: center !important;
     gap: 1.5rem !important;
-    padding: 1rem !important;
-    background-color: #f8f9fa !important;
-    border-radius: 8px !important;
-    border: 1px solid #e9ecef !important;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
     width: 100% !important;
-    box-sizing: border-box !important;
+    box-sizing: border-box;
   }
 
   gem-checkbox-input,
   .gem-checkbox-input {
-    display: inline-flex !important;
+    display: inline-flex;
     align-items: center !important;
     font-weight: 500 !important;
     color: #495057 !important;
-    cursor: pointer !important;
-    margin-right: 0.5rem !important;
+    cursor: pointer;
+    margin-right: 0.5rem;
 
     input[type="checkbox"] {
       width: 18px !important;
       height: 18px !important;
-      accent-color: #00549F !important;
-      cursor: pointer !important;
+      accent-color: #00549F;
+      cursor: pointer;
     }
   }
 
   gem-button:not(.gem-checkbox-input *),
   .gem-button:not(.gem-checkbox-input *) {
     button {
-      background-color: #ffffff !important;
+      background-color: #ffffff;
       color: #00549F !important;
-      border: 1px solid #00549F !important;
-      padding: 8px 16px !important;
+      border: 1px solid #00549F;
+      padding: 8px 16px;
       font-size: 0.9rem !important;
       font-weight: 500 !important;
-      border-radius: 4px !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-      transition: all 0.2s ease-in-out !important;
-      display: inline-flex !important;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      transition: all 0.2s ease-in-out;
+      display: inline-flex;
       align-items: center !important;
       justify-content: center !important;
 
       &:hover {
-        background-color: #e6eef6 !important;
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
-        cursor: pointer !important;
+        background-color: #e6eef6;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
       }
 
       &:active {
-        background-color: #d1e1f0 !important;
-        transform: translateY(0) !important;
+        background-color: #d1e1f0;
+        transform: translateY(0);
       }
     }
   }

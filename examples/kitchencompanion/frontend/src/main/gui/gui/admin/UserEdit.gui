@@ -10,14 +10,14 @@ page UserEdit(User user){
       formName = "Edit User",
       confirm =
         @GemButton(
-         label = "confirm",
-         leftClick = confirm(user)
-         ),
+          label = "confirm",
+          leftClick = confirm(user)
+        ),
       back =
         @GemButton(
-         label = "delete",
-         leftClick = deleteAndNavigate(user)
-         )
-   );
+          label = "delete",
+          leftClick = deleteAndNavigate(user)
+        )
+  );
   @UserOfferAdmin(user = user);
 }

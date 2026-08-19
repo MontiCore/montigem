@@ -15,7 +15,6 @@ public class CreateUser extends CreateUserTOP {
   public Consumer<Void> createAndNavigate(User user) {
     return $ -> {
       if (user.isValid()) {
-        user.setSum(0.);
         user.setBalance(0.);
         user.build();
         for (Offer o : KitchenCompanionManager.getOfferList()) {

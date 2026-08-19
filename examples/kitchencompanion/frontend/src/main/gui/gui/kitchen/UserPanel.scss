@@ -1,13 +1,23 @@
 @import "variables";
 
+:host ::ng-deep gem-row {
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+:host ::ng-deep gem-row > gem-button {
+  display: block;
+  max-width: 100%;
+}
+
 :host ::ng-deep .gem-button {
   align-items: center;
   background-color: #FFFFFF;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 1rem;
-  box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+  box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
   box-sizing: border-box;
-  color: rgba(0, 0, 0, 0.85);
+  color: rgba(0, 0, 0, 0.65);
   cursor: pointer;
   display: inline-flex;
   font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -16,27 +26,22 @@
   justify-content: center;
   line-height: 1.25;
   margin: 0;
-  min-height: 3rem;
-  min-width: 20rem;
+  min-height: 5rem;
+  min-width: 0;
+  width: 100%;
   padding: calc(.875rem - 1px) calc(1.5rem - 1px);
   position: relative;
   text-decoration: none;
+  transform: translateY(-1px);
   transition: all 250ms;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
   vertical-align: baseline;
-  width: auto;
 }
 
-:host ::ng-deep .gem-button {
-  border-color: rgba(0, 0, 0, 0.15);
-  box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
-  color: rgba(0, 0, 0, 0.65);
-}
-
-:host ::ng-deep .gem-button {
-  transform: translateY(-1px);
+:host ::ng-deep .gem-button:hover {
+  background-color: lightblue;
 }
 
 :host ::ng-deep .gem-button:active {
@@ -46,6 +51,18 @@
   color: rgba(0, 0, 0, 0.65);
   transform: translateY(0);
 }
-:host ::ng-deep .gem-button:hover {
-  background-color: lightblue;
+
+:host(.leadPanel) ::ng-deep .gem-button {
+  min-height: 7rem;
+  font-size: 1.25rem;
+  border-radius: 1.25rem;
+}
+
+:host(.leadPanel) ::ng-deep .gem-button:active {
+  background-color: $rwth-blue;
+  color: white;
+}
+
+:host(.ordinaryPanel) ::ng-deep .gem-button {
+  min-height: 3.5rem;
 }

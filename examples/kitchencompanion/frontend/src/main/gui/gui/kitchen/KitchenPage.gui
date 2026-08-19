@@ -6,27 +6,26 @@ import mc.fenix.arrange.GemRow;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.basic.GemText;
 import mc.fenix.input.GemTextInput;
-import gui.kitchen.LeadUserPanel;
-import gui.kitchen.OrdinaryUserPanel;
-import gui.kitchen.ExtraUserPanel;
+import gui.kitchen.UserPanel;
 import gui.navigation.NavContainer;
 import mc.fenix.navigation.GemNavItem;
 import KitchenCompanion.User;
-import KitchenCompanion.Search;
+import KitchenCompanion.KitchenCompanionRole;
 import gui.management.AlphabetSearch;
 import gui.base.Footer;
 import gui.base.PageLayout;
 import gui.base.Header;
 
-page KitchenPage(List<User> users, Search searchState) {
+page KitchenPage(List<User> users, String searchLetter = "") {
   @PageLayout(topContent = [
       header@Header(headline = "Kitchen Companion", timerNeeded = false, backBtnNeeded = false),
-      @AlphabetSearch(searchState = searchState, userOrOffer = true),
-      @LeadUserPanel(allUsers = users, searchState = searchState, adminPage = false)
+      @AlphabetSearch(selectedLetter = searchLetter, userOrOffer = true, onSelect = selectLetter())
     ],
     scrollableContent = [
-      @OrdinaryUserPanel(allUsers = users, searchState = searchState, adminPage = false),
-      @ExtraUserPanel(allUsers = users, searchState = searchState, adminPage = false)
+      leadPanel@UserPanel(allUsers = users, searchLetter = searchLetter, adminPage = false, role = KitchenCompanionRole.VIP),
+      ordinaryPanel@UserPanel(allUsers = users, searchLetter = searchLetter, adminPage = false, role = KitchenCompanionRole.USER),
+      extraPanel@UserPanel(allUsers = users, searchLetter = searchLetter, adminPage = false, role = KitchenCompanionRole.EXTRA),
+      hiwiPanel@UserPanel(allUsers = users, searchLetter = searchLetter, adminPage = false, role = KitchenCompanionRole.HIWI)
     ],
     footer = @Footer(
       title = "ADMIN PAGE",

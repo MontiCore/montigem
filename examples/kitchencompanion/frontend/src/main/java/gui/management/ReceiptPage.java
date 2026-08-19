@@ -12,11 +12,7 @@ public class ReceiptPage extends ReceiptPageTOP {
 
   @Override
   public List<Offer> getOfferList(Receipt receipt) {
-    List<Offer> list = new ArrayList<>();
-    for (Tally t : receipt.getPastTalliesList()) {
-      list.add(t.getOffer());
-    }
-    return list;
+    return Tally.offersOf(receipt.getPastTalliesList());
   }
 
   @Override
@@ -31,12 +27,12 @@ public class ReceiptPage extends ReceiptPageTOP {
 
   @Override
   public String priceOrdered(Receipt receipt) {
-    return receipt.getSum() + " ";
+    return receipt.getSum() + " €";
   }
 
   @Override
   public String priceSum(Receipt receipt) {
-    return receipt.getSum() + receipt.getDebt() - receipt.getPastBalance() + "";
+    return receipt.getSum() + receipt.getDebt() - receipt.getPastBalance() + " €";
   }
 
   @Override
@@ -50,11 +46,6 @@ public class ReceiptPage extends ReceiptPageTOP {
 
   @Override
   public String pricePaid(Receipt receipt) {
-    return receipt.getAmountPaid() + "";
+    return receipt.getAmountPaid() + " €";
   }
-  @Override
-  public String getName(User user){
-    return user.getFormatedName();
-  }
-
 }

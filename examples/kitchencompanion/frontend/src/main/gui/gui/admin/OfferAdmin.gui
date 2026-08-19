@@ -27,16 +27,11 @@ page OfferAdmin(List<Offer> offers){
             button@GemButton(
               content = [
                 @GemCard(
-                 title = offer.name + ": " + offer.price + "€",
-                 component =
-                  @GemColumn(hAlign = "center",
-                    components = [
-                      @GemImage(
-                        width = "500px",
-                        source = offer.imgSource
-                        )
-                    ])
+                  title = offer.name + ": " + offer.price + "€",
+                  component = @GemColumn(hAlign = "center",
+                    components = [@GemImage(width = "500px", source = offer.imgSource)]
                   )
+                )
               ],
               leftClick = navigateToOffer(offer)
             )

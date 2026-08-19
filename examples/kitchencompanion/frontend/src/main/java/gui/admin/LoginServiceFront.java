@@ -1,8 +1,8 @@
 package gui.admin;
 
-import kitchencompanion.User;
-
-import java.util.Objects;
+import kitchencompanion.commands.CheckAdminPassword;
+import umlp.backendrte.command.CommandManager;
+import umlp.backendrte.command.CommandResult;
 
 public abstract class LoginServiceFront {
 
@@ -15,12 +15,13 @@ public abstract class LoginServiceFront {
   public static boolean getLoggedIn() {
     return loggedIn;
   }
-  public static boolean canLogin(String password) {
-    return password.equals(User.getPw());
-  }
-  public static void login(String password){
-    if(canLogin(password)){
+  
+  public static boolean login(String password) {
+    CommandResult<Boolean> result = CommandManager.executeCommand(new CheckAdminPassword(password));
+    boolean canLogin = result.isSuccessful() && Boolean.TRUE.equals(result.asSimpleResult().get());
+    if (canLogin) {
       setLoggedIn(true);
     }
+    return canLogin;
   }
 }

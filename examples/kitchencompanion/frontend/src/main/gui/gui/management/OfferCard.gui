@@ -19,13 +19,16 @@ import gui.base.Footer;
 import gui.base.PageLayout;
 
 
-component OfferCard(Offer offer, User user, String count, boolean adminRights = false){
+component OfferCard(Offer offer, User user, String count, boolean adminRights = false, boolean canRemoveTally){
   tallyColumn@GemColumn(width = "auto", hAlign = "center", rowGap = "0.5rem", components = [
     offerBtn@GemButton(
+      width = "100%",
+      margin = "0",
       content = [
         @GemCard(
-         title = offer.name + ": " + offer.price + "€",
-         component =
+          width = "100%",
+          title = offer.name + ": " + offer.price + "€",
+          component =
           @GemColumn(hAlign = "center",
             components = [
               offerImage@GemImage(
@@ -37,21 +40,31 @@ component OfferCard(Offer offer, User user, String count, boolean adminRights = 
       ],
       leftClick = addTally(offer)
     ),
-    minusBtn@GemButton(
-      content = [
-        @GemRow(width = "auto", vAlign = "center", colGap = "0.5rem",
-          components = [
-           tallyCount@GemText(
-             width = "auto",
-             size = "1rem",
-             value = count
-           ),
-           minusIcon@GemIcon(
-             name = "remove_circle_outline"
-           )
-        ])
-      ],
-      leftClick = removeTally(offer)
-      )
+    @GemRow(width = "auto", vAlign = "center", colGap = "0.5rem",
+      components = [
+        minusBtn@GemButton(
+          content = [
+            minusIcon@GemIcon(
+              name = "remove_circle_outline"
+            )
+          ],
+          leftClick = removeTally(offer),
+          disabled = !canRemoveTally
+        ),
+        tallyCount@GemText(
+          width = "auto",
+          size = "1rem",
+          value = count
+        ),
+        plusBtn@GemButton(
+          leftClick = addTally(offer),
+          content = [
+            plusIcon@GemIcon(
+              name = "add_circle"
+            )
+          ]
+        )
+      ]
+    )
   ]);
 }

@@ -12,7 +12,7 @@ import gui.management.AlphabetSearch;
 
 page PaymentStatus(List<User> users){
   @GemColumn( hAlign = "center", vAlign = "center", rowGap="1rem", components = [
-     @guard(hasAny1Receipt()){
+    @guard(hasAny1Receipt()){
       @GemRow( components = [
         @iterate(User u: users){
           @guard(hasReceipt(u)){
@@ -20,9 +20,9 @@ page PaymentStatus(List<User> users){
           }
         }
       ]);
-     }
-     else{
-        @GemRow(hAlign = "center", components = [@GemText(value = "Keine Rechnungen gefunden")]);
-     }
+    }
+    else{
+      @GemRow(hAlign = "center", components = [@GemText(value = "Keine Rechnungen gefunden")]);
+    }
   ]);
 }

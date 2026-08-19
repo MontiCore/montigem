@@ -12,6 +12,9 @@ import umlp.jsweet.extension.annotation.BackendOnly;
 import umlp.jsweet.extension.annotation.BackendOnlyModes;
 
 import javax.mail.MessagingException;
+import java.time.LocalDate;
+import java.time.format.TextStyle;
+import java.util.Locale;
 
 
 public class SendEmail extends SendEmailTOP {
@@ -23,7 +26,9 @@ public class SendEmail extends SendEmailTOP {
     for (User u : KitchenCompanionManager.getUserList()) {
         try {
           if(!u.getReceiptsList().isEmpty()){
-            if (u.getReceipts(0).isPaid() && (u.hasOrderedTallies() || u.getReceipts(0).getSum() + u.getReceipts(0).getDebt() - u.getReceipts(0).getPastBalance() > 0)) {
+            LocalDate receiptDate = u.getReceipts(0).getDate();
+            String uDate = receiptDate.getMonth().getDisplayName(TextStyle.FULL, Locale.GERMAN) + " " + receiptDate.getYear();
+            if (uDate.equals(date)&&(u.hasOrderedTallies() || u.getReceipts(0).getSum() + u.getReceipts(0).getDebt() - u.getReceipts(0).getPastBalance() > 0)) {
               MailService.sendMail(MailContentService.getMailContent(u), u.getEmail(), "KitchenCompanion Rechnung vom " + date);
             }
           }

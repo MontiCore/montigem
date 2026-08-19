@@ -19,14 +19,14 @@ import gui.base.Header;
 import gui.base.Footer;
 import gui.base.PageLayout;
 
-page OfferOverview(User user, List<Offer> offers) {
+page OfferOverview(User user, List<Offer> offers, String searchLetter = "") {
   @PageLayout(
     topContent = [
-      @Header(headline = getName(user)),
-      @AlphabetSearch(searchState = getSearchState(), userOrOffer = false)
+      @Header(headline = user.formattedName, timerNeeded = true, backBtnNeeded = true),
+      @AlphabetSearch(selectedLetter = searchLetter, userOrOffer = false, onSelect = selectLetter())
     ],
     scrollableContent = [
-      row@GemRow(hAlign = "center",vAlign = "center", colGap="1rem", rowGap="1rem", wrap="wrap", components = [
+      row@GemRow(hAlign = "center",vAlign = "start", colGap="1rem", rowGap="1rem", wrap="wrap", components = [
         @iterate(Offer offer : getOfferList(user)){
           @guard(search(offer)){
             @OfferCard(offer = offer, user = user, count = getTallyCount(offer));
@@ -34,8 +34,8 @@ page OfferOverview(User user, List<Offer> offers) {
         }
       ])],
       footer = @Footer(
-             title = "Subtotal",
-             target = getTargetAddress(user)
+        title = "Subtotal",
+        target = getTargetAddress(user)
       )
   );
 }

@@ -1,20 +1,18 @@
 package gui.admin;
 import mc.fenix.arrange.GemColumn;
-import gui.kitchen.LeadUserPanel;
-import gui.kitchen.OrdinaryUserPanel;
-import gui.kitchen.ExtraUserPanel;
+import gui.kitchen.UserPanel;
 import KitchenCompanion.User;
-import KitchenCompanion.Search;
-import gui.components.Divider;
+import KitchenCompanion.KitchenCompanionRole;
+
 import gui.management.AlphabetSearch;
 
-page UserPage(List<User> userList, Search searchState) {
+page UserPage(List<User> userList, String searchLetter = "") {
     @GemColumn(hAlign = "center", vAlign = "center", rowGap="1rem",
       components = [
-        @AlphabetSearch(searchState = searchState, userOrOffer = true),
-        @LeadUserPanel(allUsers = userList, searchState = searchState, adminPage = true),
-        @Divider(color = "red", width = "20rem", height = "0.5rem"),
-        @OrdinaryUserPanel(allUsers = userList, searchState = searchState, adminPage = true),
-        @ExtraUserPanel(allUsers = userList, searchState = searchState, adminPage = true)
+        @AlphabetSearch(selectedLetter = searchLetter, userOrOffer = true, onSelect = selectLetter()),
+        leadPanel@UserPanel(allUsers = userList, searchLetter = searchLetter, adminPage = true, role = KitchenCompanionRole.VIP),
+        ordinaryPanel@UserPanel(allUsers = userList, searchLetter = searchLetter, adminPage = true, role = KitchenCompanionRole.USER),
+        extraPanel@UserPanel(allUsers = userList, searchLetter = searchLetter, adminPage = true, role = KitchenCompanionRole.EXTRA),
+        hiwiPanel@UserPanel(allUsers = userList, searchLetter = searchLetter, adminPage = true, role = KitchenCompanionRole.HIWI)
     ]);
 }

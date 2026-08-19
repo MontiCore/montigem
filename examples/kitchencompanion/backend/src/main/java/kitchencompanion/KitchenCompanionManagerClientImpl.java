@@ -25,40 +25,8 @@ public class KitchenCompanionManagerClientImpl extends KitchenCompanionManagerCl
   }
 
   private static GemList<User> sortUsersList(GemList<User> users) {
-    int n = users.size();
-    for (int i = 0; i < n - 1; i++) {
-      for (int j = 0; j < n - i - 1; j++) {
-        User a = users.get(j);
-        User b = users.get(j + 1);
-
-        boolean shouldSwap = false;
-        int prioA = getPriority(a);
-        int prioB = getPriority(b);
-
-        if (prioA != prioB) {
-          shouldSwap = prioA < prioB;
-        } else {
-          int cmpLast = a.getLastName().compareToIgnoreCase(b.getLastName());
-          if (cmpLast > 0) {
-            shouldSwap = true;
-          } else if (cmpLast == 0) {
-            int cmpFirst = a.getName().compareToIgnoreCase(b.getName());
-            shouldSwap = cmpFirst > 0;
-          }
-        }
-        if (shouldSwap) {
-          users.set(j, b);
-          users.set(j + 1, a);
-        }
-      }
-    }
+    User.sortForDisplay(users);
     return users;
-  }
-  private static int getPriority(User u) {
-    if (u.getLastName().compareToIgnoreCase("Rumpe") == 0) {
-      return 2;
-    }
-    return 0;
   }
 
 }

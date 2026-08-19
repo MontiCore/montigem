@@ -8,7 +8,7 @@
   .mainText {
     color: black;
     height: auto !important;
-    padding-bottom: 0px !important;
+    padding-bottom: 0px;
     text-shadow:
         1px 1px 0 white,
         -1px 1px 0 white,
@@ -24,36 +24,36 @@
   .grid,
   [class*="grid"] {
     height: auto !important;
-    min-height: auto !important;
-    max-height: 10% !important;
+    min-height: auto;
+    max-height: 10%;
 
-    grid-template-columns: max-content max-content max-content !important;
+    grid-template-columns: 70px 1fr 70px !important;
     column-gap: 20px !important;
-    width: max-content !important;
-    margin: 0 auto !important;
+    width: 100% !important;
+    margin: 0 !important;
 
-    padding-top: 16px !important;
-    padding-bottom: 0px !important;
+    padding-top: 16px;
+    padding-bottom: 0px;
 
     align-items: center !important;
     align-content: center !important;
   }
 
   .grid > * {
-    display: flex !important;
+    display: flex;
     align-items: center !important;
     justify-content: center !important;
     height: auto !important;
   }
 
   .grid > *:nth-child(2) {
-    display: flex !important;
+    display: flex;
     align-items: center !important;
     h1, div, span, .gem-text, p, [class*="mainText"] {
       margin: 0 !important;
-      padding: 0 !important;
-      line-height: 0.85 !important;
-      display: inline-flex !important;
+      padding: 0;
+      line-height: 0.85;
+      display: inline-flex;
       align-items: center !important;
       justify-content: center !important;
     }
@@ -63,37 +63,37 @@
   .gem-button {
     width: 70px !important;
     height: 70px !important;
-    min-width: 70px !important;
-    display: inline-flex !important;
+    min-width: 70px;
+    display: inline-flex;
     align-items: center !important;
     justify-content: center !important;
     margin: 0 !important;
-    background-color: transparent !important;
-    border-radius: 50% !important;
-    transition: background-color 0.2s ease !important;
+    background-color: transparent;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
 
     &:hover {
-      background-color: rgba(0, 0, 0, 0.08) !important;
-      cursor: pointer !important;
+      background-color: rgba(0, 0, 0, 0.08);
+      cursor: pointer;
     }
 
     &:active {
-      background-color: rgba(0, 0, 0, 0.15) !important;
+      background-color: rgba(0, 0, 0, 0.15);
     }
 
     font-size: 40px !important;
-    line-height: 70px !important;
-    text-align: center !important;
+    line-height: 70px;
+    text-align: center;
 
     mat-icon, i, svg, span, p {
       width: 100% !important;
       height: 100% !important;
       font-size: 70px !important;
-      line-height: 70px !important;
-      display: flex !important;
+      line-height: 70px;
+      display: flex;
       align-items: center !important;
       justify-content: center !important;
-      transform: none !important;
+      transform: none;
     }
   }
 
@@ -101,21 +101,21 @@
   mat-progress-spinner,
   .gem-spinner,
   mat-loading-spinner {
-    width: 70px !important;
-    height: 70px !important;
-    max-width: 70px !important;
-    max-height: 70px !important;
-    margin: 0 !important;
-    display: inline-flex !important;
+    width: 52px !important;
+    height: 52px !important;
+    max-width: 52px;
+    max-height: 52px;
+    margin: 0 1rem 0 0 !important;
+    display: inline-flex;
     align-items: center !important;
 
     circle {
-      stroke-width: 12% !important;
+      stroke-width: 12%;
     }
   }
 
   div:has(> mat-progress-spinner) {
-    display: flex !important;
+    display: flex;
     justify-content: center !important;
     align-items: center !important;
     width: 100% !important;
@@ -127,3 +127,17 @@
   }
 }
 
+
+:host ::ng-deep {
+  .grid > *:nth-child(1) {
+    justify-content: flex-start !important;
+  }
+
+  .grid > *:nth-child(3) {
+    justify-content: flex-end !important;
+  }
+
+  .grid > * {
+    align-self: center;
+  }
+}

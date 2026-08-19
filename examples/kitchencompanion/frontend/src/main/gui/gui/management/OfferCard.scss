@@ -1,0 +1,13 @@
+:host ::ng-deep {
+  .minusBtn > button:disabled {
+    .minusIcon {
+      color: transparent !important;
+    }
+
+    cursor: auto;
+  }
+  .minusBtn > button,.plusBtn > button{
+    margin: 0px;
+    min-width: 0px;
+  }
+}

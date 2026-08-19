@@ -43,7 +43,6 @@ public abstract class MailService {
     mail.setSubject(subject);
     mail.setText(mailText, "UTF-8", "html");
 
-
     Transport t = session.getTransport();
     t.connect();
     t.sendMessage(mail, mail.getAllRecipients());
@@ -52,7 +51,6 @@ public abstract class MailService {
   private static void addToProperties(String key, Object defaultValue) {
     properties.put(key, (System.getenv(key) != null ? System.getenv(key) : defaultValue));
   }
-
 }
 
 

@@ -8,23 +8,23 @@ import gui.base.Footer;
 import gui.base.Header;
 
 page LoginPage(String pw, boolean loggedIn, String startingPage, boolean changePw = false, String newPassword) {
-    @GemColumn(hAlign = "center", components = [
-      @Header(headline = "Admin Login")
-    ]);
-    @GemCard(title = "Admin Login", width = 400, height = 200, component =
-        @GemColumn(components = [
-            password@GemTextInput(
-              id = "pw",
-              labelText = "Password",
-              entry = pw,
-              inputType = "password",
-              validity = null
-            ),
-            @GemButton(label = "Login", leftClick = login(pw))
-        ])
-    );
-   @Footer(
-       title = "Home Page",
-       target = "/gui/kitchen/KitchenPage"
-   );
+  @GemColumn(hAlign = "center", components = [
+    @Header(headline = "Admin Login")
+  ]);
+  @GemCard(title = "Admin Login", width = 400, height = 200, component =
+    @GemColumn(components = [
+      password@GemTextInput(
+        id = "pw",
+        labelText = "Password",
+        entry = pw,
+        inputType = "password",
+        validity = null
+      ),
+      @GemButton(label = "Login", leftClick = login(pw))
+    ])
+  );
+  @Footer(
+    title = "Home Page",
+    target = "/gui/kitchen/KitchenPage"
+  );
 }

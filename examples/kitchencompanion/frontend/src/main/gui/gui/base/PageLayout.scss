@@ -1,13 +1,24 @@
 :host ::ng-deep {
-  .topColumn{
-    max-height: calc(100dvh * 0.30) !important;
+  .wholeColumn {
+    max-height: calc(100dvh - 10px);
+    overflow: hidden;
+    padding-bottom: 2.75rem;
+    box-sizing: border-box;
+  }
+
+  .topColumn {
+    flex: 0 0 auto;
     padding: 0px;
   }
-  .columnOverflow{
-    height: calc((100dvh * 0.65));
+
+  .columnOverflow {
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
-    flex-direction: column !important;
+    flex-direction: column;
+    row-gap: 1rem;
+
     &::-webkit-scrollbar {
       width: 6px;
     }
@@ -17,4 +28,3 @@
     }
   }
 }
-

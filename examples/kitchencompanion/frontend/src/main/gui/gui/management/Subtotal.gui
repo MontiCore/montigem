@@ -25,7 +25,7 @@ import gui.base.*;
 
 page Subtotal(User user){
   column@GemColumn(hAlign = "center", rowGap = "1rem", components = [
-  @Header(headline = getName(user)),
+  @Header(headline = user.formattedName, timerNeeded = true, backBtnNeeded = true),
       table@GemTable(
         layout = "fixed",
         headers = [

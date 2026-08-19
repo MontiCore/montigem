@@ -1,15 +1,10 @@
 package gui.admin;
 
 import app.AppRouter;
-import gui.SearchProvider;
-import kitchencompanion.KitchenCompanionManager;
 import kitchencompanion.Receipt;
-import kitchencompanion.Search;
 import kitchencompanion.User;
-import umlp.guiutil.Router;
 
 import java.time.LocalDate;
-import java.util.List;
 
 public class PaymentStatus extends PaymentStatusTOP {
 
@@ -53,10 +48,5 @@ public class PaymentStatus extends PaymentStatusTOP {
   @Override
   public void destroy() {
     super.destroy();
-    KitchenCompanionManager.deleteSearch(SearchProvider.getSearch().getGemId());
-    SearchProvider.search = null;
-    System.out.println("Search state has been destroyed");
   }
-
-
 }

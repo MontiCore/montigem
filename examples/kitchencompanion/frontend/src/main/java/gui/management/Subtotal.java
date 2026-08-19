@@ -35,7 +35,6 @@ public class Subtotal extends SubtotalTOP {
 
   @Override
   public String priceSum(User user) {
-    user.setSum();
     return user.getSum() - user.getBalance() + " €";
   }
 
@@ -63,25 +62,15 @@ public class Subtotal extends SubtotalTOP {
 
   @Override
   public List<Offer> getOfferList(User user) {
-    ArrayList<Offer> offers = new ArrayList<>();
-    for (Tally t : user.getPrevTalliesList()) {
-      offers.add(t.getOffer());
-    }
-    return offers;
+    return Tally.offersOf(user.getPrevTalliesList());
   }
 
   @Override
   public String priceOrdered(User u) {
-    u.setSum();
     return u.getSum() + " €";
   }
 
   @Override
   public void destroy() {
     super.destroy();
-  }
-  @Override
-  public String getName(User user){
-    return user.getFormatedName();
-  }
-}
+  }}

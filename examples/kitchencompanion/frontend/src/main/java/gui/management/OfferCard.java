@@ -11,7 +11,13 @@ public class OfferCard extends OfferCardTOP {
     return $ -> {
       getUser().addTally(offer);
       setTallyCount(offer);
+      setCanRemove();
     };
+  }
+
+
+  public void setCanRemove() {
+    this.setCanRemoveTally(getUser().canRemoveTally(isAdminRights(),getOffer()));
   }
 
   @Override
@@ -19,17 +25,12 @@ public class OfferCard extends OfferCardTOP {
     return $ -> {
       getUser().removeTally(isAdminRights(), offer);
       setTallyCount(offer);
+      setCanRemove();
     };
   }
 
   public void setTallyCount(Offer offer) {
-    int tallyCount = 0;
-    for (Tally t : getUser().getTalliesList()) {
-      if (t.getOffer().getName().equals(offer.getName())) {
-        tallyCount = t.getCount();
-        break;
-      }
-    }
+    int tallyCount = Tally.countFor(getUser().getTalliesList(), offer);
     String prevTalliesCount = getPrevTallies(offer);
     if (prevTalliesCount.compareTo("0") == 0 && tallyCount == 0) {
       setCount("" + 0);
@@ -43,13 +44,6 @@ public class OfferCard extends OfferCardTOP {
   }
 
   private String getPrevTallies(Offer offer) {
-    int tallyCount = 0;
-    for (Tally t : getUser().getPrevTalliesList()) {
-      if (t.getOffer().getName().equals(offer.getName())) {
-        tallyCount = t.getCount();
-        break;
-      }
-    }
-    return "" + tallyCount;
+    return "" + Tally.countFor(getUser().getPrevTalliesList(), offer);
   }
 }

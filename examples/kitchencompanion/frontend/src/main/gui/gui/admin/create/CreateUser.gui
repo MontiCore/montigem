@@ -18,5 +18,5 @@ page CreateUser(User user){
         label = "back",
         leftClick = navigate(@Admin())
       )
- );
+  );
 }

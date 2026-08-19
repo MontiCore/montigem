@@ -4,23 +4,4 @@
   .header{
     height: 5%;
   }
-  .topColumn{
-    max-height: calc(100dvh * 0.30) !important;
-    padding: 0px;
-  }
-
-  .columnOverflow{
-    max-height: calc((100dvh * 0.65))!important;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column !important;
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
-    }
-  }
 }
-

@@ -1,14 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 import mc.fenix.input.GemTextInputTypes.GemTextInputValidity;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Optional;
+import java.util.*;
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Optional;
 
 umlp KitchenCompanion {
 
@@ -19,7 +12,9 @@ umlp KitchenCompanion {
     double balance;
     <<dbColumn ="unique = true">> String email;
     KitchenCompanionRole role;
-    double sum;
+    / double sum;
+    // "Lastname, Firstname" for display; implemented in the handwritten User class
+    / String formattedName;
     List<Tally> tallies;
     List<Tally> prevTallies;
     List<Receipt> receipts;
@@ -29,17 +24,13 @@ umlp KitchenCompanion {
     USER,
     HIWI,
     VIP,
+    EXTRA,
     ADMIN;
   }
 
   enum ProductType{
     DRINK,
     SNACK;
-  }
-
-  class Search {
-    String searchStr;
-    boolean searched;
   }
 
   class Offer {
@@ -70,4 +61,10 @@ umlp KitchenCompanion {
   class EmailSendingService {
     void sendEmail();
   }
+
+  <<singleton>>
+  class AdminLoginService {
+    boolean checkAdminPassword(String password);
+  }
+
 }

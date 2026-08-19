@@ -1,92 +1,61 @@
 package gui.management;
 
-import kitchencompanion.KitchenCompanionManager;
-import kitchencompanion.Offer;
-import kitchencompanion.User;
+import kitchencompanion.UserFilter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class AlphabetSearch extends AlphabetSearchTOP {
-  public final String[] ALPHABET = {
+  private static final String[] ALPHABET = {
       "A", "B", "C", "D", "E", "F", "G",
       "H", "I", "J", "K", "L", "M", "N",
       "O", "P", "Q", "R", "S", "T", "U",
       "V", "W", "X", "Y", "Z"
   };
+  private List<String> list;
 
   @Override
   public List<String> getAlphabet() {
-    List<String> list = new ArrayList<>();
-    for (String alphabet : ALPHABET) {
-      list.add(alphabet);
+    if (list == null) {
+      list = new ArrayList<>();
+      for (String s : ALPHABET) {
+        list.add(s);
+      }
     }
     return list;
   }
+  
+  @Override
+  public Consumer<Void> select(String str) {
+    return $ -> report(str);
+  }
 
   @Override
-  public Consumer<Void> setLetterSelection(String str) {
-    return $ -> {
-      getSearchState().setSearched(true);
-      getSearchState().setSearchStr(str);
-    };
+  public Consumer<Void> clearSelection() {
+    return $ -> report("");
   }
+
+  private void report(String letter) {
+    if (getOnSelect() != null) {
+      getOnSelect().accept(letter);
+    }
+  }
+
 
   @Override
   public Boolean getDisabled(String str) {
-    if (isEmptySearch(str)) {
+    if (str.equals(getSelectedLetter())) {
       return true;
     }
-    if (getSearchState() != null) {
-      return getSearchState().isSearched() && str.compareTo(getSearchState().getSearchStr()) == 0;
-    }
-    return false;
-  }
-
-  private Boolean isEmptySearch(String str) {
     if (isUserOrOffer()) {
-      return searchInUser(str);
-    } else {
-      return searchInOffer(str);
+      return UserFilter.noUserFor(str);
     }
+    return UserFilter.noOfferFor(str);
   }
-
-  private boolean searchInOffer(String str) {
-    List<Offer> offers = KitchenCompanionManager.getOfferList();
-    for (Offer offer : offers) {
-      if (offer.getName().startsWith(str) && offer.isInStock()) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean searchInUser(String str) {
-    List<User> users = KitchenCompanionManager.getUserList();
-    for (User user : users) {
-      if (user.getName().startsWith(str) || user.getLastName().startsWith(str)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  @Override
-  public Consumer<Void> clearLetterSelection() {
-    return $ -> {
-      getSearchState().setSearched(false);
-      getSearchState().setSearchStr("");
-    };
-  }
-
+  
   @Override
   public Boolean isDisabled() {
-    try {
-      return !getSearchState().isSearched();
-    }catch(NullPointerException npe) {
-      return true;
-    }
+    return getSelectedLetter() == null || getSelectedLetter().isEmpty();
   }
 }

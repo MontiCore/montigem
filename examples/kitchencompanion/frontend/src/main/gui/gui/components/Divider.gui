@@ -1,5 +1,0 @@
-package gui.components;
-
-component Divider(String color,String width, String height) {
-
-}

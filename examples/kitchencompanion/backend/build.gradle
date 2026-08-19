@@ -19,6 +19,9 @@ dependencies {
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
   implementation 'com.h2database:h2:2.1.214'
 
+  // BCrypt only. Deliberately not spring-boot-starter-security, which would auto-configure a filter chain in front of the whole app.
+  implementation group: 'org.springframework.security', name: 'spring-security-crypto', version: '6.5.10'
+
   // Spring Boot Dependencies
   compileOnly group: 'org.springframework.boot', name: 'spring-boot-devtools', version: spring_version
   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: spring_version

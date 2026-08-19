@@ -14,7 +14,6 @@ import mc.fenix.navigation.GemNavItem;
 import mc.fenix.basic.GemImage;
 import mc.fenix.basic.GemIcon;
 import mc.fenix.navigation.GemNavItem;
-import KitchenCompanion.Search;
 import KitchenCompanion.User;
 import KitchenCompanion.Offer;
 import gui.management.OfferCard;

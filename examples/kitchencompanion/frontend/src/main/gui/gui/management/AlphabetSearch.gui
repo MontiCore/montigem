@@ -2,19 +2,18 @@ package gui.management;
 
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemButton;
-import KitchenCompanion.Search;
 
-component AlphabetSearch(Search searchState, boolean userOrOffer){
+component AlphabetSearch(String selectedLetter, boolean userOrOffer, Event<String> onSelect){
   @GemRow(hAlign = "center", wrap="wrap", components = [
     clear@GemButton(
       label = "Clear",
-      leftClick = clearLetterSelection(),
+      leftClick = clearSelection(),
       disabled = isDisabled()
     ),
     @iterate(String str: getAlphabet()){
       alphabetButton@GemButton(
         label = str,
-        leftClick = setLetterSelection(str),
+        leftClick = select(str),
         disabled = getDisabled(str)
       );
     }

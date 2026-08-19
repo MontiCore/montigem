@@ -8,8 +8,9 @@
   transition: transform 100ms ease,
   box-shadow 100ms ease;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
+  width: 100%;
 }
 
 :host ::ng-deep {
@@ -36,7 +37,10 @@
   }
 
   .minusIcon {
-    color: red;
+    color: darkred;
+  }
+  .plusIcon{
+    color: darkgreen;
   }
 
   .column {
@@ -49,9 +53,19 @@
   .gem-button:hover {
     background-color: transparent;
   }
-  .offerBtn{
-    min-width: 20rem!important;
-    max-width: 20rem!important;
+
+  .offerBtn button.gem-button,
+  .offerBtn button.gem-button:hover:enabled {
+    box-shadow: none;
+  }
+
+  gem-row > offer-card {
+    width: 20rem;
+  }
+
+  .gem-card-header {
+    height: 3.5rem !important;
+    align-items: center !important;
   }
   .gem-card-body {
     padding: 0;
@@ -79,20 +93,3 @@
     }
   }
 }
-:host ::ng-deep{
-  @media(orientation: landscape) {
-    .columnOverflow {
-      height: calc((100dvh * 0.70) + 0.5rem) !important;
-    }
-  }
-  @media(orientation: portrait){
-    .columnOverflow{
-      height: 78dvh !important;
-    }
-  }
-}
-:host ::ng-deep .topColumn{
-  max-height: calc(100dvh * 0.30) !important;
-  padding: 0px;
-}
-

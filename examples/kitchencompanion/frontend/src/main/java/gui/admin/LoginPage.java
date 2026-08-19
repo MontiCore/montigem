@@ -1,4 +1,5 @@
 package gui.admin;
+import app.AppRouter;
 import mc.fenix.input.gemtextinputtypes.GemTextInputValidity;
 import umlp.guiutil.Router;
 
@@ -8,17 +9,13 @@ public class LoginPage extends LoginPageTOP {
   @Override
   public Consumer<Void> login(String pw) {
     return $ -> {
-      System.out.println("Only temporary login page for admin");
-      if(LoginServiceFront.canLogin(pw)){
+      if(LoginServiceFront.login(pw)){
         validity = new GemTextInputValidity("Success", "");
+        getPasswordValidity();
+        AppRouter.navigateToGuiAdminAdmin();
       } else{
         validity = new GemTextInputValidity("Error", "Wrong password");
-      }
-      getPasswordValidity();
-      LoginServiceFront.login(pw);
-      if(LoginServiceFront.getLoggedIn()){
-        System.out.println(true);
-        Router.navigate("gui", "admin", "Admin");
+        getPasswordValidity();
       }
     };
   }
