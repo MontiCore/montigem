@@ -19,7 +19,7 @@ public class KitchenCompanionServerApplication extends KitchenCompanionServerApp
   }
 
   private void loadDummyDataIfNotDeployed() {
-    if (System.getenv("deploy") == null || !System.getenv("deploy").equalsIgnoreCase("true")) {
+    if (DeploymentService.isDevEnvironment()) {
       createDummyUsers();
       createDummyOffers();
     }

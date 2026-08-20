@@ -1,11 +1,18 @@
 package gui.admin;
 import app.AppRouter;
 import mc.fenix.input.gemtextinputtypes.GemTextInputValidity;
-import umlp.guiutil.Router;
 
 import java.util.function.Consumer;
 public class LoginPage extends LoginPageTOP {
-  private GemTextInputValidity validity = new GemTextInputValidity("Success","validity hasnt been checked yet");
+  
+  @Override
+  public void init() {
+    super.init();
+    if (LoginServiceFront.getLoggedIn()){
+      AppRouter.navigateToGuiAdminAdmin();
+    }
+  }
+  
   @Override
   public Consumer<Void> login(String pw) {
     return $ -> {
@@ -19,17 +26,13 @@ public class LoginPage extends LoginPageTOP {
       }
     };
   }
-
+  
+  private GemTextInputValidity validity = new GemTextInputValidity("Success","validity hasnt been checked yet");
+  
   @Override
   public GemTextInputValidity getPasswordValidity() {
     return validity;
   }
 
-  @Override
-  public void init() {
-    super.init();
-    if(LoginServiceFront.getLoggedIn()){
-      Router.navigate("gui", "admin", "Admin");
-    }
-  }
+  
 }

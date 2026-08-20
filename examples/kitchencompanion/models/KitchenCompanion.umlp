@@ -65,6 +65,7 @@ umlp KitchenCompanion {
   <<singleton>>
   class AdminLoginService {
     boolean checkAdminPassword(String password);
+    boolean isDevEnvironment();
   }
 
 }
