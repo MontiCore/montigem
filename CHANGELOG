@@ -81,7 +81,7 @@ For MontiGem users:
   - comment module
 
 - Updated default app project structure, see the top section of [project
-  setup](./ProjectSetup.md).
+  setup](docs/ProjectSetup.md).
 
 - Update default module project structure to closely resemble app project
   structure
@@ -90,7 +90,7 @@ For MontiGem users:
   - Renamed plugins. Naming schema `<SomeCustom>Plugin`, for example,
     `ModuleFrontendPlugin`, `BackendPlugin`
   - Reworked application and module plugins. The details are explained in the
-    top section of [project setup](./ProjectSetup.md)
+    top section of [project setup](docs/ProjectSetup.md)
     - Moved common script logic to plugins
     - `umlp-rte` is now also a module
   - Renamed gradle tasks. Naming schema mostly follows rules:
@@ -124,7 +124,7 @@ For MontiGem users:
 
 - Handwritten `jsweetconfig.json` are now merged into generated one. The
   location for handwritten file is specified on top in [project setup
-  doc](./ProjectSetup.md). The JSON properties specified in handwritten
+  doc](docs/ProjectSetup.md). The JSON properties specified in handwritten
   `jsweetconfig.json` overwrite the generated ones (arrays and objects are not
   merged, except the top-most object).
 

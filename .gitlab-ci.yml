@@ -46,6 +46,7 @@ pages:
   rules:
     - if: $CI_COMMIT_BRANCH == "dev"
   script:
+    - cp CHANGELOG ./docs/.
     - mkdocs build --verbose --clean
     - mv site public
   artifacts:

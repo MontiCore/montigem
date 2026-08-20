@@ -79,7 +79,7 @@ nav:
     - E2E Testing (simulated GUI): 'tutorial/11_E2ETestingWithSimulatedGUI.md'
     - OCL GUI Validity Checking: 'tutorial/12_OCLGUIValidityChecking.md'
   - GUI Component Library: 'gendoc_components/Frontend-RTE.md'
-  - Changelog: 'Changelog.md'
+  - Changelog: 'CHANGELOGHANGELOG'
   - More Documentation:
     - Helpful Links: 'HelpfulLinks.md'
     - GUI Validity Generator Internals: 'GUIValidityDev.md'
