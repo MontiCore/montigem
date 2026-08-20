@@ -3,6 +3,7 @@ ${tc.signature("htmlPath", "scssPaths", "selector","importedComponents","hwcPath
 <#assign genHelper = glex.getGlobalVar("genHelper")>
 
 import { CommonModule } from "@angular/common";
+import { ChangeDetectionStrategy } from "@angular/core";
 
 export const config = {
 imports: [
@@ -21,6 +22,7 @@ styleUrls: [<#list scssPaths as path>'${path}',</#list>]
 <#if generateAnnotation>
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,

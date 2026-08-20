@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "@perfectmemory/ngx-contextmenu": "^17.0.3",
-    "@types/three": "^0.160.0",
-    "three": "^0.160.0"
-  }
-}

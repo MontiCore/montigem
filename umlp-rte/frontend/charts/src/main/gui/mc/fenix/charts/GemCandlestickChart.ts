@@ -1,12 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemCandlestickChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemCandlestickChartComponent';
 import { GemChartOptions } from './GemChartOptions';
 
 @Component({
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, CommonModule, GemChartOptions],
   selector: config.selector,
   styleUrls: config.styleUrls,

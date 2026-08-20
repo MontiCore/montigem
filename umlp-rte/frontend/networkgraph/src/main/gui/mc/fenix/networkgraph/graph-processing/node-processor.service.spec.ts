@@ -250,7 +250,7 @@ describe("NodeProcessorService", () => {
 
   describe("logNodeWarnings", () => {
     it("should log warnings for duplicated node keys", () => {
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       (service as any).logNodeWarnings(["key1", "key2"]);
       expect(consoleWarnSpy).toHaveBeenCalled();
       consoleWarnSpy.mockRestore();

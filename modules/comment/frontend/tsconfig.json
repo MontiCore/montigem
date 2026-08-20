@@ -17,6 +17,7 @@
     },
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
+    "ignoreDeprecations": "6.0",
     "forceConsistentCasingInFileNames": true,
     "strict": false,
     "noImplicitOverride": false,
@@ -30,7 +31,7 @@
     "inlineSources": true,
     "downlevelIteration": true,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",
@@ -40,9 +41,6 @@
       "dom"
     ]
   },
-  "exclude": [
-    "**/*.spec.ts"
-  ],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,

@@ -1,10 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, Input, TemplateRef } from "@angular/core";
+import {ChangeDetectionStrategy, Component, Input, TemplateRef} from "@angular/core";
 import { config, GemOverlayComponent } from '../../../../../../build/gui2java2ts/mc/fenix/arrange/GemOverlayComponent';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   styleUrls: config.styleUrls,

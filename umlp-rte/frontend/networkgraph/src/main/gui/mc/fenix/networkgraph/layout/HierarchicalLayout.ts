@@ -453,7 +453,7 @@ export class HierarchicalLayout  {
   }
 
   public findMinSlackEdge(treeNodes : string[], g : AbstractGraph) {
-    console.warn("Treenodes: ",treeNodes)
+    //console.warn("Treenodes: ",treeNodes)
 
     let minSlack = Number.POSITIVE_INFINITY;
     let minSlackEdge : string = null;
@@ -466,8 +466,8 @@ export class HierarchicalLayout  {
         }
       }
     })
-    console.warn(minSlack)
-    console.warn("MinSlackEdge:", minSlackEdge)
+    //console.warn(minSlack)
+    //console.warn("MinSlackEdge:", minSlackEdge)
     return minSlackEdge;
   }
 
@@ -477,7 +477,7 @@ export class HierarchicalLayout  {
    */
   public static slack(g : AbstractGraph, edgeKey : string) {
     const slack = g.getNodeAttribute(g.target(edgeKey), "rank") - g.getNodeAttribute(g.source(edgeKey), "rank") - g.getEdgeAttribute(edgeKey, "minlen");
-    console.warn("current slack: ",g.target(edgeKey), g.source(edgeKey), slack )
+    //console.warn("current slack: ",g.target(edgeKey), g.source(edgeKey), slack )
     return slack;
   }
 

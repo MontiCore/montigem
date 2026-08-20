@@ -1,11 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
-import { Component } from "@angular/core";
+import { Component, ChangeDetectionStrategy} from "@angular/core";
 import {SehubSecurityManager} from "sehub/SehubSecurityManager";
 import {User} from 'sehub/User';
 import { RouterModule } from '@angular/router';
 import {CommonModule} from '@angular/common';
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:[RouterModule,CommonModule],
   selector: "navigation",
   templateUrl: "./navigation.component.html",

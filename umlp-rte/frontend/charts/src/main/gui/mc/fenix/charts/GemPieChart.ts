@@ -23,7 +23,6 @@ import * as Plotly from 'plotly.js-dist-min';
 PlotlyModule.plotlyjs = Plotly;
 
 @Component({
-  standalone: true,
   imports: [...config.imports, CommonModule, GemChartOptions, PlotlyModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

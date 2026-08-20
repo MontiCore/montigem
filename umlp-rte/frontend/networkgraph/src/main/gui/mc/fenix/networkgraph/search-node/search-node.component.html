@@ -9,20 +9,13 @@
 </ng-template>
 
 <!-- Actual Dropdown to search for a node -->
-<p-dropdown
-  (onChange)="nodeSelected($event)"
-  (onShow)="updateSearchNodes()"
-  [ngModel]="graphManager.graphData.selectedNode"
+<graph-select
+  (selectionChange)="nodeSelected($event)"
+  (panelShow)="updateSearchNodes()"
+  [value]="graphManager.graphData.selectedNode"
   [filter]="true"
   [options]="visibleSearchNodes"
   [showClear]="true"
-  [virtualScrollItemSize]="38"
-  [virtualScrollOptions]="{
-    trackBy: trackByFn,
-    autoSize: true
-  }"
-  [virtualScroll]="true"
-  appendTo="body"
   filterBy="searchLabel,nodeKey,group"
   optionLabel="searchLabel"
   optionValue="nodeKey"
@@ -30,7 +23,7 @@
   placeholder="Search in nodes..."
   styleClass="search-node-input">
   <!-- Template for the selected item -->
-  <ng-template let-selectedItem pTemplate="selectedItem">
+  <ng-template let-selectedItem graphTemplate="selectedItem">
     <div *ngIf="selectedItem" class="wrapper">
       <!-- Show the Label-Wrapper -->
       <ng-container *ngTemplateOutlet="labelWrapperTemplate; context: { $implicit: selectedItem }"></ng-container>
@@ -38,7 +31,7 @@
   </ng-template>
 
   <!-- Template for the items in the dropdown -->
-  <ng-template let-item pTemplate="item">
+  <ng-template let-item graphTemplate="item">
     <div *ngIf="item" class="wrapper">
       <!-- Show the Label -->
       <ng-container *ngTemplateOutlet="labelWrapperTemplate; context: { $implicit: item }"></ng-container>
@@ -47,10 +40,10 @@
     </div>
   </ng-template>
   <!-- Template for the footer -->
-  <ng-template pTemplate="footer">
+  <ng-template graphTemplate="footer">
     <div class="footer">
       <!-- Show the total nodes -->
       <span class="footer-text">Total Nodes: {{ searchNodes.length }}</span>
     </div>
   </ng-template>
-</p-dropdown>
+</graph-select>

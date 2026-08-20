@@ -156,7 +156,7 @@ export function getDifferences<T1, T2>(argument1: T1, argument2: T2): Difference
   } else if (TypeCheckerUtil.isMap(argument1) && TypeCheckerUtil.isMap(argument2)) {
     return mapDiffer(argument1, argument2) as Differences<T1, T2>;
   } else if (TypeCheckerUtil.isObject(argument1) && TypeCheckerUtil.isObject(argument2)) {
-    return objectDiffer(argument1, argument2) as Differences<T1, T2>;
+    return objectDiffer(argument1 as object, argument2 as object) as Differences<T1, T2>;
   } else {
     return primitiveDiffer(argument1, argument2) as Differences<T1, T2>;
   }

@@ -1,9 +1,7 @@
-<p-multiSelect
-  (onChange)="selectGroup($event)"
-  [(ngModel)]="selectedGroups"
-  [maxSelectedLabels]="0"
-  [options]="processedGroups"
-  appendTo="body"
+<graph-multi-select
+  (selectionChange)="selectGroup($event)"
+  [(value)]="selectedGroups"
+  [options]="processedGroups ?? []"
   optionLabel="groupKey"
   optionValue="groupKey"
   panelStyleClass="filer-group-panel"
@@ -11,7 +9,7 @@
   selectedItemsLabel="{0} groups selected"
   styleClass="filter-group-input">
   <!-- Custom Item -->
-  <ng-template let-item pTemplate="item">
+  <ng-template let-item graphTemplate="item">
     <div *ngIf="item" class="group-item">
       <!-- Add a colored dot for for the group -->
       <span [style.background]="item.groupColor" class="color-dot"></span>
@@ -32,9 +30,9 @@
     </div>
   </ng-template>
   <!-- Custom Footer to show the total number of distinct categories -->
-  <ng-template pTemplate="footer">
+  <ng-template graphTemplate="footer">
     <div class="footer">
       <span class="footer-text">Total Categories: {{ processedGroups?.length }}</span>
     </div>
   </ng-template>
-</p-multiSelect>
+</graph-multi-select>

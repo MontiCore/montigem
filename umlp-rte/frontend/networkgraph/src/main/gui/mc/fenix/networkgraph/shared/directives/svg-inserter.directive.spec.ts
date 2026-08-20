@@ -28,14 +28,17 @@ describe("SvgInserterDirective", () => {
     divEl = fixture.debugElement.query(By.css("div"));
   });
 
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
   it("should create an instance", () => {
     const directive = new SvgInserterDirective(divEl);
     expect(directive).toBeTruthy();
   });
 
-  it("should fetch and insert SVG when svgUrl input changes", (done) => {
-    // Mock fetch
-    global.fetch = jest.fn(() =>
+  it("should fetch and insert SVG when svgUrl input changes", async () => {
+    globalThis.fetch = vi.fn(() =>
       Promise.resolve({
         ok: true,
         text: () => "<svg></svg>",
@@ -45,21 +48,19 @@ describe("SvgInserterDirective", () => {
     component.svgUrl = "http://example.com/test.svg";
     fixture.detectChanges();
 
-    fixture.whenStable().then(() => {
-      expect(divEl.nativeElement.innerHTML).toContain("<svg></svg>");
-      done();
-    });
+    await fixture.whenStable();
+
+    expect(divEl.nativeElement.innerHTML).toContain("<svg></svg>");
   });
 
-  it("should set accessibility attributes when svgAlt is provided", (done) => {
+  it("should set accessibility attributes when svgAlt is provided", async () => {
     component.svgUrl = "http://example.com/test.svg";
     component.svgAlt = "Test SVG";
     fixture.detectChanges();
 
-    fixture.whenStable().then(() => {
-      expect(divEl.nativeElement.getAttribute("role")).toBe("img");
-      expect(divEl.nativeElement.getAttribute("aria-label")).toBe("Test SVG");
-      done();
-    });
+    await fixture.whenStable();
+
+    expect(divEl.nativeElement.getAttribute("role")).toBe("img");
+    expect(divEl.nativeElement.getAttribute("aria-label")).toBe("Test SVG");
   });
 });

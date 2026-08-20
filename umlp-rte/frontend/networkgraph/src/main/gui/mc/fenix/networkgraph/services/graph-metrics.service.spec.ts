@@ -63,7 +63,7 @@ describe("GraphMetricsService", () => {
     dataManager.processedEdges = edges;
     dataManager.processedNodes = nodes;
     createSigmaInstance();
-    jest.spyOn(renderer, "renderer", "get").mockReturnValue(sigmaRenderer);
+    vi.spyOn(renderer, "renderer", "get").mockReturnValue(sigmaRenderer);
   });
 
   it("should be created", () => {

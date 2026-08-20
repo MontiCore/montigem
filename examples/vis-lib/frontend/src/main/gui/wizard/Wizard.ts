@@ -18,7 +18,7 @@ import {WizardModal} from "wizard/WizardModal";
  */
 @Component({
   standalone: true,
-  imports: [...config.imports, NgComponentOutlet, KeyValuePipe, WizardModal, WizardContainer],
+  imports: [...config.imports, KeyValuePipe, WizardModal, WizardContainer],
   selector: config.selector,
   template: `
 

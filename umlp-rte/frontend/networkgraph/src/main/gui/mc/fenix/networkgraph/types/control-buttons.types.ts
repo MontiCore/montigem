@@ -1,5 +1,5 @@
 import { GraphManagerService } from "../data/graph-manager.service";
-import {TooltipOptions} from "primeng/api";
+import { GraphTooltipOptions } from "../shared/types/tooltip.types";
 
 /** Defines the possible layouts for control buttons. */
 export type ControlButtonsLayout = "vertical" | "horizontal" | "speedDial";
@@ -27,7 +27,7 @@ export interface RegularControlButton {
   isToggleable?: boolean;
 
   /** Custom options for the tooltip */
-  tooltipOptions?: TooltipOptions;
+  tooltipOptions?: GraphTooltipOptions;
 }
 
 /** Represents a toggleable control button configuration. */

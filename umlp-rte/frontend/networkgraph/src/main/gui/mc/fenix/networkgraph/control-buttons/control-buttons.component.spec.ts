@@ -2,18 +2,18 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { ControlButtonsComponent } from "./control-buttons.component";
 import { GraphManagerService } from "../data/graph-manager.service";
 import { RegularControlButton } from "../types/control-buttons.types";
-import { TooltipOptions } from "primeng/api";
+import { GraphTooltipOptions } from "../shared/types/tooltip.types";
 
 // Mock implementation of GraphManagerService
 const mockGraphManagerService = {
-  stopLayouting: jest.fn(),
-  continueLayouting: jest.fn(),
-  reload: jest.fn(),
-  zoomIn: jest.fn(),
-  zoomOut: jest.fn(),
-  resetZoom: jest.fn(),
-  requestFullscreen: jest.fn(),
-  exitFullscreen: jest.fn(),
+  stopLayouting: vi.fn(),
+  continueLayouting: vi.fn(),
+  reload: vi.fn(),
+  zoomIn: vi.fn(),
+  zoomOut: vi.fn(),
+  resetZoom: vi.fn(),
+  requestFullscreen: vi.fn(),
+  exitFullscreen: vi.fn(),
 };
 
 describe("ControlButtonsComponent", () => {
@@ -62,14 +62,8 @@ describe("ControlButtonsComponent", () => {
   it('should calculate radius correctly when speedDialConfig.radius is "auto"', () => {
     component.speedDialConfig = { radius: "auto" };
     (component as any).speedDialItems = new Array(10);
-    (component as any).speedDialSizeReference = {
-      getBoundingClientRect: () => ({ width: 40, height: 40 }),
-    } as any;
-    fixture.detectChanges();
-    fixture.whenStable().then(() => {
-      const radius = component.getRadius();
-      expect(radius).toBeGreaterThanOrEqual(40);
-    });
+    const radius = component.getRadius();
+    expect(radius).toBeGreaterThanOrEqual(40);
   });
 
   // Initialization and Default State Test
@@ -95,7 +89,7 @@ describe("ControlButtonsComponent", () => {
   it("should set tooltip options correctly", () => {
     component.tooltipOptions = { tooltipPosition: "top" };
     const button = (component as any).controlButtons[0];
-    const result: TooltipOptions = (component as any).getTooltipOptions(button);
+    const result: GraphTooltipOptions = (component as any).getTooltipOptions(button);
     expect(result.tooltipPosition).toBe("top");
   });
 

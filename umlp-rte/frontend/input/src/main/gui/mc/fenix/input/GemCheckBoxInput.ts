@@ -1,11 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { config, GemCheckBoxInputComponent } from '../../../../../../build/gui2java2ts/mc/fenix/input/GemCheckBoxInputComponent';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, FormsModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

@@ -1,11 +1,12 @@
-import { screen } from "@testing-library/angular";
-import { MessageService } from "primeng/api";
 import { Component } from "@angular/core";
-import { CopyDirective } from "./copy.directive";
 import { ComponentFixture, TestBed } from "@angular/core/testing";
+import { vi } from "vitest";
+
+import { CopyDirective } from "./copy.directive";
 
 @Component({
-  template: ` <button [copy]="dataToCopy">Click me</button>`,
+  imports: [CopyDirective],
+  template: `<button [copy]="dataToCopy">Click me</button>`,
 })
 class TestComponent {
   dataToCopy = { key: "value" };
@@ -14,43 +15,45 @@ class TestComponent {
 describe("CopyDirective", () => {
   let component: TestComponent;
   let fixture: ComponentFixture<TestComponent>;
-  let messageService: MessageService;
+  let button: HTMLButtonElement;
 
   beforeEach(async () => {
-    TestBed.configureTestingModule({
-      imports: [CopyDirective],
-      providers: [MessageService],
-    });
-
-    fixture = TestBed.createComponent(TestComponent);
-    component = fixture.componentInstance;
-    messageService = TestBed.inject(MessageService);
-    fixture.detectChanges();
-  });
-
-  it("should create an instance", () => {
-    const directive: HTMLElement = screen.getByText("Click me");
-    expect(directive).toBeDefined();
-  });
-
-  it("should copy data to clipboard", async () => {
-    // Mocking clipboard API
-    Object.assign(navigator, {
+    vi.stubGlobal("navigator", {
+      ...navigator,
       clipboard: {
-        writeText: jest.fn(),
+        writeText: vi.fn(),
       },
     });
 
-    const addSpy = jest.spyOn(messageService, "add");
+    await TestBed.configureTestingModule({
+      imports: [TestComponent],
+    }).compileComponents();
 
-    const directive: HTMLElement = screen.getByText("Click me");
-    directive.click();
+    fixture = TestBed.createComponent(TestComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
 
-    // Wait until subscribes finish
-    fixture.whenStable().then(() => {
-      expect(navigator.clipboard.writeText).toHaveBeenCalledWith(JSON.stringify({ key: "value" }, null, 2));
-      expect(addSpy).toHaveBeenCalledWith({ severity: "success", summary: "Success", detail: "Copied!" });
-    });
+    button = fixture.nativeElement.querySelector("button");
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    TestBed.resetTestingModule();
+  });
+
+  it("should create an instance", () => {
+    expect(button).toBeDefined();
+    expect(button.textContent).toContain("Click me");
+  });
+
+  it("should copy data to clipboard", async () => {
+    button.click();
+    fixture.detectChanges();
+
+    await fixture.whenStable();
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
+      JSON.stringify({ key: "value" }, null, 2),
+    );
   });
 });

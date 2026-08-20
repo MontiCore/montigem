@@ -1,8 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-:host,
-::ng-deep .search-node-panel,
-::ng-deep .filer-group-panel {
+gem-graph .search-node-panel,
+gem-graph .filer-group-panel {
   // General "panel" settings
   --max-node-input-width: min(400px, 80vw);
   --min-node-panel-width: 200px;
@@ -18,20 +17,20 @@
   --dot-size: 0.75rem;
 }
 
-::ng-deep {
+gem-graph {
   .search-node-input,
   .search-node-panel,
   .filter-group-input,
   .filer-group-panel {
     &,
-    .p-inputtext {
+    input {
       font-size: var(--font-size);
     }
   }
 }
 
-::ng-deep {
-  .search-node-input.p-dropdown,
+gem-graph {
+  .search-node-input.graph-select,
   .filter-group-input {
     max-width: var(--max-node-input-width);
   }

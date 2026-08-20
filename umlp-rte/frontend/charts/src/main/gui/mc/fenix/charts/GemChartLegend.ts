@@ -1,10 +1,10 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { config, GemChartLegendComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemChartLegendComponent';
 
 @Component({
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   styleUrls: config.styleUrls,

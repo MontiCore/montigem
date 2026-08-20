@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import {Component} from '@angular/core';
+import {Component,ChangeDetectionStrategy} from '@angular/core';
 import {Location} from '@angular/common';
 import {User} from 'sehub/User';
 import {SehubRole} from 'sehub/SehubRole';
@@ -11,7 +11,7 @@ import {GemList,AsyncList} from '@umlp/commonj2ts';
 import {UserCreateComponent,config} from 'gui/login/UserCreateComponent';
 
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:[...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,

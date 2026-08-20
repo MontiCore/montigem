@@ -8,12 +8,7 @@ import {
   ElementRef, Output, EventEmitter
 } from "@angular/core";
 import {
-  CommonModule,
-  KeyValuePipe,
-  NgComponentOutlet,
-  NgFor,
-  NgIf,
-  AsyncPipe
+  CommonModule
 } from "@angular/common";
 
 import "@angular/compiler";
@@ -24,7 +19,7 @@ import "@angular/compiler";
  */
 @Component({
   standalone: true,
-  imports: [NgComponentOutlet, KeyValuePipe, NgFor, NgIf, CommonModule, AsyncPipe],
+  imports: [CommonModule],
   selector: 'wizard-drop-comp',
   styles: ':host {min-width: 20px; wixdth: 100%; min-height: 20px; hxeight: 100%; background-color: gray; } :host.dropzone {background-color: yellow}',
   template: `{{defaultContent}}`,

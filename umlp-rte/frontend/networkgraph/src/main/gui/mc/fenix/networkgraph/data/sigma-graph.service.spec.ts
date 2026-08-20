@@ -47,11 +47,11 @@ describe("SigmaGraphService", <N extends NodeAttributes = NodeAttributes, E exte
   }
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     TestBed.configureTestingModule({
       providers: [SigmaGraphService, GraphSettingsService],
     });
@@ -86,9 +86,9 @@ describe("SigmaGraphService", <N extends NodeAttributes = NodeAttributes, E exte
     it("should reset the zoom level of the camera", () => {
       const camera = service.camera;
       expect(camera).toBeDefined();
-      const animatedZoomSpy = jest.spyOn(camera!, "animatedZoom");
+      const animatedZoomSpy = vi.spyOn(camera!, "animatedZoom");
       service.animatedZoom({ factor: 2, duration: 1 });
-      jest.runAllTimers();
+      vi.runAllTimers();
 
       // Ensure that our zoom ratio has changed
       expect(animatedZoomSpy).toHaveBeenCalled();
@@ -96,7 +96,7 @@ describe("SigmaGraphService", <N extends NodeAttributes = NodeAttributes, E exte
 
       // Reset zoom and ensure that the ratio is "1" again
       service.resetZoom({ duration: 1 });
-      jest.runAllTimers();
+      vi.runAllTimers();
 
       expect(camera!.ratio).toEqual(1);
     });
@@ -105,7 +105,7 @@ describe("SigmaGraphService", <N extends NodeAttributes = NodeAttributes, E exte
   describe("resize", () => {
     it("should resize the graph rendering area", () => {
       expect(service.renderer).toBeDefined();
-      const resizeSpy = jest.spyOn(service.renderer!, "resize");
+      const resizeSpy = vi.spyOn(service.renderer!, "resize");
       service.resize();
       expect(resizeSpy).toHaveBeenCalled();
     });
@@ -114,7 +114,7 @@ describe("SigmaGraphService", <N extends NodeAttributes = NodeAttributes, E exte
   describe("refresh", () => {
     it("should redraw the graph", () => {
       expect(service.renderer).toBeDefined();
-      const refreshSpy = jest.spyOn(service.renderer!, "refresh");
+      const refreshSpy = vi.spyOn(service.renderer!, "refresh");
       service.refresh();
       expect(refreshSpy).toHaveBeenCalled();
     });
@@ -124,7 +124,7 @@ describe("SigmaGraphService", <N extends NodeAttributes = NodeAttributes, E exte
     it("should animate the camera to a new state", () => {
       const camera = service.camera;
       expect(camera).toBeDefined();
-      jest.spyOn(camera!, "animate");
+      vi.spyOn(camera!, "animate");
       service.animateCamera({ x: 10, y: 10 }, { duration: 200 });
       expect(camera!.animate).toHaveBeenCalledWith({ ratio: 0.1, x: 10, y: 10 }, { duration: 200 }, undefined);
     });

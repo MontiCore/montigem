@@ -9,6 +9,7 @@ import {
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
 import {
+  ChangeDetectionStrategy,
   Component,
   EventEmitter,
   Input,
@@ -20,6 +21,7 @@ import { config, GemDialogComponent } from '../../../../../../build/gui2java2ts/
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   styleUrls: config.styleUrls,

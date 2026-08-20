@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, HostBinding, Input } from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostBinding} from '@angular/core';
 import { config, GemTextComponent } from '../../../../../../build/gui2java2ts/mc/fenix/basic/GemTextComponent';
 
 @Component({
@@ -9,6 +9,7 @@ import { config, GemTextComponent } from '../../../../../../build/gui2java2ts/mc
   selector: config.selector,
   styleUrls: config.styleUrls,
   styles: config.styles,
+  changeDetection: ChangeDetectionStrategy.Eager,
   templateUrl: config.templateUrl,
 })
 export class GemText extends GemTextComponent {

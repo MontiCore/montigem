@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { GraphManagerService } from "../data/graph-manager.service";
 import { FilterGroupComponent } from "./filter-group.component";
-import { MultiSelectChangeEvent, MultiSelectModule } from "primeng/multiselect";
+import { GraphMultiSelectChangeEvent } from "../shared/ui/graph-multi-select/graph-multi-select.types";
 import { SortedFilterGroupInformation } from "../types/filter-group.type";
 import { CommonModule } from "@angular/common";
-import { FormsModule } from "@angular/forms";
+import { vi, Mocked, Mock } from 'vitest';
 
 describe("FilterGroupComponent", () => {
   let component: FilterGroupComponent;
   let fixture: ComponentFixture<FilterGroupComponent>;
-  let mockGraphManagerService: jest.Mocked<GraphManagerService>;
+  let mockGraphManagerService: Mocked<GraphManagerService>;
 
   beforeEach(async () => {
     mockGraphManagerService = {
       graphData: {
-        getNodeFilterGroups: jest.fn().mockReturnValue(
+        getNodeFilterGroups: vi.fn().mockReturnValue(
           new Map([
             ["group1", { count: 3, groupColor: "red" }],
             ["group2", { count: 5, groupColor: "green" }],
@@ -22,12 +22,12 @@ describe("FilterGroupComponent", () => {
           ])
         ),
       },
-      showGroupKeys: jest.fn(),
-      onSigmaInit$: { subscribe: jest.fn() },
-    } as unknown as jest.Mocked<GraphManagerService>;
+      showGroupKeys: vi.fn(),
+      onSigmaInit$: { subscribe: vi.fn() },
+    } as unknown as Mocked<GraphManagerService>;
 
     await TestBed.configureTestingModule({
-      imports: [FilterGroupComponent, CommonModule, FormsModule, MultiSelectModule],
+      imports: [FilterGroupComponent, CommonModule],
       providers: [{ provide: GraphManagerService, useValue: mockGraphManagerService }],
     }).compileComponents();
 
@@ -51,7 +51,7 @@ describe("FilterGroupComponent", () => {
   });
 
   it("should emit group selection change on multi-select", () => {
-    const mockEvent: MultiSelectChangeEvent = { value: ["group1", "group3"], originalEvent: {} as Event };
+    const mockEvent: GraphMultiSelectChangeEvent = { value: ["group1", "group3"], originalEvent: {} as Event };
 
     (component as any).selectGroup(mockEvent);
 
@@ -65,7 +65,7 @@ describe("FilterGroupComponent", () => {
   });
 
   it("should subscribe to onSigmaInit$ and update groups upon Sigma initialization", () => {
-    const sigmaInitSubscriber = (mockGraphManagerService.onSigmaInit$.subscribe as jest.Mock).mock.calls[0][0];
+    const sigmaInitSubscriber = (mockGraphManagerService.onSigmaInit$.subscribe as Mock).mock.calls[0][0];
     sigmaInitSubscriber();
     expect(mockGraphManagerService.graphData.getNodeFilterGroups).toHaveBeenCalledTimes(2); // Once on init, once on Sigma init
     expect((component as any).processedGroups).toBeDefined();

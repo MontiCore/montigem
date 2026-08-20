@@ -5,7 +5,7 @@ import { SigmaGraphService } from "./sigma-graph.service";
 import Graph from "graphology";
 
 const mockGraphSettingsService = {
-  getSetting: jest.fn().mockReturnValue("Unknown Group"),
+  getSetting: vi.fn().mockReturnValue("Unknown Group"),
 };
 
 const mockGraph = new Graph();
@@ -125,7 +125,7 @@ describe("GraphDataService", () => {
     });
 
     it("should notify data change correctly", () => {
-      const spy = jest.spyOn(service["dataChangeSubject"], "next");
+      const spy = vi.spyOn(service["dataChangeSubject"], "next");
       service.notifyDataChange();
       expect(spy).toHaveBeenCalled();
     });
@@ -180,7 +180,7 @@ describe("GraphDataService", () => {
   // Notify Data Change Tests
   describe("Notify Data Change", () => {
     it("should notify data change correctly", () => {
-      const spy = jest.spyOn(service["dataChangeSubject"], "next");
+      const spy = vi.spyOn(service["dataChangeSubject"], "next");
       service.notifyDataChange();
       expect(spy).toHaveBeenCalled();
     });

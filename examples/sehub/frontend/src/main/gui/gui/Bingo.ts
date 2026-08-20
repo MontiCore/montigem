@@ -1,12 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
 import {BingoComponent,config} from "gui/BingoComponent";
-import {Component} from '@angular/core';
+import {Component,ChangeDetectionStrategy} from '@angular/core';
 import {SehubSecurityManager} from "sehub/SehubSecurityManager";
 import {SehubManager} from "sehub/SehubManager";
 import {BoardMapper} from "sehub/BoardMapper";
 
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:[...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,

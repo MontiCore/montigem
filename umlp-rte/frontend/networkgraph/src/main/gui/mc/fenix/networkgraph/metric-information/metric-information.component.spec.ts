@@ -2,9 +2,6 @@ import { ComponentFixture, TestBed } from "@angular/core/testing";
 import { By } from "@angular/platform-browser";
 import { DebugElement } from "@angular/core";
 import { MetricInformationComponent } from "./metric-information.component";
-import { OverlayPanelModule } from "primeng/overlaypanel";
-import { ButtonModule } from "primeng/button";
-import { TooltipModule } from "primeng/tooltip";
 import { GraphManagerService } from "../data/graph-manager.service";
 import { SigmaGraphService } from "../data/sigma-graph.service";
 import { GraphMetricsService } from "../services/graph-metrics.service";
@@ -15,18 +12,18 @@ import { EdgeProcessorService } from "../graph-processing/edge-processor.service
 import { GroupMappingService } from "../graph-processing/group-mapping.service";
 import { NodeProcessorService } from "../graph-processing/node-processor.service";
 import { GraphLayoutService } from "../services/graph-layout.service";
-import { NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { vi, MockInstance } from 'vitest';
 
 describe("MetricInformationComponent", () => {
   let component: MetricInformationComponent;
   let fixture: ComponentFixture<MetricInformationComponent>;
   let debugElement: DebugElement;
   let graphManager: GraphManagerService;
-  let getAllInformationSpy: jest.SpyInstance;
+  let getAllInformationSpy: MockInstance;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MetricInformationComponent, OverlayPanelModule, ButtonModule, TooltipModule],
+      imports: [MetricInformationComponent],
       providers: [
         GraphManagerService,
         SigmaGraphService,
@@ -42,7 +39,7 @@ describe("MetricInformationComponent", () => {
     }).compileComponents();
 
     graphManager = TestBed.inject(GraphManagerService);
-    getAllInformationSpy = jest.spyOn(graphManager.graphMetrics, "getAllInformationMetricKeys");
+    getAllInformationSpy = vi.spyOn(graphManager.graphMetrics, "getAllInformationMetricKeys");
 
     fixture = TestBed.createComponent(MetricInformationComponent);
     component = fixture.componentInstance;
@@ -57,8 +54,8 @@ describe("MetricInformationComponent", () => {
   it("should toggle overlay panel when button is clicked", () => {
     const overlayPanel = component["overlayPanel"];
     expect(overlayPanel).toBeDefined();
-    const spy = jest.spyOn(overlayPanel!, "toggle");
-    const button = debugElement.query(By.css("p-button"));
+    const spy = vi.spyOn(overlayPanel!, "toggle");
+    const button = debugElement.query(By.css(".graph-icon-button"));
 
     button.triggerEventHandler("click", null);
     fixture.detectChanges();
@@ -69,7 +66,7 @@ describe("MetricInformationComponent", () => {
   it("should hide overlay panel when escape key is pressed", () => {
     const overlayPanel = component["overlayPanel"];
     expect(overlayPanel).toBeDefined();
-    const spy = jest.spyOn(overlayPanel!, "hide");
+    const spy = vi.spyOn(overlayPanel!, "hide");
 
     fixture.whenStable().then(() => {
       const event = new KeyboardEvent("keydown", {
@@ -82,7 +79,7 @@ describe("MetricInformationComponent", () => {
   });
 
   it("should update metric information when overlay panel is shown", () => {
-    const spy = jest.spyOn(component as any, "updateMetricInformation");
+    const spy = vi.spyOn(component as any, "updateMetricInformation");
     // Create a mouse click event
     const mouseEvent = new MouseEvent("click", {
       bubbles: true,
@@ -92,7 +89,7 @@ describe("MetricInformationComponent", () => {
     });
 
     // Find the button element and dispatch the mouse event
-    const buttonElement = debugElement.query(By.css("p-button")).nativeElement;
+    const buttonElement = debugElement.query(By.css(".graph-icon-button")).nativeElement;
     buttonElement.dispatchEvent(mouseEvent);
 
     fixture.detectChanges();

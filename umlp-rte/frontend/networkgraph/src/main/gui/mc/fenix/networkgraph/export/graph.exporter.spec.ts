@@ -1,4 +1,5 @@
 import { downloadChartAsPNG } from "./graph.exporter";
+import { vi, type MockInstance } from 'vitest';
 import { ExportUtils } from "../shared/utils/export.utils";
 import Sigma from "sigma";
 import Graph from "graphology";
@@ -8,9 +9,9 @@ describe("downloadChartAsPNG", () => {
   let sigmaInstance: Sigma;
   let container: HTMLElement;
 
-  let getDimensionsSpy: jest.SpyInstance;
-  let getSettingsSpy: jest.SpyInstance;
-  let downloadCanvasAsPNGSpy: jest.SpyInstance;
+  let getDimensionsSpy: MockInstance;
+  let getSettingsSpy: MockInstance;
+  let downloadCanvasAsPNGSpy: MockInstance;
 
   beforeEach(() => {
     Object.defineProperty(window, "devicePixelRatio", { value: 1, configurable: true });
@@ -52,15 +53,15 @@ describe("downloadChartAsPNG", () => {
     });
 
     // Spy on Sigma methods
-    getDimensionsSpy = jest.spyOn(sigmaInstance, "getDimensions");
-    getSettingsSpy = jest.spyOn(sigmaInstance, "getSettings");
-    downloadCanvasAsPNGSpy = jest.spyOn(ExportUtils, "downloadCanvasAsPNG");
+    getDimensionsSpy = vi.spyOn(sigmaInstance, "getDimensions");
+    getSettingsSpy = vi.spyOn(sigmaInstance, "getSettings");
+    downloadCanvasAsPNGSpy = vi.spyOn(ExportUtils, "downloadCanvasAsPNG");
   });
 
   it("should correctly call dependencies", () => {
     const fileName = "test.png";
-    const createElementSpy = jest.spyOn(document, "createElement");
-    const appendSpy = jest.spyOn(document.body, "append");
+    const createElementSpy = vi.spyOn(document, "createElement");
+    const appendSpy = vi.spyOn(document.body, "append");
 
     downloadChartAsPNG(sigmaInstance, fileName);
 

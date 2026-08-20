@@ -5,7 +5,7 @@ describe("ColorUtils", () => {
   beforeAll(() => {
     // Define a custom property "--my-color" with value "rgb(255, 0, 0)"
     Object.defineProperty(window, "getComputedStyle", {
-      value: jest.fn(() => ({
+      value: vi.fn(() => ({
         getPropertyValue: (prop: string) => (prop === "--my-color" ? "rgb(255, 0, 0)" : ""),
       })),
     });

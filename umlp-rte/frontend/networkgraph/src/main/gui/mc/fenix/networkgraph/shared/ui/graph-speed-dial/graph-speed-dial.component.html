@@ -1,0 +1,26 @@
+<div
+  class="graph-speed-dial"
+  [ngClass]="className"
+  [class.graph-speed-dial--open]="open"
+  [attr.data-direction]="direction"
+  [attr.data-type]="type">
+  <button
+    type="button"
+    class="graph-speed-dial-button"
+    [ngClass]="buttonClassName"
+    [attr.aria-label]="ariaLabel"
+    (click)="toggle()">
+    <span class="graph-speed-dial-icon" [ngClass]="mainIcon" [class.graph-speed-dial-icon--rotate]="shouldRotateIcon"></span>
+  </button>
+
+  <button
+    *ngFor="let item of model; let i = index; trackBy: trackByIdx"
+    type="button"
+    class="graph-speed-dial-action"
+    [ngStyle]="getItemStyle(i)"
+    [graphTooltip]="item.tooltipOptions?.tooltipLabel"
+    [graphTooltipOptions]="getTooltipOptions(item)"
+    (click)="selectItem(item)">
+    <span class="graph-speed-dial-action-icon" [ngClass]="item.icon"></span>
+  </button>
+</div>

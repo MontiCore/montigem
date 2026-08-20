@@ -1,15 +1,16 @@
-<!-- Information Button using PrimeNG -->
-<p-button
+<!-- Information Button -->
+<button
+  type="button"
+  class="graph-icon-button graph-icon-button--rounded"
   (click)="toggleOverlayPanel(overlayPanel, $event)"
-  [tooltipOptions]="tooltipOptions"
-  aria-label="Show Information"
-  icon="pi pi-info"
-  pTooltip="Show Information"
-  styleClass="p-button-rounded">
-</p-button>
+  [graphTooltip]="'Show Information'"
+  [graphTooltipOptions]="tooltipOptions"
+  aria-label="Show Information">
+  <span class="graph-icon-button-icon pi pi-info"></span>
+</button>
 
-<!-- Dynamic Panel using PrimeNG Dialog -->
-<p-overlayPanel #overlayPanel (onShow)="updateMetricInformation()" appendTo="body" styleClass="metricsOverlayPanel">
+<!-- Dynamic Panel -->
+<graph-popover #overlayPanel (panelShow)="updateMetricInformation()" styleClass="metricsOverlayPanel">
   <ng-container *ngIf="metricInformation | objectKeys as metricKeys">
     <table *ngIf="metricKeys.length" class="metrics-table">
       <thead>
@@ -28,4 +29,4 @@
 
     <div *ngIf="!metricKeys.length">No metrics to show.</div>
   </ng-container>
-</p-overlayPanel>
+</graph-popover>

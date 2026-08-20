@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { config, GemNetworkGraphComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemNetworkGraphComponent';
 import { GemNetworkData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkData';
 import { GemNetworkDataBuilder } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkDataBuilder';
@@ -12,7 +12,7 @@ import { GemChartOptions } from './GemChartOptions';
 import {GemListUtil} from "@umlp/commonj2ts";
 
 @Component({
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, GemChartOptions, GemChartLegend],
   selector: config.selector,
   styleUrls: config.styleUrls,

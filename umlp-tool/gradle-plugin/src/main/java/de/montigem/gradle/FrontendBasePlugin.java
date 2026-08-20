@@ -8,6 +8,7 @@ import com.github.gradle.node.npm.task.NpxTask;
 import de.montigem.gradle.specific.CreateSymlinkTask;
 import de.montigem.gradle.specific.FrontendCIImageTask;
 import de.montigem.gradle.specific.FrontendLocalImageTask;
+import de.montigem.gradle.specific.Java2TSTask;
 import de.montigem.gradle.specific.SetupFrontendTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
 import de.se_rwth.commons.logging.Log;
@@ -65,7 +66,7 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
       if (!useLocalDependencies(project) || !inUMLP(project)) {
         node.getDownload().set(true);
       }
-      node.getVersion().set("20.19.4");
+      node.getVersion().set(Java2TSTask.NODE_VERSION);
     });
 
     // Create Dependencies

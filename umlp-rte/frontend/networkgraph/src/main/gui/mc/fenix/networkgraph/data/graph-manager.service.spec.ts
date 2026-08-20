@@ -3,6 +3,9 @@ import { GraphManagerService } from "./graph-manager.service";
 import { SigmaGraphService } from "./sigma-graph.service";
 import { GraphDataService } from "./graph-data.service";
 import { GraphProcessorService } from "../graph-processing/graph-processor.service";
+import { EdgeProcessorService } from "../graph-processing/edge-processor.service";
+import { NodeProcessorService } from "../graph-processing/node-processor.service";
+import { GroupMappingService } from "../graph-processing/group-mapping.service";
 import { GraphLayoutService } from "../services/graph-layout.service";
 import { GraphMetricsService } from "../services/graph-metrics.service";
 import { GraphSettingsService } from "../services/graph-settings.service";
@@ -10,11 +13,6 @@ import { ElementRef } from "@angular/core";
 import Graph from "graphology";
 import { Sigma } from "sigma";
 import { MouseCoords } from "sigma/types";
-
-jest.mock("./graph-data.service");
-jest.mock("../graph-processing/graph-processor.service");
-jest.mock("../services/graph-layout.service");
-jest.mock("../services/graph-metrics.service");
 
 describe("GraphManagerService", () => {
   let service: GraphManagerService;
@@ -63,6 +61,9 @@ describe("GraphManagerService", () => {
         GraphLayoutService,
         GraphDataService,
         GraphProcessorService,
+        EdgeProcessorService,
+        NodeProcessorService,
+        GroupMappingService,
         GraphMetricsService,
         GraphSettingsService,
         SigmaGraphService,
@@ -75,7 +76,15 @@ describe("GraphManagerService", () => {
 
     createSigmaInstance();
     // Mock Sigma Graph Renderer
-    jest.spyOn(service.sigmaGraph, "renderer", "get").mockReturnValue(sigmaRenderer as any);
+    vi.spyOn(service.sigmaGraph, "renderer", "get").mockReturnValue(sigmaRenderer as any);
+  });
+
+  afterEach(() => {
+    // Do not kill sigmaRenderer here: TestBed's automatic teardown calls SigmaGraphService.ngOnDestroy(),
+    // which kills the renderer returned by the mocked "renderer" getter (i.e. this same sigmaRenderer).
+    // Killing it twice throws, since the WebGL context is already torn down after the first kill().
+    service.layoutService.stopLayouting();
+    sigmaRenderer.getContainer().remove();
   });
 
   it("should be created", () => {
@@ -84,7 +93,7 @@ describe("GraphManagerService", () => {
 
   describe("continueLayouting", () => {
     it("should call layoutService.continueLayout when graph is not null", () => {
-      const layoutSpy = jest.spyOn(service.layoutService, "continueLayout");
+      const layoutSpy = vi.spyOn(service.layoutService, "continueLayout");
       service.applyGraphLayout();
       service.continueLayouting();
       expect(layoutSpy).toHaveBeenCalled();
@@ -93,7 +102,7 @@ describe("GraphManagerService", () => {
 
   describe("stopLayouting", () => {
     it("should call layoutService.stopLayouting", () => {
-      const layoutSpy = jest.spyOn(service.layoutService, "stopLayouting");
+      const layoutSpy = vi.spyOn(service.layoutService, "stopLayouting");
       service.stopLayouting();
       expect(layoutSpy).toHaveBeenCalled();
     });
@@ -101,10 +110,10 @@ describe("GraphManagerService", () => {
 
   describe("resetSelection", () => {
     it("should reset all selections", () => {
-      const setSelectedNodeSpy = jest.spyOn(service, "setSelectedNode");
-      const setSelectedEdgeSpy = jest.spyOn(service, "setSelectedEdge");
-      const setHoveredEdgeSpy = jest.spyOn(service, "setHoveredEdge");
-      const setHoveredNodeSpy = jest.spyOn(service, "setHoveredNode");
+      const setSelectedNodeSpy = vi.spyOn(service, "setSelectedNode");
+      const setSelectedEdgeSpy = vi.spyOn(service, "setSelectedEdge");
+      const setHoveredEdgeSpy = vi.spyOn(service, "setHoveredEdge");
+      const setHoveredNodeSpy = vi.spyOn(service, "setHoveredNode");
 
       service.resetSelection();
 
@@ -117,8 +126,8 @@ describe("GraphManagerService", () => {
 
   describe("applyGraphLayout", () => {
     it("should call layoutService methods when graph is not null", () => {
-      const applyInitialLayoutSpy = jest.spyOn(service.layoutService, "applyInitialLayout");
-      const startLayoutingSpy = jest.spyOn(service.layoutService, "startLayouting");
+      const applyInitialLayoutSpy = vi.spyOn(service.layoutService, "applyInitialLayout");
+      const startLayoutingSpy = vi.spyOn(service.layoutService, "startLayouting");
 
       service.applyGraphLayout();
 
@@ -129,7 +138,7 @@ describe("GraphManagerService", () => {
 
   describe("zoomIn", () => {
     it("should call sigmaGraph.animatedZoom", () => {
-      const zoomSpy = jest.spyOn(service.sigmaGraph, "animatedZoom");
+      const zoomSpy = vi.spyOn(service.sigmaGraph, "animatedZoom");
       service.zoomIn();
       expect(zoomSpy).toHaveBeenCalled();
     });
@@ -137,7 +146,7 @@ describe("GraphManagerService", () => {
 
   describe("zoomOut", () => {
     it("should call sigmaGraph.animatedUnzoom", () => {
-      const zoomSpy = jest.spyOn(service.sigmaGraph, "animatedUnzoom");
+      const zoomSpy = vi.spyOn(service.sigmaGraph, "animatedUnzoom");
       service.zoomOut();
       expect(zoomSpy).toHaveBeenCalled();
     });
@@ -145,8 +154,8 @@ describe("GraphManagerService", () => {
 
   describe("resetZoom", () => {
     it("should call sigmaGraph.resetZoom and highlightNode", () => {
-      const resetZoomSpy = jest.spyOn(service.sigmaGraph, "resetZoom");
-      const highlightNodeSpy = jest.spyOn(service, "highlightNode");
+      const resetZoomSpy = vi.spyOn(service.sigmaGraph, "resetZoom");
+      const highlightNodeSpy = vi.spyOn(service, "highlightNode");
       service.resetZoom();
       expect(resetZoomSpy).toHaveBeenCalled();
       expect(highlightNodeSpy).toHaveBeenCalledWith(null);
@@ -155,8 +164,8 @@ describe("GraphManagerService", () => {
 
   describe("zoomToNode", () => {
     it("should call highlightNode and sigmaGraph.animateCamera when nodeKey is not null", () => {
-      const highlightNodeSpy = jest.spyOn(service, "highlightNode");
-      const animateCameraSpy = jest.spyOn(service.sigmaGraph, "animateCamera");
+      const highlightNodeSpy = vi.spyOn(service, "highlightNode");
+      const animateCameraSpy = vi.spyOn(service.sigmaGraph, "animateCamera");
       const nodeKey = "node1";
       service.zoomToNode(nodeKey);
       expect(highlightNodeSpy).toHaveBeenCalledWith(nodeKey);
@@ -164,8 +173,8 @@ describe("GraphManagerService", () => {
     });
 
     it("should only call highlightNode when nodeKey is null", () => {
-      const highlightNodeSpy = jest.spyOn(service, "highlightNode");
-      const animateCameraSpy = jest.spyOn(service.sigmaGraph, "animateCamera");
+      const highlightNodeSpy = vi.spyOn(service, "highlightNode");
+      const animateCameraSpy = vi.spyOn(service.sigmaGraph, "animateCamera");
       service.zoomToNode(null);
       expect(highlightNodeSpy).toHaveBeenCalledWith(null);
       expect(animateCameraSpy).not.toHaveBeenCalled();
@@ -175,7 +184,7 @@ describe("GraphManagerService", () => {
   describe("setContainer", () => {
     it("should set container and update containerReadySignal", () => {
       const container = document.createElement("div");
-      const containerReadySignalSpy = jest.spyOn((service as any).containerReadySignal, "set");
+      const containerReadySignalSpy = vi.spyOn((service as any).containerReadySignal, "set");
       service.setContainer(container);
       expect((service as any).container).toBe(container);
       expect(containerReadySignalSpy).toHaveBeenCalled();
@@ -192,7 +201,7 @@ describe("GraphManagerService", () => {
 
   describe("reload", () => {
     it("should call initializeChartIfNeeded if signal is true", () => {
-      const spy = jest.spyOn(service as any, "initializeChartIfNeeded").mockImplementation();
+      const spy = vi.spyOn(service as any, "initializeChartIfNeeded").mockImplementation(() => {});
       service.needsInitialization(true); // set the signal to true
       service.reload();
       expect(spy).toHaveBeenCalled();
@@ -202,7 +211,7 @@ describe("GraphManagerService", () => {
   describe("handleNodeDragging", () => {
     it("should update node position if conditions are met", () => {
       // This is a simplified test and may not cover all cases
-      service.graphSettings.getSetting = jest.fn().mockReturnValue(true);
+      service.graphSettings.getSetting = vi.fn().mockReturnValue(true);
       service.graphData.isDragging = true;
       service.graphData.draggedNode = "node1";
 
@@ -210,12 +219,12 @@ describe("GraphManagerService", () => {
         x: 0,
         y: 0,
         sigmaDefaultPrevented: false,
-        preventSigmaDefault: jest.fn(),
+        preventSigmaDefault: vi.fn(),
         original: new MouseEvent("mousemove"),
       };
 
       if (service.graph) {
-        const nodeAttributesSpy = jest.spyOn(service.graph, "setNodeAttribute");
+        const nodeAttributesSpy = vi.spyOn(service.graph, "setNodeAttribute");
         (service as any).handleNodeDragging(mockEvent);
         expect(nodeAttributesSpy).toHaveBeenCalledWith("node1", "y", expect.any(Number));
         expect(nodeAttributesSpy).toHaveBeenCalledWith("node1", "x", expect.any(Number));
@@ -233,7 +242,7 @@ describe("GraphManagerService", () => {
 
   describe("resize", () => {
     it("should call sigmaGraph.resize", () => {
-      const resizeSpy = jest.spyOn(service.sigmaGraph, "resize");
+      const resizeSpy = vi.spyOn(service.sigmaGraph, "resize");
       service.resize();
       expect(resizeSpy).toHaveBeenCalled();
     });
@@ -241,7 +250,7 @@ describe("GraphManagerService", () => {
 
   describe("redraw", () => {
     it("should call sigmaGraph.redraw", () => {
-      const redrawSpy = jest.spyOn(service.sigmaGraph, "refresh");
+      const redrawSpy = vi.spyOn(service.sigmaGraph, "refresh");
       service.redraw();
       expect(redrawSpy).toHaveBeenCalled();
     });
@@ -249,7 +258,7 @@ describe("GraphManagerService", () => {
 
   describe("reload", () => {
     it("should call initializeChartIfNeeded if signal is true", () => {
-      const spy = jest.spyOn(service as any, "initializeChartIfNeeded").mockImplementation();
+      const spy = vi.spyOn(service as any, "initializeChartIfNeeded").mockImplementation(() => {});
       service.needsInitialization(true); // set the signal to true
       service.reload();
       expect(spy).toHaveBeenCalled();

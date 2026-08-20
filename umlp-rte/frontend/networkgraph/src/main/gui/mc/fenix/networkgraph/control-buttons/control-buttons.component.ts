@@ -1,18 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  Renderer2,
-} from "@angular/core";
-import { ButtonModule } from "primeng/button";
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { TooltipModule } from "primeng/tooltip";
-import { MenuItem, TooltipOptions } from "primeng/api";
-import { SpeedDialModule } from "primeng/speeddial";
+import { GraphTooltipDirective } from "../shared/directives/graph-tooltip.directive";
+import { GraphTooltipOptions } from "../shared/types/tooltip.types";
+import { GraphSpeedDialComponent } from "../shared/ui/graph-speed-dial/graph-speed-dial.component";
+import { GRAPH_SPEED_DIAL_ACTION_DIAMETER_PX, GraphSpeedDialItem } from "../shared/ui/graph-speed-dial/graph-speed-dial.types";
 import { GraphManagerService } from "../data/graph-manager.service";
 import {
   ControlButton,
@@ -34,7 +25,7 @@ import {
   styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
-  imports: [CommonModule, ButtonModule, TooltipModule, SpeedDialModule],
+  imports: [CommonModule, GraphTooltipDirective, GraphSpeedDialComponent],
 })
 export class ControlButtonsComponent implements OnInit {
   /** Event emitter for group selection change. */
@@ -47,32 +38,12 @@ export class ControlButtonsComponent implements OnInit {
   protected controlButtons: ControlButton[] = [];
 
   /** Items specifically for speed dial layout */
-  protected speedDialItems: MenuItem[] = [];
-
-  /**
-   * SpeedDialSizeReference is a hidden HTMLDivElement that provides a reference for computing the size required for
-   * displaying speed dial items without overlapping. This is useful when the speed dial layout is used, and the radius
-   * is set to "auto" in the SpeedDialConfig.
-   */
-  private speedDialSizeReference: HTMLDivElement | undefined;
+  protected speedDialItems: GraphSpeedDialItem[] = [];
 
   /** Fallback radius when computation is not possible */
   private fallbackRadius: number = 50;
 
-  /** Classes that are appended to the utility-speeddial item to compute the proper radius (see {@link getRadius}). */
-  private readonly SPEEDDIAL_CLASS: string = "p-component p-speeddial";
-
-  /**
-   * Classes that are appended to an actual item inside the utility-speeddial item to compute the proper radius (see
-   * {@link getRadius}).
-   */
-  private readonly SPEEDDIAL_ACTION_CLASS: string = "p-speeddial-action";
-
-  constructor(
-    private graphManager: GraphManagerService,
-    private renderer: Renderer2,
-    private element: ElementRef
-  ) {}
+  constructor(private graphManager: GraphManagerService) {}
 
   /** Additional buttons that should be added to the control buttons */
   private _extendControlButtons: ControlButton[] = [];
@@ -176,24 +147,24 @@ export class ControlButtonsComponent implements OnInit {
   }
 
   /** Default options for tooltip */
-  private _tooltipOptions: TooltipOptions = {};
+  private _tooltipOptions: GraphTooltipOptions = {};
 
   /**
    * Getter for defaultTooltipOptions
    *
-   * @returns {TooltipOptions} - The tooltip options.
+   * @returns {GraphTooltipOptions} - The tooltip options.
    */
-  public get tooltipOptions(): TooltipOptions | undefined {
+  public get tooltipOptions(): GraphTooltipOptions | undefined {
     return this._tooltipOptions;
   }
 
   /**
    * Setter for tooltipOptions
    *
-   * @param {TooltipOptions | undefined} value - New value to set
+   * @param {GraphTooltipOptions | undefined} value - New value to set
    */
   @Input()
-  public set tooltipOptions(value: Partial<TooltipOptions> | undefined) {
+  public set tooltipOptions(value: Partial<GraphTooltipOptions> | undefined) {
     this._tooltipOptions = { ...this._tooltipOptions, ...value };
   }
 
@@ -224,38 +195,49 @@ export class ControlButtonsComponent implements OnInit {
    *   if computation is not possible.
    */
   public getRadius(): number {
-    if (!this.speedDialSizeReference || this._speedDialConfig.radius !== "auto") {
-      return this._speedDialConfig.radius === "auto" || this._speedDialConfig.radius === undefined
-        ? this.fallbackRadius
-        : this._speedDialConfig.radius;
-    }
-    const styles: CSSStyleDeclaration = window.getComputedStyle(this.speedDialSizeReference);
-    const itemWidth: number = Number.parseFloat(styles.width.replace("px", ""));
-    const itemHeight: number = Number.parseFloat(styles.height.replace("px", ""));
-    const itemDiameter: number = (itemWidth + itemHeight) / 2;
-    const itemCount: number = this.speedDialItems.length;
+    const configuredRadius = this._speedDialConfig.radius;
 
-    // Determine the layout mode
-    let layoutFactor: number;
+    if (configuredRadius !== "auto") {
+      return configuredRadius ?? this.fallbackRadius;
+    }
+
+    const itemDiameter = GRAPH_SPEED_DIAL_ACTION_DIAMETER_PX;
+    const itemCount = this.speedDialItems.length;
+
+    if (itemCount <= 1) {
+      return itemDiameter;
+    }
+
+    let totalAngle: number;
+
     switch (this._speedDialConfig.type) {
-      case "linear": {
+      case "linear":
         return this.fallbackRadius;
-      }
-      case "semi-circle": {
-        layoutFactor = 0.5;
+
+      case "quarter-circle":
+        totalAngle = Math.PI / 2;
         break;
-      }
-      case "quarter-circle": {
-        layoutFactor = 0.25;
+
+      case "semi-circle":
+        totalAngle = Math.PI;
         break;
-      }
-      default: {
-        throw new Error(`Unsupported layout type: ${this._speedDialConfig.type}`);
-      }
+
+      default:
+        console.warn(
+          `Unsupported layout type: ${this._speedDialConfig.type}`
+        );
+        return this.fallbackRadius;
     }
 
-    // Now compute and return the radius
-    const radius: number = (itemDiameter * itemCount) / (2 * Math.PI * layoutFactor);
+    // Angle between neighbouring items.
+    const angle = totalAngle / Math.max(itemCount - 1, 1);
+
+    // Chord length between neighbouring buttons:
+    // chord = 2 * r * sin(angle / 2)
+    //
+    // Require chord >= button diameter.
+    const radius = itemDiameter / (2 * Math.sin(angle / 2));
+
     return Math.max(radius, itemDiameter);
   }
 
@@ -301,10 +283,10 @@ export class ControlButtonsComponent implements OnInit {
    * Transforms control buttons into speed dial items
    *
    * @param {ControlButton[]} controlButtons - The control buttons to transform.
-   * @returns {MenuItem[]} - The resulting array of speed dial items.
+   * @returns {GraphSpeedDialItem[]} - The resulting array of speed dial items.
    */
-  private transformToSpeedDialItems(controlButtons: ControlButton[]): MenuItem[] {
-    return controlButtons.map((button: ControlButton): MenuItem => {
+  private transformToSpeedDialItems(controlButtons: ControlButton[]): GraphSpeedDialItem[] {
+    return controlButtons.map((button: ControlButton): GraphSpeedDialItem => {
       const updatedAttributes: Partial<ControlButton> = this.getUpdatedButtonAttributes(button);
       return {
         tooltipOptions: {
@@ -331,9 +313,9 @@ export class ControlButtonsComponent implements OnInit {
    * Retrieves tooltip options for a given button
    *
    * @param {ControlButton} button - The button for which to get tooltip options
-   * @returns {TooltipOptions} - The tooltip options
+   * @returns {GraphTooltipOptions} - The tooltip options
    */
-  private getTooltipOptions(button: ControlButton): TooltipOptions {
+  private getTooltipOptions(button: ControlButton): GraphTooltipOptions {
     return button.tooltipOptions || this.tooltipOptions || {};
   }
 
@@ -394,30 +376,8 @@ export class ControlButtonsComponent implements OnInit {
     return { icon: button.icon, tooltip: button.tooltip };
   }
 
-  /**
-   * Creates a hidden reference element for computing speed dial size. It uses the classes SPEEDDIAL_CLASS and
-   * SPEEDDIAL_ACTION_CLASS to mimic the styles of the speed dial and its items, respectively.
-   */
-  private createSpeedDialSizeReference(): void {
-    const outerDiv = this.renderer.createElement("div");
-    outerDiv.classList.add(...this.SPEEDDIAL_CLASS.split(" "));
-    this.renderer.setStyle(outerDiv, "visibility", "hidden");
-    this.renderer.setStyle(outerDiv, "position", "absolute");
-    this.speedDialSizeReference = this.renderer.createElement("div");
-    this.speedDialSizeReference?.classList.add(...this.SPEEDDIAL_ACTION_CLASS.split(" "));
-    this.renderer.setStyle(outerDiv, "top", "0");
-    this.renderer.setStyle(outerDiv, "left", "0");
-
-    // Append the inner div to the outer div
-    this.renderer.appendChild(outerDiv, this.speedDialSizeReference);
-
-    // Append the outer div to the component's host element
-    this.renderer.appendChild(this.element.nativeElement, outerDiv);
-  }
-
   /** Initializes control buttons and their state */
   private initControlButtons(): void {
-    this.createSpeedDialSizeReference();
     this.initializeButtonState();
     this.updateControlButtons();
     this.updateSpeedDialItems();

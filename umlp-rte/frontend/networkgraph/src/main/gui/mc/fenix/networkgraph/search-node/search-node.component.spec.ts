@@ -1,13 +1,12 @@
 import { ComponentFixture, TestBed } from "@angular/core/testing";
-import { DropdownModule } from "primeng/dropdown";
-import { FormsModule } from "@angular/forms";
 import { SearchNodeComponent } from "./search-node.component";
 import { GraphManagerService } from "../data/graph-manager.service";
+import {vi, Mocked} from "vitest"
 
 describe("SearchNodeComponent", () => {
   let component: SearchNodeComponent;
   let fixture: ComponentFixture<SearchNodeComponent>;
-  let mockGraphManagerService: jest.Mocked<GraphManagerService>;
+  let mockGraphManagerService: Mocked<GraphManagerService>;
   const nodes = [
     { searchLabel: "Node1", nodeKey: "1", group: "Group1", groupColor: "#ff0000" },
     { searchLabel: "Node2", nodeKey: "2", group: "Group2", groupColor: "#00ff00" },
@@ -17,16 +16,16 @@ describe("SearchNodeComponent", () => {
   beforeEach(async () => {
     mockGraphManagerService = {
       graphData: {
-        getNodeSearchInformation: jest.fn().mockReturnValue(nodes),
+        getNodeSearchInformation: vi.fn().mockReturnValue(nodes),
         selectedNode: "1",
       },
-      zoomToNode: jest.fn(),
-      setSelectedNode: jest.fn(),
-      onSigmaInit$: { subscribe: jest.fn() },
-    } as unknown as jest.Mocked<GraphManagerService>;
+      zoomToNode: vi.fn(),
+      setSelectedNode: vi.fn(),
+      onSigmaInit$: { subscribe: vi.fn() },
+    } as unknown as Mocked<GraphManagerService>;
 
     await TestBed.configureTestingModule({
-      imports: [SearchNodeComponent, DropdownModule, FormsModule],
+      imports: [SearchNodeComponent],
       providers: [{ provide: GraphManagerService, useValue: mockGraphManagerService }],
     }).compileComponents();
 
@@ -40,8 +39,8 @@ describe("SearchNodeComponent", () => {
   });
 
   it("should emit the selected node key when nodeSelected is called", () => {
-    const emitSpy = jest.spyOn(mockGraphManagerService, "setSelectedNode");
-    const zoomSpy = jest.spyOn(mockGraphManagerService, "zoomToNode");
+    const emitSpy = vi.spyOn(mockGraphManagerService, "setSelectedNode");
+    const zoomSpy = vi.spyOn(mockGraphManagerService, "zoomToNode");
 
     component.nodeSelected({
       value: "mockNode",

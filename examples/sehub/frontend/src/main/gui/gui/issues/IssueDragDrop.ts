@@ -1,14 +1,14 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import {CdkDragDrop, moveItemInArray, transferArrayItem} from '@angular/cdk/drag-drop';
-import {Component, EventEmitter, Output} from '@angular/core';
+import {Component, EventEmitter, Output,ChangeDetectionStrategy} from '@angular/core';
 import {IssueDragDropComponent,config} from 'gui/issues/IssueDragDropComponent';
 import {Issue} from 'sehub/Issue';
 import { DragDropModule } from "@angular/cdk/drag-drop";
 import { IssueEntry } from "gui/issues/IssueEntry";
 import { IUMLPList,AsyncList,GemIdentifiable,GemListUtil } from "@umlp/commonj2ts";
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:[...config.imports,DragDropModule,IssueEntry],
   selector: config.selector,
   templateUrl: "IssueDragDrop.html",

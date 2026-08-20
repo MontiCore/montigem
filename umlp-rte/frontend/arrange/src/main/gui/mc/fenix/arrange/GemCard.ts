@@ -1,10 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, HostBinding } from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostBinding} from '@angular/core';
 import { config, GemCardComponent } from '../../../../../../build/gui2java2ts/mc/fenix/arrange/GemCardComponent';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   styleUrls: config.styleUrls,

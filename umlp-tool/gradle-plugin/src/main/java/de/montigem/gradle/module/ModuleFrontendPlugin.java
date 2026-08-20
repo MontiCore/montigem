@@ -80,6 +80,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
   public static final String UMLP2TS_TASK = "umlp2ts";
   public static final String GUI2SYM_JAR_TASK = "gui2symJar";
   public static final String BUILD_LIB_TASK = "buildLib";
+  public static final String TEST_LIB_TASK = "testLib";
 
   @Inject
   public ModuleFrontendPlugin(SoftwareComponentFactory softwareComponentFactory, TaskDependencyFactory taskDependencyFactory) {
@@ -165,6 +166,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
 
     List<TaskProvider<NpmTask>> buildSubprojects = new ArrayList<>();
     List<TaskProvider<NpmTask>> publishSubprojects = new ArrayList<>();
+    List<TaskProvider<NpmTask>> testSubprojects = new ArrayList<>();
 
     SourceSet mainSourceSet = project.getExtensions()
         .getByType(SourceSetContainer.class)
@@ -481,6 +483,22 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
         });
         buildSubprojects.add(buildLib);
 
+        TaskProvider<NpmTask> testLib = subproject.getTasks().register(TEST_LIB_TASK, NpmTask.class, task -> {
+          task.setGroup("verification");
+          task.dependsOn(buildLib);
+          task.getArgs().addAll(libQName.map(v -> List.of("run", "test", v)));
+          task.getWorkingDir().set(p.getLayout().getProjectDirectory().getAsFile());
+          task.getInputs().files(srcGUI.getAsFileTree().matching(pattern -> {
+            pattern.exclude( "**/*.md");
+          }));
+          task.getInputs().files("angular.json", "tsconfig.json", "tsconfig.spec.json", "package.json");
+          //TODO outputs task.getOutputs().dir(libBuildDir);
+          task.onlyIf("lib directory contains *.spec.ts files", t ->
+              !srcGUI.getAsFileTree().matching(pattern -> pattern.include("**/*.spec.ts")).isEmpty()
+          );
+        });
+        testSubprojects.add(testLib);
+
         TaskProvider<CreateNpmrcTask> npmrc4publish = subproject.getTasks().register("npmrc4publish", CreateNpmrcTask.class, task -> {
           task.setGroup(UMLP_GROUP_NAME);
           task.dependsOn(buildLib);
@@ -504,6 +522,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
     build.configure(task -> task.dependsOn(buildSubprojects));
     TaskProvider<Task> publish = project.getTasks().named("publish");
     publish.configure(task -> task.dependsOn(publishSubprojects));
+    TaskProvider<Task> test = project.getTasks().named("test");
+    test.configure(task -> task.dependsOn(testSubprojects));
   }
 
   public static void addUMLPSymbolsJarAttributes(Configuration config, Project project) {

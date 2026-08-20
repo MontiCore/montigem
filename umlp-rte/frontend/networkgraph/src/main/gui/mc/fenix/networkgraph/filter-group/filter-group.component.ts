@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { MultiSelectChangeEvent, MultiSelectModule } from "primeng/multiselect";
-import { FormsModule } from "@angular/forms";
-import { DropdownModule } from "primeng/dropdown";
+import { GraphMultiSelectComponent } from "../shared/ui/graph-multi-select/graph-multi-select.component";
+import { GraphMultiSelectChangeEvent } from "../shared/ui/graph-multi-select/graph-multi-select.types";
+import { GraphTemplateDirective } from "../shared/directives/graph-template.directive";
 import { GroupInformation, GroupInformationMap, SortedFilterGroupInformation } from "../types/filter-group.type";
 import { CapitalizeFirstLetterPipe } from "../shared/pipes/capitalize-first-letter.pipe";
 import { GraphManagerService } from "../data/graph-manager.service";
@@ -16,7 +16,7 @@ import { AutoUnsubscribe } from "../shared/decorators/auto-unsubscribe.decorator
 @Component({
   selector: "graph-filter-group",
   standalone: true,
-  imports: [CommonModule, MultiSelectModule, FormsModule, DropdownModule, CapitalizeFirstLetterPipe],
+  imports: [CommonModule, GraphMultiSelectComponent, GraphTemplateDirective, CapitalizeFirstLetterPipe],
   templateUrl: "./filter-group.component.html",
   styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,9 +48,9 @@ export class FilterGroupComponent {
   /**
    * Handles changes in multi-select options and emits the updated group selection.
    *
-   * @param {MultiSelectChangeEvent} event - MultiSelect change event.
+   * @param {GraphMultiSelectChangeEvent} event - MultiSelect change event.
    */
-  protected selectGroup(event: MultiSelectChangeEvent): void {
+  protected selectGroup(event: GraphMultiSelectChangeEvent): void {
     this.graphManager.showGroupKeys(new Set(event.value));
   }
 

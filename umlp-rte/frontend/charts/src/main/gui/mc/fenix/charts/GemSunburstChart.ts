@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { config, GemSunburstChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemSunburstChartComponent';
 import { ChartDataset, ChartOptions } from "chart.js";
 import { NgChartsModule } from 'ng2-charts';
@@ -14,7 +14,7 @@ import { GemChartOptions } from './GemChartOptions';
 import {GemListUtil, AsyncList} from "@umlp/commonj2ts";
 
 @Component({
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, NgChartsModule, GemChartOptions, GemChartLegend],
   selector: config.selector,
   styleUrls: config.styleUrls,

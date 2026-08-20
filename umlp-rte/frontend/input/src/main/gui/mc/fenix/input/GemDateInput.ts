@@ -8,7 +8,7 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  ElementRef,
+  ElementRef, ChangeDetectionStrategy,
 } from '@angular/core';
 import { config, GemDateInputComponent } from '../../../../../../build/gui2java2ts/mc/fenix/input/GemDateInputComponent';
 
@@ -18,6 +18,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, MatIconModule, MatTooltipModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

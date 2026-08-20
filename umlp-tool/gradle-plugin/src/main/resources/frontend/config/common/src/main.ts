@@ -1,6 +1,29 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideZoneChangeDetection, importProvidersFrom } from '@angular/core';
+import {
+  provideRouter,
+  RouteReuseStrategy,
+  BaseRouteReuseStrategy
+} from '@angular/router';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
-import { AppGemModule } from 'AppGemModule';
+import { AppComponent } from 'AppComponent';
+import { routes } from 'AppGemRouting';
+import { config } from 'AppGemConfig';
 
-platformBrowserDynamic().bootstrapModule(AppGemModule)
-  .catch(err => console.error(err));
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideRouter(routes),
+    provideAnimations(),
+    provideZoneChangeDetection(),
+    {
+      provide: RouteReuseStrategy,
+      useClass: class extends BaseRouteReuseStrategy {
+        override shouldReuseRoute() {
+          return false;
+        }
+      }
+    },
+    ...config.providers
+  ]
+}).catch(err => console.error(err));

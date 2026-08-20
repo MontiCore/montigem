@@ -1,11 +1,10 @@
 // metric-information.component.ts
 import { ChangeDetectionStrategy, Component, HostListener, Input, ViewChild } from "@angular/core";
 import { MetricInformation } from "../types/graph.types";
-import { TooltipOptions } from "primeng/api";
-import { OverlayPanel, OverlayPanelModule } from "primeng/overlaypanel";
-import { ButtonModule } from "primeng/button";
+import { GraphTooltipOptions } from "../shared/types/tooltip.types";
+import { GraphPopoverComponent } from "../shared/ui/graph-popover/graph-popover.component";
+import { GraphTooltipDirective } from "../shared/directives/graph-tooltip.directive";
 import { FormatValuePipe } from "../shared/pipes/value-formatter.pipe";
-import { TooltipModule } from "primeng/tooltip";
 import { ObjectKeysPipePipe } from "../shared/pipes/object-keys.pipe";
 import { CommonModule } from "@angular/common";
 import { GraphManagerService } from "../data/graph-manager.service";
@@ -16,7 +15,7 @@ import { GraphManagerService } from "../data/graph-manager.service";
   standalone: true,
   templateUrl: "./metric-information.component.html",
   styleUrls: [],
-  imports: [CommonModule, ButtonModule, OverlayPanelModule, FormatValuePipe, ObjectKeysPipePipe, TooltipModule],
+  imports: [CommonModule, GraphPopoverComponent, GraphTooltipDirective, FormatValuePipe, ObjectKeysPipePipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MetricInformationComponent {
@@ -24,13 +23,13 @@ export class MetricInformationComponent {
   @Input() metricKeys: string[] = [];
 
   /** Optional tooltip options for the information button. */
-  @Input() public tooltipOptions?: TooltipOptions;
+  @Input() public tooltipOptions?: GraphTooltipOptions;
 
   /** Metric information to display. */
   protected metricInformation: MetricInformation = {};
 
-  /** Reference to the PrimeNG OverlayPanel. */
-  @ViewChild("overlayPanel") private overlayPanel: OverlayPanel | null = null;
+  /** Reference to the popover panel. */
+  @ViewChild("overlayPanel") private overlayPanel: GraphPopoverComponent | null = null;
 
   constructor(private graphManager: GraphManagerService) {
     this.metricKeys = this.graphManager.graphMetrics.getAllInformationMetricKeys();
@@ -39,10 +38,10 @@ export class MetricInformationComponent {
   /**
    * Toggles the overlay panel.
    *
-   * @param {OverlayPanel} overlayPanel - The overlay panel to toggle
+   * @param {GraphPopoverComponent} overlayPanel - The overlay panel to toggle
    * @param {MouseEvent} event - The mouse event
    */
-  toggleOverlayPanel(overlayPanel: OverlayPanel, event: MouseEvent): void {
+  toggleOverlayPanel(overlayPanel: GraphPopoverComponent, event: MouseEvent): void {
     overlayPanel.toggle(event);
   }
 
@@ -62,8 +61,8 @@ export class MetricInformationComponent {
   }
 
   /** Hides the overlay panel when the escape key is pressed. */
-  @HostListener("document:keydown.escape", ["$event"])
-  private handleKeyboardEvent(): void {
+  @HostListener("document:keydown.escape")
+  public handleKeyboardEvent(): void {
     this.overlayPanel?.hide();
   }
 }

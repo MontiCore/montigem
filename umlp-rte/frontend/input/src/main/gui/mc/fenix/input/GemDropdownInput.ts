@@ -1,6 +1,15 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Output, SimpleChanges } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  HostListener,
+  Output,
+  SimpleChanges
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -9,6 +18,7 @@ import { Option } from '../../../../../../build/gui2java2ts/mc/fenix/input/gemdr
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, FormsModule, MatIconModule, MatTooltipModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

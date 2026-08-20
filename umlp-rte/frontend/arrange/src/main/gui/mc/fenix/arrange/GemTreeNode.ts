@@ -1,11 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
+import {ChangeDetectionStrategy, Component, TemplateRef, ViewChild, ViewContainerRef} from '@angular/core';
 import { config, GemTreeNodeComponent } from '../../../../../../build/gui2java2ts/mc/fenix/arrange/GemTreeNodeComponent';
 import { MatIcon } from '@angular/material/icon';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, MatIcon],
   selector: config.selector,
   styleUrls: config.styleUrls,

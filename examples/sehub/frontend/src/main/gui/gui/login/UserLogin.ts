@@ -1,12 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import {Component} from '@angular/core';
+import {Component,ChangeDetectionStrategy} from '@angular/core';
 import {UserLoginComponent,config} from 'gui/login/UserLoginComponent';
 import {User} from 'sehub/User';
 import {SehubSecurityManager} from "sehub/SehubSecurityManager";
 
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:[...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,

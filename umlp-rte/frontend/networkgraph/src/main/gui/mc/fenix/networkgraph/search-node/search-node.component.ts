@@ -1,34 +1,18 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, effect } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { DropdownModule } from "primeng/dropdown";
-import { FormsModule } from "@angular/forms";
+import { GraphSelectComponent } from "../shared/ui/graph-select/graph-select.component";
+import { GraphSelectChangeEvent } from "../shared/ui/graph-select/graph-select.types";
+import { GraphTemplateDirective } from "../shared/directives/graph-template.directive";
 import { NodeKeyFormatterPipe } from "./node-key-formatter.pipe";
-import { OverlayPanelModule } from "primeng/overlaypanel";
-import { ButtonModule } from "primeng/button";
-import { ListboxModule } from "primeng/listbox";
 import { SearchInformation, SearchInformationArray } from "../types/filter-group.type";
 import { GraphManagerService } from "../data/graph-manager.service";
 import { AutoUnsubscribe } from "../shared/decorators/auto-unsubscribe.decorator";
-import { DropdownChangeEvent } from "primeng/dropdown/dropdown.interface";
-import { MultiSelectModule } from "primeng/multiselect";
 
-/**
- * SearchNodeComponent is a component for performing searches on graph nodes. It uses a dropdown with virtual scrolling
- * for optimal performance with large datasets.
- */
+/** SearchNodeComponent is a component for performing searches on graph nodes via a searchable dropdown. */
 @Component({
   selector: "graph-search-node",
   standalone: true,
-  imports: [
-    CommonModule,
-    DropdownModule,
-    FormsModule,
-    NodeKeyFormatterPipe,
-    OverlayPanelModule,
-    ButtonModule,
-    ListboxModule,
-    MultiSelectModule,
-  ],
+  imports: [CommonModule, GraphSelectComponent, GraphTemplateDirective, NodeKeyFormatterPipe],
   templateUrl: "./search-node.component.html",
   styleUrls: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -64,9 +48,9 @@ export class SearchNodeComponent {
    * Handles the event when a node is selected from the dropdown. Emits the selected node's key through the
    * `nodeSelectionChange` event emitter.
    *
-   * @param {DropdownChangeEvent} event - The Dropdown Change Event that triggered the selection.
+   * @param {GraphSelectChangeEvent} event - The select change event that triggered the selection.
    */
-  public nodeSelected(event: DropdownChangeEvent): void {
+  public nodeSelected(event: GraphSelectChangeEvent): void {
     this.graphManager.zoomToNode(event.value);
     this.graphManager.setSelectedNode(event.value);
   }

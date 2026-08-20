@@ -1,8 +1,10 @@
-:host {
+@import "../shared/styles/graph-icon-button";
+
+graph-metric-information {
   pointer-events: all;
 }
 
-::ng-deep .metricsOverlayPanel {
+.metricsOverlayPanel {
   --bg-clr: var(--clr-foreground, #fff);
   --bg-clr-th: var(--surface-b, #f0f0f0);
   --border-clr: var(--surface-d, #ddd);

@@ -1,24 +1,22 @@
-import { setupJestCanvasMock } from "jest-webgl-canvas-mock";
 import { getDefaultGraphSettings } from "../consts/graph-settings.const";
 import { prettyLabelHoverRenderer } from "./pretty-label-hover.renderer";
 import { NodeAttributes } from "../types/graph.types";
 import { GraphSettings } from "../types/graph-settings.types";
-import * as RenderUtils from "./render.utils";
-import { ColorUtil } from "../../shared/utils/color.util";
+import { vi, MockInstance } from 'vitest';
 
+// Note: spying on named exports of "./render.utils" (e.g. `vi.spyOn(RenderUtils, "drawShadowAndRect")`) does not work
+// under real browser testing: ES module namespace bindings are non-configurable in a real JS engine, so
+// Object.defineProperty on them throws "Cannot redefine property". Assertions below observe the canvas context
+// directly instead, since CanvasRenderingContext2D methods are regular, spy-able object properties.
 describe("prettyLabelHoverRenderer", () => {
   let context: CanvasRenderingContext2D;
   let data: NodeAttributes;
   let settings: GraphSettings;
-  let textSpy: jest.SpyInstance;
-  let rectSpy: jest.SpyInstance;
-  let textObjectSpy: jest.SpyInstance;
-  let measureTextSpy: jest.SpyInstance;
+  let textSpy: MockInstance;
+  let fillSpy: MockInstance;
+  let measureTextSpy: MockInstance;
 
   beforeEach(() => {
-    jest.resetAllMocks();
-    setupJestCanvasMock();
-
     const canvas: HTMLCanvasElement = document.createElement("canvas");
     context = canvas.getContext("2d") as CanvasRenderingContext2D;
     data = {
@@ -33,53 +31,36 @@ describe("prettyLabelHoverRenderer", () => {
     };
     settings = getDefaultGraphSettings();
 
-    textSpy = jest.spyOn(context, "fillText");
-    rectSpy = jest.spyOn(RenderUtils, "drawShadowAndRect");
-    textObjectSpy = jest.spyOn(RenderUtils, "createTextObject");
-    measureTextSpy = jest.spyOn(RenderUtils, "measureTextDimensions");
+    textSpy = vi.spyOn(context, "fillText");
+    fillSpy = vi.spyOn(context, "fill");
+    measureTextSpy = vi.spyOn(context, "measureText");
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("should render hover label correctly", () => {
     prettyLabelHoverRenderer(context, data, settings);
 
-    // Check if fillText was called for each text object
-    expect(textSpy).toHaveBeenCalledTimes(3);
+    // The shadow/background rectangle is drawn once.
+    expect(fillSpy).toHaveBeenCalled();
 
-    // Check if drawShadowAndRect was called with correct arguments
-    expect(rectSpy).toHaveBeenCalledWith(context, data, settings, expect.any(Number), expect.any(Number));
-
-    // Check if createTextObject was called with correct arguments
-    expect(textObjectSpy.mock.calls[0][1]).toMatchObject({
-      content: data.label ?? "",
-      fontSize: data.tooltip ? settings.labelSize - 2 : settings.labelSize,
-      color: data.tooltip
-        ? ColorUtil.parseIntoHEX(settings.prettyLabelsHoverConfiguration.mutedTextColor)
-        : RenderUtils.resolveLabelColor(data, settings),
-    });
-    expect(textObjectSpy.mock.calls[1][1]).toMatchObject({
-      content: data.tooltip ?? "",
-      fontSize: settings.labelSize,
-      color: RenderUtils.resolveLabelColor(data, settings),
-    });
-    expect(textObjectSpy.mock.calls[2][1]).toMatchObject({
-      content: data.group ?? "",
-      fontSize: settings.labelSize - 2,
-      color: data.color ?? RenderUtils.resolveLabelColor(data, settings),
-    });
-
-    // Check if measureTextDimensions was called for each text object
+    // Label, tooltip, and group are each measured and drawn.
     expect(measureTextSpy).toHaveBeenCalledTimes(3);
+    expect(textSpy).toHaveBeenCalledTimes(3);
+    expect(textSpy.mock.calls.map((call) => call[0])).toEqual([data.label, data.tooltip, data.group]);
   });
 
   it("should not render anything if label, tooltip, and group are missing", () => {
-    // const textSpy = jest.spyOn(context, "fillText");
-    // data.label = "";
-    // data.tooltip = "";
-    // data.group = "";
+    data.label = "";
+    data.tooltip = "";
+    data.group = "";
 
     prettyLabelHoverRenderer(context, data, settings);
 
-    // Check if fillText was not called as there's no text to render
-    // expect(textSpy).not.toHaveBeenCalled();
+    // No shadow/background rectangle without a label, and no text to render.
+    expect(fillSpy).not.toHaveBeenCalled();
+    expect(textSpy).not.toHaveBeenCalled();
   });
 });

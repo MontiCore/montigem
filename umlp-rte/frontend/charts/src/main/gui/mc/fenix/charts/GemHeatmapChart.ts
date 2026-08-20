@@ -1,13 +1,13 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy,Input, SimpleChanges } from '@angular/core';
 import { config, GemHeatmapChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemHeatmapChartComponent';
 import { NgxChartsModule, ScaleType } from "@swimlane/ngx-charts";
 import { GemChartOptions } from './GemChartOptions';
 import { GemHeatmapChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemheatmapcharttypes/GemHeatmapChartData';
 
 @Component({
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, GemChartOptions, NgxChartsModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

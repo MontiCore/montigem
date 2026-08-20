@@ -2,36 +2,35 @@
   <!-- Draw the buttons horizontally or vertically using flexbox and simple buttons -->
   <ng-container *ngIf="isVerticalOrHorizontalLayout">
     <ng-container *ngFor="let button of controlButtons; trackBy: trackByIdx">
-      <p-button
+      <button
+        type="button"
+        class="graph-icon-button graph-icon-button--rounded graph-icon-button--raised"
         (click)="handleButtonClick(button)"
-        [icon]="button.icon"
-        [pTooltip]="button.tooltip"
-        [tooltipOptions]="button.tooltipOptions"
-        styleClass="p-button-rounded p-button-raised">
-      </p-button>
+        [graphTooltip]="button.tooltip"
+        [graphTooltipOptions]="button.tooltipOptions"
+      >
+        <span class="graph-icon-button-icon" [ngClass]="button.icon"></span>
+      </button>
     </ng-container>
   </ng-container>
 
   <!-- Use a Speed-Dial to show all buttons -->
   <ng-container *ngIf="isSpeedDialLayout">
-    <p-speedDial
+    <graph-speed-dial
       (click)="handleClick()"
-      [buttonClassName]="speedDialConfig?.buttonClassName"
-      [className]="speedDialConfig?.className"
-      [direction]="speedDialConfig?.direction"
+      [buttonClassName]="speedDialConfig?.buttonClassName ?? ''"
+      [className]="speedDialConfig?.className ?? ''"
+      [direction]="speedDialConfig?.direction ?? 'up-right'"
       [hideIcon]="speedDialConfig?.hideIcon"
       [hideOnClickOutside]="speedDialConfig?.hideOnClickOutside ?? false"
-      [maskClassName]="speedDialConfig?.maskClassName"
-      [mask]="speedDialConfig?.mask ?? false"
       [model]="speedDialItems"
-      [ngClass]="'controlButtonsSpeedDial'"
       [radius]="computedRadius"
       [rotateAnimation]="speedDialConfig?.rotateAnimation ?? true"
       [showIcon]="speedDialConfig?.showIcon"
       [transitionDelay]="speedDialConfig?.transitionDelay ?? 30"
-      [type]="speedDialConfig?.type"
+      [type]="speedDialConfig?.type ?? 'quarter-circle'"
       [visible]="speedDialConfig?.visible ?? false"
       ariaLabel="Open the Network Control Buttons">
-    </p-speedDial>
+    </graph-speed-dial>
   </ng-container>
 </div>

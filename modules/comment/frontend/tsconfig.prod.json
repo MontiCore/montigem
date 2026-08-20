@@ -19,6 +19,9 @@
     },
     "baseUrl": "./"
   },
+  "exclude": [
+    "**/*.spec.ts"
+  ],
   "angularCompilerOptions": {
     "compilationMode": "partial"
   }

@@ -59,9 +59,9 @@ describe("GraphProcessorService", () => {
 
   describe("processGraphData", () => {
     it("should process graph data", () => {
-      const processNodeDataSpy = jest.spyOn(nodeProcessor, "processNodeData");
-      const processEdgeDataSpy = jest.spyOn(edgeProcessor, "processEdgeData");
-      const assignGroupColorsSpy = jest.spyOn(groupMapping, "assignGroupColors");
+      const processNodeDataSpy = vi.spyOn(nodeProcessor, "processNodeData");
+      const processEdgeDataSpy = vi.spyOn(edgeProcessor, "processEdgeData");
+      const assignGroupColorsSpy = vi.spyOn(groupMapping, "assignGroupColors");
 
       const nodes = [
         { id: "1" },
@@ -100,7 +100,7 @@ describe("GraphProcessorService", () => {
         },
         {
           attributes: {
-            color: "#8F71E3",
+            color: "red",
             group: "testGroup",
             hidden: false,
             label: "2",
@@ -173,9 +173,9 @@ describe("GraphProcessorService", () => {
 
   describe("reset", () => {
     it("should reset all related services", () => {
-      const resetEdgeSpy = jest.spyOn(edgeProcessor, "reset");
-      const resetNodeSpy = jest.spyOn(nodeProcessor, "reset");
-      const resetGroupMappingSpy = jest.spyOn(groupMapping, "reset");
+      const resetEdgeSpy = vi.spyOn(edgeProcessor, "reset");
+      const resetNodeSpy = vi.spyOn(nodeProcessor, "reset");
+      const resetGroupMappingSpy = vi.spyOn(groupMapping, "reset");
 
       service.reset();
 

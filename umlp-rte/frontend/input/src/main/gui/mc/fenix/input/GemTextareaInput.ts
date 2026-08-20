@@ -1,12 +1,13 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, EventEmitter, HostBinding, Output } from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Output} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { config, GemTextareaInputComponent } from '../../../../../../build/gui2java2ts/mc/fenix/input/GemTextareaInputComponent';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, FormsModule, MatTooltipModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

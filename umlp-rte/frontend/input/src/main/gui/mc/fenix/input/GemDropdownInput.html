@@ -55,7 +55,8 @@
         placeholder="Search ..."
         tabindex="0"
         autocomplete="off"
-        [(ngModel)]="filterString"
+        [ngModel]="filterString"
+        (ngModelChange)="filterString = $event"
         (keyup)="filterOptions()"
       >
     </div>

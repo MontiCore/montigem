@@ -3,11 +3,11 @@
 }
 
 ::ng-deep .filer-group-panel {
-  .p-multiselect-item.p-highlight .selected-count-bar {
+  .graph-multi-select-item--selected .selected-count-bar {
     width: 100%;
   }
 
-  .p-multiselect-item:not(.p-highlight) .selected-count-bar {
+  .graph-multi-select-item:not(.graph-multi-select-item--selected) .selected-count-bar {
     width: 0;
   }
 

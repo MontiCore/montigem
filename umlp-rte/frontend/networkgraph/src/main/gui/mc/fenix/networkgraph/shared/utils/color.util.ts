@@ -335,7 +335,31 @@ export class ColorUtil {
 
     if (this.HEX_PATTERN.test(value)) return { color: value, format: ColorFormat.HEX }; // Return HEX color
 
+    // Fall back to resolving CSS named colors (e.g. "red") via the browser's own CSS parser.
+    const normalized: string | undefined = this.resolveNamedColor(value);
+    if (normalized) {
+      if (this.HEX_PATTERN.test(normalized)) return { color: normalized, format: ColorFormat.HEX };
+      if (this.RGBA_PATTERN.test(normalized)) {
+        const [, r, g, b, a = this.ALPHA_RANGE] = normalized.match(this.RGBA_PATTERN)!;
+        return { color: this.normalizeRGB({ r: +r, g: +g, b: +b, a: this.parseAlpha(a) }), format: ColorFormat.RGB };
+      }
+    }
+
     throw new Error("Invalid color value: " + value);
+  }
+
+  /**
+   * Resolves a CSS named color (e.g. "red", "rebeccapurple") into its normalized HEX/`rgb()`/`rgba()` representation
+   * using the browser's own CSS parser. Returns `undefined` if the value is not a valid CSS color.
+   *
+   * @param {string} value - The color value to resolve.
+   * @returns {string | undefined} The normalized color string, or `undefined` if invalid.
+   */
+  private static resolveNamedColor(value: string): string | undefined {
+    if (typeof CSS === "undefined" || !CSS.supports("color", value)) return undefined;
+    const context: CanvasRenderingContext2D = document.createElement("canvas").getContext("2d")!;
+    context.fillStyle = value;
+    return context.fillStyle;
   }
 
   /**

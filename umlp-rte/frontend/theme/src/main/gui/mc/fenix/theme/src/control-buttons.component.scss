@@ -1,3 +1,5 @@
+@import "../shared/styles/graph-icon-button";
+
 :host {
   flex: 1;
 }
@@ -26,53 +28,4 @@
   }
 }
 
-::ng-deep .controlButtonsSpeedDial {
-  .p-speeddial-quarter-circle {
-    &.p-speeddial-direction-up-left {
-      right: 0;
-      bottom: 0;
-    }
-
-    &.p-speeddial-direction-up-right {
-      bottom: 0;
-      left: 0;
-    }
-
-    &.p-speeddial-direction-down-left {
-      top: 0;
-      right: 0;
-    }
-
-    &.p-speeddial-direction-down-right {
-      top: 0;
-      left: 0;
-    }
-  }
-
-  .p-speeddial-semi-circle,
-  .p-speeddial-linear {
-    &.p-speeddial-direction-up {
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    &.p-speeddial-direction-down {
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    &.p-speeddial-direction-left {
-      top: 50%;
-      right: 0;
-      transform: translateY(-50%);
-    }
-
-    &.p-speeddial-direction-right {
-      top: 50%;
-      left: 0;
-      transform: translateY(-50%);
-    }
-  }
-}
+// Positioning of the speed-dial itself (per direction/type) is handled inside GraphSpeedDialComponent's own styles.

@@ -116,7 +116,6 @@ export class NodeProcessorService<
 
     const x: number = ProcessorServiceTemplate.getAttribute(node, "x") ?? 0;
     const y: number = ProcessorServiceTemplate.getAttribute(node, "y") ?? 0;
-console.error(imageLink)
     return {
       key,
       attributes: {

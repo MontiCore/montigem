@@ -2,16 +2,6 @@
   pointer-events: auto;
 }
 
-::ng-deep .p-dropdown-clearable {
-  &.p-dropdown.p-dropdown-clearable .p-dropdown-label {
-    padding-right: 0;
-  }
-
-  &:has(timesicon).p-dropdown.p-dropdown-clearable .p-dropdown-label {
-    padding-right: 1.75rem;
-  }
-}
-
 .label-wrapper {
   display: flex;
   flex-direction: row;

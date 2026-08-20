@@ -127,9 +127,9 @@ export class ArrayUtil {
    * @returns {T[]} - Flattened array
    */
   public static flatten<T>(input: NestedArray<T>, accumulator: T[] = []): T[] {
-    return input.reduce((_: T[], current: T | NestedArray<T>): T[] => {
+    return input.reduce<T[]>((_: T[], current: T | NestedArray<T>): T[] => {
       if (Array.isArray(current)) return this.flatten(current, accumulator);
-      accumulator.push(current);
+      accumulator.push(current as T);
       return accumulator;
     }, []);
   }

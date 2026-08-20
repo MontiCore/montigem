@@ -1,11 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, HostBinding, Input, TemplateRef } from "@angular/core";
+import {ChangeDetectionStrategy, Component, HostBinding, Input, TemplateRef} from "@angular/core";
 import { config, GemGridCellComponent } from '../../../../../../build/gui2java2ts/mc/fenix/arrange/GemGridCellComponent';
 import {GemListUtil, IUMLPList} from "@umlp/commonj2ts";
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   styleUrls: config.styleUrls,

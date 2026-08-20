@@ -17,7 +17,7 @@ describe("EdgeProcessorService", () => {
     });
     service = TestBed.inject(EdgeProcessorService);
     dataStorage = TestBed.inject(GraphDataService);
-    jest.spyOn(dataStorage.uniqueNodeKeySet, "has").mockReturnValue(true); // Assuming all nodes are valid
+    vi.spyOn(dataStorage.uniqueNodeKeySet, "has").mockReturnValue(true); // Assuming all nodes are valid
   });
 
   it("should be created", () => {
@@ -177,7 +177,7 @@ describe("EdgeProcessorService", () => {
 
   describe("logEdgeWarnings", () => {
     it("should log warnings for duplicated edge keys, duplicated edges, and invalid pairs", () => {
-      const consoleWarnSpy = jest.spyOn(console, "warn").mockImplementation();
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
       (service as any).logEdgeWarnings(["(1, 2)"], ["key1"], ["(3, 4)"], ["(3, 3)"]);
       expect(consoleWarnSpy).toHaveBeenCalled();
       consoleWarnSpy.mockRestore();

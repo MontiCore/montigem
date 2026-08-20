@@ -1,5 +1,5 @@
 /* (c) https://github.com/MontiCore/monticore */
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component,ChangeDetectionStrategy, ElementRef, ViewChild} from '@angular/core';
 import {OnDestroy} from '@angular/core';
 import ApexCharts from 'apexcharts';
 import {TimelineData} from "../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimelinecharttypes/TimelineData";
@@ -8,7 +8,7 @@ import {Timeline} from "../../../../../../build/gui2java2ts/mc/fenix/charts/gemt
 
 
 @Component({
-    standalone: true,
+    changeDetection: ChangeDetectionStrategy.Eager,
     imports: [...config.imports],
     selector: config.selector,
     templateUrl: config.templateUrl,

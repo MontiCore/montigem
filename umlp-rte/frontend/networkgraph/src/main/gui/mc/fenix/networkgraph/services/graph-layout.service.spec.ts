@@ -55,7 +55,16 @@ describe("GraphLayoutService", () => {
     service = TestBed.inject(GraphLayoutService);
     renderer = TestBed.inject(SigmaGraphService);
     createSigmaInstance();
-    jest.spyOn(renderer, "renderer", "get").mockReturnValue(sigmaRenderer);
+    vi.spyOn(renderer, "renderer", "get").mockReturnValue(sigmaRenderer);
+  });
+
+  afterEach(() => {
+    // Do not kill sigmaRenderer here: TestBed's automatic teardown calls SigmaGraphService.ngOnDestroy(),
+    // which kills the renderer returned by the mocked "renderer" getter (i.e. this same sigmaRenderer).
+    // Killing it twice throws, since the WebGL context is already torn down after the first kill().
+    service.stopLayouting();
+    sigmaRenderer.getContainer().remove();
+    vi.restoreAllMocks();
   });
 
   it("should be created", () => {
@@ -64,13 +73,13 @@ describe("GraphLayoutService", () => {
 
   describe("applyInitialLayout", () => {
     it("should apply initial layout if provided", () => {
-      const initialLayoutSpy = jest.spyOn(INITIAL_LAYOUT_MAPPING, InitialGraphLayouts.RANDOM);
+      const initialLayoutSpy = vi.spyOn(INITIAL_LAYOUT_MAPPING, InitialGraphLayouts.RANDOM);
       service.applyInitialLayout({ mode: InitialGraphLayouts.RANDOM });
       expect(initialLayoutSpy).toHaveBeenCalledWith(renderer.graph, {});
     });
 
     it("should not apply initial layout if not provided", () => {
-      const initialLayoutSpy = jest.spyOn(INITIAL_LAYOUT_MAPPING, InitialGraphLayouts.RANDOM);
+      const initialLayoutSpy = vi.spyOn(INITIAL_LAYOUT_MAPPING, InitialGraphLayouts.RANDOM);
       service.applyInitialLayout(null);
       expect(initialLayoutSpy).not.toHaveBeenCalled();
     });
@@ -78,7 +87,7 @@ describe("GraphLayoutService", () => {
 
   describe("startLayouting", () => {
     it("should start layouting process with provided configuration", () => {
-      const complexLayoutSpy = jest.spyOn(COMPLEX_LAYOUT_MAPPING, ComplexGraphLayouts.FORCEATLAS2);
+      const complexLayoutSpy = vi.spyOn(COMPLEX_LAYOUT_MAPPING, ComplexGraphLayouts.FORCEATLAS2);
       service.startLayouting({
         mode: ComplexGraphLayouts.FORCEATLAS2,
         parameters: { settings: { linLogMode: true } },
@@ -88,7 +97,7 @@ describe("GraphLayoutService", () => {
     });
 
     it("should stop layouting process if no configuration provided", () => {
-      const stopLayoutingSpy = jest.spyOn(service, "stopLayouting");
+      const stopLayoutingSpy = vi.spyOn(service, "stopLayouting");
       service.startLayouting(null);
       expect(stopLayoutingSpy).toHaveBeenCalled();
     });
@@ -96,7 +105,7 @@ describe("GraphLayoutService", () => {
 
   describe("continueLayout", () => {
     it("should continue layouting with last configuration", () => {
-      const startLayoutingSpy = jest.spyOn(service, "startLayouting");
+      const startLayoutingSpy = vi.spyOn(service, "startLayouting");
       service["lastComplexLayoutConfig"] = {
         mode: ComplexGraphLayouts.FORCEATLAS2,
         parameters: {},
@@ -111,7 +120,7 @@ describe("GraphLayoutService", () => {
     });
 
     it("should stop layouting if no last configuration", () => {
-      const stopLayoutingSpy = jest.spyOn(service, "stopLayouting");
+      const stopLayoutingSpy = vi.spyOn(service, "stopLayouting");
       service["lastComplexLayoutConfig"] = null;
       service.continueLayout();
       expect(stopLayoutingSpy).toHaveBeenCalled();
@@ -120,7 +129,7 @@ describe("GraphLayoutService", () => {
 
   describe("stopLayouting", () => {
     it("should stop the layouting process", () => {
-      window.cancelAnimationFrame = jest.fn();
+      vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
       service["frameID"] = 1;
       service.stopLayouting();
       expect(window.cancelAnimationFrame).toHaveBeenCalledWith(1);
@@ -129,7 +138,7 @@ describe("GraphLayoutService", () => {
 
   describe("reset", () => {
     it("should reset the service to its initial state", () => {
-      const stopLayoutingSpy = jest.spyOn(service, "stopLayouting");
+      const stopLayoutingSpy = vi.spyOn(service, "stopLayouting");
       service.reset();
       expect(stopLayoutingSpy).toHaveBeenCalled();
       expect(service["elapsedLayoutTime"]).toEqual(0);

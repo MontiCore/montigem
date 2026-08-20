@@ -337,7 +337,7 @@ public class GUI2ConfigGeneratorTest extends DomainGUITest {
     genSetup.setGlex(glex);
     genSetup.getGlex().setGlobalValue("genHelper", GUIGeneratorUtil.getInstance());
 
-    return new GUI2ConfigGenerator(genSetup);
+    return new GUI2ConfigGenerator(genSetup, Optional.empty());
   }
 
   protected void prepareModels() {

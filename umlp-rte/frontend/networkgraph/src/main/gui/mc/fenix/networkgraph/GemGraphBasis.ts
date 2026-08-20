@@ -1,7 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import {
-  afterRender,
+  afterEveryRender,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -63,7 +63,7 @@ export abstract class GemGraphBasis {
 
   constructor() {
     this.checkWebGLSupport();
-    afterRender((): void => {
+    afterEveryRender((): void => {
       if (this.isContainerReadyForInit()) {
         this.containerInitialized = true;
         this.graphManager.setContainer(this.container?.nativeElement);

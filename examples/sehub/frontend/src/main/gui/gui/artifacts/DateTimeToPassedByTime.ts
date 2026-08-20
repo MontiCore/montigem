@@ -2,10 +2,10 @@
 
 import {DateTimeToPassedByTimeComponent,config} from 'gui/artifacts/DateTimeToPassedByTimeComponent';
 
-import {Component,} from '@angular/core';
+import {Component,ChangeDetectionStrategy} from '@angular/core';
 
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:[...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,

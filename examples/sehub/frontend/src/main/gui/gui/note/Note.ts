@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 import {NoteComponent,config} from "gui/note/NoteComponent";
-import {Component} from '@angular/core';
+import {Component,ChangeDetectionStrategy} from '@angular/core';
 import {SehubManager} from 'sehub/SehubManager';
 import {Post} from 'sehub/Post';
 import {SehubSecurityManager} from "sehub/SehubSecurityManager";
@@ -13,7 +13,7 @@ import { GemTextareaInput, GemTextInput } from "@umlp/input";
 import { Response } from '../../../gui2java2ts/gui/note/Response';
 
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:
 [
   CommonModule,

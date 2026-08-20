@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import {Component} from '@angular/core';
+import {Component,ChangeDetectionStrategy} from '@angular/core';
 import {UserDisplayComponent,config} from 'gui/usersettings/UserDisplayComponent';
 
 import {SehubRole} from 'sehub/SehubRole';
@@ -11,7 +11,7 @@ import {Option} from '@umlp/input';
 import {AsyncList, IUMLPList} from '@umlp/commonj2ts';
 
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:[...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,

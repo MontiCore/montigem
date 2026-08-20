@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, ChangeDetectionStrategy,EventEmitter, Input, Output } from '@angular/core';
 import { config, GemVennDiagramComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemVennDiagramComponent';
 import * as d3 from 'd3';
 import * as venn from 'venn.js';
@@ -11,7 +11,7 @@ import { GemChartOptions } from './GemChartOptions';
 import {GemListUtil} from "@umlp/commonj2ts";
 
 @Component({
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, GemChartOptions, GemChartLegend],
   selector: config.selector,
   styleUrls: config.styleUrls,

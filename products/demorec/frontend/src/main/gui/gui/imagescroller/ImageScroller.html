@@ -20,7 +20,7 @@
     <span class="page-info">
       Page {{ getDisplayPage() }} / {{ getTotalPages() }}
       &nbsp;&mdash;&nbsp;
-      {{ this.allImages.length }} images total
+      {{ allImages.length }} images total
     </span>
     <button class="nav-btn" (click)="onNextPage()" [disabled]="isLastPage()">Next &#8594;</button>
   </div>

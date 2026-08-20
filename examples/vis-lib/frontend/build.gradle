@@ -69,9 +69,9 @@ tasks.register("copySourceCodeToAssets", Copy) {
   from("src/main/java") {
     include "**/*.java"
   }
-  
+
   into layout.buildDirectory.dir("app/src/assets/source-code")
-  
+
   // Ensure the app directory structure exists
   dependsOn "setupFrontend"
 }

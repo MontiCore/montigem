@@ -1,14 +1,15 @@
 import { Subscription } from "rxjs";
 import { AutoUnsubscribe, AutoUnsubscriber } from "./auto-unsubscribe.decorator";
+import { vi, MockInstance } from 'vitest';
 
 describe("AutoUnsubscriber", () => {
   describe("performUnsubscription", () => {
     let mockSubscription: Subscription;
-    let unsubscribeSpy: jest.SpyInstance;
+    let unsubscribeSpy: MockInstance;
 
     beforeEach(() => {
       mockSubscription = new Subscription();
-      unsubscribeSpy = jest.spyOn(mockSubscription, "unsubscribe");
+      unsubscribeSpy = vi.spyOn(mockSubscription, "unsubscribe");
     });
 
     it("should call unsubscribe when performUnsubscription is called with a Subscription", () => {
@@ -32,7 +33,7 @@ describe("AutoUnsubscriber", () => {
   });
 
   describe("AutoUnsubscribe Decorator", () => {
-    let testSubscriptionSpy: jest.SpyInstance;
+    let testSubscriptionSpy: MockInstance;
 
     @AutoUnsubscribe()
     class TestComponent {
@@ -47,7 +48,7 @@ describe("AutoUnsubscriber", () => {
 
     beforeEach(() => {
       component = new TestComponent();
-      testSubscriptionSpy = jest.spyOn(component.testSubscription, "unsubscribe");
+      testSubscriptionSpy = vi.spyOn(component.testSubscription, "unsubscribe");
     });
 
     it("should call unsubscribe on all subscriptions when ngOnDestroy is called", () => {

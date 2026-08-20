@@ -24,20 +24,31 @@ public class GUI2ConfigGenerator {
   public final static String APP_FILE_PREFIX = "App";
   public final static String ROUTE_FILE_SUFFIX = "GemRouting";
   public final static String MODULE_FILE_SUFFIX = "GemModule";
+  public final static String CONFIG_FILE_SUFFIX = "GemConfig";
   public final static String TS_FILE_EXTENSION = "ts";
+  public final static String HTML_FILE_EXTENSION = "html";
 
   public final static String APP_ROUTE_FILE = APP_FILE_PREFIX + ROUTE_FILE_SUFFIX + "." + TS_FILE_EXTENSION;
   public final static String APP_ROUTE_TOP_FILE = APP_FILE_PREFIX + ROUTE_FILE_SUFFIX + "TOP" + "." + TS_FILE_EXTENSION;
+
+  public final static String APP_CONFIG_FILE = APP_FILE_PREFIX + CONFIG_FILE_SUFFIX + "." + TS_FILE_EXTENSION;
+  public final static String APP_CONFIG_TOP_FILE = APP_FILE_PREFIX + CONFIG_FILE_SUFFIX + "TOP" + "." + TS_FILE_EXTENSION;
+
+  public final static String APP_COMPONENT = APP_FILE_PREFIX+"Component";
+  public final static String APP_TS = APP_COMPONENT+"."+TS_FILE_EXTENSION;
+  public final static String APP_HTML = APP_COMPONENT+"."+HTML_FILE_EXTENSION;
 
   protected static final GUIGeneratorUtil util = GUIGeneratorUtil.getInstance();
   protected final GeneratorEngine generatorEngine;
   protected GeneratorSetup setup;
   protected MCPath hwcPath;
+  protected final Optional<String> domainName;
 
-  public GUI2ConfigGenerator(GeneratorSetup generatorSetup) {
+  public GUI2ConfigGenerator(GeneratorSetup generatorSetup, Optional<String> domainName) {
     this.generatorEngine = new GeneratorEngine(generatorSetup);
     this.setup = generatorSetup;
     this.hwcPath = generatorSetup.getHandcodedPath();
+    this.domainName = domainName;
   }
 
   public List<String> generateConfig(Collection<PackageRoute> allRoutes) {
@@ -51,6 +62,11 @@ public class GUI2ConfigGenerator {
     }
     // generate global config
     res.addAll(generateAppConfigFiles(allRoutes));
+
+    // generate app component
+    if(domainName.isPresent()) {
+      res.addAll(generateAppComponent(domainName.get()));
+    }
     return res;
   }
 
@@ -95,14 +111,10 @@ public class GUI2ConfigGenerator {
   protected List<String> generateAppConfigFiles(Collection<PackageRoute> allRoutes) {
     GeneratorEngine genEngine = new GeneratorEngine(setup);
 
-    String pathHWRoutes = "./" + APP_ROUTE_FILE;
     Optional<String> appRoutePath = util.getRelativeImportPathForAppConfigFile(
         hwcPath, setup.getOutputDirectory().toPath(),
         APP_FILE_PREFIX + ROUTE_FILE_SUFFIX, TS_FILE_EXTENSION);
     boolean existHWRoute = appRoutePath.isPresent();
-    if (existHWRoute) {
-      pathHWRoutes = util.removeExtension(appRoutePath.get());
-    }
 
     List<PackageRoute> routes = findTopMostRoutes(allRoutes);
     String defaultRouting = "";
@@ -115,21 +127,58 @@ public class GUI2ConfigGenerator {
     genEngine.generateNoA("umlp.gui2ts.TSAppRoutes",
         genAppRoutePath, getAppPath2RouteMap(routes), defaultRouting);
 
+    Optional<String> appConfigPath = util.getRelativeImportPathForAppConfigFile(
+        hwcPath, setup.getOutputDirectory().toPath(),
+        APP_FILE_PREFIX + CONFIG_FILE_SUFFIX, TS_FILE_EXTENSION);
+    boolean existHWConfig = appConfigPath.isPresent();
+
+    Path genAppConfigsPath = Paths.get(existHWConfig ? APP_CONFIG_TOP_FILE : APP_CONFIG_FILE);
+    genEngine.generateNoA("umlp.gui2ts.TSAppConfig", genAppConfigsPath);
+
     Path generatedModuleFiles = Paths.get(APP_FILE_PREFIX + MODULE_FILE_SUFFIX + "." + TS_FILE_EXTENSION);
 
-    String pathModuleConfig = "";
-    Optional<String> appModulePath = util.getRelativeImportPathForAppConfigFile(
+    return Arrays.asList(genAppRoutePath.toString(), generatedModuleFiles.toString());
+  }
+
+  protected List<String> generateAppComponent(String domainName) {
+    List<String> generatedFiles = new ArrayList<>();
+    GeneratorEngine genEngine = new GeneratorEngine(setup);
+
+    // TODO this is only used for existence checking
+    Optional<String> appPath = util.getRelativeImportPathForAppConfigFile(
         hwcPath, setup.getOutputDirectory().toPath(),
-        APP_FILE_PREFIX + MODULE_FILE_SUFFIX + "Config", TS_FILE_EXTENSION);
-    boolean existHWModuleConfig = appModulePath.isPresent();
-    if (existHWModuleConfig) {
-      pathModuleConfig = util.removeExtension(appModulePath.get());
+        APP_COMPONENT, TS_FILE_EXTENSION);
+    boolean existHWApp = appPath.isPresent();
+
+    String pathAppTs = "./" + APP_TS;
+    String htmlPath = "./" + APP_HTML;
+    List<String> scssPaths = new ArrayList<>();
+
+    Optional<String> hwHtmlPath = util.getRelativeImportPath(
+        hwcPath, setup.getOutputDirectory().toPath(), APP_COMPONENT, "html");
+    if (hwHtmlPath.isPresent()) {
+      htmlPath = hwHtmlPath.get();
+    } else {
+      Path htmlPathAsPath = Paths.get(htmlPath);
+      genEngine.generateNoA("umlp.gui2html.AppComponent", htmlPathAsPath);
+      generatedFiles.add(htmlPathAsPath.toString());
+    }
+    Optional<String> hwScssPath = util.getRelativeImportPath(
+        hwcPath, setup.getOutputDirectory().toPath(), APP_COMPONENT,"scss");
+    if (hwScssPath.isPresent()) {
+      scssPaths.add(hwScssPath.get());
+    } else {
+      Path scssPath = Paths.get("./"+APP_COMPONENT+".scss");
+      genEngine.generateNoA("umlp.gui2html.AppScss", scssPath);
+      generatedFiles.add(scssPath.toString());
+    }
+    if (!existHWApp) {
+      Path pathAppTsAsPath = Paths.get(pathAppTs);
+      genEngine.generateNoA("umlp.gui2ts.TSApp", pathAppTsAsPath, domainName, htmlPath, scssPaths);
+      generatedFiles.add(pathAppTsAsPath.toString());
     }
 
-    genEngine.generateNoA("umlp.gui2ts.TSAppModule",
-        generatedModuleFiles, existHWModuleConfig, existHWRoute, pathHWRoutes, pathModuleConfig);
-
-    return Arrays.asList(genAppRoutePath.toString(), generatedModuleFiles.toString());
+    return generatedFiles;
   }
 
   /**

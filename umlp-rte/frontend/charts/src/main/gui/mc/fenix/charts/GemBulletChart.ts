@@ -6,7 +6,6 @@ import { config, GemBulletChartComponent } from '../../../../../../build/gui2jav
 import {GemListUtil, IUMLPList} from "@umlp/commonj2ts";
 
 @Component({
-  standalone: true,
   imports: [CommonModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

@@ -21,7 +21,7 @@ import { GraphNode } from "../../../../../../build/gui2java2ts/mc/fenix/networkg
 import { GraphNodeBuilder } from "../../../../../../build/gui2java2ts/mc/fenix/networkgraph/networkgraphtypes/GraphNodeBuilder";
 import { NodePos } from "../../../../../../build/gui2java2ts/mc/fenix/networkgraph/networkgraphtypes/NodePos";
 import { NodePosBuilder } from "../../../../../../build/gui2java2ts/mc/fenix/networkgraph/networkgraphtypes/NodePosBuilder";
-import { TooltipOptions } from "primeng/api";
+import { GraphTooltipOptions } from "./shared/types/tooltip.types";
 import { Sigma } from "sigma";
 import { CameraState } from "sigma/types";
 import { ControlButtonsComponent } from "./control-buttons/control-buttons.component";
@@ -244,7 +244,7 @@ export class GemGraph extends GemGraphBasis implements OnChanges {
   @Input() cbSpeedDialConfig?: SpeedDialConfig;
 
   /** Configuration options for tooltips. */
-  @Input() tooltipOptions?: TooltipOptions = { showDelay: 100 };
+  @Input() tooltipOptions?: GraphTooltipOptions = { showDelay: 100 };
 
   /** If this is not set, the bounding box will be calculated based on the maxima and minima for x and y coordinates
    *  in the graph. Use it to ensure that different graphs have the same zoom.

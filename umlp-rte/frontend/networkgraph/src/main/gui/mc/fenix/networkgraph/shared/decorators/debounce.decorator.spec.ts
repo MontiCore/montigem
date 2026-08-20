@@ -1,29 +1,35 @@
 import { applyDebounce, Debounce } from "./debounce.decorator";
-import { jest } from "@jest/globals";
+import { vi, Mock } from 'vitest';
 
 describe("Debounce", () => {
   const timeout: number = 100;
 
   describe("applyDebounce", () => {
-    let mockFunction: jest.Mock;
+    let mockFunction: Mock;
     let debouncedFunction: any;
 
     beforeEach(() => {
-      mockFunction = jest.fn();
+      vi.useFakeTimers();
+      mockFunction = vi.fn();
       debouncedFunction = applyDebounce(mockFunction, timeout);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
     });
 
     it("should not call the function immediately", () => {
       debouncedFunction();
+
       expect(mockFunction).not.toHaveBeenCalled();
     });
 
-    it("should call the function after the timeout", (done) => {
+    it("should call the function after the timeout", () => {
       debouncedFunction();
-      setTimeout(() => {
-        expect(mockFunction).toHaveBeenCalled();
-        done();
-      }, timeout + 1);
+
+      vi.advanceTimersByTime(timeout);
+
+      expect(mockFunction).toHaveBeenCalled();
     });
   });
 
@@ -40,20 +46,26 @@ describe("Debounce", () => {
     let component: TestComponent;
 
     beforeEach(() => {
+      vi.useFakeTimers();
       component = new TestComponent();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
     });
 
     it("should not call the method immediately", () => {
       component.method();
+
       expect(component.testProperty).toEqual("");
     });
 
-    it("should call the method after the timeout", (done) => {
+    it("should call the method after the timeout", () => {
       component.method();
-      setTimeout(() => {
-        expect(component.testProperty).toEqual("method called");
-        done();
-      }, timeout + 1);
+
+      vi.advanceTimersByTime(timeout);
+
+      expect(component.testProperty).toEqual("method called");
     });
   });
 });

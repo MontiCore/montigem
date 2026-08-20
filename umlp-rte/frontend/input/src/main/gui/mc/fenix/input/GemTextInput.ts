@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, EventEmitter, HostBinding, Input, Output } from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, HostBinding, Input, Output} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { config, GemTextInputComponent } from '../../../../../../build/gui2java2ts/mc/fenix/input/GemTextInputComponent';
 import { GemTextInputMode } from './GemTextInputMode';
@@ -8,6 +8,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, FormsModule, GemTextInputMode, MatTooltipModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

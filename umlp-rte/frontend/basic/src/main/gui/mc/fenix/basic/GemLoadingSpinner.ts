@@ -1,10 +1,11 @@
 // Datei: umlp-rte/frontend/basic/src/main/gui/mc/fenix/basic/GemLoadingSpinner.ts
-import { Component, Input } from '@angular/core';
+import {ChangeDetectionStrategy, Component, Input} from '@angular/core';
 import { MatProgressSpinnerModule, ProgressSpinnerMode } from '@angular/material/progress-spinner';
 import { config, GemLoadingSpinnerComponent } from '../../../../../../build/gui2java2ts/mc/fenix/basic/GemLoadingSpinnerComponent';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, MatProgressSpinnerModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

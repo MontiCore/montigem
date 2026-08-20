@@ -1,0 +1,9 @@
+<div
+  *ngIf="visible"
+  class="graph-popover-panel"
+  [ngClass]="styleClass"
+  [graphOverlayPosition]="anchor"
+  [matchAnchorWidth]="false"
+  (graphOutsideClick)="hide()">
+  <ng-content></ng-content>
+</div>

@@ -3,7 +3,7 @@
 // This component is based upon https://github.com/chrisengelsma/draggable-resizable-div/blob/master/LICENSE
 // and thus upon the MIT license
 
-import {KeyValuePipe, NgComponentOutlet, NgFor, NgIf, } from "@angular/common";
+import {NgIf, } from "@angular/common";
 
 
 import { Component, ElementRef, Inject, ViewChild, Input } from '@angular/core';
@@ -11,7 +11,7 @@ import { DOCUMENT } from '@angular/common';
 
 @Component({
   standalone: true,
-  imports: [NgComponentOutlet, KeyValuePipe, NgFor, NgIf],
+  imports: [NgIf],
   selector: 'wizard-modal',
   template: `
     <ng-container *ngIf="this.open">

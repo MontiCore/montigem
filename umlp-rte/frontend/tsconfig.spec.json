@@ -2,11 +2,13 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "types": [
-      "jasmine"
+      "vitest/globals",
+      "node"
     ]
   },
   "include": [
     "**/*.spec.ts",
     "**/*.d.ts"
-  ]
+  ],
+  "exclude": []
 }

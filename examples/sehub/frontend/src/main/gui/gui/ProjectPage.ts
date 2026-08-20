@@ -5,11 +5,11 @@ import {ProjectPageComponent,config} from 'gui/ProjectPageComponent';
 import {Artifact} from 'sehub/Artifact';
 import {Directory} from 'sehub/Directory';
 import { SehubSecurityManager } from "sehub/SehubSecurityManager";
-import {Component} from '@angular/core';
+import {Component,ChangeDetectionStrategy} from '@angular/core';
 import {AsyncList} from '@umlp/commonj2ts';
 
 @Component({
-  standalone:true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports:[...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,

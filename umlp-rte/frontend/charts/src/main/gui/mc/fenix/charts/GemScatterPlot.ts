@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { config, GemScatterPlotComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemScatterPlotComponent';
 import { ChartDataset, ChartOptions, TooltipItem } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
@@ -20,7 +20,7 @@ interface CustomTooltipItemPointWithLabel extends TooltipItem<'scatter'> {
 }
 
 @Component({
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, NgChartsModule, GemChartOptions, GemChartLegend],
   selector: config.selector,
   styleUrls: config.styleUrls,

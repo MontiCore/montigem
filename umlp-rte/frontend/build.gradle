@@ -87,6 +87,8 @@ project(":umlp-rte:frontend").afterEvaluate {
 
 }
 
+// This prints a single file that contains all the async methods from JSweet Transpilation in the RTE
+// this file is part of the of the Frontend-RTE.jar and therefore processed whenever the Frontend-RTE.jar is in the classpath
 afterEvaluate {
   def mergeJSweetAsync = tasks.register("mergeJSweetAsyncMethods") {
     group = "build"

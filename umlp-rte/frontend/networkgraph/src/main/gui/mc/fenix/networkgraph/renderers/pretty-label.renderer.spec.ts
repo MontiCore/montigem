@@ -1,10 +1,10 @@
-import { setupJestCanvasMock } from "jest-webgl-canvas-mock";
 import { getDefaultGraphSettings } from "../consts/graph-settings.const";
-import prettyLabelRenderer from "./pretty-label.renderer";
+import { prettyLabelRenderer } from "./pretty-label.renderer";
 import { NodeAttributes } from "../types/graph.types";
 import { GraphSettings } from "../types/graph-settings.types";
-import { ColorUtil } from "../../shared/utils/color.util";
+import { ColorUtil } from "../shared/utils/color.util";
 import * as RenderUtils from "./render.utils";
+import { vi, MockInstance } from 'vitest';
 
 describe("prettyLabelRenderer", () => {
   let context: CanvasRenderingContext2D;
@@ -12,8 +12,7 @@ describe("prettyLabelRenderer", () => {
   let settings: GraphSettings;
 
   beforeEach(() => {
-    jest.resetAllMocks();
-    setupJestCanvasMock();
+    vi.resetAllMocks();
 
     const canvas: HTMLCanvasElement = document.createElement("canvas");
     context = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -31,9 +30,9 @@ describe("prettyLabelRenderer", () => {
 
   it("should render label correctly", () => {
     // Fill text gets called
-    const textSpy = jest.spyOn(context, "fillText");
+    const textSpy = vi.spyOn(context, "fillText");
     // Fill (for the rounded rect around the label) gets called
-    const rectSpy = jest.spyOn(context, "fill");
+    const rectSpy = vi.spyOn(context, "fill");
     prettyLabelRenderer(context, data, settings);
 
     expect(textSpy).toHaveBeenCalledWith(data.label, expect.any(Number), expect.any(Number));
@@ -41,8 +40,8 @@ describe("prettyLabelRenderer", () => {
   });
 
   it("should not render anything if label is missing", () => {
-    const textSpy = jest.spyOn(context, "fillText");
-    const rectSpy = jest.spyOn(context, "fill");
+    const textSpy = vi.spyOn(context, "fillText");
+    const rectSpy = vi.spyOn(context, "fill");
     data.label = "";
     prettyLabelRenderer(context, data, settings);
 
@@ -66,7 +65,7 @@ describe("prettyLabelRenderer", () => {
         fillStyle: this.fillStyle,
         method: "fill",
       });
-      fillOriginal(...args);
+      fillOriginal.apply(this, args);
     };
 
     context.fillText = function (...args) {

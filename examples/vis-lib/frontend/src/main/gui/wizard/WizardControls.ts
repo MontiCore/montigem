@@ -7,12 +7,7 @@ import {
   ViewContainerRef
 } from "@angular/core";
 import {
-  CommonModule,
-  KeyValuePipe,
-  NgComponentOutlet,
-  NgFor,
-  NgIf,
-  AsyncPipe
+  CommonModule
 } from "@angular/common";
 
 import "@angular/compiler";
@@ -25,7 +20,7 @@ import {Observable} from "rxjs";
  */
 @Component({
   standalone: true,
-  imports: [NgComponentOutlet, KeyValuePipe, NgFor, NgIf, CommonModule, AsyncPipe],
+  imports: [CommonModule],
   selector: 'wizard-controls',
   styles: 'button {width: 12px; height: 12px; font-size: 5px; vertical-align: top; float: left;}' +
       ' span {width: 12px; height: 12px; font-size: 9px; vertical-align: center; float: left; background-color: gray; margin: 1px; } :host {height: 12px; display:flex;}',

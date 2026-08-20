@@ -1,10 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, HostBinding } from '@angular/core';
+import {ChangeDetectionStrategy, Component, HostBinding} from '@angular/core';
 import { config, GemAudioComponent } from '../../../../../../build/gui2java2ts/mc/fenix/basic/GemAudioComponent';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   styleUrls: config.styleUrls,

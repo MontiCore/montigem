@@ -1,12 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
-import {Component, ElementRef, ViewChild, AfterViewInit, OnDestroy, HostBinding, Input} from '@angular/core';
+import {Component, ChangeDetectionStrategy,ElementRef, ViewChild, AfterViewInit, OnDestroy, HostBinding, Input} from '@angular/core';
 import {GemTimeSeriesChartComponent, config} from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemTimeSeriesChartComponent';
 import ApexCharts from 'apexcharts';
 import { TimeSeriesData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeriesData';
 import { TimeSeries } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeries';
 
 @Component({
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,

@@ -272,7 +272,8 @@ public class GuiPipeline extends Pipeline<UMLPPipelineData> {
 
   public final IOperation.ISimpleOperation<DataWithGenSetupAndRouting> config_pipe_generate =
       data -> {
-        GUI2ConfigGenerator configGenerator = new GUI2ConfigGenerator(data.getGenSetup());
+        Optional<String> domainName = UMLPGeneratorConfig.getInstance().getDomain();
+        GUI2ConfigGenerator configGenerator = new GUI2ConfigGenerator(data.getGenSetup(), domainName);
         List<String> outputs = configGenerator.generateConfig(data.getRouting().values());
         for (String output : outputs) {
           Reporting.reportFileCreation(

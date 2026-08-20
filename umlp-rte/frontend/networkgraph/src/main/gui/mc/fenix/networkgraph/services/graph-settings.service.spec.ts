@@ -67,7 +67,7 @@ describe("GraphSettingsService", () => {
       document.body.appendChild(container);
 
       // Mocking getBoundingClientRect in Jest
-      container.getBoundingClientRect = jest.fn(() => {
+      container.getBoundingClientRect = vi.fn(() => {
         return {
           x: 0,
           y: 0,

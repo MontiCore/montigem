@@ -170,6 +170,8 @@ public class AngularSpecificsAdapter extends AbstractAdapter {
     if (adapterUtils.isHWCComponent(classElement)) {
       Boolean standAlone = adapterUtils.getAnnotationPropertyValue(classElement, "standalone", Boolean.class,
           true);
+      String changeDetection = adapterUtils.getAnnotationPropertyValue(classElement, "changeDetection", String.class,
+          "ChangeDetectionStrategy.Eager");
       String[] imports = adapterUtils.getAnnotationPropertyValue(classElement, "imports",
           String[].class, new String[] { "...config.imports" });
       String selector = adapterUtils.getAnnotationPropertyValue(classElement, "selector", String.class,
@@ -184,6 +186,7 @@ public class AngularSpecificsAdapter extends AbstractAdapter {
           String[].class, new String[] {});
       print("@Component({").println().startIndent().printIndent()
           .print("standalone: " + standAlone + ",").println().printIndent()
+          .print("changeDetection: " + changeDetection + ",").println().printIndent()
           .print("imports: " + Arrays.toString(imports) + ",").println().printIndent()
           .print("selector: " + selector + ",").println().printIndent()
           .print("templateUrl: " + templateUrl + ",").println().printIndent()
@@ -191,6 +194,7 @@ public class AngularSpecificsAdapter extends AbstractAdapter {
           .print("styleUrls: " + Arrays.toString(styleUrls)).println().endIndent()
           .print("})").println().printIndent();
       adapterUtils.importFromWithModule("Component", "@angular/core");
+      adapterUtils.importFromWithModule("ChangeDetectionStrategy", "@angular/core");
 
       for (String componentImport : tsImports) {
         String[] split = componentImport.split(",");

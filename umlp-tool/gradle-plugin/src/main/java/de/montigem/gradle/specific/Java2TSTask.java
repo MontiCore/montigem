@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 public abstract class Java2TSTask extends DefaultTask {
 
 
-  static final String NODE_VERSION = "18.13.0";
+  public static final String NODE_VERSION = "24.15.0";
 
   @InputFiles
   public abstract ConfigurableFileCollection getInput();

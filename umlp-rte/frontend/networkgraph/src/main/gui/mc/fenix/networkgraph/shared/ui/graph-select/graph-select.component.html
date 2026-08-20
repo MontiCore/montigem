@@ -1,0 +1,57 @@
+<div class="graph-select" [ngClass]="styleClass" [class.graph-select--disabled]="disabled">
+  <button #trigger type="button" class="graph-select-trigger" [disabled]="disabled" (click)="toggle($event)">
+    <span class="graph-select-value">
+      <ng-container *ngIf="selectedOption; else placeholderTemplate">
+        <ng-container
+          *ngIf="selectedItemTemplate; else defaultSelected"
+          [ngTemplateOutlet]="selectedItemTemplate"
+          [ngTemplateOutletContext]="{ $implicit: selectedOption }"></ng-container>
+        <ng-template #defaultSelected>{{ getOptionLabel(selectedOption) }}</ng-template>
+      </ng-container>
+      <ng-template #placeholderTemplate>
+        <span class="graph-select-placeholder">{{ placeholder }}</span>
+      </ng-template>
+    </span>
+
+    <span
+      *ngIf="showClear && selectedOption"
+      class="graph-select-clear pi pi-times"
+      aria-label="Clear selection"
+      (click)="clear($event)">
+    </span>
+    <span class="graph-select-caret pi pi-chevron-down"></span>
+  </button>
+
+  <div
+    *ngIf="open"
+    class="graph-select-panel"
+    [ngClass]="panelStyleClass"
+    [graphOverlayPosition]="triggerElement"
+    (graphOutsideClick)="open = false">
+    <div *ngIf="filter" class="graph-select-filter">
+      <input
+        #filterInput
+        type="text"
+        placeholder="Search..."
+        [value]="filterText"
+        (input)="onFilterInput($event)"
+        (click)="$event.stopPropagation()" />
+    </div>
+
+    <div class="graph-select-items">
+      <div
+        *ngFor="let option of filteredOptions; trackBy: trackByFn"
+        class="graph-select-item"
+        (click)="selectOption(option, $event)">
+        <ng-container
+          *ngIf="itemTemplate; else defaultItem"
+          [ngTemplateOutlet]="itemTemplate"
+          [ngTemplateOutletContext]="{ $implicit: option }"></ng-container>
+        <ng-template #defaultItem>{{ getOptionLabel(option) }}</ng-template>
+      </div>
+      <div *ngIf="!filteredOptions.length" class="graph-select-empty">No results found.</div>
+    </div>
+
+    <ng-container *ngIf="footerTemplate" [ngTemplateOutlet]="footerTemplate"></ng-container>
+  </div>
+</div>

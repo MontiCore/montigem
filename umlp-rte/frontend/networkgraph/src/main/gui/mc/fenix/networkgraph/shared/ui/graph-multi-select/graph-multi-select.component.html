@@ -1,0 +1,33 @@
+<div class="graph-multi-select" [ngClass]="styleClass" [class.graph-multi-select--disabled]="disabled">
+  <button #trigger type="button" class="graph-multi-select-trigger" [disabled]="disabled" (click)="toggle($event)">
+    <span class="graph-multi-select-value" [class.graph-multi-select-placeholder]="!value?.length">{{ triggerLabel }}</span>
+    <span class="graph-multi-select-caret pi pi-chevron-down"></span>
+  </button>
+
+  <div
+    *ngIf="open"
+    class="graph-multi-select-panel"
+    [ngClass]="panelStyleClass"
+    [graphOverlayPosition]="triggerElement"
+    (graphOutsideClick)="open = false">
+    <div class="graph-multi-select-items">
+      <div
+        *ngFor="let option of options; trackBy: trackByFn"
+        class="graph-multi-select-item"
+        [class.graph-multi-select-item--selected]="isSelected(option)"
+        (click)="toggleOption(option, $event)">
+        <span class="graph-multi-select-checkbox" [class.graph-multi-select-checkbox--checked]="isSelected(option)"></span>
+        <div class="graph-multi-select-item-content">
+          <ng-container
+            *ngIf="itemTemplate; else defaultItem"
+            [ngTemplateOutlet]="itemTemplate"
+            [ngTemplateOutletContext]="{ $implicit: option }"></ng-container>
+          <ng-template #defaultItem>{{ getOptionLabel(option) }}</ng-template>
+        </div>
+      </div>
+      <div *ngIf="!options.length" class="graph-multi-select-empty">No options available.</div>
+    </div>
+
+    <ng-container *ngIf="footerTemplate" [ngTemplateOutlet]="footerTemplate"></ng-container>
+  </div>
+</div>

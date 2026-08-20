@@ -12,7 +12,7 @@ import {
   AfterViewInit,
   OnChanges,
   OnDestroy,
-  SimpleChanges,
+  SimpleChanges, ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { config, GemDualRangeInputComponent } from '../../../../../../build/gui2java2ts/mc/fenix/input/GemDualRangeInputComponent';
@@ -21,6 +21,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, FormsModule],
   selector: config.selector,
   styleUrls: config.styleUrls,

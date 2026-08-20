@@ -36,6 +36,16 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-08-12
+
+* version 7.9.2-SNAPSHOT contains
+
+* AppComponent ts,html and scss are now generated and do not have to be handwritten anymore
+  * if you want to modify them their new location is inside the hwc gui directory
+  * along with this change MontiGem apps are now using the standalone component bootstrap 
+
+* upgraded to Angular 22 
+  * every handwritten Typescript Angular components should add `changeDetection=ChangeDetectionStrategy.EAGER` to have the old zone.js based change detection and behavior
 
 ## 2026-08-06
 

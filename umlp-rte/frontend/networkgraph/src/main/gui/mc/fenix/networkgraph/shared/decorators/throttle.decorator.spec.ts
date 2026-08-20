@@ -1,7 +1,7 @@
 import { applyThrottle, Throttle } from "./throttle.decorator";
 import { FunctionType } from "../utils/types"; // Replace with your actual path
 
-jest.useFakeTimers();
+vi.useFakeTimers();
 
 describe("Throttle", () => {
   describe("applyThrottle function", () => {
@@ -23,7 +23,7 @@ describe("Throttle", () => {
       obj.increment();
       obj.increment();
       expect(counter).toEqual(1);
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
       obj.increment();
       expect(counter).toEqual(2);
     });
@@ -33,9 +33,9 @@ describe("Throttle", () => {
       obj.increment();
       obj.increment();
       expect(counter).toEqual(1);
-      jest.advanceTimersByTime(999);
+      vi.advanceTimersByTime(999);
       expect(counter).toEqual(1);
-      jest.advanceTimersByTime(1);
+      vi.advanceTimersByTime(1);
       expect(counter).toEqual(2);
     });
   });
@@ -66,7 +66,7 @@ describe("Throttle", () => {
       instance.incrementCounterWithoutTrailing();
       instance.incrementCounterWithoutTrailing();
       expect(instance.counter).toEqual(1);
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
       instance.incrementCounterWithoutTrailing();
       expect(instance.counter).toEqual(2);
     });
@@ -75,9 +75,9 @@ describe("Throttle", () => {
       instance.incrementCounterWithTrailing();
       instance.incrementCounterWithTrailing();
       expect(instance.counter).toEqual(1);
-      jest.advanceTimersByTime(999);
+      vi.advanceTimersByTime(999);
       expect(instance.counter).toEqual(1);
-      jest.advanceTimersByTime(1);
+      vi.advanceTimersByTime(1);
       expect(instance.counter).toEqual(2);
     });
   });

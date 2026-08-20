@@ -1,13 +1,26 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, ElementRef, EventEmitter, HostBinding, HostListener, Output, SimpleChanges } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { config, GemAutocompleteInputComponent } from '../../../../../../build/gui2java2ts/mc/fenix/input/GemAutocompleteInputComponent';
-import { Option } from '../../../../../../build/gui2java2ts/mc/fenix/input/gemdropdowninputtypes/Option';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostBinding,
+  HostListener,
+  Output,
+  SimpleChanges
+} from '@angular/core';
+import {FormsModule} from '@angular/forms';
+import {MatTooltipModule} from '@angular/material/tooltip';
+import {
+  config,
+  GemAutocompleteInputComponent
+} from '../../../../../../build/gui2java2ts/mc/fenix/input/GemAutocompleteInputComponent';
+import {Option} from '../../../../../../build/gui2java2ts/mc/fenix/input/gemdropdowninputtypes/Option';
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports, FormsModule, MatTooltipModule],
   selector: config.selector,
   styleUrls: config.styleUrls,
