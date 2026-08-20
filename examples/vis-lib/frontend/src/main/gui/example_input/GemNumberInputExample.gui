@@ -1,0 +1,44 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import mc.fenix.input.GemNumberInput;
+import common.ExamplePage;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.input.GemTextInputTypes.GemTextInputValidity;
+
+page GemNumberInputExample(double priceEntry, int quantityEntry) {
+  @ExamplePage(
+    component = @GemColumn(components = [
+      @GemNumberInput(
+        id = "price",
+        labelText = "Stock Price (€, double variable):",
+        entry = priceEntry,
+        placeholder = "Enter price..."
+      ),
+      @GemNumberInput(
+        id = "quantity",
+        labelText = "Quantity (int variable, step 1.0):",
+        entry = quantityEntry,
+        placeholder = "Enter quantity..."
+      ),
+      @GemNumberInput(
+        id = "rating",
+        labelText = "Decimal Rating (step 0.5):",
+        step = 0.5,
+        placeholder = "Enter rating e.g. 4.5..."
+      ),
+      @GemNumberInput(
+        id = "disabledNumber",
+        labelText = "Disabled Number Input:",
+        disabled = true
+      ),
+      @GemNumberInput(
+        id = "invalidNumber",
+        labelText = "Number Input with Error:",
+        validity = GemTextInputValidity("Error", "Invalid number range")
+      )
+    ]),
+    basePath = "example_input",
+    componentName = "GemNumberInputExample"
+  );
+}

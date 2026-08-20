@@ -1571,6 +1571,14 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
       return string2EnumConversion(type);
     }
 
+    if (leftIsNumber && rightIsNumber) {
+      String leftType = getSimpleType(createTypeAndAddImports(left)).printType();
+      String rightType = getSimpleType(createTypeAndAddImports(right)).printType();
+      if (!util.getBoxedType(leftType).equals(util.getBoxedType(rightType))) {
+        return number2NumberConversion(leftType);
+      }
+    }
+
     return s -> s;
   }
 
@@ -1597,6 +1605,27 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
   protected Function<String, String> string2NumberConversion(String type) {
     String finalType = util.getBoxedType(type);
     return s -> finalType + ".valueOf(" + s + ")";
+  }
+
+  protected Function<String, String> number2NumberConversion(String type) {
+    String finalType = util.getBoxedType(type);
+    String accessor = numberAccessorMethod(finalType);
+    return s -> finalType + ".valueOf(" + s + "." + accessor + "())";
+  }
+
+  protected String numberAccessorMethod(String boxedType) {
+    switch (boxedType) {
+      case "Integer":
+        return "intValue";
+      case "Long":
+        return "longValue";
+      case "Float":
+        return "floatValue";
+      case "Double":
+        return "doubleValue";
+      default:
+        return "doubleValue";
+    }
   }
 
   protected Function<String, String> enum2StringConversion(String type) {

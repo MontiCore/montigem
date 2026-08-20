@@ -6,6 +6,7 @@ export * from './src/main/gui/mc/fenix/input/GemRangeInput';
 export * from './src/main/gui/mc/fenix/input/GemRadioInput';
 export * from './src/main/gui/mc/fenix/input/GemTextareaInput';
 export * from './src/main/gui/mc/fenix/input/GemTextInput';
+export * from './src/main/gui/mc/fenix/input/GemNumberInput';
 export * from './src/main/gui/mc/fenix/input/GemDateInput';
 
 export * from './build/gui2java2ts/mc/fenix/input/gemdropdowninputtypes/Option';

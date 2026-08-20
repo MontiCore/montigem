@@ -3,6 +3,7 @@
 @import "./ActionButtons";
 @import "./components/GemCard";
 @import "./components/GemTextInput";
+@import "./components/GemNumberInput";
 @import "./components/GemLoadingSpinner";
 @import "./components/GemAudio";
 @import "./components/GemIcon";
@@ -37,6 +38,7 @@
   @include action-buttons-theme($primary-color);
   @include gem-card-theme();
   @include text-input-theme(1px solid $rwth-black-3, column, flex-start, 0, $brand-danger, $brand-warning, $rwth-black-3, $btn-default-color);
+  @include number-input-theme(1px solid $rwth-black-3, column, flex-start, 0, $brand-danger, $brand-warning, $rwth-black-3, $btn-default-color);
   @include loading-spinner-theme();
   @include gem-audio-theme();
   @include gem-image-theme();

@@ -44,6 +44,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "RangeInput", target = "/example_input/GemRangeInputExample");
         @GemNavItem(title = "Chat", target = "/example_input/GemChatExample");
         @GemNavItem(title = "TextInput", target = "/example_input/GemTextInputExample");
+        @GemNavItem(title = "NumberInput", target = "/example_input/GemNumberInputExample");
         @GemNavItem(title = "DropdownInput", target = "/example_input/GemDropdownInputExample");
         @GemNavItem(title = "AutocompleteInput", target = "/example_input/GemAutocompleteInputExample");
         @GemNavItem(title = "TextareaInput", target = "/example_input/GemTextareaInputExample");

@@ -1,0 +1,5 @@
+/* Mark parameters of GemNumberInput for automatic generation of validity checks */
+tags GemNumberInput {
+  tag mc.fenix.input.GemNumberInput.entry with domainValidationEntry;
+  tag mc.fenix.input.GemNumberInput.validity with domainValidationTarget;
+}

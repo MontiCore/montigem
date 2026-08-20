@@ -7,6 +7,7 @@ import mc.fenix.basic.GemText;
 import common.ComponentCard;
 
 import example_input.GemTextInputExample;
+import example_input.GemNumberInputExample;
 import example_input.GemTextareaInputExample;
 import example_input.GemCheckBoxInputExample;
 import example_input.GemRadioInputExample;
@@ -31,6 +32,7 @@ page InputOverview() {
         width = "100%",
         components = [
             @ComponentCard(title = "Text Input", icon = "input", description = "Single-line text field.", click = navigate(@GemTextInputExample())),
+            @ComponentCard(title = "Number Input", icon = "pin", description = "Numeric input field.", click = navigate(@GemNumberInputExample())),
             @ComponentCard(title = "Text Area", icon = "notes", description = "Multi-line text field.", click = navigate(@GemTextareaInputExample())),
             @ComponentCard(title = "Checkbox", icon = "check_box", description = "Binary choice input.", click = navigate(@GemCheckBoxInputExample())),
             @ComponentCard(title = "Radio Button", icon = "radio_button_checked", description = "Select one from many.", click = navigate(@GemRadioInputExample())),

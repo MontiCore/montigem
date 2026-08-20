@@ -1,0 +1,35 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.input;
+
+import mc.fenix.input.GemTextInputTypes.GemTextInputValidity;
+
+/**
+  The component is an input field for numeric values with an optional label.
+*/
+component GemNumberInput(
+  /** The component's id; used to configure the styles. */
+  String id,
+  /** Text describing the input field. */
+  String labelText = "",
+  /**
+    The input field's value. If it is linked to a variable, the value of the
+    variable will change when the user enters a new value.
+  */
+  ?double entry,
+  /** Step increment for the number input. Default is 1.0. */
+  double step = 1.0,
+  /** Whether the input field is disabled. */
+  boolean disabled = false,
+  /** Text displayed when the field is empty. */
+  String placeholder = "",
+  /** Width of the input field. */
+  String width = "100%",
+  /** Height of the input field. */
+  String height = "100%",
+  /** An object representing the validation status of the field. */
+  GemTextInputValidity validity,
+  /** Callback that is executed when a key is released. */
+  Event<Object> keyRelease,
+  /** Callback that is executed when a key is pressed. */
+  Event<Object> keyPress
+)
