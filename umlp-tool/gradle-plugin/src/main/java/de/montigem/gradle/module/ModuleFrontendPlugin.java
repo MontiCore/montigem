@@ -3,6 +3,8 @@ package de.montigem.gradle.module;
 import com.github.gradle.node.NodeExtension;
 import com.github.gradle.node.NodePlugin;
 import com.github.gradle.node.npm.task.NpmTask;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import de.monticore.gradle.common.CommonMCTask;
 import de.montigem.gradle.DependencyPlugin;
 import de.montigem.gradle.MGBasePlugin;
@@ -16,6 +18,7 @@ import de.montigem.gradle.specific.cd.CD2JavaTask;
 import de.montigem.gradle.specific.serialize.CD2SymTask;
 import groovy.lang.Closure;
 import org.gradle.api.Action;
+import org.gradle.api.GradleException;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
@@ -42,6 +45,17 @@ import org.gradle.internal.FileUtils;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.UncheckedIOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -507,12 +521,67 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.getUnscoped().set(true);
         });
 
+        // Pack the built lib for to compare if the hashes are exactly the same for publishLib
+        Provider<Directory> packDestDir = subproject.getLayout().getBuildDirectory().dir("publishCheck");
+        TaskProvider<NpmTask> packLibForPublish = subproject.getTasks().register("packLibForPublish", NpmTask.class, task -> {
+          task.setGroup(UMLP_GROUP_NAME);
+          task.dependsOn(buildLib, npmrc4publish);
+          // use buildLib's output for uptodate checks
+          task.getInputs().dir(libBuildDir).withPropertyName("libBuildDirContent");
+          task.getArgs().set(packDestDir.map(dir -> List.of("pack", "--pack-destination", dir.getAsFile().getAbsolutePath())));
+          task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
+          task.doFirst(t -> packDestDir.get().getAsFile().mkdirs());
+          task.getOutputs().dir(packDestDir);
+        });
+
         TaskProvider<NpmTask> publishLib = subproject.getTasks().register("publishLib", NpmTask.class, task -> {
           task.setGroup("publishing");
-          task.dependsOn(npmrc4publish);
+          task.dependsOn(npmrc4publish, packLibForPublish);
           task.getArgs().set(List.of("publish"));
           // e.g. `build/dist/basic/`
           task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
+          task.onlyIf("no identical version is already published to Nexus", t -> {
+            try {
+              JsonObject packageJson = readJson(libBuildDir.get().file("package.json").getAsFile());
+              String name = packageJson.get("name").getAsString();
+              String version = packageJson.get("version").getAsString();
+
+              // We have to create the hashing locally since npm only constructs it in memory for the HTTP request
+              File[] tarballs = packDestDir.get().getAsFile().listFiles((dir, fileName) -> fileName.endsWith(".tgz"));
+              if (tarballs == null || tarballs.length != 1) {
+                throw new GradleException("Expected exactly one .tgz file in " + packDestDir
+                    + " but found " + (tarballs == null ? 0 : tarballs.length));
+              }
+
+              String localShasum = sha1Hex(tarballs[0]);
+
+              String[] registryAndAuth = parseNpmrc(libBuildDir.get().file(".npmrc").getAsFile());
+              String remoteShasum = fetchRemoteShasum(registryAndAuth[0], registryAndAuth[1], name, version);
+
+              if (remoteShasum == null) {
+                // version not published yet -> publish it
+                return true;
+              }
+              if (remoteShasum.equals(localShasum)) {
+                t.getLogger().lifecycle(
+                    "Skipping {}: an identical version is already published to Nexus (shasum {}).",
+                    t.getPath(), localShasum);
+                return false;
+              }
+              String message = "Cannot publish " + t.getPath() + ": a package with the same name and version is already "
+                  + "published to Nexus, but with different content (local shasum " + localShasum
+                  + " != remote shasum " + remoteShasum + "). Bump the package version before publishing.";
+              // Gradle's default "What went wrong" summary does not show the cause of an onlyIf failure,
+              // so log it directly to make sure it is visible without needing --stacktrace.
+              t.getLogger().error(message + "\nRun with --stacktrace for the full failure detail.");
+              throw new GradleException(message);
+            }
+            catch (IOException e) {
+              t.getLogger().error("Failed to check whether {} is already published to Nexus: {}"
+                  + "\nRun with --stacktrace for the full failure detail.", t.getPath(), e.toString());
+              throw new UncheckedIOException(e);
+            }
+          });
         });
         publishSubprojects.add(publishLib);
       }
@@ -604,6 +673,80 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       it.attribute(Bundling.BUNDLING_ATTRIBUTE, project.getObjects().named(Bundling.class, Bundling.EXTERNAL));
       it.attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, project.getObjects().named(LibraryElements.class, LibraryElements.JAR));
     });
+  }
+
+  private static JsonObject readJson(File file) throws IOException {
+    try (Reader reader = new FileReader(file)) {
+      return JsonParser.parseReader(reader).getAsJsonObject();
+    }
+  }
+
+  private static String sha1Hex(File file) throws IOException {
+    MessageDigest digest;
+    try {
+      digest = MessageDigest.getInstance("SHA-1");
+    }
+    catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException(e);
+    }
+    byte[] hash = digest.digest(Files.readAllBytes(file.toPath()));
+    StringBuilder hex = new StringBuilder(hash.length * 2);
+    for (byte b : hash) {
+      hex.append(String.format("%02x", b));
+    }
+    return hex.toString();
+  }
+
+  /**
+   * @return {registryUrl, base64AuthToken} as already resolved into the .npmrc created by {@link CreateNpmrcTask}.
+   */
+  private static String[] parseNpmrc(File npmrcFile) throws IOException {
+    String registryUrl = null;
+    String authToken = null;
+    for (String line : Files.readAllLines(npmrcFile.toPath())) {
+      if (line.startsWith("registry=")) {
+        registryUrl = line.substring("registry=".length()).trim();
+      }
+      else if (line.contains(":_auth=")) {
+        authToken = line.substring(line.indexOf(":_auth=") + ":_auth=".length()).trim().replace("\"", "");
+      }
+    }
+    if (registryUrl == null || authToken == null) {
+      throw new GradleException("Could not find registry/auth token in " + npmrcFile);
+    }
+    return new String[]{registryUrl, authToken};
+  }
+
+  /**
+   * @return the shasum of {@code name@version} as published in Nexus, or {@code null} if that version does not exist there yet.
+   */
+  private static String fetchRemoteShasum(String registryUrl, String authToken, String name, String version) throws IOException {
+    String base = registryUrl.endsWith("/") ? registryUrl : registryUrl + "/";
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create(base + name.replace("/", "%2f")))
+        .header("Authorization", "Basic " + authToken)
+        .GET()
+        .build();
+    HttpResponse<String> response;
+    try {
+      response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException(e);
+    }
+    if (response.statusCode() == 404) {
+      return null;
+    }
+    if (response.statusCode() != 200) {
+      throw new GradleException("Unexpected HTTP " + response.statusCode() + " from Nexus while checking " + name + "@" + version);
+    }
+    JsonObject root = JsonParser.parseString(response.body()).getAsJsonObject();
+    JsonObject versions = root.has("versions") ? root.getAsJsonObject("versions") : null;
+    if (versions == null || !versions.has(version)) {
+      return null;
+    }
+    return versions.getAsJsonObject(version).getAsJsonObject("dist").get("shasum").getAsString();
   }
 
   protected void addJSweetDependencies(Project project) {
