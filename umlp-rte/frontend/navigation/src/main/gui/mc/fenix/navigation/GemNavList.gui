@@ -9,5 +9,15 @@ component GemNavList(
   /** Width of the list. */
   String width = "auto",
   /** Height of the list. */
-  String height = "100%"
+  String height = "100%",
+  /** Whether the list is collapsed to icon-only mode. */
+  Boolean collapsed = false,
+  /** Width of the list when collapsed. */
+  String collapsedWidth = "4rem",
+  /** Icon shown on the collapse toggle when the list is expanded. */
+  String collapseIcon = "chevron_left",
+  /** Icon shown on the collapse toggle when the list is collapsed. */
+  String expandIcon = "chevron_right",
+  /** Emitted when the collapsed state changes. */
+  Event<Void> collapsedChange
 )

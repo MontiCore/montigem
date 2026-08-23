@@ -94,6 +94,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "CAD Viewer", target = "/example_cad/GemCADExample");
         @GemNavItem(title = "Function Display", target = "/example_functiondisplay/FunctionDisplayExample");
         @GemNavItem(title = "Markdown", target = "/example_advanced/GemMarkdownExample");
+        @GemNavItem(title = "NavList", target = "/common/NavListExample");
         //@GemNavItem(title = "Chart Tests", target = "/manual/ChartsTestOverview");
       }
     ])

@@ -1,9 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
+@import "../../variables";
 
 @mixin gem-nav-item-theme() {
   .gem-nav-item {
     display: flex;
     align-items: center;
+    justify-content: var(--gem-nav-item-justify-content, flex-start);
     width: 100%;
     padding: 0.75rem 1rem;
     text-decoration: none;
@@ -22,6 +24,41 @@
     &:hover {
       background-color: var(--navbar-hover);
       color: var(--color-primary);
+
+      .gem-nav-item-icon,
+      .gem-nav-item-right-icon {
+        color: var(--color-primary);
+      }
+    }
+
+    .gem-nav-item-icon,
+    .gem-nav-item-right-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      width: 1.25rem;
+      height: 1.25rem;
+      color: var(--navbar-text-muted, var(--navbar-text));
+      transition: color 0.2s ease-in-out;
+      flex-shrink: 0;
+    }
+
+    .gem-nav-item-icon {
+      margin-right: var(--gem-nav-item-icon-margin, 0.75rem);
+    }
+
+    .gem-nav-item-title {
+      flex: 1 1 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: var(--gem-nav-item-title-display, inline);
+    }
+
+    .gem-nav-item-right-icon {
+      margin-left: auto;
+      display: var(--gem-nav-item-right-icon-display, inline-flex);
     }
   }
 
@@ -30,5 +67,32 @@
     color: #ffffff !important;
     font-weight: 600;
     box-shadow: var(--card-shadow);
+
+    .gem-nav-item-icon,
+    .gem-nav-item-right-icon {
+      color: #ffffff !important;
+    }
+  }
+
+  .gem-nav-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .gem-nav-group-items {
+    display: none;
+    flex-direction: column;
+    padding-left: 0.8rem;
+    border-left: 2px solid rgba($acronio-black-1, 0.2);
+    margin: 2px 0 2px 1.1rem;
+
+    &.gem-nav-group-expanded {
+      display: flex;
+    }
+  }
+
+  .gem-nav-list-collapsed .gem-nav-group-items {
+    display: none !important;
   }
 }

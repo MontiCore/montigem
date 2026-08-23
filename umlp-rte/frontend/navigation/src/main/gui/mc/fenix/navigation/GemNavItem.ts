@@ -4,10 +4,11 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router, Scroll } from "@angular/router";
 import { config, GemNavItemComponent } from '../../../../../../build/gui2java2ts/mc/fenix/navigation/GemNavItemComponent';
 import { filter } from 'rxjs/operators';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   standalone: true,
-  imports: [...config.imports],
+  imports: [...config.imports, MatIconModule],
   selector: config.selector,
   styles: [`:host { display: flex; width: 100%; }`],
   styleUrls: config.styleUrls,
@@ -30,10 +31,34 @@ export class GemNavItem extends GemNavItemComponent {
       filter(event => event instanceof Scroll)
     ).subscribe(event => {
       if ((event as Scroll).routerEvent instanceof NavigationEnd) {
-        this.isActive = ((event as Scroll).routerEvent as NavigationEnd).urlAfterRedirects === this.target;
+        const url = ((event as Scroll).routerEvent as NavigationEnd).urlAfterRedirects;
+        this.updateActiveState(url);
       }
-
     });
+  }
+
+  private updateActiveState(url: string): void {
+    if (this.target == null) {
+      this.isActive = false;
+      return;
+    }
+    if (this.hasItems()) {
+      this.isActive = url === this.target || url.startsWith(this.target + "/");
+      if (this.isActive) {
+        this.expanded = true;
+      }
+    } else {
+      this.isActive = url === this.target;
+    }
+  }
+
+  public hasItems(): boolean {
+    return this.items != null && this.items.length > 0;
+  }
+
+  public toggleExpanded(): void {
+    this.expanded = !this.expanded;
+    this.expandedChange.emit();
   }
 
   public navigateOrAct() {

@@ -4,5 +4,10 @@ package mc.fenix.navigation;
 component GemNavItem(
   String title,
   String target,
-  Event<Void> leftClick
+  String icon = "",
+  String rightIcon = "",
+  List<GUIViewElement> items = null,
+  Boolean expanded = false,
+  Event<Void> leftClick,
+  Event<Void> expandedChange
 )
