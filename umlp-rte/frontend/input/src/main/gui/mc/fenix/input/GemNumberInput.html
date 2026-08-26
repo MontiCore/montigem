@@ -1,22 +1,29 @@
 <label class="gem-label-number-input" [for]="id + 'Input'">{{ labelText }}</label>
-<input
-  class="gem-number-input"
-  [matTooltip]="
-    validity?.getStatus() === 'Error' || validity?.getStatus() === 'Warning'
-      ? validity.getMessage()
-      : null
-  "
-  matTooltipPosition="after"
+<div class="gem-number-input-wrapper"
+  [class.gem-number-input-disabled]="disabled"
   [class.gem-input-error]="validity?.getStatus() === 'Error'"
-  [class.gem-input-warning]="validity?.getStatus() === 'Warning'"
-  type="number"
-  [id]="id + 'Input'"
-  [ngModel]="displayValue"
-  [disabled]="disabled"
-  [placeholder]="placeholder"
-  [attr.step]="stepAttribute"
-  (ngModelChange)="onEntryChange($event)"
-  (keyup)="keyRelease.emit($event)"
-  (keydown)="onKeyDown($event)"
-  (paste)="onPaste($event)"
-/>
+  [class.gem-input-warning]="validity?.getStatus() === 'Warning'">
+  <input
+    class="gem-number-input"
+    [matTooltip]="
+      validity?.getStatus() === 'Error' || validity?.getStatus() === 'Warning'
+        ? validity.getMessage()
+        : null
+    "
+    matTooltipPosition="after"
+    type="text"
+    inputmode="decimal"
+    [id]="id + 'Input'"
+    [value]="displayValue"
+    [disabled]="disabled"
+    [placeholder]="placeholder"
+    (input)="onInput($event)"
+    (keyup)="keyRelease.emit($event)"
+    (keydown)="onKeyDown($event)"
+    (paste)="onPaste($event)"
+  />
+  <div class="gem-number-stepper">
+    <button type="button" class="gem-number-stepper-up" (click)="onStepUp()" [disabled]="disabled" tabindex="-1"></button>
+    <button type="button" class="gem-number-stepper-down" (click)="onStepDown()" [disabled]="disabled" tabindex="-1"></button>
+  </div>
+</div>
