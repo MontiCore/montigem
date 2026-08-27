@@ -1,0 +1,28 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+package simplestructure {
+  class SimpleFunction
+  class SimplePort
+  class SimpleChannel
+
+  SimpleFunction --> "*" SimplePort : "inPorts"
+  SimpleFunction --> "*" SimplePort : "outPorts"
+  SimplePort "*" --> "1" SimpleChannel
+  SimpleFunction [name] *-r-> "*" SimpleFunction : "subfunctions"
+}
+
+package fustru4display {
+  class Function4Display
+  class Channel4Display
+  class Port4Display
+
+  Function4Display "0..1" <--> "*" Port4Display : in
+  Function4Display "0..1" <--> "*" Port4Display : out
+  Port4Display "*" <--> "1" Channel4Display
+  Function4Display "0..1" *--> "*" Function4Display : "subfunction"
+}
+
+
+
+@enduml

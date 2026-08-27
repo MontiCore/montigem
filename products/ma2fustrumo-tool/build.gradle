@@ -11,6 +11,7 @@ java {
 }
 
 dependencies {
+  implementation project(':umlp-rte')
   api "montiarc.languages:montiarc:$ma_version"
   api "montiarc.languages:basis:$ma_version"
   api "montiarc.generators:cd2pojo:$ma_version"

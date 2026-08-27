@@ -6,6 +6,7 @@ import de.monticore.symbols.compsymbols._symboltable.ComponentTypeSymbol;
 import de.monticore.tagging.tags.TagsMill;
 import de.se_rwth.commons.logging.Log;
 import ma2fustrumo.pojo.SimpleFunction;
+import mc.fenix.functiondisplay.functionstructure4fenix.Function4Display;
 import montiarc.MontiArcMill;
 import montiarc.MontiArcTool;
 import montiarc._ast.ASTMACompilationUnit;
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 
 public class MA2FuStruMoTool extends MontiArcTool {
   protected SimpleFunction result;
+  protected Optional<Function4Display> result4Display = Optional.empty();
 
   public static void main(String[] args) {
     Preconditions.checkNotNull(args);
@@ -210,5 +212,15 @@ public class MA2FuStruMoTool extends MontiArcTool {
 
   public SimpleFunction getResult() {
     return result;
+  }
+
+  public Function4Display getResult4Display() {
+    if (result4Display.isPresent()) {
+      return result4Display.get();
+    }
+
+    FuStruMo2FuStruMo4DisplayTransformer transformer = new FuStruMo2FuStruMo4DisplayTransformer();
+    result4Display = Optional.of(transformer.transform(result));
+    return result4Display.get();
   }
 }
