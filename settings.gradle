@@ -85,6 +85,8 @@ include ':examples:loading-test:frontend'
 include ':examples:dashboard:backend'
 include ':examples:dashboard:frontend'
 
+include ':products:ma2fustrumo-tool'
+
 include ':modules'
 include ':modules:login'
 include ':modules:login:backend'
