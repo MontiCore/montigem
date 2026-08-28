@@ -540,55 +540,42 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.getArgs().set(List.of("publish"));
           // e.g. `build/dist/basic/`
           task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
-          // TODO: temporarily disabled. The check compares the SHA-1 of the locally packed .tgz
-          // with the shasum published on Nexus, which currently produces false failures:
-          //  * JSweet writes the generated *.ts with platform line separators, so the sources
-          //    inlined into *.mjs.map (and thus the tarball hash) differ between Windows and CI.
-          //  * packLibForPublish never clears build/publishCheck, so after a version bump the
-          //    directory holds two .tgz files and the count check below throws.
-          // Re-enable once the build output is reproducible and the pack dir is cleaned.
-          // task.onlyIf("no identical version is already published to Nexus", t -> {
-          //   try {
-          //     JsonObject packageJson = readJson(libBuildDir.get().file("package.json").getAsFile());
-          //     String name = packageJson.get("name").getAsString();
-          //     String version = packageJson.get("version").getAsString();
-          //
-          //     // We have to create the hashing locally since npm only constructs it in memory for the HTTP request
-          //     File[] tarballs = packDestDir.get().getAsFile().listFiles((dir, fileName) -> fileName.endsWith(".tgz"));
-          //     if (tarballs == null || tarballs.length != 1) {
-          //       throw new GradleException("Expected exactly one .tgz file in " + packDestDir
-          //           + " but found " + (tarballs == null ? 0 : tarballs.length));
-          //     }
-          //
-          //     String localShasum = sha1Hex(tarballs[0]);
-          //
-          //     String[] registryAndAuth = parseNpmrc(libBuildDir.get().file(".npmrc").getAsFile());
-          //     String remoteShasum = fetchRemoteShasum(registryAndAuth[0], registryAndAuth[1], name, version);
-          //
-          //     if (remoteShasum == null) {
-          //       // version not published yet -> publish it
-          //       return true;
-          //     }
-          //     if (remoteShasum.equals(localShasum)) {
-          //       t.getLogger().lifecycle(
-          //           "Skipping {}: an identical version is already published to Nexus (shasum {}).",
-          //           t.getPath(), localShasum);
-          //       return false;
-          //     }
-          //     String message = "Cannot publish " + t.getPath() + ": a package with the same name and version is already "
-          //         + "published to Nexus, but with different content (local shasum " + localShasum
-          //         + " != remote shasum " + remoteShasum + "). Bump the package version before publishing.";
-          //     // Gradle's default "What went wrong" summary does not show the cause of an onlyIf failure,
-          //     // so log it directly to make sure it is visible without needing --stacktrace.
-          //     t.getLogger().error(message + "\nRun with --stacktrace for the full failure detail.");
-          //     throw new GradleException(message);
-          //   }
-          //   catch (IOException e) {
-          //     t.getLogger().error("Failed to check whether {} is already published to Nexus: {}"
-          //         + "\nRun with --stacktrace for the full failure detail.", t.getPath(), e.toString());
-          //     throw new UncheckedIOException(e);
-          //   }
-          // });
+          task.onlyIf("version is not yet published to Nexus", t -> {
+            try {
+              JsonObject packageJson = readJson(libBuildDir.get().file("package.json").getAsFile());
+              String name = packageJson.get("name").getAsString();
+              String version = packageJson.get("version").getAsString();
+
+              String[] registryAndAuth = parseNpmrc(libBuildDir.get().file(".npmrc").getAsFile());
+              String remoteShasum = fetchRemoteShasum(registryAndAuth[0], registryAndAuth[1], name, version);
+              if (remoteShasum == null) {
+                // version not published yet -> publish it
+                return true;
+              }
+
+              // version already published on Nexus -> skip
+              // Report differing content as a warning instead, so that a forgotten
+              // version bump stays visible without breaking every pipeline run.
+              File tarball = new File(packDestDir.get().getAsFile(), npmPackFileName(name, version));
+              if (tarball.isFile() && !sha1Hex(tarball).equals(remoteShasum)) {
+                t.getLogger().warn(
+                    "Not publishing {}: {}@{} is already published to Nexus, but the locally built "
+                        + "package differs (local shasum {} != remote shasum {}). Bump the package "
+                        + "version if this change has to be released.",
+                    t.getPath(), name, version, sha1Hex(tarball), remoteShasum);
+              }
+              else {
+                t.getLogger().lifecycle("Skipping {}: {}@{} is already published to Nexus.",
+                    t.getPath(), name, version);
+              }
+              return false;
+            }
+            catch (IOException e) {
+              t.getLogger().error("Failed to check whether {} is already published to Nexus: {}"
+                  + "\nRun with --stacktrace for the full failure detail.", t.getPath(), e.toString());
+              throw new UncheckedIOException(e);
+            }
+          });
         });
         publishSubprojects.add(publishLib);
       }
@@ -687,6 +674,16 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       return JsonParser.parseReader(reader).getAsJsonObject();
     }
   }
+
+  /**
+   * @return the file name `npm pack` gives to {@code name@version}, e.g. `umlp-input-10.0.1.tgz`
+   * for `@umlp/input`. Looking the tarball up by name (instead of expecting the pack directory to
+   * hold exactly one file) keeps stale tarballs from earlier versions harmless.
+   */
+  private static String npmPackFileName(String name, String version) {
+    return name.replace("@", "").replace("/", "-") + "-" + version + ".tgz";
+  }
+
 
   private static String sha1Hex(File file) throws IOException {
     MessageDigest digest;
