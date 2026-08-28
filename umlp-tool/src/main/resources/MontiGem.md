@@ -18,14 +18,14 @@ software product as well as for quick prototyping in a Low-Code
 style. 
 
 The central input is a domain model expressed as a [UML class 
-diagram}(https://www.se-rwth.de/research/Unified-Modeling-Language/). 
+diagram](https://www.se-rwth.de/research/Unified-Modeling-Language/). 
 
-### [The *class diagrams* used for this application can be viewed here.](${TODO: Link auf entsprechende Seite}) 
+[The *class diagrams* used for this application can be viewed here.](${TODO: Link auf entsprechende Seite}) 
 
 Additional models can describe application-specific views and 
 graphical interfaces. 
 
- * *GUI models* describe specific views (click around to see seome).
+ * *GUI models* describe specific views (click around to see some).
    These fuses can be composed from atomic components and smaller 
    reusable GUI structures (like this one). 
  * *Object Constraint Language (OCL)* models specify data constraints, 
@@ -46,8 +46,7 @@ From these models, MontiGem generates:
  * an infrastructure for application testing based on JUnit, and 
  * many more technical components (builder, vistors, ...),
 
-The generated code It's generated in the framework style which 
-provides lots of *extension points* so that handwritten code can be 
+The generated code provides lots of *extension points* so that handwritten code can be 
 easily added. For a systematic adaptation of the code MontiGem  uses 
 *extensible templates* during the generation process. 
 
