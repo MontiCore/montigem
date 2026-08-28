@@ -86,20 +86,20 @@ model-based engineering tools.
 
 ## Related Topics
 - [MontiGem](https://www.se-rwth.de/research/MontiGem/)
-- [Agile Model-Based Software Engineering](/research/Agile-MBSE)
-- [Generative Software Engineering](/research/Generative-SE)
-- [MontiCore - Language Workbench](/research/MontiCore)
-- [UML/P](/research/UML-P)
-- [Unified Modeling Language (UML)](/research/Unified-Modeling-Language)
-- [Model-Based Assistive Systems](/research/Model-Based-Assistive-Systems)
-- [Models in Enterprise Information System Development](/research/Enterprise-Information-Systems)
-- [Digital Twins and Digital Shadows in Engineering, Operation and Production](/research/Digital-Twins)
+- [Agile Model-Based Software Engineering](https://www.se-rwth.de/research/Agile-MBSE)
+- [Generative Software Engineering](https://www.se-rwth.de/research/Generative-SE)
+- [MontiCore - Language Workbench](https://www.se-rwth.de/research/MontiCore)
+- [UML/P](https://www.se-rwth.de/research/UML-P)
+- [Unified Modeling Language (UML)](https://www.se-rwth.de/research/Unified-Modeling-Language)
+- [Model-Based Assistive Systems](https://www.se-rwth.de/research/Model-Based-Assistive-Systems)
+- [Models in Enterprise Information System Development](https://www.se-rwth.de/research/Enterprise-Information-Systems)
+- [Digital Twins and Digital Shadows in Engineering, Operation and Production](https://www.se-rwth.de/research/Digital-Twins)
 
 #### Further links:
 
-- [Publications](/publications)
-- [Topic sorted list of most interesting publications](/research)
-- [Books](/books)
-- [Aachener Informatik-Berichte, Software Engineering / Ph.D. Theses](/phdtheses)
+- [Publications](https://www.se-rwth.de/publications)
+- [Topic sorted list of most interesting publications](https://www.se-rwth.de/research)
+- [Books](https://www.se-rwth.de/books)
+- [Aachener Informatik-Berichte, Software Engineering / Ph.D. Theses](https://www.se-rwth.de/phdtheses)
 - [Website of the SE](https://www.se-rwth.de)
 
