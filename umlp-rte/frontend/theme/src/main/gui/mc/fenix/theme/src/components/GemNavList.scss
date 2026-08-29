@@ -19,13 +19,17 @@
       --gem-nav-item-right-icon-display: none;
       --gem-nav-item-icon-margin: 0;
       --gem-nav-item-justify-content: center;
+
+      .gem-nav-item-right-icon {
+        display: none;
+      }
     }
   }
 
   .gem-nav-list-toggle {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end;
     width: 100%;
     padding: 0.75rem;
     border: none;
@@ -55,4 +59,9 @@
     overflow-x: hidden;
   }
 
+}
+
+// Fallback: also hide right icons (group arrows, leaf right icons) when the host itself is collapsed.
+gem-nav-list.gem-nav-list-collapsed .gem-nav-item-right-icon {
+  display: none;
 }

@@ -16,7 +16,7 @@ page NavListExample() {
 
       @GemRow(
         wrap = "wrap",
-        hAlign = "center",
+        hAlign = "left",
         vAlign = "stretch",
         rowGap = "30px",
         colGap = "30px",
