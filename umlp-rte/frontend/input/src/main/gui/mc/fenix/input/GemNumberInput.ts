@@ -1,13 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import { Component, EventEmitter, HostBinding, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { config, GemNumberInputComponent } from '../../../../../../build/gui2java2ts/mc/fenix/input/GemNumberInputComponent';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   standalone: true,
-  imports: [...config.imports, FormsModule, MatTooltipModule],
+  imports: [...config.imports, MatTooltipModule],
   selector: config.selector,
   styleUrls: config.styleUrls,
   templateUrl: config.templateUrl,
@@ -32,42 +31,71 @@ export class GemNumberInput extends GemNumberInputComponent implements OnInit, O
   @Output() public override keyRelease = new EventEmitter<KeyboardEvent>();
   @Output() public override keyPress = new EventEmitter<KeyboardEvent>();
 
-  private isTyping: boolean = false;
   private lastNumericValue: number | null = null;
+  private displayString: string = '';
 
-  get displayValue(): number | null {
-    return this.entry ?? null;
+  get displayValue(): string {
+    return this.displayString;
   }
 
-  get stepAttribute(): string {
-    return 'any';
+  private syncDisplayFromEntry(): void {
+    if (this.entry === null || this.entry === undefined || isNaN(Number(this.entry))) {
+      this.displayString = '';
+    } else {
+      this.displayString = String(this.entry);
+    }
   }
 
   private updateValue(val: number): void {
     const rounded = Number(val.toFixed(10));
     this.entry = rounded;
     this.lastNumericValue = rounded;
+    this.displayString = String(rounded);
     this.entryChange.emit(rounded);
+  }
+
+  private countDecimalSeparators(value: string): number {
+    let count = 0;
+    for (const char of value) {
+      if (char === '.' || char === ',') {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  private normalizeNumberString(value: string): string {
+    return value.replace(',', '.');
+  }
+
+  private getStepValue(): number {
+    return (this.step !== undefined && this.step !== null && !isNaN(Number(this.step)) && Number(this.step) > 0)
+      ? Number(this.step)
+      : 1;
+  }
+
+  onStepUp(): void {
+    const currentNum = this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : 0);
+    this.updateValue(currentNum + this.getStepValue());
+  }
+
+  onStepDown(): void {
+    const currentNum = this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : 0);
+    this.updateValue(currentNum - this.getStepValue());
   }
 
   onKeyDown(event: KeyboardEvent): void {
     this.keyPress.emit(event);
 
-    const stepVal = (this.step !== undefined && this.step !== null && !isNaN(Number(this.step)) && Number(this.step) > 0)
-      ? Number(this.step)
-      : 1;
-
-    const currentNum = this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : 0);
-
     if (event.key === 'ArrowUp') {
       event.preventDefault();
-      this.updateValue(currentNum + stepVal);
+      this.onStepUp();
       return;
     }
 
     if (event.key === 'ArrowDown') {
       event.preventDefault();
-      this.updateValue(currentNum - stepVal);
+      this.onStepDown();
       return;
     }
 
@@ -77,34 +105,33 @@ export class GemNumberInput extends GemNumberInputComponent implements OnInit, O
     ];
 
     if (allowedKeys.includes(event.key)) {
-      this.isTyping = true;
       return;
     }
 
     if (event.ctrlKey || event.metaKey) {
-      this.isTyping = true;
       return;
     }
 
     if (/^[0-9]$/.test(event.key)) {
-      this.isTyping = true;
       return;
     }
 
     const target = event.target as HTMLInputElement;
     const currentVal = target ? target.value : '';
+    const selectionStart = target?.selectionStart ?? 0;
+    const selectionEnd = target?.selectionEnd ?? 0;
 
     if (event.key === '-' && !currentVal.includes('-')) {
-      const selectionStart = target?.selectionStart ?? 0;
       if (selectionStart === 0) {
-        this.isTyping = true;
         return;
       }
     }
 
-    if ((event.key === '.' || event.key === ',') && !currentVal.includes('.') && !currentVal.includes(',')) {
-      this.isTyping = true;
-      return;
+    if (event.key === '.' || event.key === ',') {
+      const futureValue = currentVal.slice(0, selectionStart) + event.key + currentVal.slice(selectionEnd);
+      if (this.countDecimalSeparators(futureValue) <= 1) {
+        return;
+      }
     }
 
     event.preventDefault();
@@ -112,69 +139,65 @@ export class GemNumberInput extends GemNumberInputComponent implements OnInit, O
 
   onPaste(event: ClipboardEvent): void {
     const pastedData = event.clipboardData?.getData('text');
+    const target = event.target as HTMLInputElement;
+    const currentVal = target?.value ?? '';
+    const selectionStart = target?.selectionStart ?? 0;
+    const selectionEnd = target?.selectionEnd ?? 0;
+
     if (pastedData) {
-      const sanitized = pastedData.replace(',', '.');
+      const futureValue = currentVal.slice(0, selectionStart) + pastedData + currentVal.slice(selectionEnd);
+      if (this.countDecimalSeparators(futureValue) > 1) {
+        event.preventDefault();
+        return;
+      }
+      const sanitized = this.normalizeNumberString(futureValue);
       if (isNaN(Number(sanitized)) || /^\s*$/.test(sanitized)) {
         event.preventDefault();
-      } else {
-        this.isTyping = true;
       }
     }
   }
 
-  onEntryChange(event: number | string) {
-    if (event === null || event === undefined || event === '') {
+  onInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const rawValue = target.value;
+
+    const normalized = this.normalizeNumberString(rawValue);
+
+    if (this.countDecimalSeparators(normalized) > 1 || (isNaN(Number(normalized)) && normalized !== '' && normalized !== '-' && normalized !== '.')) {
+      target.value = this.displayString;
+      return;
+    }
+
+    this.displayString = rawValue;
+
+    if (rawValue === '' || rawValue === '-' || rawValue === '.' || rawValue === ',') {
       this.entry = undefined;
       this.lastNumericValue = null;
-      this.isTyping = false;
       this.entryChange.emit(undefined);
       return;
     }
 
-    const sanitized = typeof event === 'number' ? event : Number(String(event).replace(',', '.'));
-
-    if (isNaN(sanitized)) {
-      this.isTyping = false;
-      return;
-    }
-
-    const stepVal = (this.step !== undefined && this.step !== null && !isNaN(Number(this.step)) && Number(this.step) > 0)
-      ? Number(this.step)
-      : 1;
-
-    if (this.isTyping) {
-      this.isTyping = false;
-      const rounded = Number(sanitized.toFixed(10));
-      this.entry = rounded;
-      this.lastNumericValue = rounded;
-      this.entryChange.emit(rounded);
-    } else {
-      const prev = this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : 0);
-      let calculatedVal: number;
-      if (sanitized > prev) {
-        calculatedVal = prev + stepVal;
-      } else if (sanitized < prev) {
-        calculatedVal = prev - stepVal;
-      } else {
-        calculatedVal = sanitized;
-      }
-      const rounded = Number(calculatedVal.toFixed(10));
-      this.entry = rounded;
-      this.lastNumericValue = rounded;
-      this.entryChange.emit(rounded);
-    }
+    const sanitized = Number(normalized);
+    const rounded = Number(sanitized.toFixed(10));
+    this.entry = rounded;
+    this.lastNumericValue = rounded;
+    this.entryChange.emit(rounded);
   }
 
   ngOnInit(): void {
     this.componentId = this.id;
+    this.syncDisplayFromEntry();
     if (this.entry !== null && this.entry !== undefined && !isNaN(Number(this.entry))) {
       this.lastNumericValue = Number(this.entry);
     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['entry'] && this.entry !== null && this.entry !== undefined && !isNaN(Number(this.entry))) {
-      this.lastNumericValue = Number(this.entry);
+    if (changes['entry']) {
+      this.syncDisplayFromEntry();
+      if (this.entry !== null && this.entry !== undefined && !isNaN(Number(this.entry))) {
+        this.lastNumericValue = Number(this.entry);
+      }
     }
   }
 }

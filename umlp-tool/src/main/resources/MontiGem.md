@@ -18,14 +18,14 @@ software product as well as for quick prototyping in a Low-Code
 style. 
 
 The central input is a domain model expressed as a [UML class 
-diagram}(https://www.se-rwth.de/research/Unified-Modeling-Language/). 
+diagram](https://www.se-rwth.de/research/Unified-Modeling-Language/). 
 
-### [The *class diagrams* used for this application can be viewed here.](${TODO: Link auf entsprechende Seite}) 
+[The *class diagrams* used for this application can be viewed here.](${TODO: Link auf entsprechende Seite}) 
 
 Additional models can describe application-specific views and 
 graphical interfaces. 
 
- * *GUI models* describe specific views (click around to see seome).
+ * *GUI models* describe specific views (click around to see some).
    These fuses can be composed from atomic components and smaller 
    reusable GUI structures (like this one). 
  * *Object Constraint Language (OCL)* models specify data constraints, 
@@ -46,8 +46,7 @@ From these models, MontiGem generates:
  * an infrastructure for application testing based on JUnit, and 
  * many more technical components (builder, vistors, ...),
 
-The generated code It's generated in the framework style which 
-provides lots of *extension points* so that handwritten code can be 
+The generated code provides lots of *extension points* so that handwritten code can be 
 easily added. For a systematic adaptation of the code MontiGem  uses 
 *extensible templates* during the generation process. 
 
@@ -87,20 +86,20 @@ model-based engineering tools.
 
 ## Related Topics
 - [MontiGem](https://www.se-rwth.de/research/MontiGem/)
-- [Agile Model-Based Software Engineering](/research/Agile-MBSE)
-- [Generative Software Engineering](/research/Generative-SE)
-- [MontiCore - Language Workbench](/research/MontiCore)
-- [UML/P](/research/UML-P)
-- [Unified Modeling Language (UML)](/research/Unified-Modeling-Language)
-- [Model-Based Assistive Systems](/research/Model-Based-Assistive-Systems)
-- [Models in Enterprise Information System Development](/research/Enterprise-Information-Systems)
-- [Digital Twins and Digital Shadows in Engineering, Operation and Production](/research/Digital-Twins)
+- [Agile Model-Based Software Engineering](https://www.se-rwth.de/research/Agile-MBSE)
+- [Generative Software Engineering](https://www.se-rwth.de/research/Generative-SE)
+- [MontiCore - Language Workbench](https://www.se-rwth.de/research/MontiCore)
+- [UML/P](https://www.se-rwth.de/research/UML-P)
+- [Unified Modeling Language (UML)](https://www.se-rwth.de/research/Unified-Modeling-Language)
+- [Model-Based Assistive Systems](https://www.se-rwth.de/research/Model-Based-Assistive-Systems)
+- [Models in Enterprise Information System Development](https://www.se-rwth.de/research/Enterprise-Information-Systems)
+- [Digital Twins and Digital Shadows in Engineering, Operation and Production](https://www.se-rwth.de/research/Digital-Twins)
 
 #### Further links:
 
-- [Publications](/publications)
-- [Topic sorted list of most interesting publications](/research)
-- [Books](/books)
-- [Aachener Informatik-Berichte, Software Engineering / Ph.D. Theses](/phdtheses)
+- [Publications](https://www.se-rwth.de/publications)
+- [Topic sorted list of most interesting publications](https://www.se-rwth.de/research)
+- [Books](https://www.se-rwth.de/books)
+- [Aachener Informatik-Berichte, Software Engineering / Ph.D. Theses](https://www.se-rwth.de/phdtheses)
 - [Website of the SE](https://www.se-rwth.de)
 
