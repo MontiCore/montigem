@@ -1,0 +1,15 @@
+/* (c) https://github.com/MontiCore/monticore */
+package sehub;
+
+import gui.Navigation;
+
+/**
+  GUIVariability adaptation of the CD2GUI-generated NavigationContainer.
+
+  Every generated page wraps itself in @NavigationContainer, so adapting that one
+  component puts the application top bar on all of them without touching a single
+  generated file.
+*/
+component SehubNavigation() adapts NavigationContainer {
+  before navContainer: sehubNavBar@Navigation();
+}

@@ -14,7 +14,7 @@ public class SehubSecurityManager {
 
   public static void setCurrentUser(User value) {
     localStorage.setItem("currentUserID", JSON.stringify(value.getGemId()));
-    localStorage.setItem("currentUserName", JSON.stringify(value.getUsername()));
+    localStorage.setItem("currentUserName", value.getUsername());
   }
 
   public static Long getCurrentUserIdOrNull() {

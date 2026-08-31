@@ -4,6 +4,7 @@ package security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,7 +39,10 @@ public class WebSecurityConfig {
     // ToDo: insecure!!!!
     http.csrf(csrf -> csrf.disable());
 
-    http.authorizeHttpRequests((requests) -> requests.anyRequest().authenticated());
+    http.authorizeHttpRequests((requests) -> requests
+        .requestMatchers(HttpMethod.POST, PublicSignupController.SIGNUP_PATH).permitAll()
+        .requestMatchers(HttpMethod.POST, PublicPasswordResetController.RESET_PASSWORD_PATH).permitAll()
+        .anyRequest().authenticated());
     http.formLogin(form -> form
         .failureHandler((request, response, exception) -> {
           Map<String, Object> data = new HashMap<>();

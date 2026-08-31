@@ -11,7 +11,7 @@ import mc.fenix.basic.GemButton;
 import mc.fenix.basic.GemText;
 import mc.fenix.input.GemTextInput;
 
-component UserLogin(List<User> users, User loginUser) {
+component UserLogin(User loginUser) {
   @GemCard(title = "Login", component =
     @GemColumn(hAlign = "center", rowGap = "20px", components = [
       @GemTextInput(

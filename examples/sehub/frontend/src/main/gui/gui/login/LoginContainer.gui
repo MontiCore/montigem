@@ -16,10 +16,7 @@ component LoginContainer(GUIViewElement component) {
     @GemCard(title = "SE Hub", component =
       @GemColumn(width = "600px", hAlign = "center", rowGap = "20px", components = [
         @GemRow(width = "150px", component = @GemImage(source = "assets/images/Eule.png")),
-        component,
-        @GemRow(width = "150px", component =
-          @GemImage(source = "assets/images/rwth_se_bild_weiss_rgb.png")
-        )
+        component
       ])
     )
   );

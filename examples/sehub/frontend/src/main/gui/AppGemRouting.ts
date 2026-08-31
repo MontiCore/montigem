@@ -1,14 +1,26 @@
 /* (c) https://github.com/MontiCore/monticore */
-import { Routes } from "@angular/router";
+import { inject } from "@angular/core";
+import { CanActivateFn, Router, Routes } from "@angular/router";
+import { SehubSecurityManager } from "sehub/SehubSecurityManager";
 import { routes as routesTOP } from "AppGemRoutingTOP"
 
+/**
+ * The CD2GUI-generated pages under /sehub have no login check of their own,
+ * so the whole generated CRUD surface is guarded here in one place.
+ */
+export const signedInGuard: CanActivateFn = () => {
+  if (SehubSecurityManager.isSignedIn()) {
+    return true;
+  }
+  return inject(Router).createUrlTree(["gui/login/LoginPage"]);
+};
+
 export const routes: Routes = [
-  // default path like in other routing files
   {
     path: "",
     pathMatch: "full",
-    // redirect to a module, not a component (use package part instead of the component name)
     redirectTo: "gui/login/LoginPage"
   },
-  ...routesTOP
+  ...routesTOP.map(route =>
+    route.path === "sehub" ? { ...route, canActivate: [signedInGuard] } : route)
 ]

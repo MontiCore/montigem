@@ -1,5 +1,6 @@
 package umlp.generator.gui.guivariability;
 
+import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
 import de.monticore.guidsl.GUIDSLMill;
 import de.monticore.guidsl._ast.ASTGUIAdapt;
 import de.monticore.guidsl._ast.ASTGUIBlock;
@@ -13,6 +14,8 @@ import de.monticore.guidsl._visitor.GUIDSLTraverser;
 import de.monticore.ocl.setexpressions._ast.ASTSetCollectionItem;
 import de.monticore.ocl.setexpressions._ast.ASTSetEnumeration;
 import de.monticore.ocl.setexpressions._ast.ASTSetValueItem;
+import de.monticore.ocl.setexpressions._visitor.SetExpressionsHandler;
+import de.monticore.ocl.setexpressions._visitor.SetExpressionsTraverser;
 import de.monticore.types.mcbasictypes._ast.ASTMCImportStatement;
 import de.se_rwth.commons.logging.Log;
 
@@ -20,7 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class GUIVariabilityHandler implements GUIDSLHandler {
+public class GUIVariabilityHandler implements GUIDSLHandler, SetExpressionsHandler {
 
     private GUIDSLTraverser traverser;
 
@@ -61,7 +64,15 @@ public class GUIVariabilityHandler implements GUIDSLHandler {
     public GUIVariabilityHandler(ASTGUICompilationUnit adaptedAST) {
         traverser = GUIDSLMill.traverser();
         traverser.setGUIDSLHandler(this);
+        traverser.setSetExpressionsHandler(this);
         this.adaptedAST = adaptedAST;
+    }
+
+    @Override
+    public void setTraverser(SetExpressionsTraverser traverser) {
+        if (traverser instanceof GUIDSLTraverser) {
+            this.traverser = (GUIDSLTraverser) traverser;
+        }
     }
 
     /**
@@ -162,16 +173,17 @@ public class GUIVariabilityHandler implements GUIDSLHandler {
             for (ASTSetCollectionItem item : node.getSetCollectionItemList()) {
                 if (typeDispatcher.isSetExpressionsASTSetValueItem(item)) {
                   ASTSetValueItem argValue = typeDispatcher.asSetExpressionsASTSetValueItem(item);
+                  ASTExpression expression = argValue.getExpression();
 
-                  if ((typeDispatcher.isGUIDSLASTGUIComponent(argValue)
-                      &&typeDispatcher.asGUIDSLASTGUIComponent(argValue).isPresentId()
-                      && typeDispatcher.asGUIDSLASTGUIComponent(argValue).getId().getName().equals(componentNameToChange)) ||
-                      (typeDispatcher.isGUIDSLASTGUIGuard(argValue)
-                          && typeDispatcher.asGUIDSLASTGUIGuard(argValue).isPresentId()
-                          && typeDispatcher.asGUIDSLASTGUIGuard(argValue).getId().getName().equals(componentNameToChange)) ||
-                      (typeDispatcher.isGUIDSLASTGUIIterate(argValue)
-                          &&typeDispatcher.asGUIDSLASTGUIIterate(argValue).isPresentId()
-                          && typeDispatcher.asGUIDSLASTGUIIterate(argValue).getId().getName().equals(componentNameToChange))
+                  if ((typeDispatcher.isGUIDSLASTGUIComponent(expression)
+                      &&typeDispatcher.asGUIDSLASTGUIComponent(expression).isPresentId()
+                      && typeDispatcher.asGUIDSLASTGUIComponent(expression).getId().getName().equals(componentNameToChange)) ||
+                      (typeDispatcher.isGUIDSLASTGUIGuard(expression)
+                          && typeDispatcher.asGUIDSLASTGUIGuard(expression).isPresentId()
+                          && typeDispatcher.asGUIDSLASTGUIGuard(expression).getId().getName().equals(componentNameToChange)) ||
+                      (typeDispatcher.isGUIDSLASTGUIIterate(expression)
+                          &&typeDispatcher.asGUIDSLASTGUIIterate(expression).isPresentId()
+                          && typeDispatcher.asGUIDSLASTGUIIterate(expression).getId().getName().equals(componentNameToChange))
                   ) {
                     int index = node.indexOfSetCollectionItem(argValue);
                     switch (adaptionOptions) {

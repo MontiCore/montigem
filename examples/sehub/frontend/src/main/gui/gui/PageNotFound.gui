@@ -7,7 +7,11 @@ import mc.fenix.basic.GemText;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemImage;
 
+import gui.Navigation;
+
 page PageNotFound() {
+  @Navigation();
+
   @GemColumn(hAlign = "center", rowGap = "20px", components = [
     @GemRow(width = "200px", component = @GemImage(source = "assets/images/Eule.png")),
     @GemCard(title = "SE Hub | 404", component =

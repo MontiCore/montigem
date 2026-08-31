@@ -1,11 +1,9 @@
 /* (c) https://github.com/MontiCore/monticore */
 package gui.login;
 
-import Sehub.User;
-
 import gui.login.UserCreate;
 import gui.login.LoginContainer;
 
-page RegistrationPage(List<User> users){
+page RegistrationPage(){
   @LoginContainer(component = @UserCreate());
 }
