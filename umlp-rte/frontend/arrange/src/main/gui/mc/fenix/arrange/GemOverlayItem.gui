@@ -1,8 +1,15 @@
 /* (c) https://github.com/MontiCore/monticore */
 package mc.fenix.arrange;
 
+/**
+  GemOverlayItem positions a single component at absolute `x`/`y` coordinates
+  within a `GemOverlay`.
+*/
 component GemOverlayItem(
+  /** Component displayed at the given position. */
   GUIViewElement component,
+  /** Horizontal position within the overlay in `px`, `%`, etc. */
   String x,
+  /** Vertical position within the overlay in `px`, `%`, etc. */
   String y
 )

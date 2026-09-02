@@ -1,10 +1,13 @@
 /* (c) https://github.com/MontiCore/monticore */
 package mc.fenix.basic;
 
-//This component represents a checkbox with a label. It is designed to be used in forms or other contexts where the user needs to indicate a binary choice,
-//such as agreeing to terms and conditions or opting in to a newsletter.
-//A single instance of the component results in a single checkbox input.
-
+/**
+  This component represents a checkbox with a label. It is designed to be used in
+  forms or other contexts where the user needs to indicate a binary choice, such as
+  agreeing to terms and conditions or opting in to a newsletter. A single instance
+  of the component results in a single checkbox input.
+*/
 component GemCheckbox(
+    /** Text describing the checkbox's option. */
     String checkboxItem
 )

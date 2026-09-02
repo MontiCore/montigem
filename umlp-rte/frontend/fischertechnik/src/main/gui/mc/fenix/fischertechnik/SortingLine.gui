@@ -1,18 +1,33 @@
 package mc.fenix.fischertechnik;
 
+/**
+  Visualizes the fischertechnik sorting line station, showing the belt, the
+  pneumatic pushers, the light barriers, and the detected color of the workpiece.
+*/
 component SortingLine(
+  /** Whether the compressed-air pump is currently running. */
   boolean pumpRunning,
+  /** Whether the first pusher is extended. */
   boolean pusher1Extended,
+  /** Whether the second pusher is extended. */
   boolean pusher2Extended,
+  /** Whether the third pusher is extended. */
   boolean pusher3Extended,
+  /** Whether the conveyor belt is currently running. */
   boolean beltRunning,
 
+  /** Whether the light barrier at position 1 detects a workpiece. */
   boolean barrierIndicator1On,
+  /** Whether the light barrier at position 2 detects a workpiece. */
   boolean barrierIndicator2On,
+  /** Whether the light barrier at position 3 detects a workpiece. */
   boolean barrierIndicator3On,
+  /** Whether the light barrier at the first feed position detects a workpiece. */
   boolean barrierIndicatorFeed1On,
+  /** Whether the light barrier at the second feed position detects a workpiece. */
   boolean barrierIndicatorFeed2On,
 
+  /** Color of the workpiece detected by the color sensor. */
   String colorSensor
 ){
 

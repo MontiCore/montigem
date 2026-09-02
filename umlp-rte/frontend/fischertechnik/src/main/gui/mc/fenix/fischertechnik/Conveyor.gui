@@ -1,5 +1,18 @@
 package mc.fenix.fischertechnik;
 
-component Conveyor(boolean moveToFeed, boolean moveToSwap, boolean feedDetectorOn, boolean swapDetectorOn){
+/**
+  Visualizes the fischertechnik conveyor station, showing the direction the belt is
+  moving in and whether a workpiece is detected at either end.
+*/
+component Conveyor(
+  /** Whether the belt is currently moving towards the feed side. */
+  boolean moveToFeed,
+  /** Whether the belt is currently moving towards the swap side. */
+  boolean moveToSwap,
+  /** Whether the light barrier at the feed side detects a workpiece. */
+  boolean feedDetectorOn,
+  /** Whether the light barrier at the swap side detects a workpiece. */
+  boolean swapDetectorOn
+){
 
 }

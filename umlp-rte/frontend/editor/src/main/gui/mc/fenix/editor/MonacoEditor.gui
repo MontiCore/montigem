@@ -3,36 +3,56 @@ package mc.fenix.editor;
 
 import mc.fenix.editor.MonacoEditorTypes.InlineDecoration;
 
-/* Find more options: https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html */
-
+/**
+  Embeds the Monaco code editor (the editor that powers VS Code), providing syntax
+  highlighting, code decorations, and hover content for a given programming language.
+  Find more options at
+  https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html
+*/
 component MonacoEditor(
+  /** Initial source code shown in the editor. */
   ?String entry,
 
-  // Toggles read only
+  /** Toggles read only mode. If true, the content cannot be edited. */
   boolean disabled = false,
 
+  /** Programming language used for syntax highlighting. */
   String language = "Java",
 
-  // Default Dark theme is 'vs-dark'
+  /** Editor color theme. Default dark theme is `"vs-dark"`. */
   String theme = "Light +",
 
+  /** Whether the glyph margin (used e.g. for decorations) is shown. */
   boolean glyphMargin = true,
+  /** Whether the lightbulb icon for quick fixes/actions is shown. */
   boolean showLightbulbIconMode = true,
+  /** Whether the editor automatically resizes when its container changes size. */
   boolean automaticLayout = true,
+  /** Whether semantic highlighting is enabled. */
   boolean semanticHighlightingEnabled = true,
+  /** Whether the minimap is shown. */
   boolean showMinimap = true,
 
+  /** Line the editor scrolls to when it is initially rendered. */
   int initialScrollToLine,
+  /** Line the editor jumps to, e.g. to reveal a specific position. */
   int jumpToLine,
+  /** Inline decorations (e.g. highlights, markers) applied to specific lines/ranges. */
   List<InlineDecoration> highlighting,
 
+  /** Content shown in a hover tooltip for specific lines/ranges. */
   List<HoverContent> hoverContents,
 
+  /** Width of the component in `px`, `%`, `vh`, etc. */
   String width = "100%",
+  /** Height of the component in `px`, `%`, `vh`, etc. */
   String height = "100%",
 
+  /** Whether the editor's height automatically grows with its content, up to `maxLines`. */
   boolean autoHeight = false,
+  /** Maximum number of lines shown when `autoHeight` is enabled. */
   int maxLines = 30,
 
+  /** Callback that is executed when a line is clicked. */
   Event<Object> lineClick
 )

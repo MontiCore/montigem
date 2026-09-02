@@ -7,6 +7,9 @@ import mc.fenix.charts.GemGaugeChartTypes.GemGaugeChartData;
   Gauge charts are also known as dial charts or speedometer charts. Normally they consist of a dial and a pointer, use the pointer to read the information. There are several different types of gauge charts,
   such as Speedometer, Linear Gauge Charts and Angular Gauge Charts.
   Gauge charts are very helpful to visualize and compare single data value with a quantitative context.
+
+  For example, it can be used to display the current CPU usage of a server, or
+  the fill level of a tank as a percentage of its capacity.
 */
 component GemGaugeChart (
   /**

@@ -8,12 +8,28 @@ import mc.fenix.charts.GemTimelineChartTypes.Timeline;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+/**
+  A timeline chart visualizes one or more series of time-bound blocks (e.g. tasks or
+  events) along a shared time axis, making it easy to compare their durations and
+  overlaps.
+
+  For example, it can be used to visualize a project's task schedule (Gantt-style),
+  the booking periods of several rooms in a hotel, or the operating and downtime
+  periods of machines in a Digital Twin.
+*/
 component GemTimelineChart (
+  /** The data to be displayed in the chart, consisting of one or more timelines. */
   TimelineData data,
+  /** If set, only blocks starting after this point in time are shown. */
   Optional<LocalDateTime> showAfter,
+  /** If set, only blocks starting before this point in time are shown. */
   Optional<LocalDateTime> showUntil,
+  /** Whether the legend is hidden. */
   Boolean hideLegend,
+  /** Callback that is executed when a timeline block is clicked. */
   Event<TimelineBlock> blockClick,
+  /** Width of the component in `px`, `%`, `vh`, etc. */
   String width = "100%",
+  /** Height of the component in `px`, `%`, `vh`, etc. */
   String height = "350px"
 )

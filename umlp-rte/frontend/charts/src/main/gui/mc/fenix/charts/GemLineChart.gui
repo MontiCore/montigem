@@ -3,14 +3,26 @@ package mc.fenix.charts;
 
 import mc.fenix.charts.GemLineChartTypes.GemLineChartData;
 
-//Line chart is a graphical representation to describe the data changes over a given period. It is connected by straight line segments.
-//The horizontal axis is usually a time scale; for example, minutes, hours, days, months, or years, while the vertical axis would have the values.
+/**
+  A line chart is a graphical representation to describe the data changes over a
+  given period. It is connected by straight line segments. The horizontal axis is
+  usually a time scale; for example, minutes, hours, days, months, or years, while
+  the vertical axis would have the values.
 
+  For example, it can be used to show a stock's price over the past year, or the
+  temperature measured by a sensor throughout a day.
+*/
 component GemLineChart(
+  /** The data to be displayed in the chart. */
   GemLineChartData data,
+  /** Configures how the value of each data point is displayed, e.g. as a label. */
   Object displayValue,
+  /** Whether the area under the line is filled with a background color. */
   Boolean enableBackgroundColor,
+  /** Maximum value shown on the value axis. */
   Integer maxValue,
+  /** Minimum value shown on the value axis. */
   Integer minValue,
+  /** Whether the chart's configuration panel is shown. */
   boolean showConfig = true
 )

@@ -1,7 +1,13 @@
 /* (c) https://github.com/MontiCore/monticore */
 package mc.fenix.arrange;
 
+/**
+  GemOverlay stacks a set of freely positioned components on top of a background
+  component, typically combined with `GemOverlayItem` to position each element.
+*/
 component GemOverlay(
+  /** Component rendered as the background layer. */
   GUIViewElement background,
+  /** Components layered on top of the background, e.g. `GemOverlayItem` instances. */
   List<GUIViewElement> components
 )

@@ -3,11 +3,17 @@ package mc.fenix.charts;
 
 import mc.fenix.charts.GemPieChartTypes.GemPieChartData;
 
-//Pie chart is also called circle chart. It looks like a circle, which is divided to slices to visualize information.
-//Different categories of data could be indicated by different colors.
-//It is helpful to observe the numerical proportion of data.
+/**
+  A pie chart, also called circle chart, looks like a circle, which is divided into
+  slices to visualize information. Different categories of data can be indicated by
+  different colors. It is helpful to observe the numerical proportion of data.
 
+  For example, it can be used to show the market share of competing products, or
+  the distribution of a household budget across expense categories.
+*/
 component GemPieChart(
+    /** The data (categories and their values) to be displayed in the chart. */
     GemPieChartData data,
+    /** Radius of the inner hole in pixels; a value greater than 0 turns the pie chart into a donut chart. */
     Integer innerRadius
 )

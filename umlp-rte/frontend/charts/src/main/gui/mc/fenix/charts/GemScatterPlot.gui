@@ -4,11 +4,19 @@ package mc.fenix.charts;
 import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotData;
 import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotAxis;
 
-//A scatterplot visualises a set of scattered points in a two dimensional space.
-//The axes have a certain range and provide more detail with a title
+/**
+  A scatter plot visualizes a set of scattered points in a two dimensional space.
+  The axes have a certain range and provide more detail with a title.
 
+  For example, it can be used to visualize the correlation between a person's
+  height and weight, or between advertising spend and sales revenue. It can also
+  be used to show the distribution of exam scores against hours studied.
+*/
 component GemScatterPlot(
+  /** The points to be displayed in the chart. */
   GemScatterPlotData data,
+  /** Configuration (range, title) of the horizontal axis. */
   GemScatterPlotAxis xAxis,
+  /** Configuration (range, title) of the vertical axis. */
   GemScatterPlotAxis yAxis
 )

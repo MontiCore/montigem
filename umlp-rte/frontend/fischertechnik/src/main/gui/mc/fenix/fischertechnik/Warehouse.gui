@@ -1,5 +1,16 @@
 package mc.fenix.fischertechnik;
 
-component Warehouse(int depthPercentage, int verticalPercentage, int horizontalPercentage){
+/**
+  Visualizes the fischertechnik warehouse (high-bay storage) station, showing the
+  position of its crane along the three axes of the storage rack.
+*/
+component Warehouse(
+  /** Position of the crane's depth axis, in percent of its total travel range. */
+  int depthPercentage,
+  /** Position of the crane's vertical (lift) axis, in percent of its total travel range. */
+  int verticalPercentage,
+  /** Position of the crane's horizontal axis, in percent of its total travel range. */
+  int horizontalPercentage
+){
 
 }

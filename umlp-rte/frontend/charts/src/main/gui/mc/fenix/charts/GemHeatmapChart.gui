@@ -3,13 +3,23 @@ package mc.fenix.charts;
 
 import mc.fenix.charts.GemHeatmapChartTypes.GemHeatmapChartData;
 
-//Heatmap-charts visualize different kinds of data, for instance temperature, in a tabular-like format.
-//They are helpful for finding patterns, relationships between data or other kind of information.
+/**
+  Heatmap charts visualize different kinds of data, for instance temperature, in a
+  tabular-like format. They are helpful for finding patterns, relationships between
+  data or other kind of information.
 
+  For example, it can be used to visualize average monthly temperatures across
+  several years, or website traffic by hour of day and day of week.
+*/
 component GemHeatmapChart (
+  /** The data to be displayed in the chart. */
   GemHeatmapChartData data,
+  /** Label of the horizontal axis. */
   String xLabel,
+  /** Label of the vertical axis. */
   String yLabel,
+  /** Number of bins (cells) along the horizontal axis. */
   Integer xBins,
+  /** Number of bins (cells) along the vertical axis. */
   Integer yBins
 )

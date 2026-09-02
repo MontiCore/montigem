@@ -1,5 +1,26 @@
 package mc.fenix.fischertechnik;
 
-component VacuumGripper(int rotationDeg, boolean refSwitchRotation, int verticalPercentage, boolean refSwitchVertical, int horizontalPercentage, boolean refSwitchHorizontal, boolean pumpRunning, boolean valveEnabled){
+/**
+  Visualizes the fischertechnik vacuum gripper station, showing the position of the
+  gripper arm, its reference switches, and the state of the vacuum pump and valve.
+*/
+component VacuumGripper(
+  /** Current rotation of the gripper arm, in degrees. */
+  int rotationDeg,
+  /** Whether the reference switch for the rotation axis is triggered. */
+  boolean refSwitchRotation,
+  /** Position of the gripper's vertical axis, in percent of its total travel range. */
+  int verticalPercentage,
+  /** Whether the reference switch for the vertical axis is triggered. */
+  boolean refSwitchVertical,
+  /** Position of the gripper's horizontal axis, in percent of its total travel range. */
+  int horizontalPercentage,
+  /** Whether the reference switch for the horizontal axis is triggered. */
+  boolean refSwitchHorizontal,
+  /** Whether the vacuum pump is currently running. */
+  boolean pumpRunning,
+  /** Whether the vacuum valve is currently enabled (open). */
+  boolean valveEnabled
+){
 
 }
