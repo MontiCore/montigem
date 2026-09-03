@@ -1,0 +1,77 @@
+/* <- Step DATA_CONNECTION FILE -> */
+tags IMMMqtt for IMM {
+  tag iMM.injectionUnit
+    with mqttNamespace = "summer-school/machine-mock/sensors/";
+  tag iMM.injectionUnit.injectionPressure
+    with mqtt = "injection-pressure";
+/* <- Step DATA_CONNECTION TASK : START -> */
+  /* TODO: connect the remaining scalar values and the complex part stream.
+     Use the given DigitalTwinMqttConverter for the Part-valued port. */
+/* <- Step DATA_CONNECTION TASK : END -> */
+/* <- Step DATA_CONNECTION SOLUTION : START -> */
+  tag iMM
+    with mqttNamespace = "summer-school/machine-mock/sensors/";
+  tag iMM.granule_in
+    with mqtt = "granule";
+
+  tag iMM.injectionUnit.backPressure
+    with mqtt = "back-pressure";
+  tag iMM.injectionUnit.barrel1Temp
+    with mqtt = "barrel-1-temperature";
+  tag iMM.injectionUnit.barrel2Temp
+    with mqtt = "barrel-2-temperature";
+  tag iMM.injectionUnit.nozzleTemp
+    with mqtt = "nozzle-temperature";
+  tag iMM.injectionUnit.heaterPower
+    with mqtt = "heater-power";
+  tag iMM.injectionUnit.screwVelocity
+    with mqtt = "screw-velocity";
+
+  tag iMM.clampingUnit
+    with mqttNamespace = "summer-school/machine-mock/sensors/";
+  tag iMM.clampingUnit.holdingPressure
+    with mqtt = "holding-pressure";
+  tag iMM.clampingUnit.clampPos
+    with mqtt = "clamp-position";
+  tag iMM.clampingUnit.meltTemp
+    with mqtt = "melt-temperature";
+  /* every produced part enters the twin at the clamping unit's out-port */
+  tag iMM.clampingUnit.part
+    with mqtt = "part";
+  tag iMM.clampingUnit.part
+    with mqttConverter =
+      "summerschooltutorial.digitaltwin.DigitalTwinMqttConverter.convertPart";
+/* <- Step DATA_CONNECTION SOLUTION : END -> */
+/* <- Step QUALITY_INSPECTOR TASK : START -> */
+  /* The machine has been publishing its checked parts on the checked-part topic all
+     along — the gateway connection below is prepared for you. Once your inspector
+     model compiles, activate it by removing this surrounding comment:
+
+  tag iMM.part_out
+    with mqtt = "checked-part";
+  tag iMM.part_out
+    with mqttConverter =
+      "summerschooltutorial.digitaltwin.DigitalTwinMqttConverter.convertPart";
+  */
+/* <- Step QUALITY_INSPECTOR TASK : END -> */
+/* <- Step QUALITY_INSPECTOR SOLUTION : START -> */
+  /* only parts that passed the quality inspection reach checkedPart/part_out */
+  tag iMM.part_out
+    with mqtt = "checked-part";
+  tag iMM.part_out
+    with mqttConverter =
+      "summerschooltutorial.digitaltwin.DigitalTwinMqttConverter.convertPart";
+/* <- Step QUALITY_INSPECTOR SOLUTION : END -> */
+/* <- Step SERVICE_QUALITY_CONTROL TASK : START -> */
+  /* TODO: connect the scrap stream — tag scrap_out with the scrap-part topic and the
+     same Part converter the other part streams use. */
+/* <- Step SERVICE_QUALITY_CONTROL TASK : END -> */
+/* <- Step SERVICE_QUALITY_CONTROL SOLUTION : START -> */
+  /* parts the quality inspection sorted out leave the machine on scrap_out */
+  tag iMM.scrap_out
+    with mqtt = "scrap-part";
+  tag iMM.scrap_out
+    with mqttConverter =
+      "summerschooltutorial.digitaltwin.DigitalTwinMqttConverter.convertPart";
+/* <- Step SERVICE_QUALITY_CONTROL SOLUTION : END -> */
+}

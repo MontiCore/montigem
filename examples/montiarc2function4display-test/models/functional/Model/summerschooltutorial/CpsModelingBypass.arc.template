@@ -1,0 +1,15 @@
+/* <- Step CPS_MODELING PLACEHOLDER : START -> */
+//~ package summerschooltutorial;
+
+//~ import summerschooltutorial.IMMTypes.Part;
+
+//~ /**
+//~  * Temporary compilation scaffold for the CPS-modeling start state.
+//~  * The student's ClampingUnit replaces this component in the solution.
+//~  */
+//~ component CpsModelingBypass {
+//~   port in double melt;
+//~   port in double holdingPressureSetpoint;
+//~   port out Part part;
+//~ }
+/* <- Step CPS_MODELING PLACEHOLDER : END -> */
