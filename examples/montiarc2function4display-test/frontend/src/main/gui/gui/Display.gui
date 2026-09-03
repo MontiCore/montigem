@@ -3,6 +3,6 @@ package gui;
 import mc.fenix.functiondisplay.FunctionDisplay;
 import mc.fenix.functiondisplay.FunctionStructure4Fenix.Function4Display;
 
-page Display() {
-  @FunctionDisplay(data = getMain());
+page Display(Manager manager) {
+  @FunctionDisplay(data = manager.mainFunction);
 }
