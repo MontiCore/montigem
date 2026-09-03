@@ -23,10 +23,8 @@ public class MontiArcVizExperiment {
         "-main",
         "summerschooltutorial.IMM",
         "-c2mc",
-        //no idea what this does, but it seems important
     });
 
     var result = tool.getResult4Display();
-    System.out.println(result);
   }
 }

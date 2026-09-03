@@ -86,6 +86,7 @@ include ':examples:dashboard:backend'
 include ':examples:dashboard:frontend'
 
 include ':examples:montiarc2function4display-test:backend'
+include ':examples:montiarc2function4display-test:frontend'
 
 include ':products:ma2fustrumo-tool'
 

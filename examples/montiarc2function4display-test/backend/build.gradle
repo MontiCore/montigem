@@ -1,0 +1,8 @@
+plugins {
+  id 'de.rwth.se.montigem-backend'
+  id 'application'
+}
+
+application {
+  mainClass = 'montiarcvizexperiment.MontiArcVizExperimentServerApplication'
+}
