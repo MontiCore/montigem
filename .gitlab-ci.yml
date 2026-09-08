@@ -94,7 +94,7 @@ build_no_containers:
       junit: "**/test/**/TEST-*.xml"
       coverage_report:
         coverage_format: jacoco
-        path: build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.csv
+        path: build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml
     expire_in: 1 week
   except:
     refs:
@@ -161,7 +161,7 @@ build_with_deploy:
       junit: "**/test/**/TEST-*.xml"
       coverage_report:
         coverage_format: jacoco
-        path: build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.csv
+        path: build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml
     expire_in: 1 week
   only: # This job is deploying docker-containers... this should _really_ only happen from the `dev` branch
     refs:
