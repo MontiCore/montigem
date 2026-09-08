@@ -7,6 +7,9 @@ import java.util.Optional;
 /**
   A radar chart is a way of showing multiple data points and the variation between them.
   They are often useful for comparing the points of two or more different data sets.
+
+  For example, it can be used to compare the skill ratings of several players
+  across multiple categories, or a product's performance across various criteria.
 */
 component GemRadarChart(
     /**

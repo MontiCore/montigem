@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import jakarta.annotation.PostConstruct;
@@ -19,9 +18,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
-import java.util.stream.IntStream;
+import umlp.backendrte.common.GemList;
 
 @SpringBootApplication(
     exclude={DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class},
@@ -55,74 +53,63 @@ public class SehubServerApplication extends sehub.SehubServerApplicationTOP {
   }
 
   public void createDummyData(){
-    for (User user : SehubManager.getUserList()) {
-      System.err.println("User " + user.getUsername());
+    // Projects, Directories and FileArtifacts are extracted from the source tree.
+    // This runs first so that users, issues and posts can be attached to a real
+    // Project - otherwise the association tables on the generated pages stay empty.
+    new DummyDataCreator().createDummyData();
+    Project project = getFirstProject();
+
+    createDummyUsers(project);
+    createDummyPosts(project);
+    createDummyIssues(project);
+  }
+
+  private Project getFirstProject() {
+    GemList<Project> projects = SehubManager.getProjectList();
+    if (projects.isEmpty()) {
+      Log.warn("No Project was extracted, users and issues stay unassigned.");
+      return null;
     }
+    return projects.get(0);
+  }
 
-    Set<BingoEntry> entrySet = new java.util.HashSet<>(Collections.emptySet());
-    for (int i = 0; i <= 24; i++) {
-      entrySet.add(SehubManager.bingoEntryBuilder().word("").build().get());
-    }
-    Optional<BingoBoard> bingoBoard = SehubManager.bingoBoardBuilder()
-        .bingoBoardEntries(entrySet)
-        .build();
-
-    Set<BoardMapper> mapping = new java.util.HashSet<>(Collections.emptySet());
-    int [] permutation = getBingoBoardPermutation();
-
-    for (int i = 0; i <= 24; i++) {
-      mapping.add(SehubManager.boardMapperBuilder().bingoBoardEntry(bingoBoard.get().getBingoBoardEntries(permutation[i])).isChecked(false).build().get());
-    }
-
+  private void createDummyUsers(Project project) {
     PasswordEncoder encoder = new BCryptPasswordEncoder();
-    if (SehubManager.getUserList().isEmpty()) {
-      Optional<User> newUser = SehubManager.userBuilder()
-          .username("MyUser")
-          .password(encoder.encode("MyPasswort"))
-          .registrationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-          .email("MyEmail")
-          .gridEntry(mapping)
-      //    .activated(ActivationStatus.AKTIVIERT)
-          .role(SehubRole.OWNER)
-          .build();
 
+    createUser("MyUser", encoder.encode("MyPasswort"), "my.user@sehub.de", SehubRole.DEVELOPER, project);
+    createUser("admin", encoder.encode("pwd"), "admin@sehub.de", SehubRole.OWNER, project);
+  }
 
-      if (newUser.isPresent()) {
-        UserDeSer userDeSer = new UserDeSer();
-        System.out.println(userDeSer.serialize(newUser.get()));
-      }
-    }
-
-
-
-    Set<BoardMapper> mapping2 = new java.util.HashSet<>(Collections.emptySet());
-    int [] permutation2 = getBingoBoardPermutation();
-
-    for (int i = 0; i <= 24; i++) {
-      mapping2.add(SehubManager.boardMapperBuilder().bingoBoardEntry(bingoBoard.get().getBingoBoardEntries(permutation2[i])).isChecked(false).build().get());
-    }
-
-    Optional<User> newUser2 = SehubManager.userBuilder()
-        .username("admin")
-        .password(encoder.encode("pwd"))
+  private Optional<User> createUser(String name, String encodedPassword, String email,
+                                    SehubRole role, Project project) {
+    Optional<User> user = SehubManager.userBuilder()
+        .username(name)
+        .password(encodedPassword)
         .registrationDate(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
-        .email("admin@sehub.de")
-        .gridEntry(mapping2)
-        //    .activated(ActivationStatus.AKTIVIERT)
-        .role(SehubRole.OWNER)
+        .email(email)
+        .role(role)
         .build();
+
+    if (user.isPresent() && project != null) {
+      project.addUsers(user.get());
+    }
+    return user;
+  }
+
+  private void createDummyPosts(Project project) {
+    User author = SehubManager.getUserList().get(0);
 
     Optional<Post> p1 = SehubManager.postBuilder()
-        .author(SehubManager.getUserList().get(0))
-        .title(" | 15:57 ]: Können Wasserkocher Fliegen ?")
+        .author(author)
+        .title(" | 15:57 ]: Koennen Wasserkocher Fliegen ?")
         .text("Nein")
         .responses(Collections.emptySet())
         .build();
 
     Optional<Post> p2 = SehubManager.postBuilder()
-        .author(SehubManager.getUserList().get(0))
-        .title(" | 16:34 ]: Können Wasserkocher Fliegen ?")
-        .text("Ja, während eines FoWos")
+        .author(author)
+        .title(" | 16:34 ]: Koennen Wasserkocher Fliegen ?")
+        .text("Ja, waehrend eines FoWos")
         .responses(Collections.emptySet())
         .build();
 
@@ -131,66 +118,51 @@ public class SehubServerApplication extends sehub.SehubServerApplicationTOP {
     responses.add(p2.get());
 
     Optional<Post> p3 = SehubManager.postBuilder()
-        .author(SehubManager.getUserList().get(0))
-        .title("Können Wasserkocher Fliegen ?")
-        .text("Wir sollten diese Frage vor dem FoWo klären! Ggf. Sollten Wasserkocher für eine Testreihe organisiert werden!")
+        .author(author)
+        .title("Koennen Wasserkocher Fliegen ?")
+        .text("Wir sollten diese Frage vor dem FoWo klaeren! Ggf. sollten Wasserkocher fuer eine Testreihe organisiert werden!")
         .responses(responses)
         .build();
 
-    IssueBuilder issueBuilder = SehubManager.issueBuilder();
-        issueBuilder
-        .title("Die Sache mit dem Wasserkocher")
-        .description("Hier kann eine Beschreibung stehen...")
-        .state(IssueState.IN_PROGRESS)
-        .posts(Set.of(p3.get()))
-        .build();
+    createIssue("Die Sache mit dem Wasserkocher",
+        "Hier kann eine Beschreibung stehen...",
+        IssueState.IN_PROGRESS, Set.of(p3.get()), project);
+  }
 
+  private void createDummyIssues(Project project) {
+    createIssue("Verfuegbare Konten sollen beim Bearbeiten von Dienstreisen auswaehlbar sein",
+        "Wenn eine bestehende Dienstreise bearbeitet wird, kann kein neues Konto ausgewaehlt werden. " +
+            "Zuerst muss die zu bearbeitende Dienstreise geloescht, gespeichert und erneut bearbeitet werden. " +
+            "Erst dann werden die Kontooptionen angezeigt. " +
+            "Es sollte moeglich sein, direkt ein neues Konto auszuwaehlen.",
+        IssueState.DONE, Collections.emptySet(), project);
 
+    createIssue("Aenderungsdatum Erweiterung",
+        "Das Aenderungsdatum fuer Buchungen, Mittelabrufe, Rechnungen, Mittelzuweisungen und Stellenzuweisungen " +
+            "ist aktuell nur auf der Seite Finanzen/Zahlungen sichtbar. Das Aenderungsdatum soll aber auch fuer die " +
+            "einzelnen Elemente auf den Kontenseiten in einem Konto selbst sichtbar sein.",
+        IssueState.IN_PROGRESS, Collections.emptySet(), project);
 
-    SehubManager.issueBuilder()
-        .title("Verfügbare Konten sollen beim Bearbeiten von Dienstreisen auswählbar sein")
-        .description("Wenn eine bestehende Dienstreise bearbeitet wird, kann kein neues Konto ausgewählt werden. " +
-            "Zuerst muss die zu bearbeitende Dienstreise gelöscht, gespeichert und erneut bearbeitet werden. " +
-            "Erst dann werden die Kontooptionen angezeigt." +
-            "Es sollte möglich sein, direkt ein neues Konto auszuwählen.")
-        .state(IssueState.DONE)
-        .build();
-
-    SehubManager.issueBuilder()
-        .title("Änderungsdatum Erweiterung")
-        .description("Das Änderungsdatum für Buchungen, Mittelabrufe, Rechnungen, Mittelzuweisungen und Stellenzuweisungen " +
-            "ist aktuell nur auf der Seite Finazen/Zahlungen sichtbar. Das Änderungsdatum soll aber auch für die " +
-            "einzelnen Elemente auf den Kontenseiten in einem Konto selbst sichtbar sein.")
-        .state(IssueState.IN_PROGRESS)
-        .build();
-
-
-    SehubManager.issueBuilder()
-        .title("Finanzen: Umfang einer Zuweisung zu Organigrammstufe im Konto beschränken")
-        .description("Bei der Zuweisung einer Organigrammstufe in einem Konto kann ein Umfang hinterlegt werden. " +
-            "Standardmäßig ist der Umfang mit 100% vorausgefüllt. Der Umfang kann allerdings bearbeitet werden und " +
+    createIssue("Finanzen: Umfang einer Zuweisung zu Organigrammstufe im Konto beschraenken",
+        "Bei der Zuweisung einer Organigrammstufe in einem Konto kann ein Umfang hinterlegt werden. " +
+            "Standardmaessig ist der Umfang mit 100% vorausgefuellt. Der Umfang kann allerdings bearbeitet werden und " +
             "auf mehr als 100% angepasst werden. Eine Zuweisung von mehr als 100% ergibt jedoch keinen Sinn, weshalb " +
-            "der maximal zulässige Umfang auf 100% beschränkt werden sollte.")
-        .state(IssueState.UNASSIGNED)
+            "der maximal zulaessige Umfang auf 100% beschraenkt werden sollte.",
+        IssueState.UNASSIGNED, Collections.emptySet(), project);
+  }
+
+  private Optional<Issue> createIssue(String title, String description, IssueState state,
+                                      Set<Post> posts, Project project) {
+    Optional<Issue> issue = SehubManager.issueBuilder()
+        .title(title)
+        .description(description)
+        .state(state)
+        .posts(posts)
         .build();
 
-
-    new DummyDataCreator().createDummyData();
-  }
-
-  public static int[] getBingoBoardPermutation() {
-    int[] arr = IntStream.rangeClosed(0, 24).toArray();
-    Random random = new Random();
-
-    for (int i = arr.length - 1; i > 0; i--) {
-      int j = random.nextInt(i + 1); // random index from 0 to i
-      int temp = arr[i];
-      arr[i] = arr[j];
-      arr[j] = temp; // Swap elements
+    if (issue.isPresent() && project != null) {
+      project.addIssues(issue.get());
     }
-
-    return arr;
+    return issue;
   }
-
-
 }

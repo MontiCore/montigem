@@ -1,13 +1,15 @@
 /* (c) https://github.com/MontiCore/monticore */
 package mc.fenix.navigation;
 
+/**
+  GemNavItem renders a single, clickable entry of a `GemNavList`, e.g. a link to
+  another page of the application.
+*/
 component GemNavItem(
+  /** Text displayed for the navigation entry. */
   String title,
+  /** Route the navigation entry links to. */
   String target,
-  String icon = "",
-  String rightIcon = "",
-  List<GUIViewElement> items = null,
-  Boolean expanded = false,
-  Event<Void> leftClick,
-  Event<Void> expandedChange
+  /** Callback that is executed when the navigation entry is clicked. */
+  Event<Void> leftClick
 )

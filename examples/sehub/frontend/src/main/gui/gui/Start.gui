@@ -4,10 +4,12 @@ package gui;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemCard;
 import mc.fenix.basic.GemText;
-import mc.fenix.arrange.GemRow;
-import mc.fenix.basic.GemImage;
+
+import gui.Navigation;
 
 page Start() {
+  @Navigation();
+
   @GemColumn(width = "100%", hAlign = "center", component =
     @GemCard(title = "SE Hub | Welcome", component =
       @GemColumn(width = "50vw", rowGap = "10px", components = [
@@ -21,12 +23,8 @@ page Start() {
           "Users can browse through existing discussions, submit new questions, and find clarity amidst " +
           "the vast expanse of research. With every interaction, the true essence of research is showcased " +
           "- not just the understanding, but the perpetual pursuit of knowledge."),
-        @GemText(value = "Begin the exploration and let the discoveries unfold."),
-
-        @GemRow(hAlign = "right", vAlign = "center", width = "300px", component =
-          @GemImage(source = "assets/images/rwth_se_bild_weiss_rgb.png")
-        )
+        @GemText(value = "Begin the exploration and let the discoveries unfold.")
       ])
-    ) //card
+    )
   );
 }

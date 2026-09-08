@@ -5,7 +5,10 @@ package mc.fenix.basic;
   Displays an icon on a webpage.
 */
 component GemIcon(
+  /** Name of the icon to display, corresponding to the icon name from https://fonts.google.com/icons. */
   String name,
+  /** Color of the icon in `hex`, `rgb`, color names, etc. (e.g. `#000000`, `red`) */
   String color,
+  /** Size of the icon in `px`, `%`, `em`, etc. */
   String size
 )

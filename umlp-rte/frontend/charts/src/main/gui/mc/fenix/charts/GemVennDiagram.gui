@@ -3,9 +3,15 @@ package mc.fenix.charts;
 
 import mc.fenix.charts.GemVennDiagramTypes.GemVennDiagramData;
 
-//A Euler diagram is a diagram style that shows the logical relation between sets. It is used to teach elementary set theory,
-//and to illustrate simple set relationships in probability, logic, statistics, linguistics and computer science.
+/**
+  A Venn (Euler) diagram is a diagram style that shows the logical relation between
+  sets. It is used to teach elementary set theory, and to illustrate simple set
+  relationships in probability, logic, statistics, linguistics and computer science.
 
+  For example, it can be used to show the overlap between customer segments who
+  bought different products, or the shared skills between team members.
+*/
 component GemVennDiagram(
+    /** The sets and their overlaps to be displayed in the diagram. */
     GemVennDiagramData data
 )

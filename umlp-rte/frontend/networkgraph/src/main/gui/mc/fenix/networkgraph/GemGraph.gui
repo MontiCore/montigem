@@ -6,22 +6,37 @@ import mc.fenix.networkgraph.NetworkGraphTypes.GraphEdge;
 import mc.fenix.networkgraph.NetworkGraphTypes.NodePos;
 import mc.fenix.networkgraph.NetworkGraphTypes.Graph;
 
-//NetworkGraph is a graphical representation of a network. It is composed of nodes and edges.
-//Nodes are the entities of the network, and edges are the relationships between the nodes.
-
+/**
+  GemGraph is a graphical representation of a network. It is composed of nodes and
+  edges. Nodes are the entities of the network, and edges are the relationships
+  between the nodes.
+*/
 component GemGraph(
+  /** The graph data (nodes and edges) to be displayed. */
   Graph graph,
+  /** Minimum height of the component in `px`, `%`, `vh`, etc. */
   String minHeight="50vH",
+  /** Whether the filter group control is shown. */
   boolean showFilterGroup=true,
+  /** Whether the search-node control is shown. */
   boolean showSearchNode=true,
+  /** Whether the layout control buttons are shown. */
   boolean showControlButtons=true,
+  /** Whether the information panel is shown. */
   boolean showInformation=true,
+  /** Keys of the node/edge metrics that can be selected for coloring/filtering. */
   List<String> metricKeys,
-  Object initialLayout = null,           //@Input() initialLayout?: InitialGraphLayoutConfiguration | null;
-  Object complexLayout = null,            //@Input() complexLayout?: ComplexGraphLayoutConfiguration | null;
+  /** Initial layout configuration used to arrange the graph. Use type `InitialGraphLayoutConfiguration` or `null`. */
+  Object initialLayout = null,
+  /** Advanced layout configuration for more complex layouting strategies. Use type `ComplexGraphLayoutConfiguration` or `null`. */
+  Object complexLayout = null,
+  /** Callback that is executed on each iteration of the layout algorithm. */
   Event<Integer> layoutIteration,
+  /** Callback that is executed once with the final node positions after layouting. */
   Event<List<NodePos>> nodePositionsAfterLayout,
+  /** Custom bounding box constraining the graph's rendering area. */
   Object customBoundingBox = null,
+  /** Callback that is executed when a node is clicked. */
   Event<GraphNode> graphClickNode
   // TODO configure Layout from GUIDsl
 

@@ -5,27 +5,22 @@ classdiagram Sehub {
   /* Role datastructure - will later be separated in a general
      and application specific part that are merged.
   */
-
   class User {
-                                       <<dbColumn = "unique=true">>
+    <<dbColumn = "unique=true", key_attribute>>
     String username;
+    <<hidden_in_overview>>
     String password;
+    // TODO: <<invisible>> is a workaround, remove it once the cd2gui scatter-plot
+    // template no longer emits .get() on non-Optional date attributes.
+    <<invisible>>
     java.time.LocalDateTime registrationDate;
-   // ActivationStatus activated;
-                                        <<dbColumn = "unique=true">>
+    <<dbColumn = "unique=true">>
     String email;
     SehubRole role;
     String validityUsername();
     String validityPassword();
     String validityRole();
     String validityEmail();
-  }
-
-  enum ActivationStatus {
-    AKTIVIERT,
-    MAIL_NICHT_GESENDET,
-    MAIL_FEHLERHAFT,
-    MAIL_GESENDET;
   }
 
   enum SehubRole {
@@ -40,6 +35,7 @@ classdiagram Sehub {
 
   class Project {
     String git;
+    <<key_attribute>>
     String name;
     String fullName;
   }
@@ -48,6 +44,7 @@ classdiagram Sehub {
   association tickets [1] Project -> (issues) Issue [*];
 
   class Issue {
+    <<key_attribute>>
     String title;
     String description;
     IssueState state;
@@ -63,6 +60,7 @@ classdiagram Sehub {
 
   class Post {
     String text;
+    <<key_attribute>>
     String title;
   }
 
@@ -73,9 +71,13 @@ classdiagram Sehub {
   // ABSTRACT!
   class Artifact { // TODO shellAPI does not work with abstract classes
     String simpleName;
+    <<hidden_in_overview>>
     String nameExtension;
+    <<hidden_in_overview>>
     String modified;
+    <<key_attribute>>
     String name;
+    <<hidden_in_overview>>
     String fullName;
     /String type;
   }
@@ -92,27 +94,5 @@ classdiagram Sehub {
 
   class Directory extends Artifact {}
 
-  association [0..1] Directory (containedBy) <-> (contains) Artifact [*];
-
-
-  // --------------------- Bingo ---------------------
-
-  class BingoBoard {}
-
-  class Message {
-    String text;
-  }
-
-  class BoardMapper {
-    boolean isChecked;
-  }
-
-  class BingoEntry {
-    String word;
-  }
-
-  association mappedBingoEntry [1] User -> (gridEntry) BoardMapper [*];
-  association bingoBoardEnties [1] BingoBoard -> (bingoBoardEntries) BingoEntry [*];
-  association boardMapping [1] BoardMapper -> (bingoBoardEntry) BingoEntry [1];
-
+  composition [0..1] Directory (containedBy) <-> (contains) Artifact [*];
 }

@@ -1,15 +1,23 @@
 /* (c) https://github.com/MontiCore/monticore */
 package mc.fenix.input;
 
-//This component represents a radio button with a label.
-//It is intended for use in forms or other scenarios where users must choose one of several options.
-
+/**
+  This component represents a radio button with a label. It is intended for use in
+  forms or other scenarios where users must choose one of several options.
+*/
 component GemRadioInput(
+  /** The component's id; used to configure the styles. */
   String id,
+  /** Text describing the radio button's option. */
   String labelText,
+  /** Value represented by this radio button within its group. */
   String value,
+  /** Position of the label relative to the radio button. */
   String labelPosition,
+  /** If true, the radio button cannot be selected. */
   boolean disabled = false,
+  /** Currently selected value within the group; used to determine if this radio button is checked. */
   ?String selectedValue,
+  /** Name of the group; if multiple `GemRadioButton` components share the same `group` name, only one radio button per group can be selected at a time. */
   String group
 )

@@ -9,7 +9,7 @@ applications and domain-specific information systems. Instead of
 implementing recurring application elements manually, developers 
 describe the relevant domain, user interfaces, constraints, and 
 access-control rules using the 
- [Unified Modelling Language](https://www.se-rwth.de/research/Unified-Modeling-Language/). 
+[Unified Modelling Language](https://www.se-rwth.de/research/Unified-Modeling-Language/). 
 MontiGem transforms these models into substantial parts of an 
 executable application that is immediately executable. 
 

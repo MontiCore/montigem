@@ -7,7 +7,9 @@ package mc.fenix.basic;
 component GemText(
   /** Text content. */
   String value,
+  /** Text color in `hex`, `rgb`, color names, etc. (e.g. `#000000`, `red`) */
   String color,
+  /** Font size in `px`, `%`, `em`, etc. */
   String size,
   /**
     Font style. Can be `"normal"`, `"italic"`, `"oblique <deg>"`, or have a universal value

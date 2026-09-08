@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 /**
   A time series chart is a data visualization tool that plots data points at successive intervals of time.
   It is used to show how data changes over time.
+
+  For example, it can be used to monitor a machine's live sensor readings, or to
+  display historical stock prices annotated with relevant news events.
 */
 component GemTimeSeriesChart(
   /**

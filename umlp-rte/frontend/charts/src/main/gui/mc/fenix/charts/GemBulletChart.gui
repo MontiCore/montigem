@@ -1,36 +1,34 @@
 /* (c) https://github.com/MontiCore/monticore */
 package mc.fenix.charts;
 
-//Bullet chart is the variation of the bar chart, it features a single, primary measure,
-//compares that measure to one or more other measures to enrich its meaning (for example, compared to a target),
-//and displays it in the context of qualitative ranges of performance, such as poor, satisfactory, and good.
+/**
+  A bullet chart is a variation of the bar chart. It features a single, primary
+  measure, compares that measure to one or more other measures to enrich its
+  meaning (for example, compared to a target), and displays it in the context of
+  qualitative ranges of performance, such as poor, satisfactory, and good.
 
+  For example, it can be used as a KPI widget on a dashboard, showing this month's
+  revenue against its target, or to display progress towards a project deadline.
+*/
 component GemBulletChart(
-  /** * The primary measure or actual value to be displayed and evaluated.
-   */
+  /** The primary measure or actual value to be displayed and evaluated. */
   Integer value,
 
-  /** * The reference value or target measure to compare the primary value against.
-   */
+  /** The reference value or target measure to compare the primary value against. */
   Integer reference,
 
-  /** * A specific threshold value indicating a critical limit or milestone.
-   */
+  /** A specific threshold value indicating a critical limit or milestone. */
   Integer thresholdvalue,
 
-  /** * The main title of the bullet chart.
-   */
+  /** The main title of the bullet chart. */
   String title,
 
-  /** * The subtitle providing additional context, such as the unit of measurement.
-   */
+  /** The subtitle providing additional context, such as the unit of measurement. */
   String subtitle,
 
-  /** * The qualitative ranges of performance (e.g., boundaries for poor, satisfactory, and good performance).
-   */
+  /** The qualitative ranges of performance (e.g., boundaries for poor, satisfactory, and good performance). */
   List<Integer> range,
 
-  /** * The step values used for generating the axis scale or ticks.
-   */
+  /** The step values used for generating the axis scale or ticks. */
   List<Integer> steps
 )

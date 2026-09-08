@@ -6,16 +6,14 @@ import {config} from 'AppGemConfig'
 
 import { SehubComponentObserverManager } from 'SehubComponentObserverManager'
 import { SehubManagerClientImpl } from 'sehub/SehubManagerClientImpl';
-import {Navigation} from "navigation/navigation.component";
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,
   selector: 'app-root',
   templateUrl: '../hwc/AppComponent.html',
-  styleUrls: [],
+  styleUrls: ['../hwc/AppComponent.scss'],
   imports: [
     RouterOutlet,
-    Navigation,
     ...config.imports
   ]
 })

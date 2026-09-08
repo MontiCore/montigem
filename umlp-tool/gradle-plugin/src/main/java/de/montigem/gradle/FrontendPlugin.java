@@ -25,6 +25,7 @@ import org.gradle.api.artifacts.repositories.MavenRepositoryContentDescriptor;
 import org.gradle.api.attributes.Bundling;
 import org.gradle.api.attributes.VerificationType;
 import org.gradle.api.file.Directory;
+import org.gradle.api.file.DuplicatesStrategy;
 import org.gradle.api.file.RegularFile;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
@@ -69,6 +70,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
   public static final String GUI2JAVA2TS_TASK = "gui2java2ts";
   public static final String CD2GUI_TASK = "cd2gui";
   public static final String GUI_VARIABILITY = "guiVariability";
+  public static final String MERGE_GUI_MODELS_TASK = "mergeGuiModels";
   public static final String CD2JAVA_TASK = "cd2java";
   public static final String CD2SYM_TASK = "cd2sym";
 
@@ -113,6 +115,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
     Provider<Boolean> withCD2GUI = extension.getWithCD2GUI();
     Provider<Directory> cd2guiDir = project.getLayout().getBuildDirectory().dir("cd2gui");
     Provider<Directory> guiVariabilityDir = project.getLayout().getBuildDirectory().dir("guiVariability");
+    Provider<Directory> guiModelsDir = project.getLayout().getBuildDirectory().dir("guiModels");
     Provider<Directory> cd2javaDir = project.getLayout().getBuildDirectory().dir("cd2java");
     Provider<Directory> cd2tagsDir = project.getLayout().getBuildDirectory().dir("cd2tags");
     Provider<Directory> gui2jsweetAdapterDir = project.getLayout().getBuildDirectory().dir("gui2jsweetAdapter");
@@ -192,6 +195,15 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       task.getOutputDir().set(guiVariabilityDir);
 
       task.onlyIf(t -> withCD2GUI.get());
+    });
+
+    // GUIVariability
+    TaskProvider<Sync> mergeGuiModels = project.getTasks().register(MERGE_GUI_MODELS_TASK, Sync.class, task -> {
+      task.setGroup(UMLP_GROUP_NAME);
+      task.from(cd2gui.flatMap(CommonMCTask::getOutputDir), spec -> spec.include("**/*.gui"));
+      task.from(guiVariability.flatMap(CommonMCTask::getOutputDir), spec -> spec.include("**/*.gui"));
+      task.into(guiModelsDir);
+      task.setDuplicatesStrategy(DuplicatesStrategy.INCLUDE);
     });
 
     TaskProvider<CreateSymlinkTask> createSymlinkTask = project.getTasks().named(CREATE_SYMLINK_TASK, CreateSymlinkTask.class);
@@ -289,13 +301,12 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       task.getSymbolPath().from(cd2sym.flatMap(CD2SymTask::getOutput));
       task.getSymbolPath().from(project.getLayout().getBuildDirectory().dir("tags"));
       task.getInput().from(srcGUI);
-      task.getInput().from(cd2gui.flatMap(CommonMCTask::getOutputDir));
+      task.getInput().from(mergeGuiModels);
       if (cdPresent) {
         task.getInput().from(cd2java.flatMap(CommonMCTask::getOutputDir));
         task.getCD2JavaInput().from(cd2java.flatMap(CommonMCTask::getOutputDir));
         task.getCD2JavaJSweetAdapterDir().set(cd2jsweetAdapterDir);
       }
-      task.getInput().from(guiVariability.flatMap(CommonMCTask::getOutputDir));
       task.getGuiCreateModelsAsFile().set(
           withCD2GUI.flatMap(v -> {
             if (v) {
@@ -307,8 +318,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
           })
       );
       task.getModelDir().from(srcGUI);
-      task.getModelDir().from(guiVariability.flatMap(CommonMCTask::getOutputDir));
-      task.getModelDir().from(cd2gui.flatMap(CommonMCTask::getOutputDir));
+      task.getModelDir().from(mergeGuiModels);
       task.getHandWrittenCodeDir().from(intermediateHWCLink);
       task.getOutputDir().set(gui2java2tsDir);
       task.getSymbolOutDir().set(gui2symDir);
@@ -323,6 +333,9 @@ public abstract class FrontendPlugin implements Plugin<Project> {
 
       if (srcJava.getAsFile().exists()) {
         task.getHandWrittenCodeDir().from(srcJava);
+      }
+      if (withCD2GUI.get()) {
+        task.getHandWrittenCodeDir().from(cd2gui.flatMap(t -> t.getOutputDir().dir("guiImpl")));
       }
       task.getInput4RelativePathCalculation().from(cd2java.flatMap(CommonMCTask::getOutputDir));
       task.getInput4RelativePathCalculation().from(umlpJava2ts.flatMap(UMLPJava2TSTask::getOutputDir));

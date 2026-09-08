@@ -4,15 +4,28 @@ package mc.fenix.charts;
 import mc.fenix.charts.GemSunburstChartTypes.GemSunburstData;
 import mc.fenix.charts.GemSunburstChartTypes.GemSDNshort;
 
-//Sunburst-charts look like pie-charts with multiple layers.
-//Each of them refine the information of the previous layer and give information about the distribution of the parent layer in percent.
-//The sunburst-chart can also be represented by a tree-like structure with parent nodes and subnodes which contain the refined information about the parent nodes.
+/**
+  Sunburst charts look like pie charts with multiple layers. Each of them refines
+  the information of the previous layer and gives information about the
+  distribution of the parent layer in percent. The sunburst chart can also be
+  represented by a tree-like structure with parent nodes and subnodes which contain
+  the refined information about the parent nodes.
 
+  Unlike a `GemPieChart`, which only shows a single layer of categories, a sunburst
+  chart is useful when the data has a hierarchical structure with multiple nested
+  levels that should be shown at once.
+
+  For example, it can be used to visualize the folder structure of a file system,
+  or the breakdown of a company's revenue by region and then by product line.
+*/
 component GemSunburstChart (
+  /** The hierarchical data to be displayed in the chart. */
   GemSunburstData data,
-  // Deprecated
+  /** **Deprecated.** Legacy, short data format kept for backwards compatibility. */
   GemSDNshort dataShort,
+  /** Colors used for the layers/segments of the chart. */
   List<String> colors,
+  /** Whether errors in the input data are ignored instead of raised. */
   Boolean ignoreError
 )
 

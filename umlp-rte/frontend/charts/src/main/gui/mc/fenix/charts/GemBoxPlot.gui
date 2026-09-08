@@ -9,6 +9,9 @@ import mc.fenix.charts.GemBoxPlotTypes.GemBoxPlotData;
  scalar values on the other as size of the boxes.
 
  Additionally, the exact data points can be visualized to get a better idea of the distribution.
+
+ For example, it can be used to compare exam score distributions across several
+ classes, or to visualize the spread of measured sensor values per device.
 */
 
 component GemBoxPlot(

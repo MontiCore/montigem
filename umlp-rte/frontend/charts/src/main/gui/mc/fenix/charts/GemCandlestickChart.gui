@@ -4,14 +4,18 @@ package mc.fenix.charts;
 import mc.fenix.charts.GemCandlestickChartTypes.GemCandlestickChartData;
 
 /**
- * A Candlestick chart displays a few important datapoints for a (short) period of time.
- * It is often used to display how stock prices changed over said short periods.
- * The data of a candlestick is displayed by its horizontal position (time), vertical position of: start and end of the bar and start and end of the line that crosses through the bar (price of stock).
- * The color of the candlestick indicates if the price got higher (green) or lower (red), which is an important information because it dictates if the upper bar end shows the first price traded during that time period (if the price got lower) or the last price traded (if the price got higher).
- * And the other way around for the bottom end position of the bar.
- */
+  A candlestick chart displays important datapoints for a (short) period of time,
+  and is often used to show how stock prices changed over said periods. Each
+  candlestick's horizontal position represents time, while its vertical bar and
+  the line crossing through it represent the opening, closing, highest, and lowest
+  price of that period. The candlestick's color indicates whether the price went
+  up (green) or down (red), which determines whether the top of the bar shows the
+  opening or closing price (and vice versa for the bottom).
+
+  For example, it can be used to visualize the daily price movements of a stock
+  or cryptocurrency over the course of a month.
+*/
 component GemCandlestickChart(
-  /** * The data entries to be displayed in the candlestick chart. Each entry is expected to provide values in the order: open, high, low, close. [cite: 26]
-  */
+  /** The data entries to be displayed in the candlestick chart. Each entry is expected to provide values in the order: open, high, low, close. */
   GemCandlestickChartData data
 )

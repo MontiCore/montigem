@@ -1,9 +1,18 @@
 package mc.fenix.arrange;
 
+/**
+  GemDialog displays a component as a modal dialog on top of the page at a
+  configurable position, optionally with a backdrop.
+*/
 component GemDialog(
+  /** Whether a semi-transparent backdrop is shown behind the dialog. */
   boolean enableBackdrop = true,
+  /** Distance of the dialog from the top of the viewport in `px`, `%`, `vh`, etc. */
   String top = "auto",
+  /** Distance of the dialog from the left of the viewport in `px`, `%`, `vw`, etc. */
   String left = "auto",
+  /** Whether the dialog is currently shown. */
   ?boolean isOpen = false,
+  /** Component displayed inside the dialog. */
   GUIViewElement component
 )

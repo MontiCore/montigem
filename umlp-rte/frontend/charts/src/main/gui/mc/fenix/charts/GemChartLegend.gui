@@ -1,8 +1,18 @@
 /* (c) https://github.com/MontiCore/monticore */
 package mc.fenix.charts;
 
+/**
+  GemChartLegend displays a legend mapping a list of labels to their corresponding
+  colors, typically used alongside another chart component.
+
+  For example, it can be placed next to a `GemPieChart` or `GemSunburstChart` to
+  explain which color represents which category.
+*/
 component GemChartLegend(
+  /** Labels shown in the legend. */
   List<String> labels,
+  /** Colors corresponding to each label, in the same order. */
   List<String> colors,
+  /** Whether the legend is displayed. */
   Boolean displayLegend
 )

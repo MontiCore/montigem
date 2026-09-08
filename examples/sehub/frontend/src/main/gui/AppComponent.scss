@@ -1,0 +1,16 @@
+/* Styling for adapted NavigationContainer so that
+the header appears on top of the CD2GUI dashboard */
+:host ::ng-deep navigation-container > gem-row {
+  flex-wrap: wrap !important;
+
+  > navigation {
+    flex: 1 0 100%;
+    margin-bottom: 16px;
+  }
+
+  > .navContainerContent {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0;
+  }
+}

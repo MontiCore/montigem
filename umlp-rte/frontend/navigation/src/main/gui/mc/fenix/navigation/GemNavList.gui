@@ -1,9 +1,16 @@
 /* (c) https://github.com/MontiCore/monticore */
 package mc.fenix.navigation;
 
+/**
+  GemNavList renders a vertical navigation list, e.g. for a sidebar menu. It arranges
+  navigation entries such as `GemNavItem` between an optional header and footer.
+*/
 component GemNavList(
+  /** Navigation entries displayed in the list, e.g. `GemNavItem` instances. */
   List<GUIViewElement> components,
+  /** Optional element displayed above the list of entries. */
   GUIViewElement header = null,
+  /** Optional element displayed below the list of entries. */
   GUIViewElement footer = null,
 
   /** Width of the list. */

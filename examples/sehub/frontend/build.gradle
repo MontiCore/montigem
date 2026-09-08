@@ -12,7 +12,7 @@ montigem {
 }
 
 tasks.named("gui2java2ts", GUI2Java2TSTask) {
-  guiCreateModels = ["gui.login.UserCreate", "gui.issues.IssueCreate"]
+  guiCreateModels = ["gui.login.UserCreate"]
 }
 
 tasks.named("umlpJava2ts", UMLPJava2TSTask) {

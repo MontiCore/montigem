@@ -1,31 +1,57 @@
 package mc.fenix.fischertechnik;
 
+/**
+  Visualizes the fischertechnik multi-processing station, showing the sensor states
+  (reference switches, light barriers) and the actuator states (motors, valves) of
+  the turntable, conveyor, saw, oven, and vacuum gripper.
+*/
 component MultiProcessingStation(
-    // Outputs of the machine (sensors)
+    /** Whether the turntable's reference switch at the vacuum position is triggered. */
     boolean refSwitchTurnTableAtVacuum,
+    /** Whether the turntable's reference switch at the conveyor belt position is triggered. */
     boolean refSwitchTurnTableAtBelt,
+    /** Whether the turntable's reference switch at the saw position is triggered. */
     boolean refSwitchTurnTableAtSaw,
+    /** Whether the light barrier at the end of the conveyor detects a workpiece. */
     boolean lightBarrierConveyorEnd,
+    /** Whether the feeder's reference switch for the inside position is triggered. */
     boolean refSwitchFeederInside,
+    /** Whether the feeder's reference switch for the outside position is triggered. */
     boolean refSwitchFeederOutside,
+    /** Whether the vacuum gripper's reference switch at the turntable position is triggered. */
     boolean refSwitchVacuumAtTurnTable,
+    /** Whether the vacuum gripper's reference switch at the oven position is triggered. */
     boolean refSwitchVacuumAtOven,
+    /** Whether the light barrier at the oven detects a workpiece. */
     boolean lightBarrierOven,
 
-    // Inputs of the machine (actuators)
+    /** Whether the turntable is currently moving clockwise. */
     boolean moveTurnTableClockwise,
+    /** Whether the turntable is currently moving counterclockwise. */
     boolean moveTurnTableCounterclockwise,
+    /** Whether the conveyor belt is currently moving forward. */
     boolean moveConveyorForward,
+    /** Whether the saw is currently enabled (running). */
     boolean enableSaw,
+    /** Whether the oven feeder is currently retracting. */
     boolean moveOvenFeederRetract,
+    /** Whether the oven feeder is currently extending. */
     boolean moveOvenFeederExtend,
+    /** Whether the vacuum gripper is currently moving towards the oven. */
     boolean moveVacuumToOven,
+    /** Whether the vacuum gripper is currently moving towards the turntable. */
     boolean moveVacuumToTurnTable,
+    /** Whether the oven light is currently enabled. */
     boolean enableOvenLight,
+    /** Whether the compressed-air compressor is currently enabled. */
     boolean enableCompressor,
+    /** Whether the vacuum valve is currently enabled (open). */
     boolean enableValveVacuum,
+    /** Whether the valve controlling the vacuum gripper's movement is currently enabled. */
     boolean enableValveMoveVacuum,
+    /** Whether the valve controlling the oven door's movement is currently enabled. */
     boolean enableValveMoveOvenDoor,
+    /** Whether the valve controlling the feeder's movement is currently enabled. */
     boolean enableValveMoveFeeder
 ){
 

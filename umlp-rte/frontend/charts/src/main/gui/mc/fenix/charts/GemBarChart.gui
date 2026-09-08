@@ -3,16 +3,31 @@ package mc.fenix.charts;
 
 import mc.fenix.charts.GemBarChartTypes.GemBarChartData;
 
-//A Bar-Chart present a set of two dimensional data with a number of rectangular bars that can go horizontally or vertically, with their values being proportional to what they represent.
-//The chart itself visualizes categories (given as Strings) on one axis and a discrete integer value on the other as height or size.
-//Additionally, the bars can be stacked or aligned to visualizes multiple sub-categories of a second data dimension.
+/**
+  A bar chart displays a value for each category as a rectangular bar, either
+  horizontally or vertically, with the bar's length or height being proportional
+  to its value. Categories are shown as Strings on one axis, and their values as
+  integers on the other. If a category has multiple sub-categories (a second data
+  dimension), their bars can additionally be stacked on top of each other or
+  aligned side by side.
 
+  For example, it can be used to compare monthly sales figures across different
+  product categories, or to show stacked survey results (e.g. "agree", "neutral",
+  "disagree") per question.
+*/
 component GemBarChart(
+  /** The data to be displayed in the chart. */
   GemBarChartData data,
+  /** A function that formats a bar's raw numeric value into the string shown in its tooltip, e.g. `(value) => value + " kg"` to append a unit. */
   Object displayValue,
+  /** Whether the sub-categories of a bar are stacked on top of each other. */
   Boolean stacked,
+  /** Whether the sub-categories of a bar overlap each other instead of being placed side by side. */
   Boolean overlapping,
+  /** Maximum value shown on the value axis. */
   Integer maxValue,
+  /** Minimum value shown on the value axis. */
   Integer minValue,
+  /** Whether the chart's configuration panel is shown. */
   boolean showConfig = true
 )

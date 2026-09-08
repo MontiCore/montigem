@@ -207,7 +207,7 @@ public class GUIDocArtifact {
 
   public boolean isExample(String componentName) {
     Pattern pattern = Pattern.compile(
-        "^My" + Pattern.quote(getComponentAST().getComponentName()) + "Example.*$"
+        "^(My)?" + Pattern.quote(getComponentAST().getComponentName()) + "Example.*$"
     );
     return pattern.matcher(componentName).matches();
   }

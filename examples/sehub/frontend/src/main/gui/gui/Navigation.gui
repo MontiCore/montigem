@@ -1,0 +1,23 @@
+/* (c) https://github.com/MontiCore/monticore */
+package gui;
+
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemText;
+import mc.fenix.navigation.GemNavItem;
+
+component Navigation() {
+  @guard(isSignedIn()) {
+    navBar@GemRow(width = "100%", vAlign = "center", colGap = "10px", components = [
+      logo@GemButton(
+        content = [@GemImage(source = "assets/images/Eule.png", height = "40px", alt = "SE Hub")],
+        routerLink = "/gui/Start"
+      ),
+      dashboardLink@GemNavItem(title = "CD2GUI Dashboard", target = "/sehub/CD2GUIDashboard"),
+      spacer@GemRow(width = "100%"),
+      currentUser@GemText(value = getCurrentUserName()),
+      signOutButton@GemButton(label = "Sign out", leftClick = signOut())
+    ]);
+  }
+}
