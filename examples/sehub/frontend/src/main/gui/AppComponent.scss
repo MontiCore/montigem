@@ -1,3 +1,7 @@
+::ng-deep :root {
+  color-scheme: light !important;
+}
+
 /* Styling for adapted NavigationContainer so that
 the header appears on top of the CD2GUI dashboard */
 :host ::ng-deep navigation-container > gem-row {

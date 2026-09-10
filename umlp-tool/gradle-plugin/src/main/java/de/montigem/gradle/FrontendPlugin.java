@@ -124,6 +124,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
     Provider<Directory> umlp2jsweetAdapterDir = project.getLayout().getBuildDirectory().dir("umlp2jsweetAdapter");
     Provider<Directory> umlp2jsweetObserverDir = project.getLayout().getBuildDirectory().dir("umlp2jsweetObserver");
     Provider<RegularFile> hwcLink = project.getLayout().getBuildDirectory().file("app/hwc");
+    Provider<RegularFile> cd2guiLink = project.getLayout().getBuildDirectory().file("app/cd2gui");
     Provider<RegularFile> intermediateHWCLink = project.getLayout().getBuildDirectory().file("hwc");
     Provider<Directory> gui2symDir = project.getLayout().getBuildDirectory().dir("gui2sym");
     Provider<Directory> gui2java2tsDir = project.getLayout().getBuildDirectory().dir("gui2java2ts");
@@ -336,6 +337,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       }
       if (withCD2GUI.get()) {
         task.getHandWrittenCodeDir().from(cd2gui.flatMap(t -> t.getOutputDir().dir("guiImpl")));
+        task.getHandWrittenCodeDir().from(cd2gui.flatMap(t -> t.getOutputDir().dir("guiStyle")));
       }
       task.getInput4RelativePathCalculation().from(cd2java.flatMap(CommonMCTask::getOutputDir));
       task.getInput4RelativePathCalculation().from(umlpJava2ts.flatMap(UMLPJava2TSTask::getOutputDir));
@@ -406,6 +408,14 @@ public abstract class FrontendPlugin implements Plugin<Project> {
           hwcLink.get().getAsFile(),
           srcGUI.getAsFile()
       );
+
+      if (withCD2GUI.get()) {
+        task.dependsOn(cd2gui);
+        task.getLinks().put(
+            cd2guiLink.get().getAsFile(),
+            cd2guiDir.get().getAsFile()
+        );
+      }
     });
   }
 
