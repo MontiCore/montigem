@@ -6,6 +6,7 @@ package umlp.backendrte.common;
 import de.se_rwth.commons.logging.Log;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 //alpha, this class is not fully developed,
@@ -107,6 +108,14 @@ public class Gem<E extends GemIdentifiable> implements GemIdentifiable {
       // und was wir daraus machen. Ein Websystem ist ja was anderes als ein Batch-Generator
     }
     return object;
+  }
+
+  /**
+   * Loads the object if required and returns it as an Optional.
+   * Returns an empty Optional if the object is absent or could not be loaded.
+   */
+  public Optional<E> asOpt() {
+    return isPresent() ? Optional.of(object) : Optional.empty();
   }
 
   public void set(E object) {

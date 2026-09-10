@@ -1,0 +1,9 @@
+package optionalOperations;
+
+import Mydomain.*;
+
+
+ocl ElvisOptionalExpressionPrefixAssociation_Nested_NoBrackets {
+  context Course c inv:
+    (c.room ?: c.alternativeRoom ?: c.defaultRoom).name == "Berlin";
+}

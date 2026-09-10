@@ -357,6 +357,8 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
     switch (info.getKind()) {
       case TO_ONE_DOMAIN ->
           getPrinter().print(".get" + StringTransformations.capitalize(nodeName) + "()");
+      case TO_OPTIONAL_DOMAIN ->
+          getPrinter().print(".get" + StringTransformations.capitalize(nodeName) + "Gem().asOpt()");
       case TO_MANY_DOMAIN, COLLECTION_OF_SIMPLE_VALUE ->
           getPrinter().print(".get" + StringTransformations.capitalize(nodeName) + "List()");
       case SIMPLE_VALUE -> {

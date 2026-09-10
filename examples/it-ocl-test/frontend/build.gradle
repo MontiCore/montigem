@@ -7,6 +7,7 @@ plugins {
 }
 
 dependencies {
+  testImplementation "umlp:umlp-tool:$version"
   testImplementation project(':umlp-test-rte')
   testImplementation group: 'org.neo4j.driver', name: 'neo4j-java-driver', version: "$neo4j_java_driver_version"
   testImplementation "org.neo4j.test:neo4j-harness:$neo4j_embedded_test" exclude module: "commons-text"

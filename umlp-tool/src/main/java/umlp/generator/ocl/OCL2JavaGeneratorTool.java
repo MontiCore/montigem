@@ -12,16 +12,12 @@ import de.monticore.ocl.types.check.types3wrapper.TypeCheck3AsOCLDeriver;
 import de.monticore.ocl.types.check.types3wrapper.TypeCheck3AsOCLSynthesizer;
 import de.monticore.ocl.util.SymbolTableUtil;
 import de.monticore.symbols.basicsymbols.BasicSymbolsMill;
-import de.monticore.symbols.basicsymbols._symboltable.IBasicSymbolsScope;
-import de.monticore.symbols.basicsymbols._symboltable.VariableSymbolDeSer;
-import de.monticore.symboltable.serialization.json.JsonObject;
-import de.monticore.types.check.SymTypeExpression;
-import de.monticore.types.check.SymTypeExpressionFactory;
 import de.se_rwth.commons.logging.Log;
 import oclwitherrormessages.OCLWithErrorMessagesMill;
 import oclwitherrormessages._symboltable.OCLWithErrorMessagesScopesGenitorDelegator;
 import oclwitherrormessages._visitor.OCLWithErrorMessagesTraverser;
 import org.apache.commons.cli.*;
+import umlp._symboltable.CDRoleSymbol2VariableSymbolAdapterDeSer;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -186,16 +182,8 @@ public class OCL2JavaGeneratorTool {
     gs.putTypeSymbolDeSer("de.monticore.cdbasis._symboltable.CDTypeSymbol");
     gs.putFunctionSymbolDeSer("de.monticore.cd4codebasis._symboltable.CDMethodSignatureSymbol");
     gs.putVariableSymbolDeSer("de.monticore.symbols.oosymbols._symboltable.FieldSymbol");
-    gs.putSymbolDeSer("de.monticore.cdassociation._symboltable.CDRoleSymbol", new VariableSymbolDeSer() {
-      @Override
-      public SymTypeExpression deserializeType(IBasicSymbolsScope scope, JsonObject symbolJson) {
-        if (symbolJson.getStringMember("cardinality").equals("[*]")) {
-          return SymTypeExpressionFactory.createGenerics(OCLWithErrorMessagesMill.globalScope().resolveType("List").get(), List.of(super.deserializeType(scope, symbolJson)));
-        } else {
-          return super.deserializeType(scope, symbolJson);
-        }
-      }
-    });
+    gs.putSymbolDeSer("de.monticore.cdassociation._symboltable.CDRoleSymbol",
+        new CDRoleSymbol2VariableSymbolAdapterDeSer());
 
     gs.setSymbolPath(new MCPath(symbolPaths));
   }

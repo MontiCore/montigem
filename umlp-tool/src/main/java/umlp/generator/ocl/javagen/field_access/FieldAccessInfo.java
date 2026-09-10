@@ -2,6 +2,7 @@ package umlp.generator.ocl.javagen.field_access;
 
 import de.monticore.expressions.commonexpressions._ast.ASTFieldAccessExpression;
 import de.monticore.types.check.SymTypeExpression;
+import de.monticore.types.mccollectiontypes.types3.MCCollectionSymTypeRelations;
 import umlp.generator.ocl.TypeUtil;
 
 public class FieldAccessInfo {
@@ -48,7 +49,8 @@ public class FieldAccessInfo {
 
     if (toOneDomain) {
       return new FieldAccessInfo(
-          FieldAccessKind.TO_ONE_DOMAIN,
+          MCCollectionSymTypeRelations.isOptional(ownerType)
+              ? FieldAccessKind.TO_OPTIONAL_DOMAIN : FieldAccessKind.TO_ONE_DOMAIN,
           ownerType
       );
     }
