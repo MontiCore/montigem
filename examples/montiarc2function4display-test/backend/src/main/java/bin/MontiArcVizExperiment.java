@@ -1,8 +1,10 @@
 package bin;
 
 import de.monticore.cd2pojo.CD2PojoTool;
+import jsweet.lang.Erased;
 import ma2fustrumo.MA2FuStruMoTool;
 
+@Erased
 public class MontiArcVizExperiment {
   public static void main(String[] args) {
     CD2PojoTool.main(new String[]{

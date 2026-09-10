@@ -19,7 +19,6 @@ import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCListType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCOptionalType;
 import de.monticore.umlstereotype._ast.ASTStereotypeBuilder;
-import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.Names;
 import de.se_rwth.commons.StringTransformations;
 import de.se_rwth.commons.logging.Log;
@@ -31,7 +30,6 @@ import umlp.generator.domain.decorator.GenService;
 import umlp.generator.util.DecoratorUtil;
 import umlp.generator.util.PathUtil;
 import umlp.generator.util.TagLookUp;
-import umlp.generator.util.UMLPSymbolTables;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -168,6 +166,8 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
       SymTypeExpression type = p.getSymbol().getType();
       if (GenService.isDomainType(type) && !GenService.isCDEnum(type)) {
         accessPolicyParameters.add(type);
+        getCD4C().addImport(ast, GenService.getCorrectJavaFQN(type.getTypeInfo().getFullName())
+            + AccessPolicyDecorator.SUFFIX);
       }
       addImport(type, ast);
     });
@@ -202,28 +202,20 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
   }
 
   protected void addImport(SymTypeExpression type, ASTCDClass ast) {
-    if(type.getTypeInfo().isPresentAstNode()) {
-      ASTCDCompilationUnit typeCD = UMLPSymbolTables.getDiagramFor((ASTCDType) type.getTypeInfo().getAstNode());
-      if (GenService.isDomainType(type) || GenService.isPojoCDType(type)) {
-        getCD4C().addImport(ast, getPackageName(typeCD, DEFAULT_PACKAGE) + "." + type.print());
-        if (!GenService.isCDEnum(type)) {
-          getCD4C().addImport(ast, getPackageName(typeCD, DEFAULT_PACKAGE) + "." + type.print()
-              + AccessPolicyDecorator.SUFFIX);
-        }
+    if (type.isGenericType()) {
+      type.asGenericType().getArgumentList().forEach(argument -> addImport(argument, ast));
+      if (GenService.isJavaType(type)) {
+        getCD4C().addImport(ast, type.asGenericType().getTypeConstructorFullName());
       }
-      else if (GenService.isCDEnum(type)) {
-        getCD4C().addImport(ast, getPackageName(typeCD, DEFAULT_PACKAGE) + "." + type.print());
-      }
+      return;
     }
-    else if (GenService.isJavaType(type)) {
+    if (GenService.isDomainType(type) || GenService.isPojoCDType(type)) {
+      // Symbols loaded from dependencies need not have an AST. Both UMLP and GUI
+      // class diagrams generate their types into the lower-case model package.
+      String javaName = GenService.getCorrectJavaFQN(type.getTypeInfo().getFullName());
+      getCD4C().addImport(ast, javaName);
+    } else if (GenService.isJavaType(type)) {
       addJavaImport(ast, type);
-    }
-    else {
-      // Assume guiLib Import?
-      if(GenService.isPojoCDType(type) && type.getTypeInfo().getFullName().startsWith("mc.fenix")) {
-        System.out.println(type.getTypeInfo().getFullName());
-        getCD4C().addImport(ast, Joiners.DOT.join(type.getTypeInfo().getPackageName().toLowerCase(), type.print()));
-      }
     }
   }
 

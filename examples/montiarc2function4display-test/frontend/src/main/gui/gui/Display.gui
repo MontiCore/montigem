@@ -3,6 +3,8 @@ package gui;
 import mc.fenix.functiondisplay.FunctionDisplay;
 import mc.fenix.functiondisplay.FunctionStructure4Fenix.Function4Display;
 
-page Display(Manager manager) {
-  @FunctionDisplay(data = manager.mainFunction);
+import MontiArcVizExperiment.MainHolder;
+
+page Display(MainHolder holder) {
+  @FunctionDisplay(data = holder.getMainFunction());
 }

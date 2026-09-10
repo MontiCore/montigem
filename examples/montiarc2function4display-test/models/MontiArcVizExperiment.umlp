@@ -1,9 +1,9 @@
-import mc.fenix.functiondisplay.FunctionStructure4Fenix.*;
+import mc.fenix.functiondisplay.FunctionStructure4Fenix.Function4Display;
 
 umlp MontiArcVizExperiment {
 
   <<singleton>>
   class MainHolder {
-    Function4Display mainFunction;
+    Function4Display getMainFunction();
   }
 }
