@@ -7,4 +7,5 @@ export * from "./src/main/gui/mc/fenix/basic/GemImage";
 export * from "./src/main/gui/mc/fenix/basic/GemLink";
 export * from "./src/main/gui/mc/fenix/basic/GemText";
 export * from "./src/main/gui/mc/fenix/basic/GemTooltip";
+export * from "./src/main/gui/mc/fenix/basic/GemToggle";
 export { GemVideo } from "./build/gui2java2ts/mc/fenix/basic/GemVideoComponent";

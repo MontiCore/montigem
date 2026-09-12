@@ -1,0 +1,13 @@
+package mc.fenix.basic;
+
+component GemToggle(
+  boolean state = false,
+  String color = "#2563eb",
+  String inactiveColor = "#9ca3af",
+  String label = "",
+  String ariaLabel = "Toggle",
+  boolean disabled = false,
+  String width = "44px",
+  String height = "24px",
+  Event<boolean> toggled
+)

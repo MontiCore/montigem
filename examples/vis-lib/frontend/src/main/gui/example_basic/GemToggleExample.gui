@@ -1,0 +1,27 @@
+package example_basic;
+
+import mc.fenix.basic.GemToggle;
+import common.ExamplePage;
+import mc.fenix.arrange.GemColumn;
+
+page GemToggleExample() {
+  @ExamplePage(
+    component = @GemColumn(components = [
+      @GemToggle(
+        label = "Notifications",
+        ariaLabel = "Toggle notifications",
+        state = true,
+        color = "#16a34a",
+        toggled = showState()
+      ),
+      @GemToggle(
+        label = "Disabled",
+        ariaLabel = "Disabled toggle",
+        disabled = true,
+        inactiveColor = "#64748b"
+      )
+    ]),
+    basePath = "example_basic",
+    componentName = "GemToggleExample"
+  );
+}

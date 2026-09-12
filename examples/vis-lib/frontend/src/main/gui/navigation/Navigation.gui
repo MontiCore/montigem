@@ -40,6 +40,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "Audio", target = "/example_basic/GemAudioExample");
         @GemNavItem(title = "Button", target = "/example_basic/GemButtonExample");
         @GemNavItem(title = "DarkModeSwitch", target = "/example_basic/GemDarkModeSwitchExample");
+        @GemNavItem(title = "Toggle", target = "/example_basic/GemToggleExample");
         @GemNavItem(title = "Icon", target = "/example_basic/GemIconExample");
         @GemNavItem(title = "Image", target = "/example_basic/GemImageExample");
         @GemNavItem(title = "Link", target = "/example_basic/GemLinkExample");
