@@ -3,10 +3,15 @@ package bin;
 import de.monticore.cd2pojo.CD2PojoTool;
 import jsweet.lang.Erased;
 import ma2fustrumo.MA2FuStruMoTool;
+import mc.fenix.functiondisplay.functionstructure4fenix.Function4Display;
 
 @Erased
 public class MontiArcVizExperiment {
   public static void main(String[] args) {
+    System.out.println("Hello world!");
+  }
+
+  public static Function4Display createMainFunction() {
     CD2PojoTool.main(new String[]{
         "-i",
         "examples/montiarc2function4display-test/models/functional/Model",
@@ -27,6 +32,6 @@ public class MontiArcVizExperiment {
         "-c2mc",
     });
 
-    var result = tool.getResult4Display();
+    return tool.getResult4Display();
   }
 }
