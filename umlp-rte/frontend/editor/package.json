@@ -1,6 +1,6 @@
 {
   "name": "@umlp/editor",
-  "version": "9.0.0",
+  "version": "10.0.0",
   "peerDependencies": {
     "@angular/animations": "~22.1.0",
     "@angular/common": "~22.1.0",
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "tslib": "^2.3.0",
-    "monaco-editor": "^0.50.0"
+    "monaco-editor": "^0.56.0"
   },
   "devDependencies": {
     "css-loader": "^7.1.2",
