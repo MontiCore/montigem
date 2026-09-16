@@ -1,14 +1,32 @@
-package bin;
+package montiarcvizexperiment;
 
 import de.monticore.cd2pojo.CD2PojoTool;
-import jsweet.lang.Erased;
+import de.se_rwth.commons.logging.Log;
+import jakarta.annotation.PostConstruct;
 import ma2fustrumo.MA2FuStruMoTool;
 import mc.fenix.functiondisplay.functionstructure4fenix.Function4Display;
+import org.h2.tools.Server;
+import org.springframework.boot.SpringApplication;
 
-@Erased
-public class MontiArcVizExperiment {
+import java.io.IOException;
+import java.sql.SQLException;
+
+public class MontiArcVizExperimentServerApplication extends MontiArcVizExperimentServerApplicationTOP {
   public static void main(String[] args) {
-    System.out.println("Hello world!");
+    SpringApplication.run(MontiArcVizExperimentServerApplication.class, args);
+  }
+
+  @PostConstruct
+  @Override
+  public void init() throws IOException {
+    super.init();
+
+    try {
+      Server webServer = Server.createWebServer("-web", "-webAllowOthers").start();
+      Log.info(String.format("H2 Web Server started at: http://localhost:%s", webServer.getPort()), MontiArcVizExperimentServerApplication.class.getName());
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
   }
 
   public static Function4Display createMainFunction() {
