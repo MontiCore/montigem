@@ -7,9 +7,14 @@ import { Attributes } from "graphology-types";
 import { EdgeAttributes, Internal_GraphEdge, NodeAttributes } from "../types/graph.types";
 import { SigmaGraphService } from "../data/sigma-graph.service";
 
+function orient(source: string, target: string, reverse: boolean): { source: string; target: string } {
+  return reverse ? { source: target, target: source } : { source, target };
+}
+
 describe("EdgeProcessorService", () => {
   let service: EdgeProcessorService<NodeAttributes, EdgeAttributes, Attributes>;
   let dataStorage: GraphDataService<NodeAttributes, EdgeAttributes, Attributes>;
+  let settings: GraphSettingsService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -17,6 +22,7 @@ describe("EdgeProcessorService", () => {
     });
     service = TestBed.inject(EdgeProcessorService);
     dataStorage = TestBed.inject(GraphDataService);
+    settings = TestBed.inject(GraphSettingsService);
     vi.spyOn(dataStorage.uniqueNodeKeySet, "has").mockReturnValue(true); // Assuming all nodes are valid
   });
 
@@ -37,7 +43,11 @@ describe("EdgeProcessorService", () => {
     });
   });
 
-  describe("processEdgeData", () => {
+  describe.each([false, true])("processEdgeData (reverseEdgeDirection: %s)", reverse => {
+    beforeEach(() => {
+      settings.updateSetting("reverseEdgeDirection", reverse);
+    });
+
     it("should process edge data correctly", () => {
       service.rawEdgeData = [
         {
@@ -84,8 +94,7 @@ describe("EdgeProcessorService", () => {
             type: "arrow",
           },
           key: "edge_auto_id_0",
-          source: "1",
-          target: "2",
+          ...orient("1", "2", reverse),
           undirected: true,
         },
         {
@@ -98,8 +107,7 @@ describe("EdgeProcessorService", () => {
             type: "line",
           },
           key: "edge_auto_id_1",
-          source: "2",
-          target: "3",
+          ...orient("2", "3", reverse),
           undirected: true,
         },
         {
@@ -112,8 +120,7 @@ describe("EdgeProcessorService", () => {
             type: "arrow",
           },
           key: "edge_auto_id_2",
-          source: "1",
-          target: "3",
+          ...orient("1", "3", reverse),
           undirected: false,
         },
         {
@@ -126,8 +133,7 @@ describe("EdgeProcessorService", () => {
             type: "line",
           },
           key: "testEdge",
-          source: "1",
-          target: "9",
+          ...orient("1", "9", reverse),
           undirected: true,
         },
         {
@@ -140,15 +146,18 @@ describe("EdgeProcessorService", () => {
             type: "line",
           },
           key: "edge_auto_id_3",
-          source: "0",
-          target: "3",
+          ...orient("0", "3", reverse),
           undirected: true,
         },
       ]);
     });
   });
 
-  describe("createEdge", () => {
+  describe.each([false, true])("createEdge (reverseEdgeDirection: %s)", reverse => {
+    beforeEach(() => {
+      settings.updateSetting("reverseEdgeDirection", reverse);
+    });
+
     it("should create an edge", () => {
       const key = "key1";
       const edge: Internal_GraphEdge = {
@@ -168,8 +177,7 @@ describe("EdgeProcessorService", () => {
           type: "line",
         },
         key: "key1",
-        source: "1",
-        target: "2",
+        ...orient("1", "2", reverse),
         undirected: true,
       });
     });

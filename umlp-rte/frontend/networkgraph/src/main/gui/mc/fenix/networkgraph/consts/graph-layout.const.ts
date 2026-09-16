@@ -3,7 +3,7 @@ import { GraphLayoutOptions } from "../types/graph-layout.types";
 /** Default options for the graph layout. */
 export const DEFAULT_LAYOUT_OPTIONS: GraphLayoutOptions = {
   /** Flip visual arrow direction without changing graph data. */
-  reverseEdgeDirection: false,
+  reverseEdgeDirection: true,
 
   /** Direction of the hierarchical layout: "vertical" = top-to-bottom, "horizontal" = left-to-right. */
   hierarchicalDirection: "vertical",
