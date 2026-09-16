@@ -10,26 +10,22 @@ import org.springframework.boot.SpringApplication;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Optional;
 
-public class MontiArcVizExperimentServerApplication extends MontiArcVizExperimentServerApplicationTOP {
+public class MontiArcVizExperimentServerApplication
+    extends MontiArcVizExperimentServerApplicationTOP {
+
+  private static Function4Display mainFunction;
+
   public static void main(String[] args) {
     SpringApplication.run(MontiArcVizExperimentServerApplication.class, args);
   }
 
-  @PostConstruct
-  @Override
-  public void init() throws IOException {
-    super.init();
-
-    try {
-      Server webServer = Server.createWebServer("-web", "-webAllowOthers").start();
-      Log.info(String.format("H2 Web Server started at: http://localhost:%s", webServer.getPort()), MontiArcVizExperimentServerApplication.class.getName());
-    } catch (SQLException e) {
-      throw new IOException(e);
-    }
+  public static Optional<Function4Display> getMainFunction() {
+    return Optional.ofNullable(mainFunction);
   }
 
-  public static Function4Display createMainFunction() {
+  private static Function4Display createMainFunction() {
     CD2PojoTool.main(new String[]{
         "-i",
         "examples/montiarc2function4display-test/models/functional/Model",
@@ -51,5 +47,21 @@ public class MontiArcVizExperimentServerApplication extends MontiArcVizExperimen
     });
 
     return tool.getResult4Display();
+  }
+
+  @PostConstruct
+  @Override
+  public void init() throws IOException {
+    super.init();
+
+    mainFunction = MontiArcVizExperimentServerApplication.createMainFunction();
+
+    try {
+      Server webServer = Server.createWebServer("-web", "-webAllowOthers").start();
+      Log.info(String.format("H2 Web Server started at: http://localhost:%s", webServer.getPort()),
+               MontiArcVizExperimentServerApplication.class.getName());
+    } catch (SQLException e) {
+      throw new IOException(e);
+    }
   }
 }
