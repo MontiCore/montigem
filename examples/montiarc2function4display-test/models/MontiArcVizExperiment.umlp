@@ -6,5 +6,6 @@ umlp MontiArcVizExperiment {
   <<singleton>>
   class MainHolder {
     Function4Display getMainFunction();
+    GemBarChartData dummy();
   }
 }

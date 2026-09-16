@@ -5,9 +5,7 @@ import de.monticore.symboltable.serialization.JsonPrinter;
 import de.monticore.symboltable.serialization.json.JsonObject;
 import umlp.backendrte.common.PojoGraphContext;
 
-/**
- * DeSer for classes generated from <<pojoCD>> classdiagrams
- */
+/** Generated POJO serializers allocate objects before reading their links. */
 public interface PojoJsonDeSer<T> extends JsonDeSer<T> {
   T createObject();
   void readJson(T object, JsonObject json, PojoGraphContext context);

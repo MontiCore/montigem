@@ -59,6 +59,8 @@ public class UMLAssocToAttrTrafo implements CDBasisVisitor2, CDAssociationVisito
       // new created association (see UMLAttrToAssocTrafo)
       return;
     }
+    // Modeled POJOs have generated association APIs on both ends. They must not
+    // take the external-value conversion below, which retains only one end.
     if (GenService.isPojoCDType(assoc.getLeft().getSymbol().getType())
         && GenService.isPojoCDType(assoc.getRight().getSymbol().getType())) {
       return;

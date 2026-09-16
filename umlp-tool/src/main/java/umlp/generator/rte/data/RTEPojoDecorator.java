@@ -18,7 +18,9 @@ import de.monticore.cdinterfaceandenum._ast.ASTCDEnum;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.io.paths.MCPath;
+import de.monticore.symbols.basicsymbols._symboltable.DiagramSymbol;
 import de.monticore.umlmodifier._ast.ASTModifier;
+import de.monticore.umlstereotype._ast.ASTStereoValue;
 import de.monticore.umlstereotype._ast.ASTStereotypeBuilder;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.SourcePosition;
@@ -160,15 +162,27 @@ public class RTEPojoDecorator extends DomainTypeDecorator {
   }
 
   protected void addExtendedImport(ASTCDCompilationUnit origCD, ASTCDType ast) {
-    UMLPSymbolTables.getExtendedCDs(origCD).forEach(diagramSymbol -> {
-      String packageName = diagramSymbol.getPackageName().isEmpty() ? diagramSymbol.getName() : Joiners.DOT.join(diagramSymbol.getPackageName(), diagramSymbol.getName());
-      String importName = Joiners.DOT.join(packageName.toLowerCase(), diagramSymbol.getName() + ManagerDecorator.SUFFIX);
-      getCD4C().addImport(ast, importName);
+    if (!origCD.getCDDefinition().getModifier().isPresentStereotype()) {
+      return;
+    }
+    List<ASTStereoValue> valueList = origCD.getCDDefinition().getModifier().getStereotype().getValuesList();
+    List<String> extendedCDs = valueList.stream().filter(value -> value.getName().equals("extends"))
+        .map(ASTStereoValue::getValue).collect(Collectors.toList());
+
+    extendedCDs.forEach(ecd -> {
+      Optional<DiagramSymbol> diagramSymbol = origCD.getEnclosingScope().resolveDiagram(ecd);
+      if (diagramSymbol.isPresent()) {
+        String packageName = diagramSymbol.get().getPackageName().isEmpty()?diagramSymbol.get().getName(): Joiners.DOT.join(diagramSymbol.get().getPackageName(), diagramSymbol.get().getName());
+        String importName = Joiners.DOT.join(packageName.toLowerCase(), diagramSymbol.get().getName()+ ManagerDecorator.SUFFIX);
+        getCD4C().addImport(ast, importName);
+      }
     });
   }
 
   protected void createAssociationMethods(ASTCDClass domainClass, ASTCDClass clazz,
                                           List<ASTCDAttribute> attributes) {
+    // Keep the established read API, but route all writes through association
+    // mutators so builders and ordinary instances maintain the same links.
     createGetterSetterForAttrs(domainClass, clazz, attributes, false);
     for (ASTCDAssocSide assoc : CDSymbolTables.getAssociationsInHierarchy(domainClass)) {
       if (!GenService.isVisibleNotDerived(assoc)) {
