@@ -81,8 +81,6 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
           task.setGroup(UMLP_GROUP_NAME);
           task.getInput().set(config);
           task.getOutputRoot().set(project.getLayout().getBuildDirectory().dir("app"));
-
-          task.onlyIf(t -> config.getAsFile().exists());
         });
     project.getTasks().named("nodeSetup").configure(t -> t.dependsOn(setupFrontend));
 
