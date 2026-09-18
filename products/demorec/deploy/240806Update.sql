@@ -1,8 +1,0 @@
-CREATE TABLE assoc_battery_pack_battery_pack_all_kinds_component_kind(battery_pack_id BIGINT NOT NULL,all_kinds_id BIGINT NOT NULL, CONSTRAINT pk_assoc_battery_pack_battery_pack_all_kinds_component_kind PRIMARY KEY (battery_pack_id, all_kinds_id));
-
-INSERT INTO assoc_battery_pack_battery_pack_all_kinds_component_kind(battery_pack_id, all_kinds_id)
-SELECT DISTINCT all_components.battery_pack_id AS battery_pack_id, kind.id AS all_kinds_id
-FROM
-  (component_kind AS kind JOIN assoc_demo_rec_component_demo_rec_component_is_a_component_kind AS is_a ON kind.id=is_a.is_a_id)
-  JOIN assoc_battery_pack_battery_pack_all_components_demo_rec_component as all_components ON is_a.demo_rec_component_id=all_components.all_components_id
-;

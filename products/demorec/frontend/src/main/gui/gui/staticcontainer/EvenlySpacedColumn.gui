@@ -1,8 +1,0 @@
-package gui.staticcontainer;
-
-import mc.fenix.arrange.GemRow;
-import mc.fenix.arrange.GemColumn;
-
-component EvenlySpacedColumn(GUIViewElement element) {
-  evenSpacedColumn@GemColumn(hAlign="center",width = "8rem", component =element);
-}

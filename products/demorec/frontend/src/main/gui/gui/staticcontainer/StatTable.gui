@@ -1,8 +1,0 @@
-package gui.staticcontainer;
-
-import mc.fenix.arrange.GemRow;
-import mc.fenix.arrange.GemColumn;
-
-component StatTable(String width = "100%", List<GUIViewElement> rows) {
-  @GemColumn(rowGap = "5px", width = width, components = rows);
-}
