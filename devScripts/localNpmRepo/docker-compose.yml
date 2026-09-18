@@ -1,0 +1,12 @@
+services:
+  verdaccio:
+    image: docker.io/verdaccio/verdaccio:6
+    container_name: umlp-local-npm-repo
+    ports:
+      - "127.0.0.1:4873:4873"
+    volumes:
+      - ./config:/verdaccio/conf:ro
+      - verdaccio-storage:/verdaccio/storage
+
+volumes:
+  verdaccio-storage:

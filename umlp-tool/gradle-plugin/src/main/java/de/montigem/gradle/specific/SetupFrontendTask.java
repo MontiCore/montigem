@@ -118,10 +118,14 @@ public abstract class SetupFrontendTask extends DefaultTask {
   @Optional
   public abstract Property<Boolean> getUnscopedNpmrc();
 
+  @Input
+  public abstract Property<Boolean> getUseLocalNpmRepo();
+
   public SetupFrontendTask() {
     super();
     getCreateNpmrc().convention(true);
     getUnscopedNpmrc().convention(false);
+    getUseLocalNpmRepo().convention(false);
   }
 
   @TaskAction
@@ -139,7 +143,8 @@ public abstract class SetupFrontendTask extends DefaultTask {
     }
 
     if (getCreateNpmrc().get()) {
-      String data = CreateNpmrcTask.getNpmrcContent(getProject(), getUnscopedNpmrc().get());
+      String data = CreateNpmrcTask.getNpmrcContent(
+          getProject(), getUnscopedNpmrc().get(), getUseLocalNpmRepo().get());
       FileUtils.writeStringToFile(getOutputRoot().get().file(".npmrc").getAsFile(), data, StandardCharsets.UTF_8);
     }
 

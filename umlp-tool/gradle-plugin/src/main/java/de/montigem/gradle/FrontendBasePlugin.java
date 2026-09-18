@@ -81,6 +81,10 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
           task.setGroup(UMLP_GROUP_NAME);
           task.getInput().set(config);
           task.getOutputRoot().set(project.getLayout().getBuildDirectory().dir("app"));
+          task.getUseLocalNpmRepo().set(project.getProviders()
+              .gradleProperty("useLocalNpmRepo")
+              .map(Boolean::parseBoolean)
+              .orElse(false));
         });
     project.getTasks().named("nodeSetup").configure(t -> t.dependsOn(setupFrontend));
 
@@ -89,7 +93,15 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
     // Lifecycle task "generate"
     TaskProvider<Task> generate = project.getTasks().register(GENERATE_TASK, task -> task.setGroup(UMLP_GROUP_NAME));
 
-    TaskProvider<Task> npmInstall = project.getTasks().named("npmInstall");
+    Provider<Boolean> useLocalNpmRepo = project.getProviders()
+        .gradleProperty("useLocalNpmRepo")
+        .map(Boolean::parseBoolean)
+        .orElse(false);
+    TaskProvider<NpmTask> npmInstall = project.getTasks().named("npmInstall", NpmTask.class);
+    npmInstall.configure(task -> task.getEnvironment().putAll(useLocalNpmRepo.map(useLocal -> useLocal
+        ? java.util.Map.of("npm_config_userconfig", project.getLayout().getBuildDirectory()
+            .file("app/.npmrc").get().getAsFile().getAbsolutePath())
+        : java.util.Map.of())));
     TaskProvider<Task> npmUpdate = project.getTasks().named("npm_update", task -> {
       task.dependsOn(npmInstall);
       task.getOutputs().dir("node_modules");
