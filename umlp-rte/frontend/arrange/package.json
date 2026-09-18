@@ -7,7 +7,7 @@
     "@umlp/commonj2ts": "^9.0.1"
   },
   "name": "@umlp/arrange",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "sideEffects": false,
   "dependencies": {"tslib": "^2.3.0"}
 }

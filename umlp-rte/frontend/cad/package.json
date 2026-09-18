@@ -8,7 +8,7 @@
     "rxjs": "~7.8.0"
   },
   "name": "@umlp/cad",
-  "version": "9.0.0",
+  "version": "9.0.1",
   "sideEffects": false,
   "dependencies": {
     "tslib": "^2.3.0",
