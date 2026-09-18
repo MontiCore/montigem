@@ -341,9 +341,6 @@ tasks.register("ciDeployImages"){
   dependsOn project(":examples:sehub:backend").tasks.jib
   dependsOn project(":examples:sehub:frontend").tasks.deployImageCI
 
-  dependsOn project(":products:demorec:backend").tasks.jib
-  dependsOn project(":products:demorec:frontend").tasks.deployImageCI
-
   dependsOn project(":examples:vis-lib:backend").tasks.jib
   dependsOn project(":examples:vis-lib:frontend").tasks.deployImageCI
 
