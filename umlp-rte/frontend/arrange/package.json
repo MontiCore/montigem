@@ -4,7 +4,7 @@
     "@angular/core": "~22.1.0",
     "many-keys-map": "2.0.1",
     "rxjs": "~7.8.0",
-    "@umlp/commonj2ts": "^9.0.0"
+    "@umlp/commonj2ts": "^9.0.1"
   },
   "name": "@umlp/arrange",
   "version": "9.0.0",
