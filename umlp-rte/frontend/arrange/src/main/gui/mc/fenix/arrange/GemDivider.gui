@@ -1,0 +1,28 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.arrange;
+
+/**
+  GemDivider is a visual separator line between elements.
+*/
+component GemDivider(
+  /**
+    Height (thickness for horizontal, length for vertical) of the divider in `px`, `%`, `vh`, etc.
+  */
+  String height = "1px",
+  /**
+    Width (length for horizontal, thickness for vertical) of the divider in `px`, `%`, `vw`, etc.
+  */
+  String width = "100%",
+  /**
+    Color of the divider.
+  */
+  String color = "#e0e0e0",
+  /**
+    Margin around the divider in `px`, `rem`, etc.
+  */
+  String margin = "10px 0",
+  /**
+    Additional CSS style.
+  */
+  String style = ""
+)
