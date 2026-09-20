@@ -20,9 +20,5 @@ component GemDivider(
   /**
     Margin around the divider in `px`, `rem`, etc.
   */
-  String margin = "10px 0",
-  /**
-    Additional CSS style.
-  */
-  String style = ""
+  String margin = "10px 0"
 )
