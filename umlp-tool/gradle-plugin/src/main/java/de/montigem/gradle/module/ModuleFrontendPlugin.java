@@ -11,6 +11,7 @@ import de.montigem.gradle.MGBasePlugin;
 import de.montigem.gradle.specific.CreateNpmrcTask;
 import de.montigem.gradle.specific.GUI2Java2TSTask;
 import de.montigem.gradle.specific.GUI2SymTask;
+import de.montigem.gradle.specific.LocalNpmAdduserTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
 import de.montigem.gradle.specific.UMLP2TSTask;
 import de.montigem.gradle.specific.UMLPJava2TSTask;
@@ -35,6 +36,7 @@ import org.gradle.api.component.AdhocComponentWithVariants;
 import org.gradle.api.component.ConfigurationVariantDetails;
 import org.gradle.api.component.SoftwareComponentFactory;
 import org.gradle.api.file.Directory;
+import org.gradle.api.file.RegularFile;
 import org.gradle.api.internal.tasks.TaskDependencyFactory;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.SourceSet;
@@ -120,13 +122,41 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
     ModuleFrontendPluginExtension extension = project.getExtensions()
         .create("montigem", ModuleFrontendPluginExtension.class);
 
+    Provider<Boolean> useLocalNpmRepo = project.getProviders()
+        .gradleProperty("useLocalNpmRepo")
+        .map(Boolean::parseBoolean)
+        .orElse(false);
+    Provider<Boolean> publishToLocalNpmRepo = project.getProviders()
+        .gradleProperty("publishToLocalNpmRepo")
+        .map(Boolean::parseBoolean)
+        .orElse(false);
+    Provider<Map<String, String>> isolatedNpmEnvironment = project.getProviders().provider(() ->
+        useLocalNpmRepo.get() || publishToLocalNpmRepo.get()
+            ? Map.of("npm_config_userconfig", project.getLayout().getProjectDirectory()
+                .file(".npmrc").getAsFile().getAbsolutePath())
+            : Map.of());
+
     // create .npmrc near build.gradle for `npm install`
     TaskProvider<CreateNpmrcTask> npmrc4download = project.getTasks().register("npmrc4download", CreateNpmrcTask.class, task -> {
       task.setGroup(UMLP_GROUP_NAME);
       task.getNpmrcFile().set(project.getLayout().getProjectDirectory().file(".npmrc"));
+      task.getUseLocalNpmRepo().set(useLocalNpmRepo);
     });
     TaskProvider<NpmTask> npmInstall = project.getTasks().named("npmInstall", NpmTask.class);
-    npmInstall.configure(task -> task.dependsOn(npmrc4download));
+    npmInstall.configure(task -> {
+      task.dependsOn(npmrc4download);
+      task.getEnvironment().putAll(isolatedNpmEnvironment);
+    });
+
+    Provider<RegularFile> localNpmrc = project.getLayout().getBuildDirectory()
+        .file("localNpmRepo/.npmrc");
+    TaskProvider<LocalNpmAdduserTask> localNpmAdduser = project.getTasks().register(
+        "localNpmAdduser", LocalNpmAdduserTask.class, task -> {
+          task.setGroup("publishing");
+          task.setDescription("Logs in using an isolated build-local npm configuration.");
+          task.getNpmrcFile().set(localNpmrc);
+          task.onlyIf("local npm publishing is enabled", t -> publishToLocalNpmRepo.get());
+        });
 
     // default models folder
     Directory models = getModels(project);
@@ -487,6 +517,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           }
           task.getArgs().addAll(libQName.map(v -> List.of("run", "build", v)));
           task.getWorkingDir().set(p.getLayout().getProjectDirectory().getAsFile());
+          task.getEnvironment().putAll(isolatedNpmEnvironment);
           task.getInputs().files(srcGUI.getAsFileTree().matching(pattern -> {
             pattern.exclude("**/build/**");
             pattern.exclude("**/*.spec.ts", "**/*.md");
@@ -502,6 +533,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.dependsOn(buildLib);
           task.getArgs().addAll(libQName.map(v -> List.of("run", "test", v)));
           task.getWorkingDir().set(p.getLayout().getProjectDirectory().getAsFile());
+          task.getEnvironment().putAll(isolatedNpmEnvironment);
           task.getInputs().files(srcGUI.getAsFileTree().matching(pattern -> {
             pattern.exclude( "**/*.md");
           }));
@@ -519,6 +551,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.getNpmrcFile().set(libBuildDir.map(dir -> dir.file(".npmrc")));
           task.getGitignore().set(p.getLayout().getProjectDirectory().file(".gitignore"));
           task.getUnscoped().set(true);
+          task.getUseLocalNpmRepo().set(
+              publishToLocalNpmRepo);
         });
 
         // Pack the built lib for to compare if the hashes are exactly the same for publishLib
@@ -530,17 +564,23 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.getInputs().dir(libBuildDir).withPropertyName("libBuildDirContent");
           task.getArgs().set(packDestDir.map(dir -> List.of("pack", "--pack-destination", dir.getAsFile().getAbsolutePath())));
           task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
+          task.getEnvironment().putAll(publishToLocalNpmRepo.map(publishLocal -> publishLocal
+              ? Map.of("npm_config_userconfig", localNpmrc.get().getAsFile().getAbsolutePath())
+              : Map.of()));
           task.doFirst(t -> packDestDir.get().getAsFile().mkdirs());
           task.getOutputs().dir(packDestDir);
         });
 
         TaskProvider<NpmTask> publishLib = subproject.getTasks().register("publishLib", NpmTask.class, task -> {
           task.setGroup("publishing");
-          task.dependsOn(npmrc4publish, packLibForPublish);
+          task.dependsOn(npmrc4publish, packLibForPublish, localNpmAdduser);
           task.getArgs().set(List.of("publish"));
           // e.g. `build/dist/basic/`
           task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
-          task.onlyIf("version is not yet published to Nexus", t -> {
+          task.getEnvironment().putAll(publishToLocalNpmRepo.map(publishLocal -> publishLocal
+              ? Map.of("npm_config_userconfig", localNpmrc.get().getAsFile().getAbsolutePath())
+              : Map.of()));
+          task.onlyIf("version is not yet published to the configured npm repository", t -> {
             try {
               JsonObject packageJson = readJson(libBuildDir.get().file("package.json").getAsFile());
               String name = packageJson.get("name").getAsString();
@@ -553,19 +593,19 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
                 return true;
               }
 
-              // version already published on Nexus -> skip
+              // version already published in the configured repository -> skip
               // Report differing content as a warning instead, so that a forgotten
               // version bump stays visible without breaking every pipeline run.
               File tarball = new File(packDestDir.get().getAsFile(), npmPackFileName(name, version));
               if (tarball.isFile() && !sha1Hex(tarball).equals(remoteShasum)) {
                 t.getLogger().warn(
-                    "Not publishing {}: {}@{} is already published to Nexus, but the locally built "
+                    "Not publishing {}: {}@{} is already published, but the locally built "
                         + "package differs (local shasum {} != remote shasum {}). Bump the package "
                         + "version if this change has to be released.",
                     t.getPath(), name, version, sha1Hex(tarball), remoteShasum);
               }
               else {
-                t.getLogger().lifecycle("Skipping {}: {}@{} is already published to Nexus.",
+                t.getLogger().lifecycle("Skipping {}: {}@{} is already published.",
                     t.getPath(), name, version);
               }
               return false;
@@ -702,7 +742,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
   }
 
   /**
-   * @return {registryUrl, base64AuthToken} as already resolved into the .npmrc created by {@link CreateNpmrcTask}.
+   * @return {registryUrl, optionalBase64AuthToken} as resolved from the .npmrc created by {@link CreateNpmrcTask}.
    */
   private static String[] parseNpmrc(File npmrcFile) throws IOException {
     String registryUrl = null;
@@ -715,22 +755,23 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
         authToken = line.substring(line.indexOf(":_auth=") + ":_auth=".length()).trim().replace("\"", "");
       }
     }
-    if (registryUrl == null || authToken == null) {
-      throw new GradleException("Could not find registry/auth token in " + npmrcFile);
+    if (registryUrl == null) {
+      throw new GradleException("Could not find registry in " + npmrcFile);
     }
     return new String[]{registryUrl, authToken};
   }
 
   /**
-   * @return the shasum of {@code name@version} as published in Nexus, or {@code null} if that version does not exist there yet.
+   * @return the shasum of {@code name@version} in the configured registry, or {@code null} if that version does not exist there yet.
    */
   private static String fetchRemoteShasum(String registryUrl, String authToken, String name, String version) throws IOException {
     String base = registryUrl.endsWith("/") ? registryUrl : registryUrl + "/";
-    HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create(base + name.replace("/", "%2f")))
-        .header("Authorization", "Basic " + authToken)
-        .GET()
-        .build();
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+        .uri(URI.create(base + name.replace("/", "%2f")));
+    if (authToken != null && !authToken.isBlank()) {
+      requestBuilder.header("Authorization", "Basic " + authToken);
+    }
+    HttpRequest request = requestBuilder.GET().build();
     HttpResponse<String> response;
     try {
       response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
@@ -743,7 +784,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       return null;
     }
     if (response.statusCode() != 200) {
-      throw new GradleException("Unexpected HTTP " + response.statusCode() + " from Nexus while checking " + name + "@" + version);
+      throw new GradleException("Unexpected HTTP " + response.statusCode()
+          + " from npm registry while checking " + name + "@" + version);
     }
     JsonObject root = JsonParser.parseString(response.body()).getAsJsonObject();
     JsonObject versions = root.has("versions") ? root.getAsJsonObject("versions") : null;

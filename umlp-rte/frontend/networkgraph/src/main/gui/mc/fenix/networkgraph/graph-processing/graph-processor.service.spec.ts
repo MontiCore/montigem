@@ -7,12 +7,17 @@ import { GraphDataService } from "../data/graph-data.service";
 import { GraphSettingsService } from "../services/graph-settings.service";
 import { SigmaGraphService } from "../data/sigma-graph.service";
 
+function orient(source: string, target: string, reverse: boolean): { source: string; target: string } {
+  return reverse ? { source: target, target: source } : { source, target };
+}
+
 describe("GraphProcessorService", () => {
   let service: GraphProcessorService<any, any, any>;
   let edgeProcessor: EdgeProcessorService<any, any, any>;
   let nodeProcessor: NodeProcessorService<any, any, any>;
   let groupMapping: GroupMappingService<any, any, any>;
   let dataStorage: GraphDataService<any, any, any>;
+  let settings: GraphSettingsService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -32,6 +37,7 @@ describe("GraphProcessorService", () => {
     nodeProcessor = TestBed.inject(NodeProcessorService);
     groupMapping = TestBed.inject(GroupMappingService);
     dataStorage = TestBed.inject(GraphDataService);
+    settings = TestBed.inject(GraphSettingsService);
   });
 
   it("should be created", () => {
@@ -57,7 +63,11 @@ describe("GraphProcessorService", () => {
     });
   });
 
-  describe("processGraphData", () => {
+  describe.each([false, true])("processGraphData (reverseEdgeDirection: %s)", reverse => {
+    beforeEach(() => {
+      settings.updateSetting("reverseEdgeDirection", reverse);
+    });
+
     it("should process graph data", () => {
       const processNodeDataSpy = vi.spyOn(nodeProcessor, "processNodeData");
       const processEdgeDataSpy = vi.spyOn(edgeProcessor, "processEdgeData");
@@ -149,8 +159,7 @@ describe("GraphProcessorService", () => {
             type: "line",
           },
           key: "edge_auto_id_0",
-          source: "1",
-          target: "2",
+          ...orient("1", "2", reverse),
           undirected: true,
         },
         {
@@ -163,8 +172,7 @@ describe("GraphProcessorService", () => {
             type: "line",
           },
           key: "edge_auto_id_3",
-          source: "node_auto_id_0",
-          target: "node_auto_id_1",
+          ...orient("node_auto_id_0", "node_auto_id_1", reverse),
           undirected: true,
         },
       ]);

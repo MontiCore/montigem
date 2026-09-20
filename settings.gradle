@@ -83,12 +83,6 @@ include ':examples:testing-with-sd:backend'
 include ':examples:loading-test:backend'
 include ':examples:loading-test:frontend'
 
-include ':products:demorec:backend'
-include ':products:demorec:frontend'
-
-include ':products:dev_process_cockpit:backend'
-include ':products:dev_process_cockpit:frontend'
-
 include ':modules'
 include ':modules:login'
 include ':modules:login:backend'

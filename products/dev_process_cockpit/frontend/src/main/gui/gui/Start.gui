@@ -1,7 +1,0 @@
-package gui;
-
-import mc.fenix.basic.GemText;
-
-page Start(){
-  @GemText(value="Hello, World!");
-}

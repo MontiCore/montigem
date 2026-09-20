@@ -1,8 +1,0 @@
-package gui.pospicker;
-import java.util.Optional;
-
-component PositionPicker(String imageUrl,
-    ?Optional<Double> x,
-    ?Optional<Double> y,
-    ?Optional<Double> z,
-    Event<String> pickedPosition) {}

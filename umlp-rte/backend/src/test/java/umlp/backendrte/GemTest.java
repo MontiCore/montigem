@@ -87,6 +87,31 @@ public class GemTest extends AbstractUMLPRTETest {
     assertFalse(Log.getFindings().isEmpty());
   }
 
+  @Test
+  public void asOptReturnsLoadedObject() {
+    assertSame(getElem(0), new Gem<>(getElem(0)).asOpt().get());
+    assertNoErrors();
+  }
+
+  @Test
+  public void asOptLoadsObjectIfRequired() {
+    assertSame(LoadingState.NOT_YET_LOADED, gemLoadable0.getLoadingState());
+    assertSame(getElem(0), gemLoadable0.asOpt().get());
+    assertSame(LoadingState.LOADED, gemLoadable0.getLoadingState());
+    assertSame(getElem(0), gemLoadable0.asOpt().get());
+    assertNoErrors();
+  }
+
+  @Test
+  public void asOptReturnsEmptyForAbsentOrUnavailableObjects() {
+    assertFalse(new Gem<Elem>().asOpt().isPresent());
+    assertFalse(gemNotAuthorized0.asOpt().isPresent());
+    assertFalse(gemDoesNotExist0.asOpt().isPresent());
+    assertSame(LoadingState.NOT_AUTHORIZED, gemNotAuthorized0.getLoadingState());
+    assertSame(LoadingState.FAILED_TO_LOAD, gemDoesNotExist0.getLoadingState());
+    assertNoErrors();
+  }
+
   protected Elem getElem(int idx) {
     return allElems.get(idx);
   }

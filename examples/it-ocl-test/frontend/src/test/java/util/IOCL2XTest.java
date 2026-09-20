@@ -6,13 +6,9 @@ import de.monticore.ocl.ocl._ast.ASTOCLCompilationUnit;
 import de.monticore.ocl.ocl._symboltable.IOCLArtifactScope;
 import de.monticore.ocl.ocl._symboltable.IOCLGlobalScope;
 import de.monticore.ocl.util.SymbolTableUtil;
-import de.monticore.symbols.basicsymbols._symboltable.IBasicSymbolsScope;
-import de.monticore.symbols.basicsymbols._symboltable.VariableSymbolDeSer;
 import de.monticore.symboltable.ImportStatement;
-import de.monticore.symboltable.serialization.json.JsonObject;
-import de.monticore.types.check.SymTypeExpression;
-import de.monticore.types.check.SymTypeExpressionFactory;
 import de.se_rwth.commons.logging.Log;
+import umlp._symboltable.CDRoleSymbol2VariableSymbolAdapterDeSer;
 import umlp.backendrte.common.GemIdentifiable;
 
 import java.io.IOException;
@@ -41,16 +37,8 @@ public interface IOCL2XTest<T extends GemIdentifiable> {
     gs.putTypeSymbolDeSer("de.monticore.cdbasis._symboltable.CDTypeSymbol");
     gs.putFunctionSymbolDeSer("de.monticore.cd4codebasis._symboltable.CDMethodSignatureSymbol");
     gs.putVariableSymbolDeSer("de.monticore.symbols.oosymbols._symboltable.FieldSymbol");
-    gs.putSymbolDeSer("de.monticore.cdassociation._symboltable.CDRoleSymbol", new VariableSymbolDeSer() {
-      @Override
-      public SymTypeExpression deserializeType(IBasicSymbolsScope scope, JsonObject symbolJson) {
-        if (symbolJson.getStringMember("cardinality").equals("[*]")) {
-          return SymTypeExpressionFactory.createGenerics(OCLMill.globalScope().resolveType("List").get(), List.of(super.deserializeType(scope, symbolJson)));
-        } else {
-          return super.deserializeType(scope, symbolJson);
-        }
-      }
-    });
+    gs.putSymbolDeSer("de.monticore.cdassociation._symboltable.CDRoleSymbol",
+        new CDRoleSymbol2VariableSymbolAdapterDeSer());
 
     Path symbolPath = Paths.get("build/umlp2sym");
     assertTrue(symbolPath.toFile().exists());

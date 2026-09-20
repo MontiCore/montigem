@@ -149,6 +149,11 @@ export class Gem<E extends GemIdentifiable> implements GemIdentifiable {
     });
   }
 
+  /** Loads the object if required; Java Optional values are represented as a value or null. */
+  public async asOpt(): Promise<E | null> {
+    return await this.isPresent() ? this.object : null;
+  }
+
   public set(object: E) {
     if (object != null) {
       this.object = object;

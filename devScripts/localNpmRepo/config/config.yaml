@@ -1,0 +1,38 @@
+storage: /verdaccio/storage
+plugins: /verdaccio/plugins
+listen: 0.0.0.0:4873
+
+web:
+  title: UMLP Local npm Repository
+
+auth:
+  htpasswd:
+    file: /verdaccio/storage/htpasswd
+    max_users: 1000
+
+uplinks:
+  npmjs:
+    url: https://registry.npmjs.org/
+
+packages:
+  '@umlp/*':
+    access: $all
+    publish: $all
+    unpublish: $all
+
+  '@*/*':
+    access: $all
+    publish: $all
+    unpublish: $all
+    proxy: npmjs
+
+  '**':
+    access: $all
+    publish: $all
+    unpublish: $all
+    proxy: npmjs
+
+server:
+  keepAliveTimeout: 60
+
+max_body_size: 100mb

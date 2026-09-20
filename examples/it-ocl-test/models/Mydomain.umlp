@@ -29,6 +29,16 @@ umlp Mydomain {
     int limit;
   }
 
+  class Course {
+  }
+
+  class Classroom {
+    String name;
+  }
+  association [*] Course -> (room) Classroom [0..1];
+  association [*] Course -> (alternativeRoom) Classroom [0..1];
+  association [*] Course -> (defaultRoom) Classroom [1];
+
 	class Student extends Person {
 		int matrNr;
 

@@ -1,6 +1,0 @@
-ALTER TABLE join_connection ADD COLUMN x_pos DOUBLE PRECISION;
-ALTER TABLE join_connection ADD COLUMN y_pos DOUBLE PRECISION;
-ALTER TABLE join_connection ADD COLUMN z_pos DOUBLE PRECISION;
-
-ALTER TABLE assoc_demo_rec_component_demo_rec_component_composed_of_join_co RENAME TO assoc_demo_rec_component_part_of_composed_of_join_connection; 
-ALTER TABLE assoc_demo_rec_component_part_of_composed_of_join_connection RENAME demo_rec_component_id TO part_of_id;

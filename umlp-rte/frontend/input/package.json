@@ -4,13 +4,13 @@
     "@angular/forms": "~22.1.0",
     "@angular/core": "~22.1.0",
     "@angular/material": "~22.1.0",
-    "@umlp/commonj2ts": "^9.0.0",
+    "@umlp/commonj2ts": "^9.0.1",
     "many-keys-map": "2.0.1",
     "rxjs": "~7.8.0",
     "flatpickr": "^4.6.13"
   },
   "name": "@umlp/input",
-  "version": "10.0.1",
+  "version": "10.0.2",
   "sideEffects": false,
   "dependencies": {"tslib": "^2.3.0"}
 }

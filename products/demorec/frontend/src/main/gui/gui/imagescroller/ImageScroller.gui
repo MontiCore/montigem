@@ -1,3 +1,0 @@
-package gui.imagescroller;
-
-component ImageScroller(String imagesApiUrl, Event<String> imageSelected) {}

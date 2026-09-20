@@ -14,16 +14,42 @@ page Start() {
     @GemCard(title = "SE Hub | Welcome", component =
       @GemColumn(width = "50vw", rowGap = "10px", components = [
         @GemText(value =
-          "This platform, developed using the MontiCore language workbench in a model-driven approach, " +
-          "serves as a technical demonstration as well as a dedicated space for queries related to the " +
-          "upcoming presentations at the FoWo Science Workshop. Here, questions regarding topics, " +
-          "methodologies, and innovations to be discussed find their space, epitomizing the blend of " +
-          "state-of-the-art technology with the unyielding spirit of scientific exploration."),
+          "This platform, developed in a model-driven approach, using the MontiGem framework," +
+          "serves as a technical demonstration for the CD2GUI tool as well as features related to role-based " +
+          "access control (RBAC). " +
+          "CD2GUI is a plugin of the MontiGem framework that transforms class diagram models into " +
+          "graphical user interface (GUI) models. As input, it uses class diagrams represented in CD4A," +
+          "a textual domain-specific language based on UML class diagrams that supports concepts such as " +
+          "classes, attributes, associations, inheritance, and enumerations. The transformation analyzes " +
+          "the structural information contained in the domain model and generates GUI models in GUI DSL, " +
+          "a MontiCore-based language for describing the structure and configuration of web user interfaces. " +
+          "For each class in the input model, CD2GUI creates CRUD-based pages that enable users to " +
+          "create, read, update, and delete instances of the corresponding domain objects. " +
+          "Depending on the model and configuration, the transformation can also generate specialized views, " +
+          "such as dashboards. The generated GUI models are subsequently processed by the MontiGem framework " +
+          "to produce a complete web application. To support extensibility and customization, CD2GUI provides " +
+          "configurable generation mechanisms that allow different interfaces and page structures " +
+          "to be created depending on the processed classes, attributes, or associations."
+        ),
         @GemText(value =
-          "Users can browse through existing discussions, submit new questions, and find clarity amidst " +
-          "the vast expanse of research. With every interaction, the true essence of research is showcased " +
-          "- not just the understanding, but the perpetual pursuit of knowledge."),
-        @GemText(value = "Begin the exploration and let the discoveries unfold.")
+          "The application domain chosen for this demonstration is SE Hub, a scaled-down clone of a " +
+          "software engineering collaboration platform in the spirit of GitHub. The idea behind it is to " +
+          "provide a domain that every software engineer already understands intuitively, while still being " +
+          "small enough to be captured completely in a single CD4A class diagram. Everything the user sees " +
+          "in this application - the navigation, the overview tables, the detail and edit pages, the " +
+          "dashboards - is derived from that one model. " +
+          "SE Hub revolves around projects. A project references a git repository and bundles the people who " +
+          "work on it, the issues that are reported for it, and the artifacts it consists of. Users register " +
+          "with an account and are assigned one of the roles guest, reporter, developer, maintainer or owner. " +
+          "These roles are the basis for the role-based access control demonstration: depending on the role, " +
+          "the very same generated pages expose different data and different operations. " +
+          "Work on a project is tracked through issues, each with a title, a description and a state " +
+          "(unassigned, in progress or done). Discussions happen in posts that are attached to an issue and " +
+          "can be answered by further posts, so that threaded conversations emerge. " +
+          "In addition, SE Hub models the content of a repository explicitly. Artifacts form the tree structure " +
+          "of a project. This demonstrates how CD2GUI handles inheritance, compositions " +
+          "and many-to-many associations."
+        )
       ])
     )
   );

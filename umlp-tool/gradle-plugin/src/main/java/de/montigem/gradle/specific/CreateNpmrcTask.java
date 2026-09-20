@@ -22,12 +22,17 @@ import java.util.Base64;
  */
 abstract public class CreateNpmrcTask extends DefaultTask {
 
+  public static final String LOCAL_NPM_REPOSITORY = "http://127.0.0.1:4873/";
+  public static final String NEXUS_NPM_REPOSITORY =
+      "https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/";
+
   public CreateNpmrcTask() {
     super();
 
     getNpmrcFile().convention(getProject().getObjects().fileProperty().fileValue(getProject().file(".npmrc")));
     getGitignore().convention(getProject().getObjects().fileProperty().fileValue(getProject().file(".gitignore")));
     getUnscoped().convention(false);
+    getUseLocalNpmRepo().convention(false);
   }
 
   @OutputFile
@@ -46,6 +51,10 @@ abstract public class CreateNpmrcTask extends DefaultTask {
   @org.gradle.api.tasks.Optional
   public abstract Property<Boolean> getUnscoped();
 
+  /** Whether the generated configuration should use the local npm repository. */
+  @Input
+  public abstract Property<Boolean> getUseLocalNpmRepo();
+
   void checkGitignore() throws IOException {
     File gitignore = getGitignore().get().getAsFile();
     if(!gitignore.getName().equals(".gitignore")){
@@ -61,23 +70,39 @@ abstract public class CreateNpmrcTask extends DefaultTask {
   public void run() throws IOException {
     checkGitignore();
 
-    String data = getNpmrcContent(getProject(), getUnscoped().get());
+    String data = getNpmrcContent(
+        getProject(), getUnscoped().get(), getUseLocalNpmRepo().get());
     FileUtils.writeStringToFile(getNpmrcFile().getAsFile().get(), data, StandardCharsets.UTF_8);
   }
 
   public static String getNpmrcContent(Project project, boolean unscoped){
+    return getNpmrcContent(project, unscoped, false);
+  }
+
+  public static String getNpmrcContent(
+      Project project, boolean unscoped, boolean useLocalNpmRepo) {
+    if (useLocalNpmRepo && unscoped) {
+      return "registry=" + LOCAL_NPM_REPOSITORY + "\n";
+    }
+
     if (project.getProperties().containsKey("mavenUser") && project.getProperties().containsKey("mavenPassword")) {
       String username = project.getProperties().get("mavenUser").toString();
       String password = project.getProperties().get("mavenPassword").toString();
 
       String encodedAuthData = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
 
-      String data = "@monticore:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n" +
-          "@umlp:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n" +
+      if (useLocalNpmRepo) {
+        return "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
+            "@umlp:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
+            "@monticore:_auth=\"" + encodedAuthData + "\"";
+      }
+
+      String data = "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
+          "@umlp:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
           "@monticore:_auth=\"" + encodedAuthData + "\"" +
           "@umlp:_auth=\"" + encodedAuthData + "\"";
       if (unscoped) {
-        data = "registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n" +
+        data = "registry=" + NEXUS_NPM_REPOSITORY + "\n" +
             "//nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/:_auth=\"" + encodedAuthData + "\"";
       }
       return data;

@@ -28,6 +28,11 @@ montigem {
   libScope = "@umlp"
 }
 
+tasks.named("clean", Delete) {
+  delete(layout.projectDirectory.dir("node_modules"))
+  delete(layout.projectDirectory.file("package-lock.json"))
+}
+
 project(":umlp-rte:frontend").afterEvaluate {
   def arrange = project(":umlp-rte:frontend:arrange").tasks.named("buildLib")
   def basic = project(":umlp-rte:frontend:basic").tasks.named("buildLib")

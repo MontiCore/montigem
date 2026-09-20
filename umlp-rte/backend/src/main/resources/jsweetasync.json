@@ -40,6 +40,7 @@
         "umlp.backendrte.common.Gem.loadIfRequired",
         "umlp.backendrte.common.Gem.isPresent",
         "umlp.backendrte.common.Gem.get",
+        "umlp.backendrte.common.Gem.asOpt",
 
         "umlp.backendrte.common.AggregatedCommandDeSer.serialize",
         "umlp.backendrte.common.AggregatedCommandDeSer._serialize",

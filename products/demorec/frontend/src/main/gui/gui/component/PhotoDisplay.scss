@@ -1,9 +1,0 @@
-.photodisplay {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  overflow: hidden;
-}
-.photodisplay:hover {
-  flex-direction: column;
-}

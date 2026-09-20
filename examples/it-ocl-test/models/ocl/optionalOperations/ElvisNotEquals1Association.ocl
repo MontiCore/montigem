@@ -1,0 +1,9 @@
+package optionalOperations;
+
+import Mydomain.*;
+
+
+ocl ElvisNotEquals1Association {
+  context Course c inv:
+    c.room ?!= c.defaultRoom;
+}
