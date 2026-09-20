@@ -8,20 +8,6 @@ import { MatIconModule } from '@angular/material/icon';
   standalone: true,
   imports: [...config.imports, MatIconModule],
   selector: config.selector,
-  styles: [
-    `
-      :host {
-        display: flex;
-        position: sticky;
-        top: 0;
-        right: 0;
-        left: auto;
-        overflow-y: auto;
-        height: 100%;
-        max-width: 100%;
-      }
-    `
-  ],
   styleUrls: config.styleUrls,
   templateUrl: config.templateUrl,
 })

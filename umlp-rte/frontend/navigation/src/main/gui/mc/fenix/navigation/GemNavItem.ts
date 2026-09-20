@@ -42,23 +42,7 @@ export class GemNavItem extends GemNavItemComponent {
       this.isActive = false;
       return;
     }
-    if (this.hasItems()) {
-      this.isActive = url === this.target || url.startsWith(this.target + "/");
-      if (this.isActive) {
-        this.expanded = true;
-      }
-    } else {
-      this.isActive = url === this.target;
-    }
-  }
-
-  public hasItems(): boolean {
-    return this.items != null && this.items.length > 0;
-  }
-
-  public toggleExpanded(): void {
-    this.expanded = !this.expanded;
-    this.expandedChange.emit();
+    this.isActive = url === this.target;
   }
 
   public navigateOrAct() {

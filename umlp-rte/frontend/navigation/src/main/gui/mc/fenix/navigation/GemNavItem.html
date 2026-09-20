@@ -1,34 +1,15 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
 
-<div *ngIf="hasItems(); else leafItem" class="gem-nav-group">
-  <button
-    type="button"
-    role="button"
-    class="gem-nav-item gem-nav-group-header"
-    [ngClass]="{'gem-nav-item-active' : isActive}"
-    (click)="toggleExpanded()"
-  >
-    <mat-icon *ngIf="icon" class="gem-nav-item-icon" [fontIcon]="icon"></mat-icon>
-    <span class="gem-nav-item-title">{{title}}</span>
-    <mat-icon class="gem-nav-item-right-icon" [fontIcon]="expanded ? 'expand_less' : 'expand_more'"></mat-icon>
-  </button>
-  <div class="gem-nav-group-items" [class.gem-nav-group-expanded]="expanded">
-    <ng-container *ngFor="let c of items">
-      <ng-container *ngTemplateOutlet="c"></ng-container>
-    </ng-container>
-  </div>
-</div>
-
-<ng-template #leafItem>
-  <button
-    type="button"
-    role="button"
-    class="gem-nav-item"
-    [ngClass]="{'gem-nav-item-active' : isActive}"
-    (click)="navigateOrAct()"
-  >
-    <mat-icon *ngIf="icon" class="gem-nav-item-icon" [fontIcon]="icon"></mat-icon>
-    <span class="gem-nav-item-title">{{title}}</span>
-    <mat-icon *ngIf="rightIcon" class="gem-nav-item-right-icon" [fontIcon]="rightIcon"></mat-icon>
-  </button>
-</ng-template>
+<button
+  type="button"
+  role="button"
+  class="gem-nav-item"
+  [ngClass]="{'gem-nav-item-active' : isActive}"
+  (click)="navigateOrAct()"
+>
+  <mat-icon *ngIf="iconName" class="gem-nav-item-icon" [fontIcon]="iconName"></mat-icon>
+  <span *ngIf="title" class="gem-nav-item-title">{{title}}</span>
+  <ng-container *ngIf="component">
+    <ng-container *ngTemplateOutlet="component"></ng-container>
+  </ng-container>
+</button>

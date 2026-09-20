@@ -10,11 +10,8 @@ component GemNavItem(
   String title,
   /** Route the navigation entry links to. */
   String target,
-  String icon = null,
-  String rightIcon = null,
-  List<GUIViewElement> items,
-  Boolean expanded = false,
-  Event<Void> expandedChange,
+  String iconName = null,
+  GUIViewElement component,
   /** Callback that is executed when the navigation entry is clicked. */
   Event<Void> leftClick
 )

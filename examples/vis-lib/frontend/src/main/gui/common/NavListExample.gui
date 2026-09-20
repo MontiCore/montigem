@@ -27,36 +27,13 @@ page NavListExample() {
             height = "auto",
             collapsed = false,
             collapsedWidth = "4rem",
-            collapseIcon = "chevron_left",
-            expandIcon = "chevron_right",
             components = [
-              @GemNavItem(title = "Home", target = "/common/NavListExample", icon = "home"),
-              @GemNavItem(title = "Cockpit", target = "/common/OtherOverview", icon = "dashboard"),
-              @GemNavItem(title = "Function Model", target = "/example_basic/BasicOverview", icon = "show_chart"),
-              @GemNavItem(
-                title = "Visual Analysis",
-                target = "/example_charts/ChartsOverview",
-                icon = "analytics",
-                items = [
-                  @GemNavItem(title = "Time Series", target = "/example_charts/GemTimeSeriesChartExmaple", icon = "timeline"),
-                  @GemNavItem(title = "Heat Map", target = "/example_charts/GemHeatmapChartExample", icon = "view_module"),
-                  @GemNavItem(title = "Scatter Plot", target = "/example_charts/GemScatterPlotExample", icon = "scatter_plot"),
-                  @GemNavItem(title = "History", target = "/example_charts/GemLineChartExample", icon = "history"),
-                  @GemNavItem(title = "Tracking", target = "/example_charts/GemBoxPlotExample", icon = "track_changes")
-                ]
-              ),
-              @GemNavItem(
-                title = "Services",
-                target = "/example_arrange/ArrangeOverview",
-                icon = "apps",
-                items = [
-                  @GemNavItem(title = "Dashboard", target = "/example_arrange/ArrangeOverview", icon = "dashboard"),
-                  @GemNavItem(title = "Card", target = "/example_arrange/GemCardExample", icon = "crop_portrait"),
-                  @GemNavItem(title = "Row", target = "/example_arrange/GemRowExample", icon = "view_headline"),
-                  @GemNavItem(title = "Column", target = "/example_arrange/GemColumnExample", icon = "view_week")
-                ]
-              ),
-              @GemNavItem(title = "Background", target = "/person/SimpleOverview", icon = "article")
+              @GemNavItem(title = "Home", target = "/common/NavListExample", iconName = "home"),
+              @GemNavItem(title = "Cockpit", target = "/common/OtherOverview", iconName = "dashboard"),
+              @GemNavItem(title = "Function Model", target = "/example_basic/BasicOverview", iconName = "show_chart"),
+              @GemNavItem(title = "Visual Analysis", target = "/example_charts/ChartsOverview", iconName = "analytics"),
+              @GemNavItem(title = "Services", target = "/example_arrange/ArrangeOverview", iconName = "apps"),
+              @GemNavItem(title = "Background", target = "/person/SimpleOverview", iconName = "article")
             ]
           ),
 
@@ -65,12 +42,10 @@ page NavListExample() {
             height = "auto",
             collapsed = true,
             collapsedWidth = "4rem",
-            collapseIcon = "chevron_left",
-            expandIcon = "chevron_right",
             components = [
-              @GemNavItem(title = "Home", target = "/common/NavListExample", icon = "home"),
-              @GemNavItem(title = "Cockpit", target = "/common/OtherOverview", icon = "dashboard"),
-              @GemNavItem(title = "Function Model", target = "/example_basic/BasicOverview", icon = "show_chart")
+              @GemNavItem(title = "Home", target = "/common/NavListExample", iconName = "home"),
+              @GemNavItem(title = "Cockpit", target = "/common/OtherOverview", iconName = "dashboard"),
+              @GemNavItem(title = "Function Model", target = "/example_basic/BasicOverview", iconName = "show_chart")
             ]
           )
         ]

@@ -3,6 +3,17 @@
 
 @mixin gem-nav-list-theme($background-color: white) {
 
+  gem-nav-list {
+    display: flex;
+    position: sticky;
+    top: 0;
+    right: 0;
+    left: auto;
+    overflow-y: auto;
+    height: 100%;
+    max-width: 100%;
+  }
+
   .gem-nav-list {
     display: flex;
     flex-direction: column;
