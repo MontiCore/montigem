@@ -17,6 +17,7 @@
     [value]="displayValue"
     [disabled]="disabled"
     [placeholder]="placeholder"
+    [attr.min]="min !== null && min !== undefined ? min : null"
     (input)="onInput($event)"
     (keyup)="keyRelease.emit($event)"
     (keydown)="onKeyDown($event)"
