@@ -8,6 +8,8 @@ import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.VariableAccessElement;
 import umlp.jsweet.extension.AbstractAdapter;
 
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import java.util.List;
 import java.util.function.Function;
@@ -74,8 +76,11 @@ public class JavaTimeAdapter extends AbstractAdapter {
 
   @Override
   public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
-    if ("java.time.DayOfWeek".equals(variableAccess.getVariable().getEnclosingElement().toString())) {
-      print("\"").print(variableAccess.getVariable().getSimpleName().toString()).print("\"");
+    VariableElement variable = variableAccess.getVariable();
+    if (variable != null && variable.getKind() == ElementKind.ENUM_CONSTANT
+        && variable.getEnclosingElement() != null
+        && "java.time.DayOfWeek".equals(variable.getEnclosingElement().toString())) {
+      print("\"").print(variable.getSimpleName().toString()).print("\"");
       return true;
     }
     return super.substituteVariableAccess(variableAccess);
