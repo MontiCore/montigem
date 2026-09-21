@@ -1,6 +1,6 @@
 {
   "name": "@umlp/editor",
-  "version": "10.0.1",
+  "version": "10.0.2",
   "peerDependencies": {
     "@angular/animations": "~22.1.0",
     "@angular/common": "~22.1.0",
@@ -12,7 +12,7 @@
     "@angular/router": "~22.1.0",
     "zone.js": "~0.16.0",
     "primeicons": "^6.0.1",
-    "@umlp/commonj2ts": "^9.0.1",
+    "@umlp/commonj2ts": "^9.0.2",
     "many-keys-map": "2.0.1",
     "rxjs": "~7.8.0",
     "ngx-monaco-editor-v2": "^22.0.0"

@@ -20,3 +20,4 @@ export { Arrays } from "../commonj2ts-src/javautil/Arrays";
 export { GemListUtil } from "../commonj2ts-src/util/GemListUtil";
 export { GemList } from "../commonj2ts-src/common/GemList";
 export { IUMLPList } from "../commonj2ts-src/common/IUMLPList";
+export { LocalDateTimeHelper } from "../commonj2ts-src/types/LocalDateTimeHelper";

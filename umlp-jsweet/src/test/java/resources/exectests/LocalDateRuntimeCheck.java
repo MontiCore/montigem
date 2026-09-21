@@ -2,6 +2,7 @@ package resources.exectests;
 
 import util.JSweetTest;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -26,6 +27,16 @@ public class LocalDateRuntimeCheck {
         && date.getMonthValue() == 2
         && date.getDayOfMonth() == 29
         && date.getDayOfYear() == 60;
+  }
+
+  @JSweetTest
+  public static boolean checkLocalDateDayOfWeek() {
+    DayOfWeek leapDay = LocalDate.of(2024, 2, 29).getDayOfWeek();
+    return leapDay == DayOfWeek.THURSDAY
+        && leapDay.toString().equals("THURSDAY")
+        && LocalDate.of(2024, 3, 3).getDayOfWeek().getValue() == 7
+        && LocalDate.of(2024, 3, 4).getDayOfWeek().getValue() == 1
+        && LocalDate.of(2024, 3, 4).getDayOfWeek().name().equals("MONDAY");
   }
 
   @JSweetTest
@@ -69,6 +80,11 @@ public class LocalDateRuntimeCheck {
         && dateTime.getMinute() == 34
         && dateTime.getSecond() == 56
         && dateTime.getNano() == 123_000_000;
+  }
+
+  @JSweetTest
+  public static boolean checkLocalDateTimeDayOfWeek() {
+    return LocalDateTime.of(2024, 3, 3, 23, 30).getDayOfWeek() == DayOfWeek.SUNDAY;
   }
 
   @JSweetTest

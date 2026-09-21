@@ -6,11 +6,11 @@
     "markdown-it-texmath": "^1.0.0",
     "katex": "^0.16.9",
     "rxjs": "~7.8.0",
-    "@umlp/commonj2ts": "^9.0.1",
+    "@umlp/commonj2ts": "^9.0.2",
     "many-keys-map": "2.0.1"
   },
   "name": "@umlp/advanced",
-  "version": "9.0.1",
+  "version": "9.0.2",
   "sideEffects": false,
   "dependencies": {"tslib": "^2.3.0"}
 }

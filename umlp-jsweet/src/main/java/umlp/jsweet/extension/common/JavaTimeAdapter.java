@@ -5,6 +5,7 @@ import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
+import org.jsweet.transpiler.model.VariableAccessElement;
 import umlp.jsweet.extension.AbstractAdapter;
 
 import javax.lang.model.type.TypeMirror;
@@ -25,6 +26,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
     getTypeMirrorMappings().add(0, computeDateTypeMapping());
     addTypeMapping("java.time.LocalDateTime", "Date");
     addTypeMapping("java.time.LocalDate", "Date");
+    addTypeMapping("java.time.DayOfWeek", "string");
   }
 
   public Function<TypeMirror, String> computeDateTypeMapping() {
@@ -45,6 +47,20 @@ public class JavaTimeAdapter extends AbstractAdapter {
       return super.substituteMethodInvocation(invocation);
     }
     String targetType = invocation.getTargetType().toString();
+    if ("java.time.DayOfWeek".equals(targetType)) {
+      switch (invocation.getMethodName()) {
+        case "name":
+        case "toString":
+          print(invocation.getTargetExpression());
+          return true;
+        case "getValue":
+          print("((LocalDateTimeHelper.DAYS_OF_WEEK.indexOf(")
+              .print(invocation.getTargetExpression()).print(") + 6) % 7 + 1)");
+          getPrinter().useModule(
+              new ModuleImportDescriptor("LocalDateTimeHelper", "@umlp/commonj2ts"));
+          return true;
+      }
+    }
     switch (targetType) {
       case "java.time.LocalDateTime":
       case "java.time.LocalDate":
@@ -54,6 +70,15 @@ public class JavaTimeAdapter extends AbstractAdapter {
         }
     }
     return super.substituteMethodInvocation(invocation);
+  }
+
+  @Override
+  public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
+    if ("java.time.DayOfWeek".equals(variableAccess.getVariable().getEnclosingElement().toString())) {
+      print("\"").print(variableAccess.getVariable().getSimpleName().toString()).print("\"");
+      return true;
+    }
+    return super.substituteVariableAccess(variableAccess);
   }
 
   /**
@@ -252,9 +277,10 @@ public class JavaTimeAdapter extends AbstractAdapter {
 
       case "getDayOfWeek":
         printMacroName(methodName);
-        this.print("[\"SUNDAY\", \"MONDAY\", \"TUESDAY\", \"WEDNESDAY\", \"THURSDAY\", \"FRIDAY\", \"SATURDAY\"][").println();
-        printDateTarget(invocation, isLocalDateTime);
-        this.print(".getDay()]").println();
+        print("LocalDateTimeHelper.getDayOfWeek(")
+            .print(invocation.getTargetExpression()).print(")");
+        getPrinter().useModule(
+            new ModuleImportDescriptor("LocalDateTimeHelper", "@umlp/commonj2ts"));
         return true;
 
       case "getDayOfYear":
