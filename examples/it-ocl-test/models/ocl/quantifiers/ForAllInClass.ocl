@@ -1,0 +1,10 @@
+package quantifiers;
+
+import Mydomain.*;
+
+
+ocl ForAllInClass {
+  context University u inv:
+    forall Student s in Student:
+      s.matrNr >= 0;
+}

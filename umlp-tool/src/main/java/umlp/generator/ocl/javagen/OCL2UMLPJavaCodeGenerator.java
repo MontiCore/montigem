@@ -55,7 +55,7 @@ public class OCL2UMLPJavaCodeGenerator extends CodeGenVisitorState {
     ExpressionsBasisJavaGenVisitor visExpressionBasis = new OCLTypeNarrowingNameExpressionJavaGenVisitor(state, typeNarrowingContext);
     traverser.setExpressionsBasisHandler(visExpressionBasis);
 
-    OCLExpressionsJavaGenVisitor visOCLExpressions = new OCLTypeIfJavaGenVisitor(state, typeNarrowingContext);
+    OCLExpressionsJavaGenVisitor visOCLExpressions = new OCLExpressionsUMLPJavaGenVisitor(state, typeNarrowingContext);
     traverser.setOCLExpressionsHandler(visOCLExpressions);
 
     OptionalOperatorsJavaGenVisitor visOptionalOperators = new OptionalOperatorsJavaGenVisitor(state);
