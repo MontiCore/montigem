@@ -24,45 +24,106 @@ import de.se_rwth.commons.logging.Log;
 import umlp._prettyprint.UMLPFullPrettyPrinter;
 import umlp.generator.domain.decorator.GenService;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 // TODO: cardinality constraints?
 public class SQLSchemaGenerator {
+  public static final int MAX_IDENTIFIER_BYTES = 63;
+
+  // identifiers that collide after truncation and thus get a hash, filled by initIdentifiers.
+  // static since the DAO decorators use the static convert methods, reset per generator (one per CD)
+  protected static final Set<String> hashedIdentifiers = new HashSet<>();
+  protected static final Set<String> hashedColumns = new HashSet<>();
+
   protected GeneratorSetup generatorSetup;
   protected GeneratorEngine generatorEngine;
   protected Map<String, String> fqnClassNameToType;
+  protected Map<String, String> identifiers = new HashMap<>();
+  protected Map<String, String> identifierOrigins = new HashMap<>();
 
   public SQLSchemaGenerator(GeneratorSetup generatorSetup) {
     this.generatorSetup = generatorSetup;
     this.generatorEngine = new GeneratorEngine(generatorSetup);
     initClassNameToType();
+    hashedIdentifiers.clear();
+    hashedColumns.clear();
   }
 
   public static String convertAttributeName(String name, AttributeType type) {
-    String attrName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
-    return type.format(attrName);
+    return type.format(resolveIdentifier(attributeName(name), hashedColumns));
   }
 
   public static String convertClassName(String name, AttributeType type) {
-    String clsName = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
-    return type.format(clsName);
+    return type.format(resolveIdentifier(className(name), hashedIdentifiers));
   }
 
+  // not truncated since the DAO templates append "_id" themselves
   public static String convertAssociationRollName(String name) {
     return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
   }
 
   public static String convertAssocName(String name) {
+    return resolveIdentifier(assocName(name), hashedIdentifiers);
+  }
+
+  public static String convertListAttributeTableName(String className, String attributeName) {
+    return resolveIdentifier(listAttributeTableName(className, attributeName), hashedIdentifiers);
+  }
+
+  // PostgreSQL silently truncates identifiers to 63 bytes, we truncate the same way
+  public static String truncateIdentifier(String identifier) {
+    return truncate(identifier, MAX_IDENTIFIER_BYTES);
+  }
+
+  // non-colliding identifiers must stay exactly as PostgreSQL truncates them, deployed databases already use these names
+  protected static String resolveIdentifier(String identifier, Set<String> hashed) {
+    if (!hashed.contains(identifier)) {
+      return truncateIdentifier(identifier);
+    }
+    String hash = String.format("_%08x", identifier.hashCode());
+    return truncate(identifier, MAX_IDENTIFIER_BYTES - hash.length()) + hash;
+  }
+
+  private static String truncate(String identifier, int maxBytes) {
+    byte[] bytes = identifier.getBytes(StandardCharsets.UTF_8);
+    if (bytes.length <= maxBytes) {
+      return identifier;
+    }
+    int end = maxBytes;
+    // do not cut a multibyte character
+    while ((bytes[end] & 0xC0) == 0x80) {
+      end--;
+    }
+    return new String(bytes, 0, end, StandardCharsets.UTF_8);
+  }
+
+  private static String attributeName(String name) {
+    return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
+  }
+
+  private static String className(String name) {
+    return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
+  }
+
+  private static String assocName(String name) {
     String res = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
     res = res.replaceAll("\\s", "_");
     res = res.replaceAll("_+", "_");
     res = res.replaceAll("_$", "");
     return "assoc_" + res;
+  }
+
+  private static String listAttributeTableName(String className, String attributeName) {
+    return className(className) + "$" + attributeName(attributeName);
   }
 
   protected void initClassNameToType() {
@@ -110,8 +171,23 @@ public class SQLSchemaGenerator {
     generatorEngine.generate(templateName, Paths.get("resources", cdAST.getCDDefinition().getName() + ".sql"), cdAST, generateContent(cdAST));
   }
 
+  // dry run that only detects colliding identifiers. has to run before the DAO decorators use the convert methods
+  // and after all addClassToSQLTypeMapping calls (see UMLP2Java.ftl)
+  public void initIdentifiers(ASTCDCompilationUnit cd) {
+    generateStatements(cd, new IndentPrinter());
+  }
+
   protected String generateContent(ASTCDCompilationUnit cd) {
+    // otherwise the first of two colliding identifiers would be printed without hash
+    initIdentifiers(cd);
     IndentPrinter p = new IndentPrinter();
+    generateStatements(cd, p);
+    return p.getContent();
+  }
+
+  protected void generateStatements(ASTCDCompilationUnit cd, IndentPrinter p) {
+    identifiers.clear();
+    identifierOrigins.clear();
 
     generateSQLSchemasForAllExtendedCDs(cd, p);
 
@@ -121,8 +197,6 @@ public class SQLSchemaGenerator {
         generateAssociationSchema(cd.getCDDefinition(), association, p);
       }
     }
-
-    return p.getContent();
   }
 
   protected void generateSQLSchemasForAllExtendedCDs(ASTCDCompilationUnit cd, IndentPrinter p) {
@@ -165,8 +239,9 @@ public class SQLSchemaGenerator {
 
   public void generateClassSchema(ASTCDDefinition cd, ASTCDClass node, IndentPrinter p) {
     p.print("CREATE TABLE ");
-    String tableName = convertClassName(node.getName(), AttributeType.QUOTED);
-    p.print(tableName);
+    String tableName = className(node.getName());
+    String origin = "class " + cd.getName() + "." + node.getName();
+    p.print(AttributeType.QUOTED.format(checkIdentifier("", tableName, origin)));
     p.println("(");
     p.indent();
 
@@ -176,7 +251,9 @@ public class SQLSchemaGenerator {
         .filter(a -> !a.getModifier().isDerived())
         .collect(Collectors.toList());
 
-    generateIdField(convertClassName(node.getName(), AttributeType.PLAIN), p);
+    // printed by generateIdField
+    checkIdentifier("", "pk_" + tableName, origin);
+    generateIdField(tableName, p);
     for (ASTCDAttribute attribute : relevantAttributes) {
       Optional<? extends ISymbol> typeSym = attribute.getMCType().getDefiningSymbol();
       if (!GenService.isList(attribute)
@@ -216,8 +293,9 @@ public class SQLSchemaGenerator {
 
   protected void generateListFieldTable(ASTCDDefinition cd, ASTCDType typeNode, ASTCDAttribute attribute, IndentPrinter p) {
     p.print("CREATE TABLE ");
-    String tableName = convertClassName(typeNode.getName(), AttributeType.PLAIN) + "$" + convertAttributeName(attribute.getName(), AttributeType.PLAIN);
-    p.print(tableName);
+    String tableName = listAttributeTableName(typeNode.getName(), attribute.getName());
+    String origin = "attribute " + cd.getName() + "." + typeNode.getName() + "." + attribute.getName();
+    p.print(checkIdentifier("", tableName, origin));
     p.println("(");
     p.indent();
 
@@ -242,7 +320,7 @@ public class SQLSchemaGenerator {
     p.print(r3);
     p.println(" BIGINT NOT NULL,");
 
-    p.println("CONSTRAINT pk_" + tableName + " PRIMARY KEY (" + r1 + "," + r3 + ")");
+    p.println("CONSTRAINT " + checkIdentifier("", "pk_" + tableName, origin) + " PRIMARY KEY (" + r1 + "," + r3 + ")");
 
     p.unindent();
     p.println(");");
@@ -250,11 +328,12 @@ public class SQLSchemaGenerator {
 
   protected void generateIdField(String tableName, IndentPrinter p) {
     p.println("id BIGINT NOT NULL,");
-    p.println("CONSTRAINT pk_" + tableName + " PRIMARY KEY (id)");
+    p.println("CONSTRAINT " + resolveIdentifier("pk_" + tableName, hashedIdentifiers) + " PRIMARY KEY (id)");
   }
 
   protected void generateOptionalField(ASTCDDefinition cd, ASTCDClass classNode, ASTCDAttribute attribute, IndentPrinter p) {
-    p.print(convertAttributeName(attribute.getName(), AttributeType.QUOTED));
+    String origin = "attribute " + cd.getName() + "." + classNode.getName() + "." + attribute.getName();
+    p.print(AttributeType.QUOTED.format(checkIdentifier(className(classNode.getName()), attributeName(attribute.getName()), origin)));
     p.print(" ");
     Optional<? extends ISymbol> typeSymbolOpt = attribute.getMCType().getDefiningSymbol();
     if (typeSymbolOpt.isEmpty()) {
@@ -320,14 +399,18 @@ public class SQLSchemaGenerator {
 
 
     p.print("CREATE TABLE ");
-    String tableName = convertAssocName(association.getName());
-    p.print(tableName);
+    String tableName = assocName(association.getName());
+    String origin = "association " + cd.getName() + "." + association.getName();
+    p.print(checkIdentifier("", tableName, origin));
     p.println("(");
     p.indent();
 
     // TODO: use roll names: Person -> Person
     String r1 = convertAssociationRollName(association.getLeft().getName());
     String r2 = convertAssociationRollName(association.getRight().getName());
+    // only checked, printed untruncated like in the DAO templates
+    checkIdentifier(tableName, r1 + "_id", origin);
+    checkIdentifier(tableName, r2 + "_id", origin);
 
     p.print(r1 + "_id");
     p.println(" BIGINT NOT NULL,");
@@ -341,10 +424,30 @@ public class SQLSchemaGenerator {
 
     //p.println("CONSTRAINT fk_" + r2 + "_" + tableName + " FOREIGN KEY (" + r2 + "_id) REFERENCES " + convertClassName(rSymbolOpt.get().getName(), AttributeType.QUOTED) + ",");
 
-    p.println("CONSTRAINT pk_" + tableName + " PRIMARY KEY (" + r1 + "_id, " + r2 + "_id)");
+    p.println("CONSTRAINT " + checkIdentifier("", "pk_" + tableName, origin) + " PRIMARY KEY (" + r1 + "_id, " + r2 + "_id)");
 
     p.unindent();
     p.println(");");
+  }
+
+  // every identifier of the schema has to pass through here, otherwise its collisions go unnoticed.
+  // namespace "" holds tables and constraints, a table name holds the columns of that table
+  protected String checkIdentifier(String namespace, String identifier, String origin) {
+    Set<String> hashed = namespace.isEmpty() ? hashedIdentifiers : hashedColumns;
+    String truncated = truncateIdentifier(identifier);
+    String key = namespace + "." + truncated;
+    String previous = identifiers.putIfAbsent(key, identifier);
+    if (previous == null) {
+      identifierOrigins.put(key, origin);
+    } else if (!previous.equals(identifier) && !hashed.contains(identifier)) {
+      hashed.add(previous);
+      hashed.add(identifier);
+      Log.warn("0xdf10f The SQL identifiers " + previous + " (" + identifierOrigins.get(key) + ") and "
+          + identifier + " (" + origin + ") are both truncated to " + truncated + " by PostgreSQL's limit of "
+          + MAX_IDENTIFIER_BYTES + " bytes, so a hash is appended to them. Consider shortening one of the names, "
+          + "e.g. by an explicit association name in the CD.");
+    }
+    return resolveIdentifier(identifier, hashed);
   }
 
   public enum AttributeType {

@@ -1,0 +1,15 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+umlp SQLIdentifierCollisions {
+
+  class ComponentWithAVeryLongNameForTestingIdentifiers {
+    String measurementValueWithAVeryLongNameForTestingIdentifierLimitA;
+    String measurementValueWithAVeryLongNameForTestingIdentifierLimitB;
+  }
+
+  class TargetA;
+  class TargetB;
+
+  association ComponentWithAVeryLongNameForTestingIdentifiers -> TargetA;
+  association ComponentWithAVeryLongNameForTestingIdentifiers -> TargetB;
+}
