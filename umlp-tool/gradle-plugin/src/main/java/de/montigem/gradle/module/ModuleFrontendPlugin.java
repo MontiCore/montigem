@@ -3,6 +3,7 @@ package de.montigem.gradle.module;
 import com.github.gradle.node.NodeExtension;
 import com.github.gradle.node.NodePlugin;
 import com.github.gradle.node.npm.task.NpmTask;
+import com.github.gradle.node.npm.task.NpxTask;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.monticore.gradle.common.CommonMCTask;
@@ -97,6 +98,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
   public static final String GUI2SYM_JAR_TASK = "gui2symJar";
   public static final String BUILD_LIB_TASK = "buildLib";
   public static final String TEST_LIB_TASK = "testLib";
+  public static final String INSTALL_TEST_BROWSER_TASK = "installTestBrowser";
 
   @Inject
   public ModuleFrontendPlugin(SoftwareComponentFactory softwareComponentFactory, TaskDependencyFactory taskDependencyFactory) {
@@ -148,6 +150,19 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
     npmInstall.configure(task -> {
       task.dependsOn(npmrc4download);
       task.getEnvironment().putAll(isolatedNpmEnvironment);
+    });
+
+    // browser-based lib tests need the browser revision of the installed playwright,
+    // the install is a no-op if that revision is present already
+    TaskProvider<NpxTask> installTestBrowser = project.getTasks().register(INSTALL_TEST_BROWSER_TASK, NpxTask.class, task -> {
+      task.setGroup("verification");
+      task.setDescription("Installs the Playwright browser used by the lib tests.");
+      task.dependsOn(npmInstall);
+      task.getCommand().set("playwright");
+      task.getArgs().set(List.of("install", "chromium-headless-shell"));
+      task.getEnvironment().putAll(isolatedNpmEnvironment);
+      task.onlyIf("playwright is installed", t ->
+          project.getLayout().getProjectDirectory().file("node_modules/playwright-core").getAsFile().exists());
     });
 
     Provider<RegularFile> localNpmrc = project.getLayout().getBuildDirectory()
@@ -539,7 +554,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
 
         TaskProvider<NpmTask> testLib = subproject.getTasks().register(TEST_LIB_TASK, NpmTask.class, task -> {
           task.setGroup("verification");
-          task.dependsOn(buildLib);
+          task.dependsOn(buildLib, installTestBrowser);
           task.getArgs().addAll(libQName.map(v -> List.of("run", "test", v)));
           task.getWorkingDir().set(p.getLayout().getProjectDirectory().getAsFile());
           task.getEnvironment().putAll(isolatedNpmEnvironment);
