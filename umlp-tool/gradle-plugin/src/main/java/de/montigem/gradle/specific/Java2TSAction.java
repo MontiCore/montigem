@@ -1,6 +1,7 @@
 package de.montigem.gradle.specific;
 
 import com.kohlschutter.jdk.standaloneutil.JavaHomeLocator;
+import de.montigem.gradle.common.GradleLogGuard;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
@@ -29,6 +30,7 @@ public abstract class Java2TSAction implements WorkAction<Java2TSAction.Params> 
 
   @Override
   public void execute() {
+    GradleLogGuard.ensureGradleLog();
     Params params = getParameters();
 
     // Fix for ExceptionInInitializerError, with cause FileSystemAlreadyExistsException

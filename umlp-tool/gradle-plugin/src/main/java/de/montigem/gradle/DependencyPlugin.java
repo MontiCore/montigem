@@ -7,6 +7,7 @@ import de.montigem.gradle.specific.UMLP2JSweetAdapterTask;
 import de.montigem.gradle.specific.UMLPJava2TSTask;
 import de.montigem.gradle.specific.serialize.GUI2SymTask;
 import de.se_rwth.commons.logging.Log;
+import de.montigem.gradle.common.GradleLogGuard;
 import de.montigem.gradle.common.MGAllFilesTask;
 import de.montigem.gradle.common.MGSingleFileTask;
 import de.montigem.gradle.specific.merge.MergeTask;
@@ -32,6 +33,9 @@ public abstract class DependencyPlugin implements Plugin<Project> {
 
   @Override
   public void apply(Project project) {
+    // tasks of this plugin and of MontiCore log in the daemon, an error must not System.exit it
+    GradleLogGuard.ensureGradleLog();
+
     // add a new configuration in which the umlp-tool (.jar) is loaded
     //  (this avoids loading the tool+all its dependencies into the shared plugin-classpath)
     var toolConfig = project.getConfigurations().maybeCreate(UMLP_CONFIG_TOOL);
