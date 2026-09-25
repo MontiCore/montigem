@@ -3,6 +3,7 @@ package de.montigem.gradle.specific;
 
 import de.monticore.io.FileReaderWriter;
 import de.montigem.gradle.common.MGAllFilesTask;
+import de.montigem.gradle.common.RelativePaths;
 import de.se_rwth.commons.logging.Log;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
@@ -26,7 +27,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 // Task might not be a @CacheableTask since relative paths are generated for HWC-files
 public abstract class GUI2JavaTask extends MGAllFilesTask {
@@ -53,12 +53,13 @@ public abstract class GUI2JavaTask extends MGAllFilesTask {
 
   @Input
   public Provider<List<String>> getHwcWebFilePaths() {
+    File projectDir = getProjectLayout().getProjectDirectory().getAsFile();
     return getModelDir().getAsFileTree().matching(spec -> spec.include(HWC_WEB_FILES)).getElements()
-        .map(files -> files.stream().map(f -> f.getAsFile().getAbsolutePath()).sorted()
-            .collect(Collectors.toList()));
+        .map(files -> RelativePaths.of(projectDir, files));
   }
 
   @InputFiles
+  @PathSensitive(PathSensitivity.RELATIVE)
   public abstract ConfigurableFileCollection getImportsDir();
 
   @OutputDirectory
@@ -75,6 +76,7 @@ public abstract class GUI2JavaTask extends MGAllFilesTask {
 
   @InputFile
   @org.gradle.api.tasks.Optional
+  @PathSensitive(PathSensitivity.NONE)
   public abstract RegularFileProperty getGuiCreateModelsAsFile();
 
   @Input

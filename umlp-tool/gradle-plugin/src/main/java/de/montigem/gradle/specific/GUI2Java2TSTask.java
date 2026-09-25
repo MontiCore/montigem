@@ -9,6 +9,7 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input;
@@ -45,8 +46,14 @@ import java.util.stream.StreamSupport;
  * `guiJava2ts` to build relative paths while translating java to ts, i.e. `gui2java` depends on
  * `guiJava2ts`.
  */
-// Task might not be a @CacheableTask since relative paths are generated for HWC-files
+// cacheable because the generated imports of HWC files are relative, all inputs must stay relocatable
+@CacheableTask
 public abstract class GUI2Java2TSTask extends GUI2JavaTask {
+
+  public GUI2Java2TSTask() {
+    getJSweetRuntimeClassPath().from(getProject().getConfigurations()
+        .matching(c -> c.getName().equals("runtimeClasspath")));
+  }
 
   @SkipWhenEmpty
   @InputFiles
@@ -70,6 +77,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
   public abstract ListProperty<String> getExcludeTranspile();
 
   @InputFiles
+  @PathSensitive(PathSensitivity.RELATIVE)
   public abstract ConfigurableFileCollection getExcludeTranspileFiles();
 
   @Input
@@ -86,15 +94,21 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
   @OutputDirectory
   public abstract DirectoryProperty getJSweetCandiesDir();
 
-  @InputFiles
+  @Classpath
   public abstract ConfigurableFileCollection getJSweetClassPath();
 
+  /**
+   * The classpath JSweet compiles the sources against (the project's runtimeClasspath).
+   */
+  @Classpath
+  public abstract ConfigurableFileCollection getJSweetRuntimeClassPath();
 
   @OutputDirectory
   public abstract DirectoryProperty getJSweetAdapterDir();
 
   @InputDirectory
   @Optional
+  @PathSensitive(PathSensitivity.RELATIVE)
   public abstract DirectoryProperty getHandWrittenJSweetDir();
 
   @InputFiles
@@ -200,7 +214,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
 
     // classpath passed to jsweet
     List<String> classPath = new ArrayList<>();
-    classPath.add(getProject().getConfigurations().getByName("runtimeClasspath").getAsPath());
+    classPath.add(getJSweetRuntimeClassPath().getAsPath());
     String classPathStr = String.join(File.pathSeparator, classPath);
 
     Set<Path> hwcJavaPaths = walkAndCollectJavaFiles(getHandWrittenCodeDir().getFiles());

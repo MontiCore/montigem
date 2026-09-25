@@ -660,6 +660,9 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       task.setGroup("build");
       task.getArchiveClassifier().set("guisymbols");
       task.setIncludeEmptyDirs(false);
+      // generator tasks fingerprint this jar byte-wise, file timestamps would defeat the build cache
+      task.setPreserveFileTimestamps(false);
+      task.setReproducibleFileOrder(true);
     });
     project.getTasks().named(org.gradle.api.plugins.BasePlugin.ASSEMBLE_TASK_NAME).configure(it -> it.dependsOn(gui2symJar));
 
@@ -694,6 +697,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       task.setGroup("build");
       task.getArchiveClassifier().set("importmap");
       task.setIncludeEmptyDirs(false);
+      task.setPreserveFileTimestamps(false);
+      task.setReproducibleFileOrder(true);
     });
     project.getTasks().named(org.gradle.api.plugins.BasePlugin.ASSEMBLE_TASK_NAME).configure(it -> it.dependsOn(umlp2impJar));
 
