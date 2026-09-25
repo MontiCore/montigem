@@ -163,6 +163,9 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       task.getEnvironment().putAll(isolatedNpmEnvironment);
       task.onlyIf("playwright is installed", t ->
           project.getLayout().getProjectDirectory().file("node_modules/playwright-core").getAsFile().exists());
+      // the Angular unit-test runner launches this Chrome instead, e.g. in CI
+      task.onlyIf("CHROME_BIN is not set", t ->
+          !project.getProviders().environmentVariable("CHROME_BIN").isPresent());
     });
 
     Provider<RegularFile> localNpmrc = project.getLayout().getBuildDirectory()
