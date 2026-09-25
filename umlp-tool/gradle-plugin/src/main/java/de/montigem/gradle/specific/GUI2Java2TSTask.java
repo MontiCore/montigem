@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 
 /**
@@ -116,11 +117,21 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
 
   @Override
   protected boolean shouldRunAgain(InputChanges inputChanges) {
+    // JSweet transpiles every .java file, but the IncGen reports only list the files the generator reads
+    if (hasChangedJavaFile(inputChanges, getHandWrittenCodeDir())
+        || hasChangedJavaFile(inputChanges, getInput4RelativePathCalculation())) {
+      return true;
+    }
     return getInputFilesAsStream()
         .map(this::getIncGenFile)
         .map(incGenFile -> new IncGenData(incGenFile, this.getProject().getProjectDir()))
         .map(incGenData -> incGenData.isUpToDate(getStreamOfChanges(inputChanges)))
         .anyMatch(upToDate -> !upToDate);
+  }
+
+  protected boolean hasChangedJavaFile(InputChanges inputChanges, FileCollection files) {
+    return StreamSupport.stream(inputChanges.getFileChanges(files).spliterator(), false)
+        .anyMatch(change -> change.getFile().getName().endsWith(".java"));
   }
 
   @Override
