@@ -6,12 +6,16 @@ import de.montigem.gradle.common.MGAllFilesTask;
 import de.se_rwth.commons.logging.Log;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
@@ -22,6 +26,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 // Task might not be a @CacheableTask since relative paths are generated for HWC-files
 public abstract class GUI2JavaTask extends MGAllFilesTask {
@@ -30,11 +35,28 @@ public abstract class GUI2JavaTask extends MGAllFilesTask {
     super("GUI2JavaTask");
   }
 
+  // hand-written web files next to the models are only checked for existence by the generator
+  protected static final String[] HWC_WEB_FILES = {"**/*.ts", "**/*.html", "**/*.scss", "**/*.css"};
+
+  // model path of the tool, fingerprinted by getModelFiles() and getHwcWebFilePaths()
+  @Internal
+  public abstract ConfigurableFileCollection getModelDir();
+
   @InputFiles
   @org.gradle.api.tasks.Optional
   @PathSensitive(PathSensitivity.RELATIVE)
+  @IgnoreEmptyDirectories
   // @Incremental I am not sure if this _should_ be incremental?
-  public abstract ConfigurableFileCollection getModelDir();
+  public FileCollection getModelFiles() {
+    return getModelDir().getAsFileTree().matching(spec -> spec.exclude(HWC_WEB_FILES));
+  }
+
+  @Input
+  public Provider<List<String>> getHwcWebFilePaths() {
+    return getModelDir().getAsFileTree().matching(spec -> spec.include(HWC_WEB_FILES)).getElements()
+        .map(files -> files.stream().map(f -> f.getAsFile().getAbsolutePath()).sorted()
+            .collect(Collectors.toList()));
+  }
 
   @InputFiles
   public abstract ConfigurableFileCollection getImportsDir();

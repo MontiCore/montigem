@@ -9,7 +9,6 @@ import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
-import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input;
@@ -55,12 +54,10 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
 
   @Input
   public Provider<List<String>> getInput4RelativePathCalculationPaths() {
-    return getProviderFactory().provider(() -> getInput4RelativePathCalculation().getAsFileTree()
-        .getFiles().stream().map(File::getAbsolutePath).sorted().collect(Collectors.toList()));
+    return getInput4RelativePathCalculation().getAsFileTree().getElements()
+        .map(files -> files.stream().map(f -> f.getAsFile().getAbsolutePath()).sorted()
+            .collect(Collectors.toList()));
   }
-
-  @Inject
-  protected abstract ProviderFactory getProviderFactory();
 
   public UMLPJava2TSTask() {
     // @Internal drops the implicit task dependencies of this collection
