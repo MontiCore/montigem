@@ -525,7 +525,13 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
             pattern.exclude("**/build/**");
             pattern.exclude("**/*.spec.ts", "**/*.md");
           }));
-          task.getInputs().files("angular.json", "tsconfig.json", "tsconfig.prod.json", "package.json");
+          // the lib entry file imports the generated code from build/gui2java2ts
+          task.getInputs().files(subproject.fileTree(gui2java2tsDir, spec -> spec.exclude("**/*.java")))
+              .withPropertyName("generatedSources");
+          task.getInputs().files(subproject.file("index.ts"), subproject.file("ng-package.json"),
+              subproject.file("package.json")).withPropertyName("libConfig");
+          task.getInputs().files(p.file("angular.json"), p.file("tsconfig.json"),
+              p.file("tsconfig.prod.json"), p.file("package.json")).withPropertyName("workspaceConfig");
           // e.g. `build/dist/login/`
           task.getOutputs().dir(libBuildDir);
         });

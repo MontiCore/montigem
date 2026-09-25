@@ -8,11 +8,14 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.provider.ProviderFactory;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
@@ -46,11 +49,23 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
   @IgnoreEmptyDirectories
   public abstract ConfigurableFileCollection getInput();
 
-  @SkipWhenEmpty
-  @InputFiles
-  @PathSensitive(PathSensitivity.RELATIVE)
-  @IgnoreEmptyDirectories
+  // JSweet's RelativeImportAdapter only checks that these files exist, so their content is no input
+  @Internal
   public abstract ConfigurableFileCollection getInput4RelativePathCalculation();
+
+  @Input
+  public Provider<List<String>> getInput4RelativePathCalculationPaths() {
+    return getProviderFactory().provider(() -> getInput4RelativePathCalculation().getAsFileTree()
+        .getFiles().stream().map(File::getAbsolutePath).sorted().collect(Collectors.toList()));
+  }
+
+  @Inject
+  protected abstract ProviderFactory getProviderFactory();
+
+  public UMLPJava2TSTask() {
+    // @Internal drops the implicit task dependencies of this collection
+    dependsOn(getInput4RelativePathCalculation());
+  }
 
   @Input
   public abstract ListProperty<String> getExcludeSource();
