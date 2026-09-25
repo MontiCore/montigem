@@ -106,6 +106,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
   @Override
   public void apply(Project project) {
     project.getPluginManager().apply(NodePlugin.class);
+    // track only node_modules/.package-lock.json, hashing all of node_modules takes minutes
+    project.getExtensions().getByType(NodeExtension.class).getFastNpmInstall().set(true);
     project.getPluginManager().apply("java-library");
     project.getPluginManager().apply("maven-publish");
     if (!inRTE(project)) {
@@ -233,6 +235,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
         subproject.getPlugins().withId("com.github.node-gradle.node", plugin -> {
           NodeExtension node = subproject.getExtensions().getByType(NodeExtension.class);
           node.getNodeProjectDir().set(project.getLayout().getProjectDirectory());
+          node.getFastNpmInstall().set(true);
         });
         if (!inRTE(subproject)) {
           subproject.getPluginManager().apply(MGBasePlugin.class);

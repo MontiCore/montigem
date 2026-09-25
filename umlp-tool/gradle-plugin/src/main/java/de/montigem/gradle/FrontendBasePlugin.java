@@ -67,6 +67,8 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
         node.getDownload().set(true);
       }
       node.getVersion().set(Java2TSTask.NODE_VERSION);
+      // track only node_modules/.package-lock.json, hashing all of node_modules takes minutes
+      node.getFastNpmInstall().set(true);
     });
 
     // Create Dependencies
