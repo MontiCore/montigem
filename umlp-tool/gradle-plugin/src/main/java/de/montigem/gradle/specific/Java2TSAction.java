@@ -18,7 +18,6 @@ import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.ProcessUtil;
 
-import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,9 +78,10 @@ public abstract class Java2TSAction implements WorkAction<Java2TSAction.Params> 
 
 
     ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
-    try {
+    // closing releases the classpath jars that javac keeps open, else they stay locked in the daemon
+    try (transpiler) {
       transpiler.transpile(transpilationHandler, excludedSources, sourceFiles);
-    } catch (IOException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
     if(transpilationHandler.getErrorCount()>0) {
