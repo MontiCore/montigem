@@ -83,6 +83,10 @@ public abstract class Java2TSAction implements WorkAction<Java2TSAction.Params> 
       transpiler.transpile(transpilationHandler, excludedSources, sourceFiles);
     } catch (Exception e) {
       throw new RuntimeException(e);
+    } finally {
+      // JSweet keeps its context in thread locals of the pooled worker thread, which keeps the whole class loader alive
+      JSweetContext.current.remove();
+      JSweetContext.currentCompilationUnit.remove();
     }
     if(transpilationHandler.getErrorCount()>0) {
       throw new RuntimeException("JSweet Transpile failed with errors.");
