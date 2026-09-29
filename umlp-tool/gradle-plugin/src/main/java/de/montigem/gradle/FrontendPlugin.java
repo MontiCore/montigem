@@ -2,6 +2,7 @@
 package de.montigem.gradle;
 
 import de.monticore.gradle.common.CommonMCTask;
+import de.montigem.gradle.common.ContentSyncTask;
 import de.montigem.gradle.specific.CD2GUITask;
 import de.montigem.gradle.specific.CreateSymlinkTask;
 import de.montigem.gradle.specific.GUI2Java2TSTask;
@@ -380,20 +381,23 @@ public abstract class FrontendPlugin implements Plugin<Project> {
     addJSweetDependencies(project);
 
     // Sync Output of a task to the correct directory. This done because "npm serve" cannot
-    // handle the intermediate state while the UMLPTasks are running and Hot-Reload aborts
-    TaskProvider<Sync> syncUMLPJava2TS = project.getTasks().register(SYNC_UMLP_JAVA2TS_TASK, Sync.class, task -> {
+    // handle the intermediate state while the UMLPTasks are running and Hot-Reload aborts.
+    // Only changed files are written, ng serve rebuilds for every written file
+    TaskProvider<ContentSyncTask> syncUMLPJava2TS = project.getTasks().register(SYNC_UMLP_JAVA2TS_TASK, ContentSyncTask.class, task -> {
       task.setGroup(UMLP_GROUP_NAME);
-      task.from(umlpJava2ts.flatMap(UMLPJava2TSTask::getOutputDir));
-      task.into(syncUMLPJava2TSOut);
+      task.getFrom().from(umlpJava2ts.flatMap(UMLPJava2TSTask::getOutputDir));
+      task.getInto().set(syncUMLPJava2TSOut);
     });
 
-    TaskProvider<Sync> syncGUI2Java2TS = project.getTasks().register(SYNC_GUI2JAVA2TS_TASK, Sync.class, task -> {
+    TaskProvider<ContentSyncTask> syncGUI2Java2TS = project.getTasks().register(SYNC_GUI2JAVA2TS_TASK, ContentSyncTask.class, task -> {
       task.setGroup(UMLP_GROUP_NAME);
-      task.from(gui2java2ts.flatMap(CommonMCTask::getOutputDir));
-      task.from(umlp2jsweetObserver.flatMap(CommonMCTask::getOutputDir));
-      task.into(syncGUI2Java2TSOut);
+      task.getFrom().from(gui2java2ts.flatMap(CommonMCTask::getOutputDir));
+      task.getFrom().from(umlp2jsweetObserver.flatMap(CommonMCTask::getOutputDir));
+      task.getInto().set(syncGUI2Java2TSOut);
       // Angular needs no symbol files, and CD4A writes identity hash codes into .umlpsym
-      task.exclude("**/*.java", "**/*.umlpsym", "**/*.tags");
+      task.getExcludes().addAll("**/*.java", "**/*.umlpsym", "**/*.tags");
+      // the GUI code imports the domain code, ng serve must not see new GUI code with old domain code
+      task.mustRunAfter(syncUMLPJava2TS);
     });
     TaskProvider<Task> generate = project.getTasks().named("generate");
     generate.configure(task -> task.dependsOn(gui2java2ts, syncUMLPJava2TS, syncGUI2Java2TS));
