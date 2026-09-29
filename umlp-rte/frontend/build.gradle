@@ -131,7 +131,8 @@ afterEvaluate {
       }
       def out = outputFile.get().asFile
       out.parentFile.mkdirs()
-      out.text = JsonOutput.prettyPrint(JsonOutput.toJson(["@Async": ["exact": mergedList]]))
+      // JSweet writes the methods in a different order in every build, the jar must not change because of that
+      out.text = JsonOutput.prettyPrint(JsonOutput.toJson(["@Async": ["exact": mergedList.sort()]]))
     }
   }
 
