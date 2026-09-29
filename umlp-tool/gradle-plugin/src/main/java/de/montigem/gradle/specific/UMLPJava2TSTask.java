@@ -1,8 +1,8 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.montigem.gradle.specific;
 
+import de.montigem.gradle.common.LinkSafeFiles;
 import de.montigem.gradle.common.RelativePaths;
-import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
@@ -161,7 +161,7 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
     File outputDir = getOutputDir().get().getAsFile();
 
     // every run transpiles all sources, so outputs of removed classes must not survive
-    FileUtils.deleteDirectory(outputDir);
+    LinkSafeFiles.deleteContents(outputDir.toPath());
     outputDir.mkdirs();
     File nodeInit = new File(workingDir, ".node-init");
     if (!nodeInit.exists()) {

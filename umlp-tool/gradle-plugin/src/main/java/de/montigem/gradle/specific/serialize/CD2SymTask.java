@@ -1,9 +1,9 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.montigem.gradle.specific.serialize;
 
+import de.montigem.gradle.common.LinkSafeFiles;
 import de.montigem.gradle.specific.cd.CDGeneratorAction;
 import de.se_rwth.commons.logging.Log;
-import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
@@ -69,7 +69,7 @@ abstract public class CD2SymTask extends DefaultTask {
     // Also important for parallelization
 
     // all models are serialized again, so symbols of removed models must not survive
-    FileUtils.cleanDirectory(getOutput().get().getAsFile());
+    LinkSafeFiles.deleteContents(getOutput().get().getAsFile().toPath());
 
     Set<File> inputFiles = getModelFiles().getFiles();
 
