@@ -25,7 +25,7 @@ export class GemDivider extends GemDividerComponent {
   override _color: string = '#e0e0e0';
 
   @HostBinding('style.margin')
-  override _margin: string = '10px 0';
+  _margin: string = '10px 0';
 
   public ngOnInit(): void { }
 }

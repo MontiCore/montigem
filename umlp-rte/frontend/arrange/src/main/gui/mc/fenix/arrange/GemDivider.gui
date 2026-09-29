@@ -16,9 +16,5 @@ component GemDivider(
   /**
     Color of the divider.
   */
-  String color = "#e0e0e0",
-  /**
-    Margin around the divider in `px`, `rem`, etc.
-  */
-  String margin = "10px 0"
+  String color = "#e0e0e0"
 )
