@@ -43,6 +43,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "Icon", target = "/example_basic/GemIconExample");
         @GemNavItem(title = "Image", target = "/example_basic/GemImageExample");
         @GemNavItem(title = "Link", target = "/example_basic/GemLinkExample");
+        @GemNavItem(title = "StatusIcon", target = "/example_basic/GemStatusIconExample");
         @GemNavItem(title = "Text", target = "/example_basic/GemTextExample");
         @GemNavItem(title = "Tooltip", target = "/example_basic/GemTooltipExample");
         @GemNavItem(title = "Video", target = "/example_basic/GemVideoExample");
