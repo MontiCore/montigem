@@ -9,7 +9,7 @@ configurations {
 }
 
 dependencies {
-  implementation group: 'de.se_rwth.commons', name: 'se-commons-gradle', version: mc_version
+  implementation group: 'de.se_rwth.commons', name: 'se-commons-gradle', version: se_commons_version
 
   implementation('com.google.cloud.tools:jib-core:0.27.1')
   implementation('javax.inject:javax.inject:1')

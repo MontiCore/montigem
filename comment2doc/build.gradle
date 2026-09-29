@@ -39,7 +39,7 @@ dependencies {
   implementation group: 'de.monticore', name: 'monticore-grammar', version: mc_version
   implementation group: 'de.monticore.lang', name: 'cd4analysis', version: mc_version
   implementation group: 'de.monticore.lang', name: 'guidsl', version: mc_version
-  implementation group: 'de.se_rwth.commons', name: 'se-commons-gradle', version: mc_version
+  implementation group: 'de.se_rwth.commons', name: 'se-commons-gradle', version: se_commons_version
   implementation "org.commonmark:commonmark:$commonmark_version"
 
   guiTypes "de.monticore.lang:guidsl:$mc_version:default-types"

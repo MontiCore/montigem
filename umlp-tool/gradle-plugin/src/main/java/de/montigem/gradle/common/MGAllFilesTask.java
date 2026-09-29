@@ -10,7 +10,6 @@ import de.montigem.gradle.stat.TaskStatData;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.provider.ListProperty;
-import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
@@ -36,13 +35,6 @@ abstract public class MGAllFilesTask extends MCAllFilesTask implements GradleTas
   @Input
   @Optional
   public abstract ListProperty<String> getModuleConfigTemplates();
-
-  // the base class fingerprints absolute paths, which prevents build cache hits across checkouts
-  @Override
-  @InputFiles
-  @Optional
-  @Classpath
-  public abstract ConfigurableFileCollection getExtraClasspathElements();
 
   public MGAllFilesTask(String type) {
     super(type, null);

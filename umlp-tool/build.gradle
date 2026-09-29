@@ -56,7 +56,7 @@ dependencies {
   implementation group: 'de.monticore.lang', name: 'cd2gui', version: mc_version
   implementation "de.monticore.language-server:monticore-language-server-runtime:$mclsg_version"
   implementation group: 'de.monticore.lang', name: 'cd4analysis', version: mc_version, classifier: 'language-server'
-  implementation group: 'de.se_rwth.commons', name: 'se-commons-gradle', version: mc_version
+  implementation group: 'de.se_rwth.commons', name: 'se-commons-gradle', version: se_commons_version
   implementation group: 'de.monticore.lang', name: 'od', version: mc_version
   implementation group: 'de.monticore.lang', name: 'sd-language', version: mc_version
   implementation "org.freemarker:freemarker:$freemarker_version"

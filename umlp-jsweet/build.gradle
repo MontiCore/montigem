@@ -35,7 +35,7 @@ dependencies {
 
   implementation group: 'com.google.guava', name: 'guava', version: guava_version
   implementation group: 'org.slf4j', name: 'slf4j-simple', version: slf4j_version
-  implementation group: 'de.se_rwth.commons', name: 'se-commons-logging', version: logging_version
+  implementation group: 'de.se_rwth.commons', name: 'se-commons-logging', version: se_commons_version
 
   testRuntimeOnly project(":umlp-rte:backend")
 }

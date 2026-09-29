@@ -14,7 +14,7 @@ subprojects {
   dependencies {
     implementation project(':umlp-rte')
 
-    implementation group: 'de.se_rwth.commons', name: 'se-commons-utilities', version: mc_version
+    implementation group: 'de.se_rwth.commons', name: 'se-commons-utilities', version: se_commons_version
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: junit_version
   }
 }
