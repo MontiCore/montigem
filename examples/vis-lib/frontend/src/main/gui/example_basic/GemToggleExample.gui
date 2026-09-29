@@ -9,14 +9,12 @@ page GemToggleExample() {
     component = @GemColumn(components = [
       @GemToggle(
         label = "Notifications",
-        ariaLabel = "Toggle notifications",
         state = true,
         color = "#16a34a",
         toggled = showState()
       ),
       @GemToggle(
         label = "Disabled",
-        ariaLabel = "Disabled toggle",
         disabled = true,
         inactiveColor = "#64748b"
       )
