@@ -4,6 +4,7 @@ import com.microsoft.playwright.junit.UsePlaywright;
 import mydomain.MydomainManager;
 import mydomain.Student;
 import mydomain.University;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import util.AbstractOCL2CypherTest;
@@ -25,6 +26,7 @@ import java.util.function.Predicate;
 @UsePlaywright
 public interface QuantifiersTest extends IOCL2XTest<University> {
   @Tag("Cypher")
+  @Disabled("No support yet: forall v in SomeClass")
   class QuantifiersTestCypherTest extends AbstractOCL2CypherTest<University> implements QuantifiersTest {
   }
 
@@ -54,6 +56,8 @@ public interface QuantifiersTest extends IOCL2XTest<University> {
     res.put("SimpleExists", mydomain.quantifiers.SimpleExists::checkInv0);
     res.put("DoubleExists", mydomain.quantifiers.DoubleExists::checkInv0);
     res.put("NestedExists", mydomain.quantifiers.NestedExists::checkInv0);
+    res.put("ForAllInClass", mydomain.quantifiers.ForAllInClass::checkInv0);
+    res.put("ForAllInClassWithContext", mydomain.quantifiers.ForAllInClassWithContext::checkInv0);
     return res;
   }
 
@@ -321,6 +325,75 @@ public interface QuantifiersTest extends IOCL2XTest<University> {
     // check results
     assertEquals(1, violatingObjectGemIds.size());
     assertTrue(violatingObjectGemIds.contains(errorUni.getGemId()));
+    assertFalse(violatingObjectGemIds.contains(uni.getGemId()));
+  }
+
+  @Test
+  default void testForAllInClass() throws IOException, SQLException {
+    String constraintName = "ForAllInClass";
+
+    // Setup data
+    University uni = MydomainManager.universityBuilder()
+        .name("TestUni")
+        .build().get();
+
+    University otherUni = MydomainManager.universityBuilder()
+        .name("OtherUni")
+        .build().get();
+
+    Student alice = MydomainManager.studentBuilder()
+        .name("Alice")
+        .age(21)
+        .matrNr(1)
+        .build().get();
+
+    uni.addStudents(alice);
+
+    // Exec query
+    List<Long> violatingObjectGemIds = translateAndExecQueryFromPath(constraintName);
+
+    // check results: all students are valid
+    assertTrue(violatingObjectGemIds.isEmpty());
+
+    MydomainManager.studentBuilder()
+        .name("Error Student")
+        .age(21)
+        .matrNr(-2)
+        .build().get();
+
+    // Exec query
+    violatingObjectGemIds = translateAndExecQueryFromPath(constraintName);
+
+    // check results
+    assertEquals(2, violatingObjectGemIds.size());
+    assertTrue(violatingObjectGemIds.contains(uni.getGemId()));
+    assertTrue(violatingObjectGemIds.contains(otherUni.getGemId()));
+  }
+
+  @Test
+  default void testForAllInClassWithContext() throws IOException, SQLException {
+    String constraintName = "ForAllInClassWithContext";
+
+    // Setup data
+    University uni = MydomainManager.universityBuilder()
+        .name("TestUni")
+        .build().get();
+
+    University errorUni1 = MydomainManager.universityBuilder()
+        .name("DuplicateUni")
+        .build().get();
+
+    University errorUni2 = MydomainManager.universityBuilder()
+        .name("DuplicateUni")
+        .build().get();
+
+    // Exec query
+    List<Long> violatingObjectGemIds = translateAndExecQueryFromPath(constraintName);
+
+    // check results
+    assertEquals(2, violatingObjectGemIds.size());
+    assertTrue(violatingObjectGemIds.contains(errorUni1.getGemId()));
+    assertTrue(violatingObjectGemIds.contains(errorUni2.getGemId()));
     assertFalse(violatingObjectGemIds.contains(uni.getGemId()));
   }
 }

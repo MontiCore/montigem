@@ -16,6 +16,8 @@ ${beDecorator.setSpring(true)}
 
 ${includeArgs("umlp.generator.hook.BeforeTransform", decoratedAST, glex, hwPath, cdGenerator, schemaGenerator, beDecorator, commandDecorator, requestDecorator, topDecorator)}
 
+<#-- After BeforeTransform (may add SQL type mappings), before the decorators (DAOs need the SQL names) -->
+${schemaGenerator.initIdentifiers(ast)}
 ${beDecorator.transform(ast, decoratedAST)}
 ${commandDecorator.transform(ast, decoratedAST)}
 ${requestDecorator.transform(ast, decoratedAST)}

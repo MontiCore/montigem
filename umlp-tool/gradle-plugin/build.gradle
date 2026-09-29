@@ -130,9 +130,9 @@ tasks.register("buildInfo", de.monticore.gradle.common.MCBuildInfoTask) {
     file.withInputStream { props.load(it) }
     // Also write mc_version to build info
     props.setProperty("mc_version", project.findProperty("mc_version"))
-    file.withOutputStream { out ->
-      props.store(out, null)
-    }
+    // no Properties.store: its date comment changes the plugin jar on every build,
+    // which invalidates the build cache entries of all generator tasks
+    file.text = props.collect { k, v -> "$k=$v" }.sort().join("\n") + "\n"
   }
 }
 processResources.dependsOn("buildInfo")

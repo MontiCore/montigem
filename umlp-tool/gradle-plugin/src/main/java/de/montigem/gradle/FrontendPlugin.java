@@ -392,7 +392,8 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       task.from(gui2java2ts.flatMap(CommonMCTask::getOutputDir));
       task.from(umlp2jsweetObserver.flatMap(CommonMCTask::getOutputDir));
       task.into(syncGUI2Java2TSOut);
-      task.exclude("**/*.java");
+      // Angular needs no symbol files, and CD4A writes identity hash codes into .umlpsym
+      task.exclude("**/*.java", "**/*.umlpsym", "**/*.tags");
     });
     TaskProvider<Task> generate = project.getTasks().named("generate");
     generate.configure(task -> task.dependsOn(gui2java2ts, syncUMLPJava2TS, syncGUI2Java2TS));

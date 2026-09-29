@@ -99,6 +99,9 @@ public class ModulePlugin extends ALazyPublishingPlugin implements Plugin<Projec
       jar.setGroup("build");
       jar.getArchiveClassifier().set("models");
       jar.from(umlp);
+      // generator tasks fingerprint this jar byte-wise, file timestamps would defeat the build cache
+      jar.setPreserveFileTimestamps(false);
+      jar.setReproducibleFileOrder(true);
 
       jar.onlyIf(t -> umlpPresent);
     });
@@ -130,6 +133,8 @@ public class ModulePlugin extends ALazyPublishingPlugin implements Plugin<Projec
       jar.setGroup("build");
       jar.getArchiveClassifier().set("module-generator-time");
       jar.from(generatorExtensionSourceSet.getOutput());
+      jar.setPreserveFileTimestamps(false);
+      jar.setReproducibleFileOrder(true);
 
       jar.onlyIf(t -> generatorExtensionSourceSet.getAllSource().getFiles().stream().anyMatch(File::exists));
     });
@@ -165,6 +170,8 @@ public class ModulePlugin extends ALazyPublishingPlugin implements Plugin<Projec
     TaskProvider<Jar> umlp2symJar = project.getTasks().register("umlp2symJar", Jar.class, task -> {
       task.setGroup("build");
       task.getArchiveClassifier().set("domainsymbols");
+      task.setPreserveFileTimestamps(false);
+      task.setReproducibleFileOrder(true);
     });
     project.getTasks().named(ASSEMBLE_TASK_NAME).configure(it -> it.dependsOn(umlp2symJar));
 

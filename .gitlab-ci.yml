@@ -167,6 +167,34 @@ build_with_deploy:
     refs:
       - dev
 
+# Clean build without any cache: an undeclared task input cannot hide behind a cached task result
+build_no_build_cache:
+  stage: build
+  cache: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+  before_script:
+    # Double the Gradle daemon heap for this job only; the checked-in value stays at 4g.
+    - sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx8192m -Dfile.encoding=UTF-8/' gradle.properties
+    - export JAVA_OPTS="-Xmx2g"
+  script:
+    - export CHROME_BIN=/usr/bin/google-chrome-stable
+    - "gradle --version 2>&1 | tee $CI_PROJECT_DIR/build.log"
+    - "gradle build --no-build-cache --refresh-dependencies --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 $ARGS3 >> $CI_PROJECT_DIR/build.log 2> >(tee -a $CI_PROJECT_DIR/build.log >&2)"
+    # >(tee -a ...) starts tee background process, wait to ensure everything is written to
+    - wait
+    - echo "Full log -> $CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/build.log"
+  artifacts:
+    when: always
+    paths:
+      - ./**/build/reports/tests/test/**
+      - build.log
+    reports:
+      # Lets gitlab render infos about failed tests
+      junit: "**/test/**/TEST-*.xml"
+    expire_in: 1 week
+
 check_forbidden_methods:
   stage: check
   script:

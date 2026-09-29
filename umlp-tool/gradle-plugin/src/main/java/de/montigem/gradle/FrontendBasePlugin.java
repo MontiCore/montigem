@@ -21,6 +21,7 @@ import org.gradle.api.attributes.LibraryElements;
 import org.gradle.api.attributes.Usage;
 import org.gradle.api.file.Directory;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.api.tasks.bundling.ZipEntryCompression;
 import org.gradle.jvm.tasks.Jar;
@@ -29,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Optional;
 
+import static de.montigem.gradle.FrontendPlugin.GUI2JAVA2TS_TASK;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_GUI_SYMBOLS_CONFIG;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_IMPORT_MAP_CONFIG;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_UMLP_MODELS_CONFIG;
@@ -67,6 +69,8 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
         node.getDownload().set(true);
       }
       node.getVersion().set(Java2TSTask.NODE_VERSION);
+      // track only node_modules/.package-lock.json, hashing all of node_modules takes minutes
+      node.getFastNpmInstall().set(true);
     });
 
     // Create Dependencies
@@ -119,6 +123,14 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
       task.dependsOn(prepareBuildAppTask);
       task.getCommand().set("ng");
       task.getArgs().set(List.of("build"));
+      // the links hwc, cd2gui and prodlibs are followed, libs/ is only used by the dev build
+      Provider<Directory> app = project.getLayout().getBuildDirectory().dir("app");
+      task.getInputs().files(app.map(dir -> dir.getAsFileTree().matching(spec -> spec.exclude(
+              "node_modules/**", "dist/**", ".angular/**", "libs/**"))))
+          .withPropertyName("appSources").withPathSensitivity(PathSensitivity.RELATIVE);
+      task.getInputs().files(app.map(dir -> dir.file("node_modules/.package-lock.json")))
+          .withPropertyName("installedPackages");
+      task.getOutputs().dir(app.map(dir -> dir.dir("dist/client"))).withPropertyName("dist");
     });
     var testAppTask = project.getTasks().register("testApp", NpxTask.class, task -> {
       task.setGroup("verification");
@@ -149,8 +161,8 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
         // TODO change this in the future, so we do not have to download all library's dependencies in every umlp project
         // Alternative: use pnpm or yarn or something like this
         for (Project subproject : rteFrontend.getSubprojects()) {
-          TaskProvider<NpmTask> buildLib = subproject.getTasks().named(BUILD_LIB_TASK, NpmTask.class);
-          task.dependsOn(buildLib);
+          // the links point to the lib sources, which import the lib's generated code
+          task.dependsOn(subproject.getTasks().named(GUI2JAVA2TS_TASK));
 
           task.getLinks().put(
               project.getLayout().getBuildDirectory().dir("app/libs/@umlp/" + subproject.getName()).get().getAsFile(),
@@ -176,11 +188,8 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
 
       createSymlink4ProdTask.configure(t -> t.dependsOn(createSymlinkTask));
       prepareBuildAppTask.configure(t -> t.dependsOn(createSymlink4ProdTask));
-
-      TaskProvider<Task> rteBuild = rteFrontend.getTasks().named("build");
-      testAppTask.configure(t -> t.dependsOn(rteBuild));
-      runAppTask.configure(t -> t.dependsOn(rteBuild));
-      prepareBuildAppTask.configure(t -> t.dependsOn(rteBuild));
+      // ng test resolves @umlp/* via tsconfig.json, which points to the prodlibs
+      testAppTask.configure(t -> t.dependsOn(createSymlink4ProdTask));
     }
 
     project.getTasks().named("assemble", t -> t.dependsOn(buildAppTask));

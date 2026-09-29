@@ -56,7 +56,7 @@ final class OCLStaticMemberJavaGenHelper {
         .flatMap(name -> WithinScopeBasicSymbolsResolver.resolveType(enclosingScope, name));
   }
 
-  private static Optional<String> getQualifiedName(ASTExpression expression) {
+  static Optional<String> getQualifiedName(ASTExpression expression) {
     if (expression instanceof ASTNameExpression name) {
       return Optional.of(name.getName());
     }

@@ -210,8 +210,7 @@ public class DAODecorator extends DAOInterfaceDecorator {
               ASTCDType definingType = entry.getValue();
               GenService.createType(attr);
               String innerType = GenService.getInnerType(GenService.createType(attr));
-              String tableName = SQLSchemaGenerator.convertClassName(definingType.getName(), SQLSchemaGenerator.AttributeType.PLAIN) +
-                  "$" + SQLSchemaGenerator.convertAttributeName(attr.getName(), SQLSchemaGenerator.AttributeType.PLAIN);
+              String tableName = SQLSchemaGenerator.convertListAttributeTableName(definingType.getName(), attr.getName());
               String dbType = GenService.getDBType(attr.getSymbol().getType());
               getCD4C().addMethod(doaClass, "umlp.dao.UpdateListAttr", tableName, attr, innerType, dbType);
               getCD4C().addMethod(doaClass, "umlp.dao.SelectListAttr", tableName, attr, innerType, dbType);

@@ -1,0 +1,10 @@
+package quantifiers;
+
+import Mydomain.*;
+
+
+ocl ForAllInClassWithContext {
+  context University u inv:
+    forall University u2 in University:
+      u2 != u implies u2.name != u.name;
+}

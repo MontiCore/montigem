@@ -35,7 +35,8 @@ public class ComponentObserverManagerGenerator {
   }
 
   public void generate(ASTCDCompilationUnit ast) {
-    Reporting.off();
+    boolean reportingWasEnabled = Reporting.isEnabled();
+    String reportedModel = Reporting.off();
     String cdName = ast.getCDDefinition().getName();
     Path targetPath = Paths.get(cdName + "ComponentObserverManager.ts");
    LinkedHashMap<String, String> domainClassNamesToPackageMap = new LinkedHashMap<String, String>();
@@ -69,8 +70,11 @@ public class ComponentObserverManagerGenerator {
     generatorEngine.generateNoA("umlp.gui2ts.TSComponentObserverManager", targetPath, ast,
         cdName, names, domainClassNamesToPackageMap);
 
-    Reporting.on(cdName);
-    Reporting.reportFileCreation(targetPath.toString());
+    // resume the pipeline's report, the Gradle task reads its IncGenGradleCheck.txt
+    if (reportingWasEnabled) {
+      Reporting.on(reportedModel);
+    }
+    Reporting.reportFileCreation(generatorSetup.getOutputDirectory().toPath().resolve(targetPath).toString());
   }
 
   protected List<ASTCDClass> getConcreteDomainClasses(ASTCDDefinition cd) {

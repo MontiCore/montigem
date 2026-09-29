@@ -8,10 +8,10 @@
     "katex": "^0.16.9",
     "rxjs": "~7.8.0",
     "many-keys-map": "2.0.1",
-    "@umlp/commonj2ts": "^9.0.1"
+    "@umlp/commonj2ts": "^9.0.2"
   },
   "name": "@umlp/basic",
-  "version": "10.0.1",
+  "version": "10.0.2",
   "sideEffects": false,
   "dependencies": {"tslib": "^2.3.0"}
 }

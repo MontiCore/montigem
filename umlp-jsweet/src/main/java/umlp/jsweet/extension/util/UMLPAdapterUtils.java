@@ -24,6 +24,8 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -295,9 +297,19 @@ public class UMLPAdapterUtils {
         || qualifiedName.startsWith("jdk.");
   }
 
+  /**
+   * Without the JVM-wide jar cache: in the Gradle daemon, closing another class loader on the
+   * same jar would otherwise close this stream ("Stream closed").
+   */
+  protected static InputStream openUncached(URL resource) throws IOException {
+    URLConnection connection = resource.openConnection();
+    connection.setUseCaches(false);
+    return connection.getInputStream();
+  }
+
   public static void addAsyncAnnotationsForJREToContext(JSweetContext context) {
     try (
-      InputStream is = UMLPAdapterUtils.class.getResourceAsStream("/asyncjre.json")) {
+      InputStream is = openUncached(UMLPAdapterUtils.class.getResource("/asyncjre.json"))) {
       Map<String, Object> config = new Gson().fromJson(
           new String(is.readAllBytes(), StandardCharsets.UTF_8)
           , Map.class);

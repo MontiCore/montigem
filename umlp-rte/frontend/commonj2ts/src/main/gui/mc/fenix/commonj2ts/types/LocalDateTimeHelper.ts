@@ -2,6 +2,12 @@
 
 export class LocalDateTimeHelper {
 
+  static readonly DAYS_OF_WEEK = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+
+  static getDayOfWeek(date: Date): string {
+    return this.DAYS_OF_WEEK[date.getUTCDay()];
+  }
+
   // === Plus Methods ===
 
   static plusYears(date: Date, n: number): Date {

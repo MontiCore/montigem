@@ -9,6 +9,7 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 
 /**
@@ -44,8 +46,14 @@ import java.util.stream.Stream;
  * `guiJava2ts` to build relative paths while translating java to ts, i.e. `gui2java` depends on
  * `guiJava2ts`.
  */
-// Task might not be a @CacheableTask since relative paths are generated for HWC-files
+// cacheable because the generated imports of HWC files are relative, all inputs must stay relocatable
+@CacheableTask
 public abstract class GUI2Java2TSTask extends GUI2JavaTask {
+
+  public GUI2Java2TSTask() {
+    getJSweetRuntimeClassPath().from(getProject().getConfigurations()
+        .matching(c -> c.getName().equals("runtimeClasspath")));
+  }
 
   @SkipWhenEmpty
   @InputFiles
@@ -69,6 +77,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
   public abstract ListProperty<String> getExcludeTranspile();
 
   @InputFiles
+  @PathSensitive(PathSensitivity.RELATIVE)
   public abstract ConfigurableFileCollection getExcludeTranspileFiles();
 
   @Input
@@ -85,15 +94,21 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
   @OutputDirectory
   public abstract DirectoryProperty getJSweetCandiesDir();
 
-  @InputFiles
+  @Classpath
   public abstract ConfigurableFileCollection getJSweetClassPath();
 
+  /**
+   * The classpath JSweet compiles the sources against (the project's runtimeClasspath).
+   */
+  @Classpath
+  public abstract ConfigurableFileCollection getJSweetRuntimeClassPath();
 
   @OutputDirectory
   public abstract DirectoryProperty getJSweetAdapterDir();
 
   @InputDirectory
   @Optional
+  @PathSensitive(PathSensitivity.RELATIVE)
   public abstract DirectoryProperty getHandWrittenJSweetDir();
 
   @InputFiles
@@ -116,11 +131,21 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
 
   @Override
   protected boolean shouldRunAgain(InputChanges inputChanges) {
+    // JSweet transpiles every .java file, but the IncGen reports only list the files the generator reads
+    if (hasChangedJavaFile(inputChanges, getHandWrittenCodeDir())
+        || hasChangedJavaFile(inputChanges, getInput4RelativePathCalculation())) {
+      return true;
+    }
     return getInputFilesAsStream()
         .map(this::getIncGenFile)
         .map(incGenFile -> new IncGenData(incGenFile, this.getProject().getProjectDir()))
         .map(incGenData -> incGenData.isUpToDate(getStreamOfChanges(inputChanges)))
         .anyMatch(upToDate -> !upToDate);
+  }
+
+  protected boolean hasChangedJavaFile(InputChanges inputChanges, FileCollection files) {
+    return StreamSupport.stream(inputChanges.getFileChanges(files).spliterator(), false)
+        .anyMatch(change -> change.getFile().getName().endsWith(".java"));
   }
 
   @Override
@@ -189,7 +214,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
 
     // classpath passed to jsweet
     List<String> classPath = new ArrayList<>();
-    classPath.add(getProject().getConfigurations().getByName("runtimeClasspath").getAsPath());
+    classPath.add(getJSweetRuntimeClassPath().getAsPath());
     String classPathStr = String.join(File.pathSeparator, classPath);
 
     Set<Path> hwcJavaPaths = walkAndCollectJavaFiles(getHandWrittenCodeDir().getFiles());

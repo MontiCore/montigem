@@ -4,6 +4,7 @@ package de.montigem.gradle.specific.cd;
 import de.montigem.gradle.common.MGSingleFileTask;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.OutputDirectory;
@@ -16,6 +17,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
 
+@CacheableTask
 public abstract class CD2JavaTask extends MGSingleFileTask {
 
   public CD2JavaTask() {

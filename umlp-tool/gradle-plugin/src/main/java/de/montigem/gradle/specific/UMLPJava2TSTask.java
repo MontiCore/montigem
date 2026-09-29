@@ -1,17 +1,23 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.montigem.gradle.specific;
 
+import de.montigem.gradle.common.RelativePaths;
+import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.ProjectLayout;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
@@ -36,7 +42,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// Task might not be a @CacheableTask since relative paths are generated for HWC-files
+// cacheable because the generated imports of HWC files are relative, all inputs must stay relocatable
+@CacheableTask
 public abstract class UMLPJava2TSTask extends DefaultTask {
 
   @SkipWhenEmpty    // Implies @Incremental. Do nothing if no input model exists
@@ -45,11 +52,26 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
   @IgnoreEmptyDirectories
   public abstract ConfigurableFileCollection getInput();
 
-  @SkipWhenEmpty
-  @InputFiles
-  @PathSensitive(PathSensitivity.RELATIVE)
-  @IgnoreEmptyDirectories
+  // JSweet's RelativeImportAdapter only checks that these files exist, so their content is no input
+  @Internal
   public abstract ConfigurableFileCollection getInput4RelativePathCalculation();
+
+  @Input
+  public Provider<List<String>> getInput4RelativePathCalculationPaths() {
+    File projectDir = getProjectLayout().getProjectDirectory().getAsFile();
+    return getInput4RelativePathCalculation().getAsFileTree().getElements()
+        .map(files -> RelativePaths.of(projectDir, files));
+  }
+
+  @Inject
+  protected abstract ProjectLayout getProjectLayout();
+
+  public UMLPJava2TSTask() {
+    // @Internal drops the implicit task dependencies of this collection
+    dependsOn(getInput4RelativePathCalculation());
+    getJSweetRuntimeClassPath().from(getProject().getConfigurations()
+        .matching(c -> c.getName().equals("runtimeClasspath")));
+  }
 
   @Input
   public abstract ListProperty<String> getExcludeSource();
@@ -58,6 +80,7 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
   public abstract ListProperty<String> getExcludeTranspile();
 
   @InputFiles
+  @PathSensitive(PathSensitivity.RELATIVE)
   public abstract ConfigurableFileCollection getExcludeTranspileFiles();
 
   @Input
@@ -77,9 +100,14 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
   @OutputDirectory
   public abstract DirectoryProperty getJSweetCandiesDir();
 
-  @InputFiles
+  @Classpath
   public abstract ConfigurableFileCollection getJSweetClassPath();
 
+  /**
+   * The classpath JSweet compiles the sources against (the project's runtimeClasspath).
+   */
+  @Classpath
+  public abstract ConfigurableFileCollection getJSweetRuntimeClassPath();
 
   @Input
   public abstract ListProperty<String> getDomain();
@@ -89,6 +117,7 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
 
   @Optional
   @InputDirectory
+  @PathSensitive(PathSensitivity.RELATIVE)
   public abstract DirectoryProperty getHandWrittenJSweetDir();
 
   @Inject
@@ -131,9 +160,9 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
 
     File outputDir = getOutputDir().get().getAsFile();
 
-    if (!outputDir.exists()) {
-      outputDir.mkdirs();
-    }
+    // every run transpiles all sources, so outputs of removed classes must not survive
+    FileUtils.deleteDirectory(outputDir);
+    outputDir.mkdirs();
     File nodeInit = new File(workingDir, ".node-init");
     if (!nodeInit.exists()) {
       nodeInit.mkdirs();
@@ -142,7 +171,7 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
 
     // classpath passed to jsweet
     List<String> classPath = new ArrayList<>();
-    classPath.add(getProject().getConfigurations().getByName("runtimeClasspath").getAsPath());
+    classPath.add(getJSweetRuntimeClassPath().getAsPath());
 
     // Prepare a WorkQueue in the jsweet class path
     WorkQueue workQueue = getWorkerExecutor().classLoaderIsolation(spec ->

@@ -3,6 +3,7 @@ package de.montigem.gradle.specific;
 
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.io.paths.MCPath;
+import de.montigem.gradle.common.GradleLogGuard;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
@@ -25,6 +26,7 @@ public abstract class Model2JSweetAdapterAction<T extends Model2JSweetAdapterAct
 
   @Override
   public void execute() {
+    GradleLogGuard.ensureGradleLog();
     try {
       this.generateJSweetConfig();
     } catch (IOException e) {

@@ -1,0 +1,13 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+umlp SQLIdentifiers {
+
+  class ComponentWithAVeryLongNameForTestingIdentifiers {
+    String measurementValueWithAVeryLongNameForTestingIdentifierLimitA;
+    List<String> tagsWithAVeryLongNameForTestingTheIdentifierLimit;
+  }
+
+  class Target;
+
+  association ComponentWithAVeryLongNameForTestingIdentifiers -> Target;
+}

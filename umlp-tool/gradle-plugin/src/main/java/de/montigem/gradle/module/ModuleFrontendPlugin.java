@@ -3,6 +3,7 @@ package de.montigem.gradle.module;
 import com.github.gradle.node.NodeExtension;
 import com.github.gradle.node.NodePlugin;
 import com.github.gradle.node.npm.task.NpmTask;
+import com.github.gradle.node.npm.task.NpxTask;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.monticore.gradle.common.CommonMCTask;
@@ -97,6 +98,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
   public static final String GUI2SYM_JAR_TASK = "gui2symJar";
   public static final String BUILD_LIB_TASK = "buildLib";
   public static final String TEST_LIB_TASK = "testLib";
+  public static final String INSTALL_TEST_BROWSER_TASK = "installTestBrowser";
 
   @Inject
   public ModuleFrontendPlugin(SoftwareComponentFactory softwareComponentFactory, TaskDependencyFactory taskDependencyFactory) {
@@ -106,6 +108,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
   @Override
   public void apply(Project project) {
     project.getPluginManager().apply(NodePlugin.class);
+    // track only node_modules/.package-lock.json, hashing all of node_modules takes minutes
+    project.getExtensions().getByType(NodeExtension.class).getFastNpmInstall().set(true);
     project.getPluginManager().apply("java-library");
     project.getPluginManager().apply("maven-publish");
     if (!inRTE(project)) {
@@ -146,6 +150,22 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
     npmInstall.configure(task -> {
       task.dependsOn(npmrc4download);
       task.getEnvironment().putAll(isolatedNpmEnvironment);
+    });
+
+    // browser-based lib tests need the browser revision of the installed playwright,
+    // the install is a no-op if that revision is present already
+    TaskProvider<NpxTask> installTestBrowser = project.getTasks().register(INSTALL_TEST_BROWSER_TASK, NpxTask.class, task -> {
+      task.setGroup("verification");
+      task.setDescription("Installs the Playwright browser used by the lib tests.");
+      task.dependsOn(npmInstall);
+      task.getCommand().set("playwright");
+      task.getArgs().set(List.of("install", "chromium-headless-shell"));
+      task.getEnvironment().putAll(isolatedNpmEnvironment);
+      task.onlyIf("playwright is installed", t ->
+          project.getLayout().getProjectDirectory().file("node_modules/playwright-core").getAsFile().exists());
+      // the Angular unit-test runner launches this Chrome instead, e.g. in CI
+      task.onlyIf("CHROME_BIN is not set", t ->
+          !project.getProviders().environmentVariable("CHROME_BIN").isPresent());
     });
 
     Provider<RegularFile> localNpmrc = project.getLayout().getBuildDirectory()
@@ -233,6 +253,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
         subproject.getPlugins().withId("com.github.node-gradle.node", plugin -> {
           NodeExtension node = subproject.getExtensions().getByType(NodeExtension.class);
           node.getNodeProjectDir().set(project.getLayout().getProjectDirectory());
+          node.getFastNpmInstall().set(true);
         });
         if (!inRTE(subproject)) {
           subproject.getPluginManager().apply(MGBasePlugin.class);
@@ -522,7 +543,13 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
             pattern.exclude("**/build/**");
             pattern.exclude("**/*.spec.ts", "**/*.md");
           }));
-          task.getInputs().files("angular.json", "tsconfig.json", "tsconfig.prod.json", "package.json");
+          // the lib entry file imports the generated code from build/gui2java2ts
+          task.getInputs().files(subproject.fileTree(gui2java2tsDir, spec -> spec.exclude("**/*.java")))
+              .withPropertyName("generatedSources");
+          task.getInputs().files(subproject.file("index.ts"), subproject.file("ng-package.json"),
+              subproject.file("package.json")).withPropertyName("libConfig");
+          task.getInputs().files(p.file("angular.json"), p.file("tsconfig.json"),
+              p.file("tsconfig.prod.json"), p.file("package.json")).withPropertyName("workspaceConfig");
           // e.g. `build/dist/login/`
           task.getOutputs().dir(libBuildDir);
         });
@@ -530,7 +557,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
 
         TaskProvider<NpmTask> testLib = subproject.getTasks().register(TEST_LIB_TASK, NpmTask.class, task -> {
           task.setGroup("verification");
-          task.dependsOn(buildLib);
+          task.dependsOn(buildLib, installTestBrowser);
           task.getArgs().addAll(libQName.map(v -> List.of("run", "test", v)));
           task.getWorkingDir().set(p.getLayout().getProjectDirectory().getAsFile());
           task.getEnvironment().putAll(isolatedNpmEnvironment);
@@ -651,6 +678,9 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       task.setGroup("build");
       task.getArchiveClassifier().set("guisymbols");
       task.setIncludeEmptyDirs(false);
+      // generator tasks fingerprint this jar byte-wise, file timestamps would defeat the build cache
+      task.setPreserveFileTimestamps(false);
+      task.setReproducibleFileOrder(true);
     });
     project.getTasks().named(org.gradle.api.plugins.BasePlugin.ASSEMBLE_TASK_NAME).configure(it -> it.dependsOn(gui2symJar));
 
@@ -685,6 +715,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       task.setGroup("build");
       task.getArchiveClassifier().set("importmap");
       task.setIncludeEmptyDirs(false);
+      task.setPreserveFileTimestamps(false);
+      task.setReproducibleFileOrder(true);
     });
     project.getTasks().named(org.gradle.api.plugins.BasePlugin.ASSEMBLE_TASK_NAME).configure(it -> it.dependsOn(umlp2impJar));
 

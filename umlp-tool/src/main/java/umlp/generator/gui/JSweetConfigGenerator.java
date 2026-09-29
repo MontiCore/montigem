@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -96,12 +97,13 @@ public class JSweetConfigGenerator {
       String defaultConfig, String outputDir, List<String> srcDirs, Consumer<JsonObject> configTrafo
   ) {
     Path outputPath = Paths.get(outputDir, "jsweetconfig.json");
-    try (InputStream is = this.getClass().getClassLoader()
-        .getResourceAsStream(defaultConfig)) {
-      if (is == null) {
-        Log.error("0x0002F Generating jsweetconfig.json failed:"
-            + "\nResource not found: " + defaultConfig);
-      }
+    URL resource = this.getClass().getClassLoader().getResource(defaultConfig);
+    if (resource == null) {
+      Log.error("0x0002F Generating jsweetconfig.json failed:"
+          + "\nResource not found: " + defaultConfig);
+      return;
+    }
+    try (InputStream is = openUncached(resource)) {
       JsonElement jsweetconfigElement = JsonParser.parse(
           new String(is.readAllBytes(), StandardCharsets.UTF_8)
       );
@@ -125,6 +127,16 @@ public class JSweetConfigGenerator {
       Log.error("0x00031 Tried reading resource file `" + defaultConfig
           + "`, but failed with exception\n" + e);
     }
+  }
+
+  /**
+   * Without the JVM-wide jar cache: in the Gradle daemon, closing another class loader on the
+   * same jar would otherwise close this stream ("Stream closed").
+   */
+  protected static InputStream openUncached(URL resource) throws IOException {
+    URLConnection connection = resource.openConnection();
+    connection.setUseCaches(false);
+    return connection.getInputStream();
   }
 
   protected Optional<File> calcTOPFile(String origName) {
