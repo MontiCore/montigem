@@ -82,26 +82,25 @@ export class GemNumberInput extends GemNumberInputComponent implements OnInit, O
     return Number(this.min);
   }
 
+  private clampToMin(val: number): number {
+    return this.hasMin() ? Math.max(val, this.getMinValue()) : val;
+  }
+
+  private getCurrentNumber(): number {
+    return this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : 0);
+  }
+
   onStepUp(): void {
-    const currentNum = this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : (this.hasMin() && this.getMinValue() > 0 ? this.getMinValue() - this.getStepValue() : 0));
-    const nextVal = currentNum + this.getStepValue();
-    if (this.hasMin() && nextVal < this.getMinValue()) {
-      this.updateValue(this.getMinValue());
-    } else {
-      this.updateValue(nextVal);
-    }
+    this.updateValue(this.clampToMin(this.getCurrentNumber() + this.getStepValue()));
   }
 
   onStepDown(): void {
-    const currentNum = this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : (this.hasMin() && this.getMinValue() > 0 ? this.getMinValue() : 0));
-    if (this.hasMin() && currentNum <= this.getMinValue()) {
-      return;
-    }
-    const nextVal = currentNum - this.getStepValue();
-    if (this.hasMin() && nextVal < this.getMinValue()) {
+    this.updateValue(this.clampToMin(this.getCurrentNumber() - this.getStepValue()));
+  }
+
+  onBlur(): void {
+    if (this.hasMin() && this.lastNumericValue !== null && this.lastNumericValue < this.getMinValue()) {
       this.updateValue(this.getMinValue());
-    } else {
-      this.updateValue(nextVal);
     }
   }
 
