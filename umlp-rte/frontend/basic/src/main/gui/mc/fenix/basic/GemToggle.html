@@ -6,7 +6,7 @@
     class="gem-toggle-control"
     [class.gem-toggle-active]="isState()"
     [attr.aria-checked]="isState()"
-    [attr.aria-label]="getAriaLabel()"
+    [attr.aria-label]="getLabel() || 'Toggle'"
     [disabled]="isDisabled()"
     (click)="toggle()"
   >
