@@ -7,5 +7,9 @@
   [ngClass]="{'gem-nav-item-active' : isActive}"
   (click)="navigateOrAct()"
 >
-  {{title}}
+  <mat-icon *ngIf="iconName" class="gem-nav-item-icon" [fontIcon]="iconName"></mat-icon>
+  <span *ngIf="title" class="gem-nav-item-title">{{title}}</span>
+  <ng-container *ngIf="component">
+    <ng-container *ngTemplateOutlet="component"></ng-container>
+  </ng-container>
 </button>

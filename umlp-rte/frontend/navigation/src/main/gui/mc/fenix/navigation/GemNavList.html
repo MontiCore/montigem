@@ -1,9 +1,19 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
 
-<nav class="gem-nav-list">
+<nav class="gem-nav-list" [class.gem-nav-list-collapsed]="collapsed">
+  <button
+    type="button"
+    class="gem-nav-list-toggle"
+    (click)="toggleCollapsed()"
+    [attr.aria-label]="collapsed ? 'Expand navigation' : 'Collapse navigation'"
+  >
+    <mat-icon [fontIcon]="collapsed ? 'chevron_right' : 'chevron_left'"></mat-icon>
+  </button>
   <ng-container *ngTemplateOutlet="header"></ng-container>
-  <ng-container *ngFor="let c of components">
-    <ng-container *ngTemplateOutlet="c"></ng-container>
-  </ng-container>
+  <div class="gem-nav-list-items">
+    <ng-container *ngFor="let c of components">
+      <ng-container *ngTemplateOutlet="c"></ng-container>
+    </ng-container>
+  </div>
   <ng-container *ngTemplateOutlet="footer"></ng-container>
 </nav>

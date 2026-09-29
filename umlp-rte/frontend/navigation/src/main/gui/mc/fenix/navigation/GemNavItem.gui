@@ -10,6 +10,8 @@ component GemNavItem(
   String title,
   /** Route the navigation entry links to. */
   String target,
+  String iconName = null,
+  GUIViewElement component,
   /** Callback that is executed when the navigation entry is clicked. */
   Event<Void> leftClick
 )
