@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import resources.exectests.AnonymousInnerClassRuntimeCheck;
 import resources.exectests.ArrayStreamAdapterRuntimeCheck;
 import resources.exectests.CollectionsSingletonRuntimeCheck;
+import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
 import resources.exectests.NestedFlatMapElement;
@@ -54,6 +55,11 @@ public class ExecutionTests {
   @Test
   public void testLocalDate() {
     ExecTestRunner.runExecutionTest(LocalDateRuntimeCheck.class);
+  }
+
+  @Test
+  public void testDateArithmeticWithAsyncArgument() {
+    ExecTestRunner.runExecutionTest(DateArithmeticAsyncArgumentRuntimeCheck.class);
   }
 
   @Test
