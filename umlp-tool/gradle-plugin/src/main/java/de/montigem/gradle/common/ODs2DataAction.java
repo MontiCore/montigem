@@ -10,7 +10,11 @@ public abstract class ODs2DataAction extends AToolAction {
   @Override
   protected void doRun(String[] args) {
     final String prefix = "[" + getParameters().getProgressName().get() + "] ";
-    isolator.executeInClassloader(ODs2DataToolInvoker.class.getName(), "run",
-        args, prefix, getParameters().getExtraClasspathElements());
+    try {
+      isolator.executeInClassloader(ODs2DataToolInvoker.class.getName(), "run",
+          args, prefix, getParameters().getExtraClasspathElements());
+    } finally {
+      IsolatedToolCaches.release();
+    }
   }
 }

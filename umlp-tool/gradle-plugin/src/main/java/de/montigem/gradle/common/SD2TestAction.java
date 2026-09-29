@@ -10,7 +10,11 @@ public abstract class SD2TestAction extends AToolAction {
   @Override
   protected void doRun(String[] args) {
     final String prefix = "[" + getParameters().getProgressName().get() + "] ";
-    isolator.executeInClassloader(SD2TestToolInvoker.class.getName(), "run",
-        args, prefix, getParameters().getExtraClasspathElements());
+    try {
+      isolator.executeInClassloader(SD2TestToolInvoker.class.getName(), "run",
+          args, prefix, getParameters().getExtraClasspathElements());
+    } finally {
+      IsolatedToolCaches.release();
+    }
   }
 }

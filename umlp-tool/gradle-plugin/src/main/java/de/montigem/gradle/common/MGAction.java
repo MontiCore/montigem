@@ -15,7 +15,11 @@ public abstract class MGAction extends AToolAction {
   @Override
   protected void doRun(String[] args) {
     final String prefix = "[" + getParameters().getProgressName().get() + "] ";
-    isolator.executeInClassloader(UMLPToolInvoker.class.getName(), "run",
-        args, prefix, getParameters().getExtraClasspathElements());
+    try {
+      isolator.executeInClassloader(UMLPToolInvoker.class.getName(), "run",
+          args, prefix, getParameters().getExtraClasspathElements());
+    } finally {
+      IsolatedToolCaches.release();
+    }
   }
 }
