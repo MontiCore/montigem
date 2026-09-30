@@ -26,6 +26,10 @@ public class WarmIsolation extends CachedIsolation.WithClassPath {
   protected static final int MAX_WARM_LOADERS = 4;
   protected static final long COLD_IDLE_MS = 6000;
 
+  protected long idleMillis() {
+    return TimeUnit.SECONDS.toMillis(Long.getLong(IDLE_SECONDS_PROPERTY, DEFAULT_IDLE_SECONDS));
+  }
+
   @Override
   protected synchronized void cleanupOld(long threshold) {
     super.cleanupOld(internalRunners.size() > MAX_WARM_LOADERS ? Math.min(threshold, COLD_IDLE_MS) : threshold);
@@ -35,7 +39,7 @@ public class WarmIsolation extends CachedIsolation.WithClassPath {
    * Calls the static method run(String[]) of the given class in a warm class loader for the classpath.
    */
   public void run(String className, String[] args, String prefix, Set<File> classpath, ObjectFactory objects) {
-    setCloseThreshold(TimeUnit.SECONDS.toMillis(Long.getLong(IDLE_SECONDS_PROPERTY, DEFAULT_IDLE_SECONDS)));
+    setCloseThreshold(idleMillis());
     executeInClassloader(className, "run", args, prefix,
         objects.fileCollection().from(ToolClasspathCopies.of(classpath)));
   }
