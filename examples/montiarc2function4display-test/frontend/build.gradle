@@ -10,6 +10,7 @@ configurations {
 
 tasks.named("gui2java2ts", GUI2Java2TSTask) {
   guiCreateModels = [
-      "gui.Display"
+      "demo.Demo",
+      "demo.Display",
   ]
 }

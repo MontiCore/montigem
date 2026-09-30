@@ -1,0 +1,27 @@
+package demo;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.editor.MonacoEditor;
+import mc.fenix.functiondisplay.FunctionDisplay;
+import mc.fenix.input.GemTextInput;
+
+import MontiArcVizExperiment.DemoApp;
+
+page Demo(DemoApp app) {
+  @GemRow(height = "100%", components = [
+    @GemColumn(width = "50%", components = [
+      @GemTextInput(
+        labelText = "Main function name:",
+        entry = app.mainFunctionName
+      ),
+      @MonacoEditor(
+        width = "100%",
+        height = "500px",
+        entry = app.montiArcSrc,
+        language = "MontiArc"
+      ),
+    ]),
+    @FunctionDisplay(data = app.render()),
+  ]);
+}

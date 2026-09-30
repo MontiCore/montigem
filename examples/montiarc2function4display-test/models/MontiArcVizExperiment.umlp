@@ -4,6 +4,13 @@ import mc.fenix.charts.GemBarChartTypes.GemBarChartData;
 umlp MontiArcVizExperiment {
 
   <<singleton>>
+  class DemoApp {
+    Function4Display render();
+    String mainFunctionName;
+    String montiArcSrc;
+  }
+
+  <<singleton>>
   class MainHolder {
     Function4Display getMainFunction();
     GemBarChartData dummy();

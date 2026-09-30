@@ -1,4 +1,4 @@
-package gui;
+package demo;
 
 import mc.fenix.functiondisplay.FunctionDisplay;
 import mc.fenix.functiondisplay.FunctionStructure4Fenix.Function4Display;
