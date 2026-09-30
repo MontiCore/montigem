@@ -48,6 +48,18 @@ public class UMLPPipelineData {
     return cmdOptions;
   }
 
+  /**
+   * An MCPath keeps a class loader per entry, which holds a jar of the path open until it is closed.
+   * The tool's class loader stays open between builds, so the paths must be closed after each run.
+   */
+  public void closePaths() {
+    importedSymbolPath.close();
+    modelPath.close();
+    hwcPath.close();
+    fpPath.close();
+    importsPath.close();
+  }
+
   // At some point: allow further extensibility, cf. Gradle Extensible
 
 }
