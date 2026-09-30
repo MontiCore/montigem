@@ -1,7 +1,6 @@
 package de.montigem.gradle.specific.ocl;
 
 import de.monticore.gradle.common.AToolAction;
-import de.montigem.gradle.common.IsolatedToolCaches;
 import de.monticore.gradle.internal.isolation.CachedIsolation;
 
 public abstract class OCL2JavaAction extends AToolAction {
@@ -11,11 +10,7 @@ public abstract class OCL2JavaAction extends AToolAction {
   @Override
   protected void doRun(String[] args) {
     final String prefix = "[" + getParameters().getProgressName().get() + "] ";
-    try {
-      isolator.executeInClassloader(OCL2JavaToolInvoker.class.getName(), "run",
-          args, prefix, getParameters().getExtraClasspathElements());
-    } finally {
-      IsolatedToolCaches.release();
-    }
+    isolator.executeInClassloader(OCL2JavaToolInvoker.class.getName(), "run",
+        args, prefix, getParameters().getExtraClasspathElements());
   }
 }

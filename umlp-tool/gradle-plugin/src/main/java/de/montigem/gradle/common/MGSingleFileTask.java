@@ -9,6 +9,8 @@ import de.montigem.gradle.stat.TaskStatData;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.services.BuildService;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
 import org.gradle.api.tasks.Internal;
@@ -25,6 +27,7 @@ import java.util.function.Function;
 
 public abstract class MGSingleFileTask extends MCSingleFileTask implements GradleTaskStatistic {
   protected final TaskStatData statdata = new TaskStatData("SingleFile");
+  private final Provider<? extends BuildService<?>> javaBeansCacheCleanup;
 
   @InputFiles     // Not Incremental. Any change should trigger full rebuild
   @PathSensitive(PathSensitivity.NAME_ONLY)
@@ -52,6 +55,9 @@ public abstract class MGSingleFileTask extends MCSingleFileTask implements Gradl
     }));
 
     getExtraClasspathElements().from(getModules());
+
+    javaBeansCacheCleanup = JavaBeansCacheCleanup.register(getProject().getGradle());
+    usesService(javaBeansCacheCleanup);
   }
 
   @Override
@@ -82,6 +88,8 @@ public abstract class MGSingleFileTask extends MCSingleFileTask implements Gradl
   @Override
   protected void startGeneration(List<String> args, String progressName) {
     statdata.countRun();
+    // Gradle only closes services it has created
+    javaBeansCacheCleanup.get();
     super.startGeneration(args, progressName);
   }
 
