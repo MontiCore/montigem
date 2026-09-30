@@ -13,9 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -51,33 +49,28 @@ public abstract class Java2TSAction implements WorkAction<Java2TSAction.Params> 
   @Override
   public void execute() {
     Params params = getParameters();
-    List<String> args = new ArrayList<>(List.of(
-        JSweetInvoker.BASE, params.getBaseDirectory().getAsFile().get().getPath(),
-        JSweetInvoker.WORKING, params.getWorkingDirectory().getAsFile().get().getPath(),
-        JSweetInvoker.OUT, params.getOutputDir().getAsFile().get().getPath(),
-        JSweetInvoker.CANDIES, params.getExtractedCandiesJavascriptDir().getAsFile().get().getPath(),
-        JSweetInvoker.CLASSPATH, params.getClassPath().get(),
-        JSweetInvoker.NODE_VERSION, params.getNodeVersion().get(),
-        JSweetInvoker.VERBOSE, String.valueOf(params.getVerbose().getOrElse(false)),
-        JSweetInvoker.SOURCE_MAPS, String.valueOf(params.getCreateSourceMaps().getOrElse(false))));
-    for (File f : params.getInput().getFiles()) {
-      args.add(JSweetInvoker.INPUT);
-      args.add(f.getPath());
-    }
-    for (File f : params.getExcludedFromTranspilation().getFiles()) {
-      args.add(JSweetInvoker.EXCLUDE);
-      args.add(f.getPath());
-    }
+    JSweetSettings settings = new JSweetSettings();
+    settings.base = params.getBaseDirectory().getAsFile().get();
+    settings.working = params.getWorkingDirectory().getAsFile().get();
+    settings.out = params.getOutputDir().getAsFile().get();
+    settings.candies = params.getExtractedCandiesJavascriptDir().getAsFile().get();
+    settings.classPath = params.getClassPath().get();
+    settings.nodeVersion = params.getNodeVersion().get();
+    settings.verbose = params.getVerbose().getOrElse(false);
+    settings.sourceMaps = params.getCreateSourceMaps().getOrElse(false);
+    settings.input.addAll(params.getInput().getFiles());
+    settings.excluded.addAll(params.getExcludedFromTranspilation().getFiles());
+    String[] args = settings.toArgs();
 
     Set<File> classpath = params.getJSweetClassPath().getFiles();
     if (supportsWarmLoader(classpath)) {
-      isolator.run(JSweetInvoker.class.getName(), args.toArray(String[]::new), "[jsweet] ", classpath, getObjects());
+      isolator.run(JSweetInvoker.class.getName(), args, "[jsweet] ", classpath, getObjects());
     }
     else {
       Set<File> singleUse = new LinkedHashSet<>(classpath);
       // a path no other run has, so the isolator never hands this loader to a later run
       singleUse.add(new File(System.getProperty("java.io.tmpdir"), "jsweet-single-use-" + UUID.randomUUID()));
-      singleUseIsolator.run(JSweetInvoker.class.getName(), args.toArray(String[]::new), "[jsweet] ", singleUse, getObjects());
+      singleUseIsolator.run(JSweetInvoker.class.getName(), args, "[jsweet] ", singleUse, getObjects());
     }
   }
 
