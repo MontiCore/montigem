@@ -1,18 +1,25 @@
 import mc.fenix.functiondisplay.FunctionStructure4Fenix.Function4Display;
-import mc.fenix.charts.GemBarChartTypes.GemBarChartData;
 
 umlp MontiArcVizExperiment {
 
+  class RenderData {
+    String mainFunctionName;
+    String src;
+    /boolean valid;
+  }
+
   <<singleton>>
   class DemoApp {
-    Function4Display render();
-    String mainFunctionName;
-    String montiArcSrc;
+    String mainFunctionNameInput = "demo.Main";
+    String srcInput = "package demo;\n\ncomponent Main {\n}";
+
+    Function4Display render(RenderData data);
   }
+
+  association [*] DemoApp -> (renderedFunction) RenderData [0..1];
 
   <<singleton>>
   class MainHolder {
     Function4Display getMainFunction();
-    GemBarChartData dummy();
   }
 }
