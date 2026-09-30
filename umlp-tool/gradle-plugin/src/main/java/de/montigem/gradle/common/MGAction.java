@@ -3,7 +3,10 @@ package de.montigem.gradle.common;
 
 import de.monticore.gradle.common.AToolAction;
 import de.monticore.gradle.internal.isolation.CachedIsolation;
+import org.gradle.api.file.FileCollection;
+import org.gradle.api.model.ObjectFactory;
 
+import javax.inject.Inject;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -32,11 +35,15 @@ public abstract class MGAction extends AToolAction {
     }
   };
 
+  @Inject
+  protected abstract ObjectFactory getObjects();
+
   @Override
   protected void doRun(String[] args) {
     final String prefix = "[" + getParameters().getProgressName().get() + "] ";
     isolator.setCloseThreshold(TimeUnit.SECONDS.toMillis(Long.getLong(IDLE_SECONDS_PROPERTY, DEFAULT_IDLE_SECONDS)));
-    isolator.executeInClassloader(UMLPToolInvoker.class.getName(), "run",
-        args, prefix, getParameters().getExtraClasspathElements());
+    FileCollection classpath = getObjects().fileCollection()
+        .from(ToolClasspathCopies.of(getParameters().getExtraClasspathElements().getFiles()));
+    isolator.executeInClassloader(UMLPToolInvoker.class.getName(), "run", args, prefix, classpath);
   }
 }
