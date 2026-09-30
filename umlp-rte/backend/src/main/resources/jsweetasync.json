@@ -53,6 +53,17 @@
         "umlp.backendrte.common.BaseClassObjectMapper.deserialize",
         "umlp.backendrte.common.BaseClassObjectMapper._deserialize",
 
+        "umlp.backendrte.common.PojoGraphContext.serialize",
+        "umlp.backendrte.common.PojoGraphContext.deserialize",
+        "umlp.backendrte.common.PojoGraphContext.deserializeValue",
+        "umlp.backendrte.common.PojoGraphContext.serializeObject",
+        "umlp.backendrte.common.PojoGraphContext.deserializeObject",
+        "umlp.backendrte.common.PojoGraphContext.writeObject",
+        "umlp.backendrte.command.PojoJsonDeSer.createObject",
+        "umlp.backendrte.command.PojoJsonDeSer.readJson",
+        "umlp.backendrte.command.PojoJsonDeSer.writeJson",
+        "umlp.backendrte.command.PojoJsonDeSer.finishObject",
+
         "umlp.backendrte.common.BooleanDeSer.serialize",
         "umlp.backendrte.common.BooleanDeSer.deserialize",
         "umlp.backendrte.common.ByteDeSer.serialize",

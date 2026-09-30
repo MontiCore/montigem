@@ -77,14 +77,13 @@ public class FuStruMo2FuStruMo4DisplayTransformer {
     var channelId = port.getChannel().getId();
     var channelColor = getColor(channelId);
     var channel = getChannel(channelId);
-    var port4Display = new Port4DisplayBuilder()
+    return new Port4DisplayBuilder()
+        .name(port.getName())
         .borderColor(channelColor)
         .borderColorHover(channelColor)
         .channel4Display(channel)
         .build()
         .orElseThrow();
-    channel.addPort4Display(port4Display);
-    return port4Display;
   }
 
   protected Channel4Display getChannel(long channelId) {

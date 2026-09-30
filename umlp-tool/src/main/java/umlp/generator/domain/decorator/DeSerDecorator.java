@@ -81,6 +81,8 @@ public class DeSerDecorator extends DomainClassDecorator {
     getCD4C().addMethod(deSer, getGetTypeIdentifierTemplate(),
         Joiners.DOT.join(getPackageName(origCD, DEFAULT_PACKAGE), originalClassName));
 
+    getCD4C().addMethod(deSer, getIsPojoDeSerTemplate(), false);
+
     addDeSerAddons(deSer, cdClass);
 
     addImports(cdClass, deSer);
@@ -115,6 +117,10 @@ public class DeSerDecorator extends DomainClassDecorator {
 
   protected String getGetTypeIdentifierTemplate() {
     return "umlp.deser.GetTypeIdentifier";
+  }
+
+  protected String getIsPojoDeSerTemplate() {
+    return "umlp.deser.IsPojoDeSer";
   }
 
   protected void addSerAndDeserMethod(String cdName, String originalClassName, ASTCDClass deSer, ASTCDAttribute attr) {

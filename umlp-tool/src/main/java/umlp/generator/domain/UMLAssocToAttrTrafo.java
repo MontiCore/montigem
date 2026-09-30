@@ -59,6 +59,10 @@ public class UMLAssocToAttrTrafo implements CDBasisVisitor2, CDAssociationVisito
       // new created association (see UMLAttrToAssocTrafo)
       return;
     }
+    if (GenService.isPojoCDType(assoc.getLeft().getSymbol().getType())
+        && GenService.isPojoCDType(assoc.getRight().getSymbol().getType())) {
+      return;
+    }
     ASTCDAssocSide assocSide;
     SymTypeExpression classType;
     if (GenService.isCDEnum(assoc.getLeft().getSymbol().getType()) ||

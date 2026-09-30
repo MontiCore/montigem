@@ -1,4 +1,5 @@
 export * from "./BaseClassObjectMapper";
+export * from "./PojoGraphContext";
 export * from "./Gem";
 export * from "./GeneralErrorCollector";
 export * from "./AssociationDBEntry";

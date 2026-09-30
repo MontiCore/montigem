@@ -7,6 +7,10 @@ import {BaseClassObjectMapper} from "../common";
 import {JsonDeSer} from "./JsonDeSer";
 
 export class CommandResultDeSer implements JsonDeSer<CommandResult<any>> {
+
+  public isPojoDeSer(): boolean {
+    return false;
+  }
   constructor() {
   }
 

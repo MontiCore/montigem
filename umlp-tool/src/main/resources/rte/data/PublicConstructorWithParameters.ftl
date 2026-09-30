@@ -16,5 +16,5 @@ ${tc.signature("name", "attributes")}
 ${cd4c.constructor("public ${name}(${params})")}
 
 <#list attributes as attr>
-  this.${attr.name} = (${attr.name});
+  this.set${attr.name?remove_beginning("_")?cap_first}${genService.isList(attr)?then("List", "")}(${attr.name});
 </#list>
