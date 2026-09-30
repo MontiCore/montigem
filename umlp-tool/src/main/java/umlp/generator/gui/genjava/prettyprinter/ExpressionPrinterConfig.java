@@ -28,6 +28,10 @@ public class ExpressionPrinterConfig {
   private ExpressionPrinterConfig() {
   }
 
+  public static void cleanUp() {
+    instance = null;
+  }
+
   public static String attr2Getter(ASTFieldAccessExpression node) {
     if (GUIGeneratorUtil.getInstance().isEnumMember(node)) {
       return node.getName();
