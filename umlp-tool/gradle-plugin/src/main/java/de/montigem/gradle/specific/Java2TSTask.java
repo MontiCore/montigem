@@ -117,10 +117,8 @@ public abstract class Java2TSTask extends DefaultTask {
     List<String> classPath = new ArrayList<>();
     classPath.add(getProject().getConfigurations().getByName("runtimeClasspath").getAsPath());
 
-    // Prepare a WorkQueue in the jsweet class path
-    WorkQueue workQueue = getWorkerExecutor().classLoaderIsolation(workerSpec -> {
-      workerSpec.getClasspath().from(getJSweetClassPath());
-    });
+    // JSweet runs in a class loader that stays open between builds, see Java2TSAction
+    WorkQueue workQueue = getWorkerExecutor().noIsolation();
 
     // collect all .java files
     Set<Path> individualInputPaths = walkAndCollectJavaFiles(getInput().getFiles());
@@ -163,6 +161,7 @@ public abstract class Java2TSTask extends DefaultTask {
       params.getExtractedCandiesJavascriptDir().set(candiesJsOut);
       params.getClassPath().set(String.join(File.pathSeparator, classPath));
       params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
+      params.getJSweetClassPath().from(getJSweetClassPath());
     });
 
     // Block until jsweet finishes

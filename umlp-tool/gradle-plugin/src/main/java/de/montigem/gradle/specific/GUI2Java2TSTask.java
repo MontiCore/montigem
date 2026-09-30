@@ -254,10 +254,8 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
     // also add all files (recursively) from getExcludeTranspileFiles
     walkAndCollectJavaFiles(getExcludeTranspileFiles().getFiles()).forEach(excludedFromTr::from);
 
-    // Single WorkQueue so both actions share the same isolated classloader
-    WorkQueue jsweetQueue = getWorkerExecutor().classLoaderIsolation(spec ->
-        spec.getClasspath().from(getJSweetClassPath())
-    );
+    // JSweet runs in a class loader that stays open between builds, see Java2TSAction
+    WorkQueue jsweetQueue = getWorkerExecutor().noIsolation();
 
     // First action: cd2java Java files (if any)
     if (!cd2javaPaths.isEmpty()) {
@@ -305,6 +303,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
         params.getExtractedCandiesJavascriptDir().set(candiesJsOut);
         params.getClassPath().set(classPathStr);
         params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
+        params.getJSweetClassPath().from(getJSweetClassPath());
       });
       jsweetQueue.await();
     }
@@ -348,6 +347,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
       params.getExtractedCandiesJavascriptDir().set(candiesJsOut);
       params.getClassPath().set(classPathStr);
       params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
+      params.getJSweetClassPath().from(getJSweetClassPath());
     });
 
     // Block until jsweet finishes
