@@ -58,6 +58,15 @@ Start Hot Reload:
 Currently Known Limitations:
 * During reload an error-message might be shown for a few seconds
 
+### Warm Generator
+The generator stays loaded for 10 minutes after its last use, so the build after an edit starts faster.
+At most 4 generator class loaders stay open. A large parallel build closes its class loaders after 6 seconds.
+The system property `umlp.toolLoaderIdleSeconds` sets the time, e.g. in `gradle.properties`:
+```properties
+systemProp.umlp.toolLoaderIdleSeconds=6
+```
+The value `6` gives the behavior of earlier versions, e.g. when the memory of the machine is low.
+
 ## Notes for Developers of UMLP-Tool
 The gradle-``UMLPTask`` supports incremental builds.
 It only runs when a _relevant_ input has changed.

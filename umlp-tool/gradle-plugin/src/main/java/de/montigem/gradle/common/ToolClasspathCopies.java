@@ -29,7 +29,9 @@ import java.util.Set;
 public final class ToolClasspathCopies {
 
   private static final String GRADLE_DEPENDENCY_CACHE = "/caches/modules-2/files-2.1/";
-  private static final Path ROOT = Path.of(System.getProperty("java.io.tmpdir"), "umlp-tool-classpath");
+  // one folder per user, on Linux all users share the temp folder
+  private static final Path ROOT = Path.of(System.getProperty("java.io.tmpdir"),
+      "umlp-tool-classpath-" + System.getProperty("user.name", "user").replaceAll("[^A-Za-z0-9._-]", "_"));
   private static final Duration KEEP = Duration.ofDays(7);
 
   private ToolClasspathCopies() {
@@ -56,6 +58,9 @@ public final class ToolClasspathCopies {
         } catch (FileAlreadyExistsException | AccessDeniedException e) {
           // a parallel task was faster, its copy has the same content
           Files.deleteIfExists(tmp);
+          if (!Files.isRegularFile(target)) {
+            throw e;
+          }
         }
         deleteOldCopies(dir);
       }
