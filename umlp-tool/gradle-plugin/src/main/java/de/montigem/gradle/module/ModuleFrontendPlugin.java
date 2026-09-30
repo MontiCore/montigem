@@ -81,7 +81,7 @@ import static de.montigem.gradle.FrontendBasePlugin.useLocalDependencies;
 import static de.montigem.gradle.FrontendPlugin.CD2JAVA_TASK;
 import static de.montigem.gradle.FrontendPlugin.CD2SYM_TASK;
 import static de.montigem.gradle.FrontendPlugin.GUI2JAVA2TS_TASK;
-import static de.montigem.gradle.FrontendPlugin.JSWEET_CONFIG;
+import static de.montigem.gradle.FrontendPlugin.JSWEET_TOOL_CONFIG;
 import static de.montigem.gradle.FrontendPlugin.SRC_UMLP_CONFIG;
 import static de.montigem.gradle.FrontendPlugin.UMLP_JAVA2TS_TASK;
 import static de.montigem.gradle.FrontendPlugin.defaultExcludedSources;
@@ -338,7 +338,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.getInput4RelativePathCalculation().from(srcGUI.getAsFileTree().matching(
               patternFilter -> patternFilter.include("**/*.ts")
           ));
-          task.getJSweetClassPath().from(subproject.getConfigurations().named(JSWEET_CONFIG));
+          task.getJSweetClassPath().from(subproject.getConfigurations().named(JSWEET_TOOL_CONFIG));
 
           for (String s : defaultExcludedSources) {
             task.getExcludeSource().add(s);
@@ -473,7 +473,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
 
           task.getJSweetWorkingDir().set(internalJSweetDir.map(dir -> dir.dir("gui2java2ts")));
           task.getJSweetCandiesDir().set(internalJSweetDir.map(dir -> dir.dir("guiCandies")));
-          task.getJSweetClassPath().from(subproject.getConfigurations().named(JSWEET_CONFIG));
+          task.getJSweetClassPath().from(subproject.getConfigurations().named(JSWEET_TOOL_CONFIG));
 
           // TODO: Remove the following at some point
           // required with getExcludeTranspile - otherwise "import { Project } from 'dtcockpit/Project';" is missing in GUI ts files

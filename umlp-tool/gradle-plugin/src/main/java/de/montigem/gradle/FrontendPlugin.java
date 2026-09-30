@@ -77,6 +77,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
 
   public static final String SRC_UMLP_CONFIG = "srcUMLPConfig";
   public static final String JSWEET_CONFIG = "jsweetConfig";
+  public static final String JSWEET_TOOL_CONFIG = "jsweetTool";
 
   public static List<String> defaultExcludedSources = List.of(
       "glob:**/shellapi/*ShellAPI.java",
@@ -248,7 +249,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       task.getInput4RelativePathCalculation().from(srcGUI.getAsFileTree().matching(
           patternFilter -> patternFilter.include("**/*.ts")
       ));
-      task.getJSweetClassPath().from(project.getConfigurations().named(JSWEET_CONFIG));
+      task.getJSweetClassPath().from(project.getConfigurations().named(JSWEET_TOOL_CONFIG));
 
       for (String s : defaultExcludedSources) {
         task.getExcludeSource().add(s);
@@ -345,7 +346,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
 
       task.getJSweetWorkingDir().set(internalJSweetDir.map(dir -> dir.dir("gui2java2ts")));
       task.getJSweetCandiesDir().set(internalJSweetDir.map(dir -> dir.dir("guiCandies")));
-      task.getJSweetClassPath().from(project.getConfigurations().named(JSWEET_CONFIG));
+      task.getJSweetClassPath().from(project.getConfigurations().named(JSWEET_TOOL_CONFIG));
 
       // TODO: Remove the following at some point
       // required with getExcludeTranspile - otherwise "import { Project } from 'dtcockpit/Project';" is missing in GUI ts files
@@ -441,12 +442,19 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       config.extendsFrom(project.getConfigurations().getByName("compileClasspath"));
     });
 
+    // JSweet itself, umlp-jsweet brings the transpiler. The class loader that runs JSweet stays open between
+    // builds (see Java2TSAction), so it must not contain the project's own jars, which change with every edit.
+    // JSweet compiles against the project's runtimeClasspath instead.
+    project.getConfigurations().register(JSWEET_TOOL_CONFIG, config -> config.setCanBeConsumed(false));
+
     if (inUMLP(project) && useLocalDependencies(project)) {
       project.getDependencies().add(JSWEET_CONFIG, project.project(":umlp-jsweet"));
+      project.getDependencies().add(JSWEET_TOOL_CONFIG, project.project(":umlp-jsweet"));
       project.getDependencies().add("runtimeOnly", project.project(":umlp-jsweet"));
     }
     else {
       project.getDependencies().add(JSWEET_CONFIG, "umlp:umlp-jsweet:" + umlpVersion(project));
+      project.getDependencies().add(JSWEET_TOOL_CONFIG, "umlp:umlp-jsweet:" + umlpVersion(project));
     }
   }
 
