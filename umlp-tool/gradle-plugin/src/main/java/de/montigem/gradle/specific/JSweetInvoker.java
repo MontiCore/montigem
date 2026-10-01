@@ -15,6 +15,14 @@ import org.jsweet.transpiler.util.ConsoleTranspilationHandler;
 import org.jsweet.transpiler.util.ErrorCountTranspilationHandler;
 import org.jsweet.transpiler.util.ProcessUtil;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -73,6 +81,22 @@ public class JSweetInvoker {
     }
     if (transpilationHandler.getErrorCount() > 0) {
       throw new RuntimeException("JSweet Transpile failed with errors.");
+    }
+    if (settings.outputList != null) {
+      writeOutputList(settings.outputList, sourceFiles);
+    }
+  }
+
+  static void writeOutputList(File outputList, SourceFile[] sourceFiles) {
+    List<String> outputs = Arrays.stream(sourceFiles)
+        .map(SourceFile::getTsFile)
+        .filter(Objects::nonNull)
+        .map(File::getAbsolutePath)
+        .collect(Collectors.toList());
+    try {
+      Files.write(outputList.toPath(), outputs, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
     }
   }
 }

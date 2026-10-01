@@ -7,6 +7,7 @@ import java.io.File;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -38,6 +39,10 @@ class JSweetSettingsTest {
     assertEquals(s.sourceMaps, read.sourceMaps);
     assertEquals(s.input, read.input);
     assertEquals(s.excluded, read.excluded);
+    assertNull(read.outputList);
+
+    s.outputList = new File("build/internal_jsweet/umlpJava2ts/outputs.txt");
+    assertEquals(s.outputList, JSweetSettings.parse(s.toArgs()).outputList);
   }
 
   @Test

@@ -21,6 +21,7 @@ public class JSweetSettings {
   private static final String SOURCE_MAPS = "--source-maps";
   private static final String INPUT = "--input";
   private static final String EXCLUDE = "--exclude";
+  private static final String OUTPUT_LIST = "--output-list";
 
   public File base;
   public File working;
@@ -32,6 +33,10 @@ public class JSweetSettings {
   public boolean sourceMaps;
   public final List<File> input = new ArrayList<>();
   public final List<File> excluded = new ArrayList<>();
+  /**
+   * Optional: after a successful run, JSweet's output files are listed in this file, one path per line.
+   */
+  public File outputList;
 
   public String[] toArgs() {
     List<String> args = new ArrayList<>(List.of(
@@ -45,6 +50,9 @@ public class JSweetSettings {
         SOURCE_MAPS, String.valueOf(sourceMaps)));
     input.forEach(f -> args.addAll(List.of(INPUT, f.getPath())));
     excluded.forEach(f -> args.addAll(List.of(EXCLUDE, f.getPath())));
+    if (outputList != null) {
+      args.addAll(List.of(OUTPUT_LIST, outputList.getPath()));
+    }
     return args.toArray(String[]::new);
   }
 
@@ -66,6 +74,7 @@ public class JSweetSettings {
         case SOURCE_MAPS -> s.sourceMaps = Boolean.parseBoolean(value);
         case INPUT -> s.input.add(new File(value));
         case EXCLUDE -> s.excluded.add(new File(value));
+        case OUTPUT_LIST -> s.outputList = new File(value);
         default -> throw new IllegalArgumentException("Unknown JSweet argument " + args[i]);
       }
     }

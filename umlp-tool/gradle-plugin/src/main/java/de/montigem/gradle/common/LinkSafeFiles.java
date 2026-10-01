@@ -2,12 +2,14 @@
 package de.montigem.gradle.common;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Set;
 
 /**
  * Deleting that never follows links. commons-io and Files.walk follow Windows junctions,
@@ -23,6 +25,14 @@ public final class LinkSafeFiles {
    * If {@code dir} itself is a link, only the link is removed.
    */
   public static void deleteContents(Path dir) throws IOException {
+    deleteContentsExcept(dir, Set.of());
+  }
+
+  /**
+   * Like {@link #deleteContents(Path)}, but keeps the files in {@code keep} (absolute, normalized paths) and the
+   * folders that still contain one of them.
+   */
+  public static void deleteContentsExcept(Path dir, Set<Path> keep) throws IOException {
     if (!Files.exists(dir, LinkOption.NOFOLLOW_LINKS)) {
       return;
     }
@@ -43,7 +53,9 @@ public final class LinkSafeFiles {
 
       @Override
       public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        Files.delete(file);
+        if (!keep.contains(file.toAbsolutePath().normalize())) {
+          Files.delete(file);
+        }
         return FileVisitResult.CONTINUE;
       }
 
@@ -52,12 +64,18 @@ public final class LinkSafeFiles {
         if (exc != null) {
           throw exc;
         }
-        if (!d.equals(dir)) {
+        if (!d.equals(dir) && isEmpty(d)) {
           Files.delete(d);
         }
         return FileVisitResult.CONTINUE;
       }
     });
+  }
+
+  private static boolean isEmpty(Path dir) throws IOException {
+    try (DirectoryStream<Path> entries = Files.newDirectoryStream(dir)) {
+      return !entries.iterator().hasNext();
+    }
   }
 
   private static boolean isLink(BasicFileAttributes attrs) {

@@ -3,6 +3,7 @@ package de.montigem.gradle.specific;
 import de.montigem.gradle.common.WarmIsolation;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.model.ObjectFactory;
 import org.gradle.api.provider.Property;
 import org.gradle.workers.WorkAction;
@@ -60,6 +61,7 @@ public abstract class Java2TSAction implements WorkAction<Java2TSAction.Params> 
     settings.sourceMaps = params.getCreateSourceMaps().getOrElse(false);
     settings.input.addAll(params.getInput().getFiles());
     settings.excluded.addAll(params.getExcludedFromTranspilation().getFiles());
+    settings.outputList = params.getOutputList().getAsFile().getOrNull();
     String[] args = settings.toArgs();
 
     Set<File> classpath = params.getJSweetClassPath().getFiles();
@@ -133,6 +135,11 @@ public abstract class Java2TSAction implements WorkAction<Java2TSAction.Params> 
     Property<String> getClassPath();
 
     Property<String> getNodeVersion();
+
+    /**
+     * Optional, see {@link JSweetSettings#outputList}.
+     */
+    RegularFileProperty getOutputList();
 
     /**
      * JSweet itself, loaded in the warm class loader.

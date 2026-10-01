@@ -7,6 +7,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -62,5 +63,27 @@ class LinkSafeFilesTest {
   void ignoresAMissingFolder() throws IOException {
     LinkSafeFiles.deleteContents(tmp.resolve("missing"));
     assertFalse(Files.exists(tmp.resolve("missing")));
+  }
+
+  @Test
+  void keepsTheListedFilesAndTheirFolders() throws Exception {
+    Path sources = Files.createDirectories(tmp.resolve("sources"));
+    Files.writeString(sources.resolve("Model.gui"), "keep");
+    Path out = tmp.resolve("out");
+    Path kept = out.resolve("a/Kept.ts");
+    Files.createDirectories(kept.getParent());
+    Files.writeString(kept, "kept");
+    Files.writeString(out.resolve("a/Removed.ts"), "stale");
+    Files.createDirectories(out.resolve("b"));
+    Files.writeString(out.resolve("b/Removed.ts"), "stale");
+    link(out.resolve("hwc"), sources);
+
+    LinkSafeFiles.deleteContentsExcept(out, Set.of(kept.toAbsolutePath().normalize()));
+
+    assertEquals("kept", Files.readString(kept));
+    assertFalse(Files.exists(out.resolve("a/Removed.ts")));
+    assertFalse(Files.exists(out.resolve("b")));
+    assertFalse(Files.exists(out.resolve("hwc")));
+    assertEquals("keep", Files.readString(sources.resolve("Model.gui")));
   }
 }

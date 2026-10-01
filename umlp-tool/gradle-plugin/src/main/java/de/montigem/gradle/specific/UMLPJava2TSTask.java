@@ -30,6 +30,7 @@ import org.gradle.workers.WorkerExecutor;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -160,13 +161,14 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
 
     File outputDir = getOutputDir().get().getAsFile();
 
-    // every run transpiles all sources, so outputs of removed classes must not survive
-    LinkSafeFiles.deleteContents(outputDir.toPath());
     outputDir.mkdirs();
     File nodeInit = new File(workingDir, ".node-init");
     if (!nodeInit.exists()) {
       nodeInit.mkdirs();
     }
+    // JSweet rewrites only changed outputs, the list tells which of the old ones are still outputs
+    File outputList = new File(workingDir, "outputs.txt");
+    Files.deleteIfExists(outputList.toPath());
 
 
     // classpath passed to jsweet
@@ -216,10 +218,19 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
       params.getClassPath().set(String.join(File.pathSeparator, classPath));
       params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
       params.getJSweetClassPath().from(getJSweetClassPath());
+      params.getOutputList().set(outputList);
     });
 
     // Block until jsweet finishes
     workQueue.await();
+
+    // every run transpiles all sources, so outputs of removed classes must not survive
+    Set<Path> outputs = Files.readAllLines(outputList.toPath(), StandardCharsets.UTF_8).stream()
+        .map(p -> Path.of(p).toAbsolutePath().normalize())
+        .collect(Collectors.toSet());
+    // absolute paths, it must not end up in the build cache
+    Files.delete(outputList.toPath());
+    LinkSafeFiles.deleteContentsExcept(outputDir.toPath(), outputs);
   }
 
   protected Set<Path> walkAndCollectJavaFiles(Set<File> input) throws IOException {
