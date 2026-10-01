@@ -1,12 +1,10 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp.jsweet.extension;
 
-import org.jsweet.transpiler.AsyncAwaitPropagationScanner;
 import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import standalone.com.sun.source.tree.CompilationUnitTree;
 import umlp.jsweet.extension.cocos.JSweetCoCoChecker;
-import umlp.jsweet.extension.common.AdditionalAsyncAwaitPropagationScanner;
 import umlp.jsweet.extension.common.AsyncConstructorAdapter;
 import umlp.jsweet.extension.common.BasicsAdapter;
 import umlp.jsweet.extension.common.CollectionsAdapter;
@@ -95,12 +93,5 @@ public class GUIAdapter extends PrinterAdapter {
     UMLPAdapterUtils.addAsyncAnnotationsForJREToContext(this.getContext());
 
     new UMLPAsyncAwaitPropagationScanner(context, true).process(getContext().compilationUnits, getContext().trees);
-    new AsyncAwaitPropagationScanner(context).process(getContext().compilationUnits, getContext().trees);
-    new UMLPAsyncAwaitPropagationScanner(context, true).process(
-        getContext().compilationUnits, getContext().trees);
-    new AsyncAwaitPropagationScanner(context).process(getContext().compilationUnits, getContext().trees);
-    new AdditionalAsyncAwaitPropagationScanner(context).process(
-        getContext().compilationUnits, getContext().trees);
-    new AsyncAwaitPropagationScanner(context).process(getContext().compilationUnits, getContext().trees);
   }
 }
