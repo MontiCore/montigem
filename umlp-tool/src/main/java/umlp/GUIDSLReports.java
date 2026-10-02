@@ -31,6 +31,8 @@ public class GUIDSLReports implements ReportManager.ReportManagerFactory {
   protected Function<Path, Path> reportPathOutput;
   protected List<AReporter> reporters = new ArrayList<>();
 
+  protected ReportLevel reportLevel = ReportLevel.ALL;
+
   // protected MCPath templatePath;
 
   /**
@@ -46,6 +48,10 @@ public class GUIDSLReports implements ReportManager.ReportManagerFactory {
     this.handwrittenPath = handwrittenPath;
     this.reportPathOutput = reportPathOutput;
     // this.templatePath = templatePath;
+  }
+
+  public void setReportLevel(ReportLevel reportLevel) {
+    this.reportLevel = reportLevel;
   }
 
   /**
@@ -89,6 +95,12 @@ public class GUIDSLReports implements ReportManager.ReportManagerFactory {
     SuccessfulReporter successfulReporter = new SuccessfulReporter(this.reportDirectory, lowerCaseName);
     IncGenGradleReporter incGenGradleReporter = new IncGenGradleReporter(this.reportDirectory, reportPathOutput,
         lowerCaseName);
+
+    if (reportLevel == ReportLevel.INCGEN) {
+      reports.addReportEventHandler(incGenGradleReporter);
+      reporters.add(incGenGradleReporter);
+      return reports;
+    }
 
     reports.addReportEventHandler(summaryReporter);
     reports.addReportEventHandler(generatedFilesReporter);

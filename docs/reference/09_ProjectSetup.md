@@ -77,6 +77,14 @@ powercfg /powerthrottling disable /path "C:\Program Files\Java\jdk-21\bin\java.e
 ```
 `powercfg /powerthrottling list` shows the setting, `powercfg /powerthrottling reset /path "<same path>"` removes it.
 
+### Fewer Reports
+By default, the generators write all MontiCore reports to `build/mc_reports`, about 18 files per model.
+If you do not read them, keep only the report that the incremental build needs, e.g. in `gradle.properties`:
+```properties
+umlp.reports=incgen
+```
+The setting is an input of the generator tasks, so a change runs the generators again.
+
 ## Notes for Developers of UMLP-Tool
 The gradle-``UMLPTask`` supports incremental builds.
 It only runs when a _relevant_ input has changed.

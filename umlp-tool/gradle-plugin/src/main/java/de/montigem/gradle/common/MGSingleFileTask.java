@@ -9,6 +9,7 @@ import de.montigem.gradle.stat.TaskStatData;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.tasks.Input;
@@ -38,8 +39,16 @@ public abstract class MGSingleFileTask extends MCSingleFileTask implements Gradl
   @Optional
   public abstract ListProperty<String> getModuleConfigTemplates();
 
+  /**
+   * See {@link MGAllFilesTask#getReportLevel()}.
+   */
+  @Input
+  @Optional
+  public abstract Property<String> getReportLevel();
+
   public MGSingleFileTask(String type, String symbolPathConfigurationName) {
     super(type, symbolPathConfigurationName);
+    getReportLevel().convention(getProject().getProviders().gradleProperty(MGAllFilesTask.REPORT_LEVEL_PROPERTY));
 
     Configuration montigemModuleGeneratorExtension = getProject().getConfigurations().findByName(MGBasePlugin.MONTIGEM_MODULE_GENERATOR_EXTENSION_CONFIG);
     if (montigemModuleGeneratorExtension != null) {
@@ -68,6 +77,10 @@ public abstract class MGSingleFileTask extends MCSingleFileTask implements Gradl
         result.add("--module-config");
         result.add(moduleConfigTemplate);
       }
+    }
+    if (getReportLevel().isPresent()) {
+      result.add("--reportLevel");
+      result.add(getReportLevel().get());
     }
 
     return result;

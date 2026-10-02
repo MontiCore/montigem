@@ -10,6 +10,7 @@ import de.montigem.gradle.stat.TaskStatData;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.services.BuildService;
 import org.gradle.api.tasks.Input;
@@ -27,6 +28,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 abstract public class MGAllFilesTask extends MCAllFilesTask implements GradleTaskStatistic {
+  /**
+   * Gradle property for {@link #getReportLevel()}, e.g. {@code umlp.reports=incgen} in gradle.properties.
+   */
+  public static final String REPORT_LEVEL_PROPERTY = "umlp.reports";
+
   protected final TaskStatData statdata = new TaskStatData("AllFiles");
   private final Provider<? extends BuildService<?>> javaBeansCacheCleanup;
 
@@ -39,8 +45,16 @@ abstract public class MGAllFilesTask extends MCAllFilesTask implements GradleTas
   @Optional
   public abstract ListProperty<String> getModuleConfigTemplates();
 
+  /**
+   * {@code all} (default) writes all reports, {@code incgen} only the report that the incremental build reads.
+   */
+  @Input
+  @Optional
+  public abstract Property<String> getReportLevel();
+
   public MGAllFilesTask(String type) {
     super(type, null);
+    getReportLevel().convention(getProject().getProviders().gradleProperty(REPORT_LEVEL_PROPERTY));
 
     Configuration montigemModuleGeneratorExtension = getProject().getConfigurations().findByName(MGBasePlugin.MONTIGEM_MODULE_GENERATOR_EXTENSION_CONFIG);
     if (montigemModuleGeneratorExtension != null) {
@@ -69,6 +83,10 @@ abstract public class MGAllFilesTask extends MCAllFilesTask implements GradleTas
         result.add("--module-config");
         result.add(moduleConfigTemplate);
       }
+    }
+    if (getReportLevel().isPresent()) {
+      result.add("--reportLevel");
+      result.add(getReportLevel().get());
     }
     return result;
   }

@@ -25,6 +25,8 @@ public enum UMLPToolOptions {
   OUTPUT("o", "out", "Path of the output files.", "dir"),
   REPORTS("r", "report", "Prints reports of the artifact to the specified directory.", "dir", true),
   REPORT_BASE("rb", "report_base", "Base Directory used for relative paths in Reports.", "dir", true),
+  REPORT_LEVEL("rl", "reportLevel", "all (default) writes all reports, incgen only the report that the incremental"
+      + " Gradle build reads.", "level"),
 
   CFGTMPL("ct", "configTemplate", "Executes this template at the beginning of code generation to customize it. (template path may have to be set)", "file"),
   PRETTYPRINT("pp", "prettyprint", "Prints the AST to stdout or the specified file (optional)", "file", true),
@@ -119,6 +121,13 @@ public enum UMLPToolOptions {
       return "";
     }
     return cmd.getOptionValue(option.getOpt());
+  }
+
+  /**
+   * The report level of the command line, {@link ReportLevel#ALL} if not given.
+   */
+  public static ReportLevel reportLevel(CommandLine cmd) {
+    return ReportLevel.of(REPORT_LEVEL.getValue(cmd, ReportLevel.ALL.name()));
   }
 
   public String getValue(CommandLine cmd, String defaultValue) {

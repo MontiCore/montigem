@@ -32,6 +32,8 @@ public class UMLPReports implements ReportManager.ReportManagerFactory {
   protected Function<Path, Path> reportPathOutput;
   protected List<AReporter> reporters = new ArrayList<>();
 
+  protected ReportLevel reportLevel = ReportLevel.ALL;
+
   // protected MCPath templatePath;
 
   /**
@@ -48,6 +50,10 @@ public class UMLPReports implements ReportManager.ReportManagerFactory {
     this.reportPathOutput = reportPathOutput;
     this.jsonElement = jsonElement;
     // this.templatePath = templatePath;
+  }
+
+  public void setReportLevel(ReportLevel reportLevel) {
+    this.reportLevel = reportLevel;
   }
 
   /**
@@ -92,6 +98,12 @@ public class UMLPReports implements ReportManager.ReportManagerFactory {
     IncGenGradleReporter incGenGradleReporter = new IncGenGradleReporter(this.reportDirectory, reportPathOutput,
         lowerCaseName);
     StatisticsReporter statisticsReporter = new StatisticsReporter(jsonElement, "UMLP_JAR_JSON", this.reportDirectory, modelName, repository, traverserNodeTree);
+
+    if (reportLevel == ReportLevel.INCGEN) {
+      reports.addReportEventHandler(incGenGradleReporter);
+      reporters.add(incGenGradleReporter);
+      return reports;
+    }
 
     reports.addReportEventHandler(summaryReporter);
     reports.addReportEventHandler(generatedFilesReporter);

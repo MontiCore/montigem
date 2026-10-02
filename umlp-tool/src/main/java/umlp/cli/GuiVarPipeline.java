@@ -6,6 +6,7 @@ import de.monticore.guidsl._prettyprint.GUIDSLFullPrettyPrinter;
 import de.monticore.io.FileReaderWriter;
 import de.monticore.prettyprint.IndentPrinter;
 import de.se_rwth.commons.logging.Log;
+import umlp.UMLPToolOptions;
 import umlp.GUIDSLReports;
 import umlp.MillConf;
 import umlp.UMLPTool;
@@ -31,9 +32,11 @@ public class GuiVarPipeline extends Pipeline<UMLPPipelineData> {
   public GuiVarPipeline(IOperation<UMLPPipelineData> setupUMLPReports) {
     register("setupUMLPReports", setupUMLPReports);
     register("init", init = data -> {
-      data.guidsl_reportManagerFactory =
+      GUIDSLReports reports =
           new GUIDSLReports(data.outDir.getPath(), data.reportDir.getPath(), data.reportPathOutput,
               data.hwcPath);
+      reports.setReportLevel(UMLPToolOptions.reportLevel(data.cmd));
+      data.guidsl_reportManagerFactory = reports;
       Reporting.init(data.outDir.getPath(), data.reportDir.getPath(),
           data.guidsl_reportManagerFactory);
       MillConf.switchTo(MillConf.GUIDSL);
