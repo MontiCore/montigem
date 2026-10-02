@@ -12,10 +12,12 @@ import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.support.MethodInvocationElementSupport;
 import org.jsweet.transpiler.model.support.NewClassElementSupport;
 import org.jsweet.transpiler.util.Util;
+import standalone.com.sun.source.tree.CompilationUnitTree;
 import standalone.com.sun.source.tree.MethodTree;
 import standalone.com.sun.source.tree.StatementTree;
 import standalone.com.sun.source.tree.Tree;
 import standalone.com.sun.source.tree.VariableTree;
+import standalone.com.sun.source.util.TreeScanner;
 import standalone.com.sun.tools.javac.tree.JCTree;
 import umlp.jsweet.extension.AbstractAdapter;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
@@ -31,7 +33,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static umlp.jsweet.extension.cocos.JSweetCoCoChecker.getStartSourcePosition;
 import static umlp.jsweet.extension.util.GUIAdapterUtils.COMPONENT_ANNOTATION;
@@ -44,6 +48,11 @@ public class AsyncConstructorAdapter extends AbstractAdapter {
   List<JCTree.JCVariableDecl> requiredFieldInitializations = new ArrayList<>();
   List<TypeMirror> requiredFieldInitializationsTypeMirrors = new ArrayList<>();
   boolean collectFieldInitializationsMode = true;
+
+  // the variable declarations of one compilation unit by their initializer, so that a lookup does not
+  // search the whole compilation unit
+  private CompilationUnitTree declarationsOf;
+  private final Map<Tree, JCTree.JCVariableDecl> declarationsByInitializer = new IdentityHashMap<>();
 
   public AsyncConstructorAdapter(PrinterAdapter parentAdapter) {
     super(parentAdapter);
@@ -107,8 +116,8 @@ public class AsyncConstructorAdapter extends AbstractAdapter {
     // Every Constructor is assumed to be async. Otherwise an incomplete set of async methods is
     // contained in asyncjre.json and more methods are async by propagation.
     if(assignedExpression instanceof NewClassElementSupport newClassAssignedExpression) {
-      Tree parentTree = getContext().trees.getPath(getCompilationUnitTree(), newClassAssignedExpression.getTree()).getParentPath().getLeaf();
-      if(parentTree instanceof JCTree.JCVariableDecl varDecl) {
+      JCTree.JCVariableDecl varDecl = getDeclarationInitializedWith(newClassAssignedExpression.getTree());
+      if(varDecl != null) {
         if(varDecl.sym.getKind() == ElementKind.FIELD) {
           if(varDecl.sym.isStatic()) {
             Log.error("0xEE010: Static async field declaration initialization not allowed. " +
@@ -127,12 +136,9 @@ public class AsyncConstructorAdapter extends AbstractAdapter {
       JCTree.JCMethodInvocation invocation =
           (JCTree.JCMethodInvocation) methodInvocationElementSupport.getTree();
 
-      Tree parentTree = getContext().trees
-          .getPath(getCompilationUnitTree(), invocation)
-          .getParentPath()
-          .getLeaf();
+      JCTree.JCVariableDecl varDecl = getDeclarationInitializedWith(invocation);
 
-      if (parentTree instanceof JCTree.JCVariableDecl varDecl) {
+      if (varDecl != null) {
         if (varDecl.sym.getKind() == ElementKind.FIELD) {
           if (getContext().hasAnnotationType(methodInvocationElementSupport.getMethod(),  JSweetConfig.ANNOTATION_ASYNC)) {
             if(varDecl.sym.isStatic()) {
@@ -151,6 +157,28 @@ public class AsyncConstructorAdapter extends AbstractAdapter {
       }
     }
     return super.substituteAssignedExpression(type, assignedExpression);
+  }
+
+  /**
+   * @return the variable declaration whose initializer is the given expression, or null if the
+   * expression is not the direct initializer of a variable
+   */
+  protected JCTree.JCVariableDecl getDeclarationInitializedWith(Tree expression) {
+    CompilationUnitTree compilationUnit = getCompilationUnitTree();
+    if (declarationsOf != compilationUnit) {
+      declarationsByInitializer.clear();
+      new TreeScanner<Void, Void>() {
+        @Override
+        public Void visitVariable(VariableTree variable, Void unused) {
+          if (variable.getInitializer() != null) {
+            declarationsByInitializer.put(variable.getInitializer(), (JCTree.JCVariableDecl) variable);
+          }
+          return super.visitVariable(variable, unused);
+        }
+      }.scan(compilationUnit, null);
+      declarationsOf = compilationUnit;
+    }
+    return declarationsByInitializer.get(expression);
   }
 
   /**
