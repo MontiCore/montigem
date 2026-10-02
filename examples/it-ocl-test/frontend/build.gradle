@@ -70,6 +70,8 @@ tasks.named("compileJava") {
 
 test {
   dependsOn tasks.named("npmInstall"), tasks.named("buildApp")
+  // each test JVM starts its own backend and frontend server on free ports
+  maxParallelForks = 2
   useJUnitPlatform {
     if (project.hasProperty("tags")) {
       includeTags project.property("tags").toString().split(',')

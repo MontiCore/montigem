@@ -4,6 +4,7 @@ import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.LoadState;
 import jsweettest.test_infrastructure.AbstractJsweettestE2ETest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.regex.Pattern;
@@ -20,6 +21,12 @@ public class NavigateE2ETest extends AbstractJsweettestE2ETest {
     page.onConsoleMessage(cm -> System.out.println("[BROWSER] " + cm.text()));
     navAndWait(page, "/gui/test/NavigateSource"); // go to page we want to test
     page.waitForLoadState(LoadState.NETWORKIDLE);
+  }
+  
+  @AfterEach
+  void close() {
+    // an open page keeps its websocket, then the backend clean-up waits 30 s for it
+    page.close();
   }
   
   @Test
