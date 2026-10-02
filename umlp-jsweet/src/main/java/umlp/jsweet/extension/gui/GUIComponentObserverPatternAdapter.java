@@ -68,6 +68,8 @@ public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
 
   @Override
   public void onTranspilationStarted() {
+    new GUIObserverRegistrationParamsPropagationScanner(context)
+        .process(getContext().compilationUnits, getContext().trees);
     new GUISerializedBindingPropagationScanner(context)
         .process(getContext().compilationUnits, getContext().trees);
     super.onTranspilationStarted();
