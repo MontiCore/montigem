@@ -67,6 +67,17 @@ systemProp.umlp.toolLoaderIdleSeconds=6
 ```
 The value `6` gives the behavior of earlier versions, e.g. when the memory of the machine is low.
 
+### Windows on CPUs with Efficiency Cores
+Intel CPUs from the 12th generation on have fast performance cores and slower efficiency cores.
+Windows may run the Gradle daemon on the efficiency cores, because it runs in the background.
+Single generator and JSweet steps then take up to 3 times longer, and the build times vary a lot.
+Run this once in a PowerShell with administrator rights, with the `java.exe` of the JDK that runs Gradle:
+```powershell
+powercfg /powerthrottling disable /path "C:\Program Files\Java\jdk-21\bin\java.exe"
+```
+`powercfg /powerthrottling list` shows the setting, `powercfg /powerthrottling reset /path "<same path>"` removes it.
+In the DT SummerSchool tutorial, a backend-only edit then built in 75 s instead of 108 s.
+
 ## Notes for Developers of UMLP-Tool
 The gradle-``UMLPTask`` supports incremental builds.
 It only runs when a _relevant_ input has changed.
