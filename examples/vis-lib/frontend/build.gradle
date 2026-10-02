@@ -34,6 +34,8 @@ test {
 
 tasks.register("screenshot", Test) {
   dependsOn buildApp
+  // the images for comment2doc, declared so that a build cache hit restores them
+  outputs.dir("$rootDir/docs/gendoc_img")
   useJUnitPlatform() {
     includeTags "Screenshot"
   }
