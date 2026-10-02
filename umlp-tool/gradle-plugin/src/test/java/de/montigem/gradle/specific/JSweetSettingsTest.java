@@ -43,6 +43,10 @@ class JSweetSettingsTest {
 
     s.outputList = new File("build/internal_jsweet/umlpJava2ts/outputs.txt");
     assertEquals(s.outputList, JSweetSettings.parse(s.toArgs()).outputList);
+    assertTrue(read.autoPropagateAsync);
+
+    s.autoPropagateAsync = false;
+    assertEquals(false, JSweetSettings.parse(s.toArgs()).autoPropagateAsync);
   }
 
   @Test

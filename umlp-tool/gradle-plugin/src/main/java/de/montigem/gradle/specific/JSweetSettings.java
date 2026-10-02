@@ -22,6 +22,7 @@ public class JSweetSettings {
   private static final String INPUT = "--input";
   private static final String EXCLUDE = "--exclude";
   private static final String OUTPUT_LIST = "--output-list";
+  private static final String AUTO_PROPAGATE_ASYNC = "--auto-propagate-async";
 
   public File base;
   public File working;
@@ -37,6 +38,10 @@ public class JSweetSettings {
    * Optional: after a successful run, JSweet's output files are listed in this file, one path per line.
    */
   public File outputList;
+  /**
+   * JSweet's own async propagation. The UMLP adapters run a scanner that contains its rule.
+   */
+  public boolean autoPropagateAsync = true;
 
   public String[] toArgs() {
     List<String> args = new ArrayList<>(List.of(
@@ -47,7 +52,8 @@ public class JSweetSettings {
         CLASSPATH, classPath,
         NODE_VERSION, nodeVersion,
         VERBOSE, String.valueOf(verbose),
-        SOURCE_MAPS, String.valueOf(sourceMaps)));
+        SOURCE_MAPS, String.valueOf(sourceMaps),
+        AUTO_PROPAGATE_ASYNC, String.valueOf(autoPropagateAsync)));
     input.forEach(f -> args.addAll(List.of(INPUT, f.getPath())));
     excluded.forEach(f -> args.addAll(List.of(EXCLUDE, f.getPath())));
     if (outputList != null) {
@@ -75,6 +81,7 @@ public class JSweetSettings {
         case INPUT -> s.input.add(new File(value));
         case EXCLUDE -> s.excluded.add(new File(value));
         case OUTPUT_LIST -> s.outputList = new File(value);
+        case AUTO_PROPAGATE_ASYNC -> s.autoPropagateAsync = Boolean.parseBoolean(value);
         default -> throw new IllegalArgumentException("Unknown JSweet argument " + args[i]);
       }
     }

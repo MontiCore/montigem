@@ -62,6 +62,7 @@ public abstract class Java2TSAction implements WorkAction<Java2TSAction.Params> 
     settings.input.addAll(params.getInput().getFiles());
     settings.excluded.addAll(params.getExcludedFromTranspilation().getFiles());
     settings.outputList = params.getOutputList().getAsFile().getOrNull();
+    settings.autoPropagateAsync = params.getAutoPropagateAsync().getOrElse(true);
     String[] args = settings.toArgs();
 
     Set<File> classpath = params.getJSweetClassPath().getFiles();
@@ -140,6 +141,11 @@ public abstract class Java2TSAction implements WorkAction<Java2TSAction.Params> 
      * Optional, see {@link JSweetSettings#outputList}.
      */
     RegularFileProperty getOutputList();
+
+    /**
+     * Optional, see {@link JSweetSettings#autoPropagateAsync}.
+     */
+    Property<Boolean> getAutoPropagateAsync();
 
     /**
      * JSweet itself, loaded in the warm class loader.

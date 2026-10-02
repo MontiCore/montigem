@@ -55,7 +55,7 @@ public class JSweetInvoker {
         settings.out, settings.out, settings.candies, settings.classPath);
 
     transpiler.setTscWatchMode(false);
-    transpiler.setAutoPropagateAsyncAwaits(true);
+    transpiler.setAutoPropagateAsyncAwaits(settings.autoPropagateAsync);
     transpiler.setVerbose(settings.verbose);
     transpiler.setEncoding("UTF-8");
     transpiler.setGenerateSourceMaps(settings.sourceMaps);

@@ -218,6 +218,8 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
       params.getClassPath().set(String.join(File.pathSeparator, classPath));
       params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
       params.getJSweetClassPath().from(getJSweetClassPath());
+      // the UMLP adapters run the same rule in their merged async scanner
+      params.getAutoPropagateAsync().set(false);
       params.getOutputList().set(outputList);
     });
 

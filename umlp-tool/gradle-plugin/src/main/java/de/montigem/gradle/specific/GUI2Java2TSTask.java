@@ -304,6 +304,8 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
         params.getClassPath().set(classPathStr);
         params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
         params.getJSweetClassPath().from(getJSweetClassPath());
+        // the UMLP adapters run the same rule in their merged async scanner
+        params.getAutoPropagateAsync().set(false);
       });
       jsweetQueue.await();
     }
@@ -348,6 +350,8 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
       params.getClassPath().set(classPathStr);
       params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
       params.getJSweetClassPath().from(getJSweetClassPath());
+      // the UMLP adapters run the same rule in their merged async scanner
+      params.getAutoPropagateAsync().set(false);
     });
 
     // Block until jsweet finishes
