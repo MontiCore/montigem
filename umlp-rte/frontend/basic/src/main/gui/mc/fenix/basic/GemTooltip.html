@@ -1,0 +1,11 @@
+<!-- (c) https://github.com/MontiCore/monticore -->
+
+<div
+  class="gem-tooltip"
+  [matTooltip]="getText()"
+  [matTooltipDisabled]="!getText()"
+>
+  <ng-container *ngIf="component">
+    <ng-container *ngTemplateOutlet="component"></ng-container>
+  </ng-container>
+</div>
