@@ -1,0 +1,20 @@
+<style>
+  .drop-zone-active {
+    border: 2px black solid !important;
+  }
+</style>
+<span>
+    <label
+      ngClass="gem-file-upload-label"
+      [for]="id + 'Upload'"
+      #titleLabel
+    >
+    {{ label }}
+  </label>
+  <span *ngIf="getCurrentValueText()">{{ getCurrentValueText() }}</span>
+  <input *ngIf="!isCurrentlyUploading" type="file" (change)="onUploadEvt($event)">
+  <span *ngIf="isCurrentlyUploading">Uploading...</span>
+  <span *ngIf="errorMessage" style="color: red">{{errorMessage}}</span>
+</span>
+
+

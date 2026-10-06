@@ -1,0 +1,7 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.advanced;
+
+
+component ToastElement(String value) {
+
+}

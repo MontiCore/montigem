@@ -1,0 +1,19 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.input;
+
+/**
+* The component is an input field for file uploads with an optional label.
+* The uploaded file will be PUT against the targetURL.
+*/
+component GemFileInput(
+  /** The component's id; used to configure the styles. */
+  String id,
+  /** Text describing the input field. */
+  String label,
+  /** Event triggered on upload. */
+  Event<Object> onUpload,
+  /** The text shown as the current value */
+  String currentValueText = "",
+  /** The URL on to which the POST upload occurs. */
+  String targetURL
+  )

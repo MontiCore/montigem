@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.advanced;
+
+/**
+ * This component renders a context menu.
+ * You can trigger it via
+ * A: in a component (Event<Object> onRequestContextMenu)
+ *   with the LazyContextMenuDirective import
+ *   <div (context-menu-emitter)="getOnRequestContextMenu()($event)">...</div> in the html
+ *  Then, on right-click the getOnRequestContextMenu() is invoked.
+ * B: Trigger the service yourself:
+ *   ContextMenuService#show.next(...)
+ */
+component ContextMenu() {
+
+}
