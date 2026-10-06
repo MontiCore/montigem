@@ -45,7 +45,11 @@ public abstract class AbstractOCL2JavaE2ETest<T extends GemIdentifiable> extends
 
   @Override
   public List<Long> translateAndExecQuery(String constraint) {
-    navAndWait(page, pageRouteFor(constraint));
+    String route = pageRouteFor(constraint);
+    navAndWait(page, route);
+    String pageName = route.substring(route.lastIndexOf('/') + 1);
+    waitInit(page, pageName);
+    waitForAngular(page);
 
     Set<Long> gemIds = new LinkedHashSet<>();
     for (String buttonClass : buttonClassesFor(constraint)) {
@@ -149,8 +153,16 @@ public abstract class AbstractOCL2JavaE2ETest<T extends GemIdentifiable> extends
   }
 
   protected List<Long> readResultGemIds() {
+    long start = System.currentTimeMillis();
+    while (System.currentTimeMillis() - start < 5000) {
+      String text = page.locator(".resultGemText").textContent().trim();
+      if (!"Click a button to fill".equals(text)) {
+        break;
+      }
+      page.waitForTimeout(50);
+    }
     String gemIdStr = page.locator(".resultGemText").textContent().trim();
-    if (gemIdStr.isEmpty()) {
+    if (gemIdStr.isEmpty() || "Click a button to fill".equals(gemIdStr)) {
       return List.of();
     }
     return Arrays.stream(gemIdStr.split(","))

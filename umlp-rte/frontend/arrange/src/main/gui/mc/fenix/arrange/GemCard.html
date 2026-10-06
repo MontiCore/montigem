@@ -2,34 +2,52 @@
 
 <gem-column
   class="gem-card"
-  [components]="[gemNode2, gemNode3, gemNode4]"
+  [components]="[gemNode2, gemNodeCollapse]"
 >
 </gem-column>
 <ng-template #gemNode2>
   <gem-row
     height="initial"
     class="gem-card-header"
+    [class.collapsible]="collapsible"
+    [class.gem-card-collapsed]="collapsible && isCollapsed"
+    (click)="collapsible && toggleCollapse()"
     [component]="titleTpl"
   >
   </gem-row>
 </ng-template>
-<ng-template #gemNode3>
-  <hr class="gem-card-line">
-</ng-template>
-<ng-template #gemNode4>
-  <gem-column
-    height="initial"
-    class="gem-card-body"
-    [component]="component"
+<ng-template #gemNodeCollapse>
+  <div
+    class="gem-card-collapse-wrapper"
+    [class.gem-card-collapsed]="collapsible && isCollapsed"
   >
-  </gem-column>
+    <div class="gem-card-collapse-inner">
+      <hr class="gem-card-line">
+      <gem-column
+        height="initial"
+        class="gem-card-body"
+        [component]="component"
+      >
+      </gem-column>
+    </div>
+  </div>
 </ng-template>
 <ng-template #titleTpl>
-  <ng-template [ngIf]="!titleComponent">
-    {{title}}
-  </ng-template>
-  <ng-template [ngIf]="titleComponent">
-    <ng-template [ngTemplateOutlet]="titleComponent">
-    </ng-template>
-  </ng-template>
+  <div class="gem-card-header-content">
+    <mat-icon
+      *ngIf="collapsible"
+      class="gem-card-collapse-icon"
+      [class.gem-card-collapsed]="isCollapsed"
+      fontIcon="expand_more"
+    ></mat-icon>
+    <div class="gem-card-title-content">
+      <ng-template [ngIf]="!titleComponent">
+        {{title}}
+      </ng-template>
+      <ng-template [ngIf]="titleComponent">
+        <ng-template [ngTemplateOutlet]="titleComponent">
+        </ng-template>
+      </ng-template>
+    </div>
+  </div>
 </ng-template>
