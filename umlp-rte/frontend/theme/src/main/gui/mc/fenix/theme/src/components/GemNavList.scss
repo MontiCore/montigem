@@ -3,14 +3,76 @@
 
 @mixin gem-nav-list-theme($background-color: white) {
 
+  gem-nav-list {
+    display: flex;
+    position: sticky;
+    top: 0;
+    right: 0;
+    left: auto;
+    overflow-y: auto;
+    height: 100%;
+    max-width: 100%;
+  }
+
   .gem-nav-list {
     display: flex;
     flex-direction: column;
-    border-width: 0 1px 0 0;
+    border-width: 0 0 0 1px;
     border-style: solid;
     border-color: rgba($acronio-black-1, 0.2);
     background-color: $background-color;
     width: 100%;
+    height: 100%;
+    transition: width 0.2s ease-in-out;
+
+    &.gem-nav-list-collapsed {
+      --gem-nav-item-title-display: none;
+      --gem-nav-item-right-icon-display: none;
+      --gem-nav-item-icon-margin: 0;
+      --gem-nav-item-justify-content: center;
+
+      .gem-nav-item-right-icon {
+        display: none;
+      }
+    }
   }
 
+  .gem-nav-list-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-bottom: 1px solid rgba($acronio-black-1, 0.2);
+    background: transparent;
+    color: var(--navbar-text);
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+
+    &:hover {
+      background-color: var(--navbar-hover);
+      color: var(--color-primary);
+    }
+
+    mat-icon {
+      font-size: 1.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+
+  .gem-nav-list-items {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+}
+
+// Fallback: also hide right icons (group arrows, leaf right icons) when the host itself is collapsed.
+gem-nav-list.gem-nav-list-collapsed .gem-nav-item-right-icon {
+  display: none;
 }

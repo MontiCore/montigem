@@ -1,0 +1,55 @@
+/* (c) https://github.com/MontiCore/monticore */
+package common;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemText;
+import mc.fenix.navigation.GemNavItem;
+import mc.fenix.navigation.GemNavList;
+
+page NavListExample() {
+  @GemColumn(
+    hAlign = "center",
+    components = [
+      @GemText(value = "GemNavList Examples", size = "2rem", weight = "bold", height = "auto", width = "auto"),
+      @GemText(value = "Digital-Twin-style navigation with icons, collapse and active state", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+
+      @GemRow(
+        wrap = "wrap",
+        hAlign = "left",
+        vAlign = "stretch",
+        rowGap = "30px",
+        colGap = "30px",
+        width = "100%",
+        components = [
+          @GemNavList(
+            width = "280px",
+            height = "auto",
+            collapsed = false,
+            collapsedWidth = "4rem",
+            components = [
+              @GemNavItem(title = "Home", target = "/common/NavListExample", iconName = "home"),
+              @GemNavItem(title = "Cockpit", target = "/common/OtherOverview", iconName = "dashboard"),
+              @GemNavItem(title = "Function Model", target = "/example_basic/BasicOverview", iconName = "show_chart"),
+              @GemNavItem(title = "Visual Analysis", target = "/example_charts/ChartsOverview", iconName = "analytics"),
+              @GemNavItem(title = "Services", target = "/example_arrange/ArrangeOverview", iconName = "apps"),
+              @GemNavItem(title = "Background", target = "/person/SimpleOverview", iconName = "article")
+            ]
+          ),
+
+          @GemNavList(
+            width = "280px",
+            height = "auto",
+            collapsed = true,
+            collapsedWidth = "4rem",
+            components = [
+              @GemNavItem(title = "Home", target = "/common/NavListExample", iconName = "home"),
+              @GemNavItem(title = "Cockpit", target = "/common/OtherOverview", iconName = "dashboard"),
+              @GemNavItem(title = "Function Model", target = "/example_basic/BasicOverview", iconName = "show_chart")
+            ]
+          )
+        ]
+      )
+    ]
+  );
+}
