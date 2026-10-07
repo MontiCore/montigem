@@ -142,7 +142,7 @@ For the generator to recognize that the `car` object doesn't exist yet we
 have to specify it in the `frontend/build.gradle` configuration that the
 model is used for object creation:
 ```groovy
-gui2java2ts {
+gui2java {
   guiCreateModels = ["gui.CarCreate"]
 }
 ```

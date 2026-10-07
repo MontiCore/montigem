@@ -1,14 +1,18 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.montigem.gradle.specific;
 
-import de.montigem.gradle.common.IncGenData;
+import de.montigem.gradle.common.JavaBeansCacheCleanup;
 import de.se_rwth.commons.logging.Log;
+import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.FileSystemOperations;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
+import org.gradle.api.services.BuildService;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Classpath;
 import org.gradle.api.tasks.IgnoreEmptyDirectories;
@@ -20,9 +24,14 @@ import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SkipWhenEmpty;
+import org.gradle.api.tasks.TaskAction;
+import org.gradle.work.ChangeType;
+import org.gradle.work.Incremental;
 import org.gradle.work.InputChanges;
 import org.gradle.workers.WorkQueue;
+import org.gradle.workers.WorkerExecutor;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -40,20 +49,76 @@ import java.util.stream.StreamSupport;
 
 
 /**
- * A combination of `gui2java`, `gui2jsweetAdapter` and `guiJava2ts`
- * `guiJava2ts` trafo depends on `gui2java` (output of `gui2java` is input for `guiJava2ts`).
- * On the other hand, `gui2java` produces `*Component.ts` files that reference files produced by
- * `guiJava2ts` to build relative paths while translating java to ts, i.e. `gui2java` depends on
- * `guiJava2ts`.
+ * Translates the output of the `gui2java` generator task by `gui2jsweetAdapter` and `guiJava2ts`.
+ * The `*Component.ts` files of the generator import the translated files by relative paths it
+ * predicts from the Java names, and JSweet resolves imports of generated files relative to its own
+ * output. Hence, the generated files are copied to {@link #getOutputDir()} and JSweet writes its
+ * translation next to them.
  */
-// cacheable because the generated imports of HWC files are relative, all inputs must stay relocatable
+// cacheable because all inputs are relocatable
 @CacheableTask
-public abstract class GUI2Java2TSTask extends GUI2JavaTask {
+public abstract class GUI2Java2TSTask extends DefaultTask {
+
+  private final Provider<? extends BuildService<?>> javaBeansCacheCleanup;
 
   public GUI2Java2TSTask() {
     getJSweetRuntimeClassPath().from(getProject().getConfigurations()
         .matching(c -> c.getName().equals("runtimeClasspath")));
+    // the adapter actions run the generator engine in isolated class loaders
+    javaBeansCacheCleanup = JavaBeansCacheCleanup.register(getProject().getGradle());
+    usesService(javaBeansCacheCleanup);
   }
+
+  /**
+   * The output of the generator task
+   */
+  @InputFiles
+  @Incremental
+  @PathSensitive(PathSensitivity.RELATIVE)
+  @IgnoreEmptyDirectories
+  public abstract DirectoryProperty getGeneratedSources();
+
+  /**
+   * The symbols of the generator task, copied to {@link #getSymbolOutDir()}. This task keeps the
+   * symbol folder it owned before the generator had its own task, otherwise Gradle removes it as
+   * output of the previous run of this task after the generator task wrote it.
+   */
+  @InputFiles
+  @Optional
+  @Incremental
+  @PathSensitive(PathSensitivity.RELATIVE)
+  @IgnoreEmptyDirectories
+  public abstract DirectoryProperty getGeneratedSymbols();
+
+  @OutputDirectory
+  @Optional
+  public abstract DirectoryProperty getSymbolOutDir();
+
+  /**
+   * The generated files together with their TypeScript translation
+   */
+  @OutputDirectory
+  public abstract DirectoryProperty getOutputDir();
+
+  /**
+   * The models and other sources of the generator, JSweet resolves imports in these folders
+   */
+  @SkipWhenEmpty
+  @InputFiles
+  @PathSensitive(PathSensitivity.RELATIVE)
+  @IgnoreEmptyDirectories
+  public abstract ConfigurableFileCollection getSourceDirs();
+
+  @InputFiles
+  @Optional
+  @Incremental
+  @PathSensitive(PathSensitivity.RELATIVE)
+  @IgnoreEmptyDirectories
+  public abstract ConfigurableFileCollection getHandWrittenCodeDir();
+
+  @Input
+  @Optional
+  public abstract ListProperty<String> getDomain();
 
   @SkipWhenEmpty
   @InputFiles
@@ -129,30 +194,57 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
   @Optional
   public abstract DirectoryProperty getCD2JavaJSweetAdapterDir();
 
-  @Override
+  @Inject
+  public abstract WorkerExecutor getWorkerExecutor();
+
+  @Inject
+  protected abstract FileSystemOperations getFileSystemOperations();
+
+  @TaskAction
+  public void run(InputChanges inputChanges) {
+    if (inputChanges.isIncremental() && !shouldRunAgain(inputChanges)) {
+      getLogger().info("UP-TO-DATE, no action required");
+      return;
+    }
+    // Gradle only closes services it has created
+    javaBeansCacheCleanup.get();
+    translate();
+  }
+
   protected boolean shouldRunAgain(InputChanges inputChanges) {
-    // JSweet transpiles every .java file, but the IncGen reports only list the files the generator reads
-    if (hasChangedJavaFile(inputChanges, getHandWrittenCodeDir())
-        || hasChangedJavaFile(inputChanges, getInput4RelativePathCalculation())) {
+    if (hasChange(inputChanges, getGeneratedSources())
+        || (getGeneratedSymbols().isPresent() && hasChange(inputChanges, getGeneratedSymbols()))) {
       return true;
     }
-    return getInputFilesAsStream()
-        .map(this::getIncGenFile)
-        .map(incGenFile -> new IncGenData(incGenFile, this.getProject().getProjectDir()))
-        .map(incGenData -> incGenData.isUpToDate(getStreamOfChanges(inputChanges)))
-        .anyMatch(upToDate -> !upToDate);
+    // JSweet translates the .java files, other files only count by their existence. Changed models
+    // change the output of the generator task.
+    return hasRelevantChange(inputChanges, getSourceDirs())
+        || hasRelevantChange(inputChanges, getHandWrittenCodeDir())
+        || hasRelevantChange(inputChanges, getInput4RelativePathCalculation());
   }
 
-  protected boolean hasChangedJavaFile(InputChanges inputChanges, FileCollection files) {
+  protected boolean hasChange(InputChanges inputChanges, DirectoryProperty dir) {
+    return inputChanges.getFileChanges(dir).iterator().hasNext();
+  }
+
+  protected boolean hasRelevantChange(InputChanges inputChanges, FileCollection files) {
     return StreamSupport.stream(inputChanges.getFileChanges(files).spliterator(), false)
-        .anyMatch(change -> change.getFile().getName().endsWith(".java"));
+        .anyMatch(change -> change.getChangeType() != ChangeType.MODIFIED
+            || change.getFile().getName().endsWith(".java"));
   }
 
-  @Override
-  protected void startGeneration(List<String> args, String progressName) {
-    super.startGeneration(args, progressName);
-    // wait for gui2java to complete
-    workQueue.await();
+  protected void translate() {
+    // also removes the translation of the previous run, JSweet translates all files again
+    getFileSystemOperations().sync(spec -> {
+      spec.from(getGeneratedSources());
+      spec.into(getOutputDir());
+    });
+    if (getGeneratedSymbols().isPresent() && getSymbolOutDir().isPresent()) {
+      getFileSystemOperations().sync(spec -> {
+        spec.from(getGeneratedSymbols());
+        spec.into(getSymbolOutDir());
+      });
+    }
 
     WorkQueue workQueue2 = getWorkerExecutor().classLoaderIsolation(spec ->
         spec.getClasspath().from(getClassPath())
@@ -161,7 +253,7 @@ public abstract class GUI2Java2TSTask extends GUI2JavaTask {
     srcDirs.from(getHandWrittenCodeDir());
     srcDirs.from(getInput4RelativePathCalculation());
     srcDirs.from(getOutputDir());
-    srcDirs.from(getInput());
+    srcDirs.from(getSourceDirs());
     FileCollection filteredSrcDirs = srcDirs.minus(getExcludeTranspileFiles());
 
     workQueue2.submit(GUI2JSweetAdapterAction.class, params -> {

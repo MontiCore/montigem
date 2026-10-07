@@ -11,6 +11,7 @@ import de.montigem.gradle.DependencyPlugin;
 import de.montigem.gradle.MGBasePlugin;
 import de.montigem.gradle.specific.CreateNpmrcTask;
 import de.montigem.gradle.specific.GUI2Java2TSTask;
+import de.montigem.gradle.specific.GUI2JavaTask;
 import de.montigem.gradle.specific.GUI2SymTask;
 import de.montigem.gradle.specific.LocalNpmAdduserTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
@@ -68,6 +69,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static de.montigem.gradle.FrontendBasePlugin.GUI2JAVA_TASK;
 import static de.montigem.gradle.FrontendBasePlugin.UMLP_GROUP_NAME;
 import static de.montigem.gradle.FrontendBasePlugin.addClientRTEDependency;
 import static de.montigem.gradle.FrontendBasePlugin.addGUITypesDependency;
@@ -268,6 +270,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
 
         Provider<String> libQName = extension.getLibScope().map(v -> v + "/" + subproject.getName());
         Provider<Directory> libBuildDir = p.getLayout().getBuildDirectory().dir("dist/" + subproject.getName());
+        Provider<Directory> gui2javaDir = subproject.getLayout().getBuildDirectory().dir("gui2java");
         Provider<Directory> gui2java2tsDir = subproject.getLayout().getBuildDirectory().dir("gui2java2ts");
         Provider<Directory> cd2javaDir = subproject.getLayout().getBuildDirectory().dir("cd2java");
         Provider<Directory> cd2tagsDir = subproject.getLayout().getBuildDirectory().dir("cd2tags");
@@ -428,8 +431,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           );
         });
 
-        TaskProvider<GUI2Java2TSTask> gui2java2ts = subproject.getTasks().register(GUI2JAVA2TS_TASK, GUI2Java2TSTask.class);
-        gui2java2ts.configure(task -> {
+        TaskProvider<GUI2JavaTask> gui2java = subproject.getTasks().register(GUI2JAVA_TASK, GUI2JavaTask.class);
+        gui2java.configure(task -> {
           task.setGroup(UMLP_GROUP_NAME);
           if (!inRTE(subproject)) {
             task.getSymbolPath().from(subproject.getConfigurations().named(MONTIGEM_MODULE_GUI_SYMBOLS_CONFIG));
@@ -449,25 +452,44 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.getInput().from(srcGUI);
           if (cdPresent) {
             task.getInput().from(cd2java.flatMap(CommonMCTask::getOutputDir));
-            task.getCD2JavaInput().from(cd2java.flatMap(CommonMCTask::getOutputDir));
-            task.getCD2JavaJSweetAdapterDir().set(cd2jsweetAdapterDir);
           }
           task.getModelDir().from(srcGUI);
           task.getHandWrittenCodeDir().from(srcGUI);
-          task.getOutputDir().set(gui2java2tsDir);
+          if (srcJava.getAsFile().exists()) {
+            task.getHandWrittenCodeDir().from(srcJava);
+          }
+          task.getOutputDir().set(gui2javaDir);
+          task.getTSOutputDir().set(gui2java2tsDir);
           task.getTSlib().set(libQName);
 
           task.getGUIGenJSweet().set(true);
           task.getGUIGenTSFunctionality().set(false);
+
+          task.onlyIf(t -> guiPresent);
+        });
+        mainSourceSet.getJava().srcDir(gui2java.flatMap(CommonMCTask::getOutputDir));
+
+        TaskProvider<GUI2Java2TSTask> gui2java2ts = subproject.getTasks().register(GUI2JAVA2TS_TASK, GUI2Java2TSTask.class);
+        gui2java2ts.configure(task -> {
+          task.setGroup(UMLP_GROUP_NAME);
+
+          task.getGeneratedSources().set(gui2java.flatMap(CommonMCTask::getOutputDir));
+          task.getOutputDir().set(gui2java2tsDir);
+          // configured on gui2java only: JSweet translates the same hand-written code and looks up
+          // imports in the same sources
+          task.getDomain().set(gui2java.flatMap(GUI2JavaTask::getDomain));
+          task.getHandWrittenCodeDir().from(gui2java.map(CommonMCTask::getHandWrittenCodeDir));
+          task.getSourceDirs().from(gui2java.map(CommonMCTask::getInput));
+          if (cdPresent) {
+            task.getCD2JavaInput().from(cd2java.flatMap(CommonMCTask::getOutputDir));
+            task.getCD2JavaJSweetAdapterDir().set(cd2jsweetAdapterDir);
+          }
 
           task.getJSweetAdapterDir().set(gui2jsweetAdapterDir);
           if (srcGUIJSweet.getAsFile().exists()) {
             task.getHandWrittenJSweetDir().set(srcGUIJSweet);
           }
 
-          if (srcJava.getAsFile().exists()) {
-            task.getHandWrittenCodeDir().from(srcJava);
-          }
           task.getInput4RelativePathCalculation().from(cd2java.flatMap(CommonMCTask::getOutputDir));
           task.getInput4RelativePathCalculation().from(umlpJava2ts.flatMap(UMLPJava2TSTask::getOutputDir));
 
@@ -496,11 +518,10 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
 
           task.onlyIf(t -> guiPresent);
         });
-        mainSourceSet.getJava().srcDir(gui2java2ts.flatMap(CommonMCTask::getOutputDir));
 
         gui2symJar.configure(task -> {
           task.from(
-              gui2java2ts.flatMap(GUI2Java2TSTask::getOutputDir),
+              gui2java.flatMap(GUI2JavaTask::getOutputDir),
               spec -> spec.include("**/*sym", "**/*import.map", "**/*tags")
           );
         });

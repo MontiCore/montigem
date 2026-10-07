@@ -32,7 +32,9 @@ A full standard MontiGem app folder structure:
       - hwc // symlink
       - umlpJava2ts
       - ...
-    - gui2java2ts // copied to frontend/build/app
+    - gui2java // output of the GUI generator
+    - gui2java_sym // symbols of the GUI generator, copied to gui2sym
+    - gui2java2ts // gui2java plus its JSweet translation, copied to frontend/build/app
     - hwc // symlink
     - umlpJava2ts // copied to frontend/build/app
     - umlp2jsweetAdapter // JSweet configuration for umlpJava2ts
@@ -71,7 +73,7 @@ A full standard MontiGem app folder structure:
 
 The structure may be adjusted, but plugin tasks also would need to be adjusted.
 For example, moving `*.umlp` outside of `models` folder will require adjusting
-inputs of `umlp2java`, `umlp2sym`, and `gui2java2ts` tasks and any additional
+inputs of `umlp2java`, `umlp2sym`, and `gui2java` tasks and any additional
 tasks using the `*.umlp` files as inputs.
 
 > The folder structure is desinged with developers' convenience in mind, but it
@@ -83,11 +85,14 @@ The generation process overview:
 ![Generation process](./img/gen.png)
 
 The generated folders correspond to a gradle task and a section of the
-generation process, for example, `gui2java2ts` folder contains output files of
-`gui2java2ts` gradle task, that takes `*.gui` files as an input, gives it to GUI
-generator, which outputs `*.scss`, `*.html`, `*.java` and `*.ts` files. Then the
-task takes `*.java` files and gives it to JSweet, which outputs `*.ts` files.
-This section of the generation process produces the application's GUI.
+generation process, for example, the `gui2java` gradle task takes `*.gui` files
+as an input and gives them to the GUI generator, which outputs `*.scss`, `*.html`,
+`*.java` and `*.ts` files to the `gui2java` folder. Then the `gui2java2ts` task
+copies them to the `gui2java2ts` folder and gives the `*.java` files to JSweet,
+which outputs `*.ts` files next to them. This section of the generation process
+produces the application's GUI. The settings of the generator, e.g.
+`guiCreateModels`, belong to `gui2java`, the settings of JSweet, e.g.
+`excludeSource`, to `gui2java2ts`.
 
 Generally, the generation process has several steps and is described using
 `<input>2<output>` notation, e.g., `umlp2java`, `gui2java2ts`.

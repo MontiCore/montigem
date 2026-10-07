@@ -81,21 +81,22 @@ allprojects {
                   }
 
                   // Extract gui model dir(s) and symbol path(s)
-                  println("Going through frontend tasks")
-                  frontend.tasks.each{
-                    if(it.class.name.contains("GUI2Java2TSTask")){
-                      println("Frontend Task " + it.path + " matches")
-                      it.getModelDir().getFiles().each {
-                        println("Adding frontend resource " + it)
-                        resources.add(it.toString())
-                      }
-                      it.getSymbolPath().getFiles().each {
-                        if(it.toString().endsWith(".jar")){
-                          println("Adding frontend symbol path " + it)
-                          guiSymbolPaths.add(it.toString())
-                        }
+                  // the GUI generator task, named gui2java2ts in plugin versions before it got its own task
+                  def generator = frontend.tasks.findByName("gui2java") ?: frontend.tasks.findByName("gui2java2ts")
+                  if(generator != null){
+                    println("Frontend Task " + generator.path + " matches")
+                    generator.getModelDir().getFiles().each {
+                      println("Adding frontend resource " + it)
+                      resources.add(it.toString())
+                    }
+                    generator.getSymbolPath().getFiles().each {
+                      if(it.toString().endsWith(".jar")){
+                        println("Adding frontend symbol path " + it)
+                        guiSymbolPaths.add(it.toString())
                       }
                     }
+                  }else{
+                    println("Did not find the GUI generator task")
                   }
                 }else{
                   println("Did not find frontend")

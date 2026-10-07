@@ -40,7 +40,7 @@ public class IncGenData {
         lines.forEach(line -> {
 
           checkAndAddToSet("out:", generatedFiles, line, 0);
-          // content changes of hand-written Java files are checked by GUI2Java2TSTask#hasChangedJavaFile
+          // content changes of hand-written Java files only matter to JSweet, see GUI2Java2TSTask#shouldRunAgain
           checkAndAddToSet("hwc:", existenceCheckedFiles, line, 0);
           checkAndAddToSet("gen:", existenceCheckedFiles, line, 0);
 

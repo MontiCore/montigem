@@ -3,6 +3,8 @@ package umlp.generator.domain;
 
 import org.apache.commons.cli.CommandLine;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Optional;
 
 import static umlp.UMLPToolOptions.DOMAIN;
@@ -10,6 +12,7 @@ import static umlp.UMLPToolOptions.GEN_IMPORT_MAP;
 import static umlp.UMLPToolOptions.GEN_MONITOR;
 import static umlp.UMLPToolOptions.GEN_NEO4J;
 import static umlp.UMLPToolOptions.GUI_GEN_FOR_TS_LIB;
+import static umlp.UMLPToolOptions.GUI_TS_OUTPUT;
 import static umlp.UMLPToolOptions.USE_NEO4J;
 import static umlp.UMLPToolOptions.USE_PLAYWRIGHT;
 import static umlp.UMLPToolOptions.USE_SHELL;
@@ -26,6 +29,7 @@ public class UMLPGeneratorConfig {
   private boolean generateImportMap;
 
   private String tslib;
+  private String tsOutput;
   private String domain;
 
   private UMLPGeneratorConfig() {
@@ -101,6 +105,18 @@ public class UMLPGeneratorConfig {
     return this;
   }
 
+  /**
+   * @return the folder the generated GUI files are copied to, if it is not the output folder
+   */
+  public Optional<Path> getTSOutput() {
+    return Optional.ofNullable(tsOutput).map(Paths::get);
+  }
+
+  public UMLPGeneratorConfig setTSOutput(String tsOutput) {
+    this.tsOutput = tsOutput;
+    return this;
+  }
+
   public boolean is4Domain() {
     return Optional.ofNullable(domain).isPresent();
   }
@@ -135,6 +151,9 @@ public class UMLPGeneratorConfig {
   public UMLPGeneratorConfig initFromCmd(CommandLine cmd) {
     if (GUI_GEN_FOR_TS_LIB.isSelected(cmd)) {
       this.setTSLib(GUI_GEN_FOR_TS_LIB.getValue(cmd));
+    }
+    if (GUI_TS_OUTPUT.isSelected(cmd)) {
+      this.setTSOutput(GUI_TS_OUTPUT.getValue(cmd));
     }
     if(DOMAIN.isSelected(cmd)) {
       this.setDomain(DOMAIN.getValue(cmd));

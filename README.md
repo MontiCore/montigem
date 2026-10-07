@@ -98,6 +98,7 @@ The tool can be called with the following options:
 | -so | --gensymbolsonly                  | forces UMLP generator to only generate symbols for the cd 
 | -ti | --testInfrastructure              | Generate infrastructure for unit- and e2e-tests
 | -tslib <library_name> |                 | Name of a TS library if generation schema is adjusted for the TS library
+| -tso | --tsOut <dir>                    | Path the generated GUI files are copied to, if hand-written files reference them there.
 | -use_neo4j |                            | Make Neo4j the default database access for the MontiGem app.
 | -use_playwright |                       | If spring classes are generated, generate additional playwright e2e infrastructure
 | -use_shell |                            | If the backend is generated, generate additional spring shell classes

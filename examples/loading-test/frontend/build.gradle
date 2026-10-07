@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import de.montigem.gradle.specific.GUI2Java2TSTask
+import de.montigem.gradle.specific.GUI2JavaTask
 import de.montigem.gradle.specific.UMLPJava2TSTask
 
 plugins {
@@ -18,13 +19,16 @@ dependencies {
   testImplementation project(':umlp-test-rte')
 }
 
-tasks.named("gui2java2ts", GUI2Java2TSTask) {
+tasks.named("gui2java", GUI2JavaTask) {
   guiCreateModels = [
       "test_update_of_builder.AnimalCreate",
       "test_update_after_build.one_page.PersonsAndBuilderInOnePage",
       "test_update_after_build.composed_in_builder_page.PersonsInBuilderPage",
       "test_update_after_build.PersonBuilder",
       "test_no_error.BuilderAndRouterNavigation"]
+}
+
+tasks.named("gui2java2ts", GUI2Java2TSTask) {
   verbose = false
 }
 

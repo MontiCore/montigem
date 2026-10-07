@@ -1,4 +1,4 @@
-import de.montigem.gradle.specific.GUI2Java2TSTask
+import de.montigem.gradle.specific.GUI2JavaTask
 import de.montigem.gradle.specific.UMLP2SymTask
 import de.montigem.gradle.specific.UMLPJava2TSTask
 
@@ -11,7 +11,7 @@ montigem {
   withCD2GUI = true
 }
 
-tasks.named("gui2java2ts", GUI2Java2TSTask) {
+tasks.named("gui2java", GUI2JavaTask) {
   guiCreateModels = ["gui.login.UserCreate"]
 }
 
