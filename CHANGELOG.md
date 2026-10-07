@@ -36,6 +36,22 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-10-07
+* Version 7.9.3-SNAPSHOT
+  * `@umlp/charts` moved to version 10.0.0
+
+* Charts migrated to Plotly: `GemBarChart`, `GemBoxPlot`, `GemBulletChart`, `GemCandlestickChart`,
+  `GemGaugeChart`, `GemLineChart`, `GemTimelineChart`, `GemHeatmapChart`, `GemPieChart`,
+  `GemRadarChart`, `GemSunburstChart` and `GemScatterPlot`
+  * the component definitions (parameters) did not change, but the rendering, layout and
+    styling of the charts may differ from before
+  * charts now adapt to the size of their container
+  * `GemVennDiagram`, `GemNetworkGraph` and `GemTimeSeriesChart` still use their previous libraries
+  * vis-lib contains layout/resize tests for the charts (`examples/vis-lib/frontend/src/test/ts/manual`)
+
+* Every chart component has a configuration (context) menu, opened via the gear button
+  * new parameter `boolean showConfig = false` on every chart controls whether the gear button is shown
+
 ## 2026-08-12
 
 * version 7.9.2-SNAPSHOT contains
