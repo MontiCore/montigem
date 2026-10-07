@@ -55,7 +55,9 @@ public abstract class CD2GUITask extends MGSingleFileTask {
     
     if(!this.getOcl().isEmpty()) {
       result.add("-ocl");
-      result.add(handlePath.apply(Path.of(getOcl().getAsPath())));
+      for (File file : this.getOcl()) {
+        result.add(handlePath.apply(file.toPath()));
+      }
     }
 
     result.add("-" + UMLPToolOptions.CD2GUI.getCMD());

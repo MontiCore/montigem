@@ -219,7 +219,7 @@ public class ContainerFileExtractor extends BaseExtractor {
         .name(simpleNameAndExtension[SIMPLE_NAME_POS]+simpleNameAndExtension[NAME_EXTENSION_POS])
         .nameExtension(simpleNameAndExtension[NAME_EXTENSION_POS])
         .simpleName(simpleNameAndExtension[SIMPLE_NAME_POS])
-        .modified(ExtractorUtils.ARTIFACTS_DATE_FORMAT.format(file.lastModified()));
+        .modified(ExtractorUtils.toModified(file.lastModified()));
   }
 
   private Project getRootOfPath(String absolutePathOfArtifact) {
@@ -245,7 +245,7 @@ public class ContainerFileExtractor extends BaseExtractor {
 
     return directoryBuilder.simpleName(dir.getName())
         .nameExtension("Folder")
-        .modified(ExtractorUtils.ARTIFACTS_DATE_FORMAT.format(dir.lastModified()))
+        .modified(ExtractorUtils.toModified(dir.lastModified()))
         .name(dir.getName())
         .fullName(nameStartingFromRoot);
   }

@@ -20,9 +20,15 @@ import oclwitherrormessages.OCLWithErrorMessagesMill;
 import umlp.generator.ocl.TypeUtil;
 import umlp.generator.ocl.javagen.field_access.FieldAccessInfo;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Optional;
+import java.util.Set;
 
 public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGenVisitor {
+  
+  private final Set<ASTFieldAccessExpression> callees = Collections.newSetFromMap(new IdentityHashMap<>());
+
   public CommonExpressionsOCLJavaGenVisitor(JavaGenVisitorState state) {
     super(state);
   }
@@ -35,6 +41,9 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
     if (isFieldAccess) {
       ASTFieldAccessExpression fa = OCLWithErrorMessagesMill.typeDispatcher().asCommonExpressionsASTFieldAccessExpression(node.getExpression());
       handled = handleTranslatedListCall(fa, node);
+      if (!handled) {
+        callees.add(fa);
+      }
     }
 
     if (!handled) {
@@ -265,7 +274,7 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
     }
 
     // functions should not be replaced by getter name conversion
-    if (nodeType.isFunctionType()) {
+    if (nodeType.isFunctionType() || callees.contains(node)) {
       node.getExpression().accept(getTraverser());
       getPrinter().print(".");
       getPrinter().print(node.getName());

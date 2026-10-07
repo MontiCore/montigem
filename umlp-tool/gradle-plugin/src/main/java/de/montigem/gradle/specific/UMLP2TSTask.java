@@ -88,7 +88,9 @@ public abstract class UMLP2TSTask extends MGSingleFileTask {
 
     if(!this.getOcl().isEmpty()) {
       result.add("-ocl");
-      result.add(handlePath.apply(Path.of(getOcl().getAsPath())));
+      for (File file : this.getOcl()) {
+        result.add(handlePath.apply(file.toPath()));
+      }
     }
 
     if (this.getTslib().isPresent()) {

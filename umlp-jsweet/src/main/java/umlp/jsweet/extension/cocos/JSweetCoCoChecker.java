@@ -34,6 +34,13 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
     super(null, context, null);
   }
 
+  /**
+   * @param compilationUnit the scanned unit, JSweet needs it to report the source position of an internal error
+   */
+  public JSweetCoCoChecker(JSweetContext context, CompilationUnitTree compilationUnit) {
+    super(null, context, compilationUnit);
+  }
+
   protected JSweetCoCoChecker(TranspilationHandler logHandler, JSweetContext context, CompilationUnitTree compilationUnit) {
     super(logHandler, context, compilationUnit);
   }

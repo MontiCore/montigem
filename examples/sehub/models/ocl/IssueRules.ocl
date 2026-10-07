@@ -1,0 +1,24 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import Sehub.*;
+
+/**
+ * Rules for the issues of a project. See UserRules.ocl for how CD2GUI shows
+ * them.
+ *
+ * (a rule on the enum "state", e.g. "DONE implies posts.size() >= 1", fails in
+ * the ocl2java of umlp-tool with an internal error 0xFD888 on enum accesses)
+ */
+ocl IssueRules {
+
+  context Issue i inv IssueHasDescription:
+    !i.description.isEmpty();
+    shortError: "Description is missing";
+    error: "Every issue needs a description";
+
+  // The seed data violates this rule with the "Verfuegbare Konten ..." issue
+  context Issue i inv IssueTitleShort:
+    i.title.length() <= 60;
+    shortError: "Title longer than 60 characters";
+    error: "Issue titles must be at most 60 characters long";
+}

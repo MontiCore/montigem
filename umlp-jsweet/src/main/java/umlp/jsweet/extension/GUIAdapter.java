@@ -83,7 +83,7 @@ public class GUIAdapter extends PrinterAdapter {
 
     for (CompilationUnitTree compilationUnit : getContext().compilationUnits) {
       if(!getContext().isExcludedSourcePath(compilationUnit.getSourceFile().getName())) {
-        new JSweetCoCoChecker(getContext()).scan(compilationUnit, getContext().trees);
+        new JSweetCoCoChecker(getContext(), compilationUnit).scan(compilationUnit, getContext().trees);
       }
     }
     super.onTranspilationStarted();
