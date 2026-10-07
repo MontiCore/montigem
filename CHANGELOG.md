@@ -36,9 +36,8 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
-## 2026-10-07
-* Version 7.9.3-SNAPSHOT
-    * `@umlp/charts` moved to version 10.0.0
+## 2026-10-07: 7.9.3-SNAPSHOT
+* `@umlp/charts` moved to version 10.0.0
 
 * Charts migrated to Plotly: `GemBarChart`, `GemBoxPlot`, `GemBulletChart`, `GemCandlestickChart`,
   `GemGaugeChart`, `GemLineChart`, `GemTimelineChart`, `GemHeatmapChart`, `GemPieChart`,
@@ -52,10 +51,7 @@ For MontiGem users:
 * Every chart component has a configuration (context) menu, opened via the gear button
     * new parameter `boolean showConfig = false` on every chart controls whether the gear button is shown
 
-## 2026-08-12
-
-* version 7.9.2-SNAPSHOT contains
-
+## 2026-08-12: 7.9.2-SNAPSHOT
 * AppComponent ts,html and scss are now generated and do not have to be handwritten anymore
     * if you want to modify them their new location is inside the hwc gui directory
     * along with this change MontiGem apps are now using the standalone component bootstrap 
@@ -68,7 +64,7 @@ For MontiGem users:
 - enable package, tsconfig and angular.json override. This will greatly improve frontend dependency update roll-outs for the MontiGem team  
     - see ProjectSetup.md on how to use them 
 
-## 2026-07-31
+## 2026-07-31: 7.9.1-SNAPSHOT
 
 - Upgraded MontiGem to version 7.9.1-SNAPSHOT
     - frontend TypeScript libraries moved to version >8.0.0  
