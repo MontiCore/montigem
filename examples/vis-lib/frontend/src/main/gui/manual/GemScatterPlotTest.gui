@@ -1,0 +1,17 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.charts.GemScatterPlot;
+import manual.*;
+
+page GemScatterPlotTest(List<Person> persons) {
+  @LayoutTester(input =
+    @GemScatterPlot(
+      data = getSimpleData(),
+      xAxis = null,
+      yAxis = null,
+      showConfig = true
+    )
+  );
+}

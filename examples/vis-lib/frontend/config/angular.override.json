@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "client": {
+      "architect": {
+        "test": {
+          "options": {
+            "browsers": ["chromium"],
+            "headless": true
+          }
+        }
+      }
+    }
+  }
+}

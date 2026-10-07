@@ -4,7 +4,7 @@ export const autoColors: string[] = [
   "#646567",
   "#cc071e",
   "#E30066",
-  "##f6a800",
+  "#f6a800",
   "#11750e",
   "#FFED00",
   "#bdcd00",

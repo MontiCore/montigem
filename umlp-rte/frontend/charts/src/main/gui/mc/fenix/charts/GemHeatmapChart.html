@@ -1,52 +1,50 @@
-<!-- (c) https://github.com/MontiCore/monticore -->
+<div style="width: 100%; height: 100%; position: relative;">
 
-<div style="margin-bottom: 5px">
-	<gem-chart-options>
-		<li>
-			<h3>Heatmap Chart Settings</h3>
-			<label>
-				<input #colorbox
-					[value]=defaultColor
-					(change)="enter_color(colorbox.value)"
-					type="color"
-				> Color Select
-			</label>
-			<br>
-			<label>
-				<input #boxX style="width:50px"
-					[value]="_xBins || xBins || defaultXBins"
-					(change)="enter_x_bins(boxX.value)"
-					type="number"
-					min="1"
-					max="32"
-				> X-Bins
-			</label>
-			<br>
-			<label>
-				<input #boxY style="width:50px"
-					[value]="_yBins || yBins || defaultYBins"
-					(change)="enter_y_bins(boxY.value)"
-					type="number"
-					min="1"
-					max="32"
-				> Y-Bins
-			</label>
-		</li>
-	</gem-chart-options>
-</div>
+  <div *ngIf="showConfig" style="position: absolute; top: 5px; left: 5px; z-index: 10; max-height: 100%; overflow-y: auto;">
+    <gem-chart-options>
+      <li>
+        <h3>Heatmap Chart Settings</h3>
+        <label>
+          <input #colorbox
+                 [value]=defaultColor
+                 (change)="enter_color(colorbox.value)"
+                 type="color"
+          > Color Select
+        </label>
+        <br>
+        <label>
+          <input #boxX style="width:50px"
+                 [value]="_xBins || defaultXBins"
+                 (change)="enter_x_bins(boxX.value)"
+                 type="number"
+                 min="1"
+                 max="32"
+          > X-Bins
+        </label>
+        <br>
+        <label>
+          <input #boxY style="width:50px"
+                 [value]="_yBins || defaultYBins"
+                 (change)="enter_y_bins(boxY.value)"
+                 type="number"
+                 min="1"
+                 max="32"
+          > Y-Bins
+        </label>
+      </li>
+    </gem-chart-options>
+  </div>
 
-<div>
-	<ngx-charts-heat-map
-    [scheme]="colorScheme"
-    [results]="computed_data"
-    [gradient]="gradient"
-    [xAxis]="showXAxis"
-    [yAxis]="showYAxis"
-    [legend]="displayLegend"
-    [showXAxisLabel]="showXAxisLabel"
-    [showYAxisLabel]="showYAxisLabel"
-    [xAxisLabel]="xLabel"
-    [yAxisLabel]="yLabel"
-  	>
-	</ngx-charts-heat-map>
+  <div class="chart-container" #outerContainer style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+    <div #innerContainer style="width: 100%; height: 100%;">
+      <plotly-plot
+        [data]="plotlyData"
+        [layout]="_layout"
+        [config]="_config"
+        [useResizeHandler]="true"
+        [style]="{width: '100%', height: '100%', display: 'block'}">
+      </plotly-plot>
+    </div>
+  </div>
+
 </div>

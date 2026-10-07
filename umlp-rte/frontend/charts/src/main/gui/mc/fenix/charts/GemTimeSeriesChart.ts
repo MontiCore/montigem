@@ -4,10 +4,12 @@ import {GemTimeSeriesChartComponent, config} from '../../../../../../build/gui2j
 import ApexCharts from 'apexcharts';
 import { TimeSeriesData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeriesData';
 import { TimeSeries } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeries';
+import { setupResizeObserver } from './ResizeObserverUtil';
+import { GemChartOptions } from './GemChartOptions';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [...config.imports],
+  imports: [...config.imports, GemChartOptions],
   selector: config.selector,
   templateUrl: config.templateUrl,
   styles: config.styles,
@@ -37,6 +39,10 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
   private lastRenderTime: number = 0;
   private renderTimer: any = null;
   private pendingRender: boolean = false;
+
+  // chosen in the settings menu
+  public chartStyle: 'area' | 'line' = null;
+  public legendPosition: 'top' | 'right' | 'bottom' | 'left' = 'bottom';
 
   constructor(private hostElement: ElementRef) {
     super();
@@ -71,8 +77,10 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
       this.pendingRender = false;
     }
 
-    // "area" (default) or "line"; with many overlapping series "line" stays readable
-    const chartType = ((this as any).getChartType && (this as any).getChartType()) || 'area';
+    // "area" (default) or "line"; with many overlapping series "line" stays readable.
+    // A style picked in the settings menu survives the re-init on route changes.
+    const chartType: 'area' | 'line' = this.chartStyle || ((this as any).getChartType && (this as any).getChartType()) || 'area';
+    this.chartStyle = chartType;
 
     this.options = {
       noData: { text: "Loading..." },
@@ -80,9 +88,8 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
       // thin stroke + low-opacity fill so several overlapping series remain
       // distinguishable (a full-opacity area fill turns them into one blob)
       stroke: { curve: 'smooth', width: 2 },
-      fill: chartType === 'area'
-        ? { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.03 } }
-        : { type: 'solid', opacity: 1 },
+      fill: this.fillFor(chartType),
+      legend: { position: this.legendPosition },
       chart: {
         id: this.chartId,
         type: chartType,
@@ -159,10 +166,8 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
   }
 
   ngAfterViewInit() {
-    this.resizeObserver = new ResizeObserver(() => {
-      if (this.resizeTimeout) {
-        clearTimeout(this.resizeTimeout);
-      }
+    this.resizeObserver = setupResizeObserver(this.targetElement.nativeElement, (width, height) => {
+      if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
       this.resizeTimeout = setTimeout(() => {
         if (this.chart) {
           this.lastUpdateTimestamp = Date.now();
@@ -174,7 +179,6 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
         }
       }, 100);
     });
-    this.resizeObserver.observe(this.hostElement.nativeElement);
   }
 
   ngOnDestroy() {
@@ -449,6 +453,27 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
 
   public getToggleLiveDataButtonLabel(): string {
     return this.liveData ? "Pause Live Stream" : "Resume Live Stream";
+  }
+
+  private fillFor(chartType: 'area' | 'line'): any {
+    return chartType === 'area'
+      ? { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.03 } }
+      : { type: 'solid', opacity: 1 };
+  }
+
+  public setChartStyle(chartType: 'area' | 'line') {
+    this.chartStyle = chartType;
+    if (!this.chart) return;
+    this.options.chart.type = chartType;
+    this.options.fill = this.fillFor(chartType);
+    this.chart.updateOptions({ chart: { type: chartType }, fill: this.options.fill }, false, false);
+  }
+
+  public setLegendPosition(legendPosition: 'top' | 'right' | 'bottom' | 'left') {
+    this.legendPosition = legendPosition;
+    if (!this.chart) return;
+    this.options.legend = { position: legendPosition };
+    this.chart.updateOptions({ legend: { position: legendPosition } }, false, false);
   }
 
   @Input()

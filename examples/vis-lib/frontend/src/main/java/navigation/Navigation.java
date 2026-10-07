@@ -28,6 +28,9 @@ public class Navigation extends NavigationTOP {
   public Consumer<Void> setCategoryCharts() {
     return v -> setActiveCategory("Charts");
   }
+  public Consumer<Void> setCategoryTest() {
+    return v -> setActiveCategory("Test");
+  }
 
   public Consumer<Void> setCategoryOther() {
     return v -> setActiveCategory("Other");

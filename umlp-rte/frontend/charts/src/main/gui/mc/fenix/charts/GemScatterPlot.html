@@ -1,36 +1,33 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
 
-<div *ngIf="showConfig" style="margin-bottom: 5px">
-  <gem-chart-options>
-    <li *ngIf="displayLegend === true">
-      <h3>Legend Position</h3>
-      <div class="legendButtons">
-        <button (click)="setLegendPosition('left')">Left</button>
-        <button (click)="setLegendPosition('top')">Top</button>
-        <button (click)="setLegendPosition('bottom')">Bottom</button>
-        <button (click)="setLegendPosition('right')">Right</button>
-      </div>
-    </li>
-  </gem-chart-options>
-</div>
+<div style="width: 100%; height: 100%; position: relative;">
 
-<div [ngClass]="changeContainer()" *ngIf="dataSets != null && dataSets.length > 0; else elseBlock">
-  <div class="wholeChartContainer">
-    <canvas
-      baseChart
-      [datasets]="dataSets"
-      [options]="options"
-      [type]="'scatter'"
-      >
-    </canvas>
+  <div *ngIf="showConfig" style="position: absolute; top: 0px; left: 0px; z-index: 1001;">
+    <gem-chart-options>
+      <li *ngIf="displayLegend === true" style="list-style-type: none;">
+        <h3>Legend Position</h3>
+        <div class="legendButtons" style="display: flex; column-gap: 10px;">
+          <button (click)="setLegendPosition('left')">Left</button>
+          <button (click)="setLegendPosition('top')">Top</button>
+          <button (click)="setLegendPosition('bottom')">Bottom</button>
+          <button (click)="setLegendPosition('right')">Right</button>
+        </div>
+      </li>
+    </gem-chart-options>
   </div>
-  <gem-chart-legend
-    [colors]="legendColors"
-    [displayLegend]="displayLegend"
-    >
-  </gem-chart-legend>
-</div>
 
-<ng-template #elseBlock>
-  <p>No data available</p>
-</ng-template>
+  <div class="wholeChartContainer" *ngIf="plotlyData != null && plotlyData.length > 0; else elseBlock">
+    <plotly-plot
+      [data]="plotlyData"
+      [layout]="_layout"
+      [config]="_config"
+      [useResizeHandler]="true"
+      [style]="{width: '100%', height: '100%', display: 'block'}">
+    </plotly-plot>
+  </div>
+
+  <ng-template #elseBlock>
+    <p>No data available</p>
+  </ng-template>
+
+</div>

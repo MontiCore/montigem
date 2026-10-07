@@ -1,0 +1,20 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import mc.fenix.charts.GemBarChart;
+
+import Domain.App;
+import Domain.Person;
+
+page GemBarChartTest(App app, List<Person> persons, String myStringValue = "default")
+{
+  @LayoutTester(input =
+    barchart@GemBarChart(
+      data = null,
+      stacked = false,
+      maxValue = null,
+      minValue = null,
+      showConfig  = true
+    )
+  );
+}

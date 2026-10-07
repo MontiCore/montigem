@@ -158,3 +158,4 @@ export * from "./build/gui2java2ts/mc/fenix/charts/gemtimelinecharttypes/GemTime
 
 
 export * from "./src/main/gui/mc/fenix/charts/GemBulletChart";
+export * from "./src/main/gui/mc/fenix/charts/ResizeObserverUtil";

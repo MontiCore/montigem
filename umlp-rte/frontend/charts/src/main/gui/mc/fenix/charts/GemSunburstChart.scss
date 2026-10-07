@@ -1,0 +1,84 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.wholeChartContainer {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+:host ::ng-deep plotly-plot,
+:host ::ng-deep .js-plotly-plot,
+:host ::ng-deep .plot-container,
+:host ::ng-deep .svg-container {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.wholeChartWithLegendLeftContainer,
+.wholeChartWithLegendRightContainer,
+.wholeChartWithLegendTopContainer,
+.wholeChartWithLegendBottomContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.wholeChartWithLegendLeftContainer {
+  flex-direction: row-reverse;
+}
+
+.wholeChartWithLegendRightContainer {
+  flex-direction: row;
+}
+
+.wholeChartWithLegendTopContainer {
+  flex-direction: column-reverse;
+}
+
+.wholeChartWithLegendBottomContainer {
+  flex-direction: column;
+}
+
+/* the legend keeps its natural size, the chart takes the remaining space */
+gem-chart-legend {
+  flex: none;
+  align-self: center;
+}
+
+.wholeChartWithLegendLeftContainer gem-chart-legend,
+.wholeChartWithLegendRightContainer gem-chart-legend {
+  max-width: 40%;
+}
+
+/* next to the chart the entries are listed vertically instead of wrapping in a row */
+.wholeChartWithLegendLeftContainer ::ng-deep .gem-legend,
+.wholeChartWithLegendRightContainer ::ng-deep .gem-legend {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+.legendButtons {
+  display: flex;
+  column-gap: 10px;
+  justify-content: space-between;
+}
+
+.chartTitle {
+  text-align: center;
+  padding-bottom: 15px;
+  font-family: Times, serif;
+  font-weight: bold;
+}

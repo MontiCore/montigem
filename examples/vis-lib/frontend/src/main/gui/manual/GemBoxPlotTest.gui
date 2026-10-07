@@ -1,0 +1,25 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import mc.fenix.charts.GemBoxPlot;
+import mc.fenix.arrange.GemColumn;
+import manual.*;
+
+page GemBoxPlotTest()
+{
+  @LayoutTester(input =
+    secondBoxplot@GemBoxPlot(
+      data = getSecondBoxPlotData(),
+      min = 0.0,
+      showConfig = true
+    )
+  );
+  @LayoutTester(input =
+    boxplot@GemBoxPlot(
+      data = getBoxPlotData(),
+      min = -5.0,
+      showConfig = true
+    )
+  );
+
+}

@@ -44,7 +44,7 @@ component GemRadarChart(
     /**
       If true, shows a configuration button (internal use).
     */
-    Boolean showConfig = true,
+    Boolean showConfig = false,
     /**
       Width of the chart container as a valid CSS length (e.g., "500px", "100%").
     */

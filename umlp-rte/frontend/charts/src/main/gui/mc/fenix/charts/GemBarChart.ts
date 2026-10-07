@@ -1,228 +1,344 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, ChangeDetectionStrategy, Input } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ElementRef, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, HostBinding } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { config, GemBarChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemBarChartComponent';
-import { ChartDataset, ChartOptions } from 'chart.js';
-import { NgChartsModule } from 'ng2-charts';
 import { GemBarChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gembarcharttypes/GemBarChartData';
 import { autoColors } from './colors';
-import { GemChartLegend } from './GemChartLegend';
 import { GemChartOptions } from './GemChartOptions';
-import {GemListUtil} from "@umlp/commonj2ts";
-import {GemBarChartEntry} from "../../../../../../build/gui2java2ts/mc/fenix/charts/gembarcharttypes/GemBarChartEntry";
+import { PlotlyModule } from 'angular-plotly.js';
+import * as Plotly from 'plotly.js-dist-min';
+import { setupResizeObserver } from './ResizeObserverUtil';
+import { fitsSideLegend, topLegendFallback } from './LegendLayout';
+import { GemListUtil } from '@umlp/commonj2ts';
+
+PlotlyModule.plotlyjs = Plotly;
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [...config.imports, NgChartsModule, GemChartOptions, GemChartLegend],
+  standalone: true,
+  imports: [CommonModule, GemChartOptions, PlotlyModule],
   selector: config.selector,
   styleUrls: config.styleUrls,
   templateUrl: config.templateUrl,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GemBarChart extends GemBarChartComponent {
+export class GemBarChart extends GemBarChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  /**labels on x axis in a vertical bar chart respectively on y axis in a horizontal bar*/
-  public labels: string[];
+  @HostBinding('style.display') get hostDisplay() { return 'block'; }
+  @HostBinding('style.width') get hostWidth() { return '100%'; }
+  @HostBinding('style.height') get hostHeight() { return '100%'; }
 
-  /** contains the data for all entries that will be displayed in the chart*/
-  public dataSets: ChartDataset<'bar'>[] = [];
-
-  /** contains all the data provided by the user */
-  public rawData;
-
-  /**contains the colors for each entry */
-  public colors = [];
-
-  /** adds by the desire of the user additional symbols to the values  */
+  public labels: string[] = [];
   public _displayValue: (value: number) => string = (v) => String(v);
-
-  /**labels for chart legend */
-  public legendLabels: string[] = [];
-
-  /**colors for chart legend */
-  public legendColors: string[] = [];
-
-  /** defines the position of the legend */
-  public legendPosition: string;
-
-  /**variable that enables or disables the legend */
   public displayLegend = true;
 
-  /** variable that contains the settings for the chart */
-  public options: ChartOptions = {
-    responsive: true,
-    maintainAspectRatio: true,
+  @ViewChild('innerContainer') innerContainer!: ElementRef;
+  @ViewChild('outerContainer') outerContainer!: ElementRef;
+
+  public legendPosition: string = 'right';
+  private resizeObserver!: ResizeObserver;
+  private lastWidth: number = 0;
+  // true while a side legend is shown above the plot because the chart is too narrow
+  private legendFallback: boolean = false;
+
+  public autoMargins: boolean = true;
+  public rightMargin: number = 20;
+  public topMargin: number = 60;
+  public bottomMargin: number = 25;
+  public leftMargin: number = 50;
+
+  public plotlyData: any[] = [];
+
+  _layout: any = {
+    barmode: 'group',
+    margin: {
+      r: this.rightMargin,
+      t: this.topMargin,
+      b: this.bottomMargin,
+      l: this.leftMargin
+    },
+    showlegend: true,
+    xaxis: {
+      type: 'category',
+      showticklabels: true,
+      tickfont: { size: 11 },
+      tickangle: 'auto',
+      automargin: true
+    },
+    yaxis: { autorange: true, automargin: true }
+
   };
 
-  /**gives the colors from the constant autoColors */
+  _config: any = {
+    displaylogo: false,
+    displayModeBar: false,
+    responsive: true
+  };
+
+  constructor(private el: ElementRef, private cdr: ChangeDetectorRef) {
+    super();
+  }
+
   public getColors() {
     return autoColors;
   }
 
-  /** setter that processes the data to be shown correctly by the chart and the legend.
-   * Also sets the colors for each entry when no color is given as it uses the provided colors service
-   */
   @Input()
-  public set data(data: GemBarChartData) {
-    if (!data) {
-      return;
-    }
-    this.dataSets = [];
-    const colors = [];
-    const labels = [];
-    let pointerAutoColors = 0;
-    let autocolors = this.getColors();
+  public set data(data: any) {
+    if (!data) return;
+    this._data = data;
     (async () => {
-    this.labels = await GemListUtil.toArraySync(data.getLabelsList());
+      let autocolors = this.getColors();
+      let pointerAutoColors = 0;
 
-    for (let i = 0; i < await data.getEntriesList().size(); i++) {
-      const bcEntry : GemBarChartEntry = (await data.getEntries(i));
-      if (!CSS.supports('color', bcEntry.getBackgroundColor())) {
-        bcEntry.setBackgroundColor(autocolors[pointerAutoColors++]);
+      const labelsList = typeof data.getLabelsList === 'function' ? data.getLabelsList() : undefined;
+      this.labels = labelsList ? await GemListUtil.toArraySync(labelsList) : (data.labels || []);
+
+      let entriesList = typeof data.getEntriesList === 'function' ? data.getEntriesList() : undefined;
+      let entries = entriesList ? await GemListUtil.toArraySync(entriesList) : data.entries;
+
+      if (Array.isArray(data)) entries = data;
+
+      if (!entries || !Array.isArray(entries)) {
+        console.warn("GemBarChart: Received empty or structurally invalid data payload.", data);
+        return;
       }
-      const _data = (await GemListUtil.toArraySync(bcEntry.getDataList()));
 
-      let entry: ChartDataset<'bar'> = {
-        data: _data,
-        label:bcEntry.getLabel(),
-        backgroundColor: bcEntry.getBackgroundColor(),
-        hoverBackgroundColor: bcEntry.getBackgroundColor(),
-        hoverBorderWidth: 2,
-      };
+      let parsedTraces: any[] = [];
 
-      labels.push(entry.label);
-      colors.push(entry.backgroundColor);
-      this.dataSets.push(entry);
-    }
-    this.legendLabels = labels;
-    this.legendColors = colors;
+      for (let i = 0; i < entries.length; i++) {
+        let entry = entries[i];
+        let label = typeof entry.getLabel === 'function' ? entry.getLabel() : entry.label;
+
+        let dataList = typeof entry.getDataList === 'function' ? entry.getDataList() : undefined;
+        let values = dataList ? await GemListUtil.toArraySync(dataList) : (entry.data || entry.values || []);
+
+        let color = typeof entry.getBackgroundColor === 'function' ? entry.getBackgroundColor() : entry.backgroundColor;
+
+        if (!color || !CSS.supports('color', color)) {
+          color = autocolors[pointerAutoColors++];
+          if (typeof entry.setBackgroundColor === 'function') {
+            entry.setBackgroundColor(color);
+          } else {
+            entry.backgroundColor = color;
+          }
+        }
+
+        let trace = {
+          x: this.labels,
+          y: values,
+          name: label,
+          type: 'bar',
+          marker: { color: color }
+        };
+        parsedTraces.push(trace);
+      }
+
+      this.plotlyData = parsedTraces;
+      if (this.lastWidth > 0) {
+        this.applyLegendFallback(this.lastWidth);
+      }
+      this.updatePlot();
+      this.cdr.detectChanges();
     })();
+  }
+
+  private updateAxisBounds() {
+    if (this._minValue == null && this._maxValue == null) {
+      this._layout.yaxis.autorange = true;
+      this._layout.yaxis.range = undefined;
+    } else {
+      this._layout.yaxis.autorange = false;
+      this._layout.yaxis.range = [
+        this._minValue != null ? this._minValue : 0,
+        this._maxValue != null ? this._maxValue : null
+      ];
+    }
   }
 
   @Input()
   public set minValue(minValue: number) {
     this._minValue = minValue;
-    this.saveAllOptionsChanges();
+    this.updateAxisBounds();
+    this.updatePlot();
+    this.cdr.detectChanges();
   }
 
   @Input()
   public set maxValue(maxValue: number) {
     this._maxValue = maxValue;
-    this.saveAllOptionsChanges();
+    this.updateAxisBounds();
+    this.updatePlot();
+    this.cdr.detectChanges();
   }
 
   @Input()
   public set displayValue(displayValue: (value: number) => string) {
     this._displayValue = displayValue;
-    this.saveAllOptionsChanges();
   }
 
   @Input()
   public set stacked(stacked: boolean) {
     this._stacked = stacked;
-    this.saveAllOptionsChanges();
-    this.setData();
+    this.updateBarmode();
   }
 
   @Input()
   public set overlapping(overlapping: boolean) {
     this._overlapping = overlapping;
-    this.saveAllOptionsChanges();
-    this.setData();
+    this.updateBarmode();
   }
 
-  constructor() {
-    super();
-  }
-
-  ngOnInit(): void {
-    this.saveAllOptionsChanges();
-  }
-
-  /**
-   * handles a problem connected with different order of variables in the input
-   */
-  public setData(): void {
-    if (this._stacked && this.rawData != undefined) {
-      for (let i = 0; i < this.dataSets.length; i++) {
-        this.dataSets[i].stack = this.rawData.getEntries(i).stack;
-      }
-    }
-    else if (!this._stacked && this.rawData != undefined) {
-      for (let i = 0; i < this.dataSets.length; i++) {
-        this.dataSets[i].stack = undefined;
-      }
-    }
-    else {
-      return;
-    }
-  }
-
-  /** function that saves all settings of the variables that are not reset in the new input */
-  public saveAllOptionsChanges(): void {
-    this.options = {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          stacked: this._stacked && !this._overlapping,
-          grid: {
-            color: '#888'
-          },
-          ticks: {
-            color: '#888'
-          }
-        },
-        y: {
-          min: this._minValue,
-          max: this._maxValue,
-          stacked: this._stacked,
-          grid: {
-            color: '#888'
-          },
-          ticks: {
-            color: '#888'
-          }
-        }
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: (tooltipItem) => {
-              const label = tooltipItem.dataset.label || "";
-              let value = tooltipItem.parsed.y;
-              let res = "";
-              if (this._displayValue != undefined && typeof value === 'number') {
-                res = this._displayValue(value);
-              }
-              return label + ": " + res;
-            }
-          }
-        },
-        legend: {
-          display: false
+  @Input()
+  public set margins(margins: number[] | number) {
+    if (margins != null) {
+      this.autoMargins = false;
+      if (typeof margins === "number") {
+        this._layout.margin = { t: margins, b: margins, l: margins, r: margins };
+      } else {
+        if (margins.length === 1) {
+          this._layout.margin = { t: margins[0], b: margins[0], l: margins[0], r: margins[0] };
+        } else if (margins.length === 2) {
+          this._layout.margin = { t: margins[0], b: margins[0], l: margins[1], r: margins[1] };
+        } else if (margins.length === 3) {
+          this._layout.margin = { t: margins[0], b: margins[2], l: margins[1], r: margins[1] };
+        } else if (margins.length >= 4) {
+          this._layout.margin = { t: margins[0], r: margins[1], b: margins[2], l: margins[3] };
         }
       }
+    } else {
+      this.autoMargins = true;
+      this._layout.margin = { t: this.topMargin, b: this.bottomMargin, l: this.leftMargin, r: this.rightMargin };
     }
+    this.updatePlot();
+    this.cdr.detectChanges();
+  }
+
+  private updateBarmode() {
+    if (this._overlapping) {
+      this._layout.barmode = 'overlay';
+    } else if (this._stacked) {
+      this._layout.barmode = 'stack';
+    } else {
+      this._layout.barmode = 'group';
+    }
+    this.updatePlot();
+    this.cdr.detectChanges();
+  }
+
+  public ngOnInit(): void {
+    super.ngOnInit();
+  }
+
+  ngAfterViewInit() {
+    this.resizeObserver = setupResizeObserver(this.el.nativeElement, (w, h) => this.handleResize(w, h));
+  }
+
+  ngOnDestroy() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  }
+
+  private handleResize(width: number, height: number) {
+    if (width === 0 || height === 0) return;
+    this.lastWidth = width;
+    this.applyLegendFallback(width);
+
+    if (this._layout.xaxis.showticklabels === false) {
+      this._layout.xaxis.showticklabels = true;
+    }
+
+    if (this.autoMargins && this.labels && this.labels.length > 0) {
+      if (!this._layout.xaxis) this._layout.xaxis = {};
+      this._layout.xaxis.tickmode = 'array';
+      this._layout.xaxis.tickvals = this.labels;
+      this._layout.xaxis.ticktext = this.labels;
+
+      // Adjust font size and rotation for very small layout containers
+      const isSmall = width < 450 || height < 250;
+      const fontSize = 12;
+
+      this._layout.xaxis.tickfont = { ...this._layout.xaxis.tickfont, size: fontSize };
+      this._layout.xaxis.tickangle = isSmall ? -30 : 'auto';
+
+      // the fallback legend above the plot brings its own, possibly reduced font size
+      if (this._layout.legend && !this.legendFallback) {
+        this._layout.legend.font = { ...this._layout.legend.font, size: fontSize };
+      }
+
+      // Reserve enough space for the right-side legend and rotated x-axis labels on small layouts
+      this._layout.margin.r = Math.max(this.rightMargin, Math.min(width * 0.15, 80));
+      this._layout.margin.b = Math.max(this.bottomMargin, Math.min(height * 0.25, 50));
+    }
+
+    this._layout.width = width;
+    this._layout.height = height;
+
+    this.updatePlot();
+    this.cdr.detectChanges();
+  }
+
+  private updatePlot(): void {
+    this.plotlyData = [...this.plotlyData];
+    this._layout = {
+      ...this._layout,
+      margin: { ...this._layout.margin },
+      xaxis: { ...this._layout.xaxis },
+      yaxis: { ...this._layout.yaxis }
+    };
   }
 
   public setLegendPosition(legendPosition: string) {
     this.legendPosition = legendPosition;
+    this.legendFallback = false;
+    this.applyLegendPosition(legendPosition);
+    if (this.lastWidth > 0) {
+      this.applyLegendFallback(this.lastWidth);
+    }
+    this.updatePlot();
+    this.cdr.detectChanges();
   }
 
-  /** changes container style depending on legend position */
-  public changeContainer() {
-    switch (this.legendPosition) {
-      case 'left':
-        return 'wholeChartWithLegendLeftContainer';
-      case 'top':
-        return 'wholeChartWithLegendTopContainer';
-      case 'bottom':
-        return 'wholeChartWithLegendBottomContainer';
-      case 'right':
-        return 'wholeChartWithLegendRightContainer';
-      default:
-        return 'wholeChartWithLegendBottomContainer';
+  /**
+   * A legend left or right of the plot does not fit into narrow charts, it would stick out of the
+   * component. Then the legend is placed above the plot until the chart is wide enough again.
+   */
+  private applyLegendFallback(width: number) {
+    const names = this.plotlyData.map(trace => trace.name);
+    const sideLegend = this.legendPosition === 'left' || this.legendPosition === 'right';
+    if (this.displayLegend && sideLegend && names.length > 0 && !fitsSideLegend(names, width)) {
+      const fallback = topLegendFallback(names, width, this._layout.margin.l, this._layout.margin.r);
+      this._layout.legend = fallback.legend;
+      this._layout.margin = { ...this._layout.margin, t: this.topMargin + fallback.height };
+      this.legendFallback = true;
+    } else if (this.legendFallback) {
+      this.legendFallback = false;
+      this.applyLegendPosition(this.legendPosition);
     }
   }
 
+  private applyLegendPosition(legendPosition: string) {
+    this._layout.showlegend = this.displayLegend;
+    const baseMargin = { t: this.topMargin, b: this.bottomMargin, l: this.leftMargin, r: this.rightMargin };
+
+    if (legendPosition === 'top') {
+      this._layout.legend = { orientation: "h", yanchor: "bottom", y: 1.02, xanchor: "center", x: 0.5 };
+      this._layout.margin = { ...baseMargin, t: this.topMargin + 40 };
+    } else if (legendPosition === 'bottom') {
+      this._layout.legend = { orientation: "h", yanchor: "top", y: -0.25, xanchor: "center", x: 0.5 };
+      this._layout.margin = { ...baseMargin, b: this.bottomMargin + 45 };
+    } else if (legendPosition === 'left') {
+      this._layout.legend = { orientation: "v", yanchor: "auto", y: 0.5, xanchor: "right", x: -0.1 };
+      this._layout.margin = { ...baseMargin, l: this.leftMargin + 45 };
+    } else {
+      this._layout.legend = { orientation: "v", yanchor: "auto", y: 0.5, xanchor: "left", x: 1.02 };
+      this._layout.margin = { ...baseMargin, r: this.rightMargin + 40 };
+    }
+  }
+
+  public changeContainer() {
+    return '';
+  }
 }
+

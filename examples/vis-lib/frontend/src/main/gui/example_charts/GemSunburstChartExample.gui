@@ -13,7 +13,8 @@ page GemSunburstChartExample(List<Person> persons) {
       @GemColumn(rowGap = "10px", width = "100%", components = [
         @GemSunburstChart(
           data = getData(),
-          ignoreError = true
+          ignoreError = true,
+          showConfig = true
         )
       ])
     ]),

@@ -36,5 +36,7 @@ component GemGaugeChart (
     Position of the text value.
     Possible values: "center" (default), "top", "bottom".
   */
-  String textPosition = "center"
+  String textPosition = "center",
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )

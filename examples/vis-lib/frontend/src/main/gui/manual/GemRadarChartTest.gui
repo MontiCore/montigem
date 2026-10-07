@@ -1,0 +1,24 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.charts.GemRadarChart;
+import manual.*;
+
+page GemRadarChartTest(List<Person> persons) {
+  @LayoutTester(input =
+    @GemRadarChart(
+      data = getData(),
+      fill = true,
+      stepSize = 1.0,
+      min = 0.0,
+      max = 5.0,
+      width = "100%",
+      height = "100%",
+      showLegend = true,
+      showLabels = true,
+      opacity = 0.4,
+      showConfig = true
+    )
+  );
+}

@@ -1,24 +1,35 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, ChangeDetectionStrategy, Input, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ElementRef, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemCandlestickChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemCandlestickChartComponent';
 import { GemChartOptions } from './GemChartOptions';
+import { PlotlyModule } from 'angular-plotly.js';
+import * as Plotly from 'plotly.js-dist-min';
+import { setupResizeObserver } from './ResizeObserverUtil';
+
+PlotlyModule.plotlyjs = Plotly;
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [...config.imports, CommonModule, GemChartOptions],
+  standalone: true,
+  imports: [...config.imports, CommonModule, GemChartOptions, PlotlyModule],
   selector: config.selector,
   styleUrls: config.styleUrls,
   templateUrl: config.templateUrl,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GemCandlestickChart extends GemCandlestickChartComponent implements AfterViewInit {
-  @ViewChild('chartContainer') chartContainer!: ElementRef;
+export class GemCandlestickChart extends GemCandlestickChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  private Plotly: any;
-  private plotInitialized = false;
+  @HostBinding('style.display') get hostDisplay() { return 'block'; }
+  @HostBinding('style.width') get hostWidth() { return '100%'; }
+  @HostBinding('style.height') get hostHeight() { return '100%'; }
 
-  constructor() {
+  private resizeObserver!: ResizeObserver;
+
+  @ViewChild('innerContainer') innerContainer!: ElementRef;
+  @ViewChild('outerContainer') outerContainer!: ElementRef;
+
+  constructor(private el: ElementRef, private cdr: ChangeDetectorRef) {
     super();
   }
 
@@ -26,10 +37,12 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
   dateFormat: boolean = false;
   chartType: boolean = false;
 
-  rightMargin: number = 0;
+  autoMargins: boolean = true;
+  rightMargin: number = 20;
   topMargin: number = 20;
-  bottomMargin: number = 0;
+  bottomMargin: number = 40;
   leftMargin: number = 50;
+
   fourClicked: boolean = false;
   builtinButtons: boolean = false;
 
@@ -73,38 +86,59 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
     }
   };
 
+  _config: any = {
+    displaylogo: false,
+    displayModeBar: false,
+    responsive: true
+  };
 
-  ngAfterViewInit(): void {
-    if (this.chartContainer) {
-      setTimeout(() => {
-        this.loadPlotlyAndCreatePlot();
-      }, 100);
+  ngAfterViewInit() {
+    this.resizeObserver = setupResizeObserver(this.el.nativeElement, (w, h) => this.handleResize(w, h));
+  }
+
+  ngOnDestroy() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
     }
   }
 
-  // Lazy Load Plotly
-  private async loadPlotlyAndCreatePlot() {
-    try {
-      const plotlyModule = await import('plotly.js-dist-min');
-      this.Plotly = plotlyModule.default || plotlyModule;
-      this.createPlot();
-    } catch (error) {
-      console.error("Failed to load Plotly lazily:", error);
-    }
-  }
+  private handleResize(width: number, height: number) {
+    if (width === 0 || height === 0) return;
 
-  private createPlot(): void {
-    if (this.chartContainer && this._data && this._layout && this.Plotly) {
-      this.Plotly.newPlot(this.chartContainer.nativeElement, this._data, this._layout, { responsive: true });
-      this.plotInitialized = true;
+    if (height < 250) {
+      this._layout.xaxis.rangeslider.visible = false;
+    } else {
+      this._layout.xaxis.rangeslider.visible = true;
     }
+
+    if (this.autoMargins) {
+      this.leftMargin = Math.max(30, Math.min(50, width * 0.1));
+      this.rightMargin = Math.max(15, Math.min(30, width * 0.05));
+
+      /* Increase minimum top margin from 10 to 30 to prevent SVG modebar and axis label overflow during dynamic resizing */
+      this.topMargin = Math.max(30, height * 0.05);
+
+      let baseBottom = this._layout.xaxis.rangeslider.visible ? 40 : 25;
+      this.bottomMargin = Math.max(baseBottom, height * 0.15);
+
+      this._layout.margin.l = this.leftMargin;
+      this._layout.margin.r = this.rightMargin;
+      this._layout.margin.b = this.bottomMargin;
+      this._layout.margin.t = this.topMargin;
+    }
+
+    this._layout.width = width;
+    this._layout.height = height;
+
+    this.updatePlot();
+    this.cdr.detectChanges();
   }
 
   private updatePlot(): void {
-    if (this.plotInitialized && this.chartContainer && this._data && this._layout && this.Plotly) {
-      this.Plotly.react(this.chartContainer.nativeElement, this._data, this._layout);
-    }
+    this._data = [...this._data];
+    this._layout = { ...this._layout };
   }
+
 
   public showButtons(): any[] {
     if (this.builtinButtons) {
@@ -128,6 +162,8 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
       xaxis: {
         ...this._layout.xaxis,
         range: range,
+        // Plotly writes autorange: true back into the layout on the first render, which would override the range
+        autorange: !(range && range.length === 2),
         tickformat: tick,
         rangeselector: {
           buttons: this.showButtons()
@@ -135,10 +171,11 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
       }
     };
     this.updatePlot();
+    this.cdr.detectChanges();
   }
 
   public updateLayout(update: number) {
-    if (!this._data[0].x || this._data[0].x.length === 0) return; // Guard clause if no data is present
+    if (!this._data[0].x || this._data[0].x.length === 0) return;
 
     if (update === 1) {
       let lastX = this._data[0].x[this._data[0].x.length - 1];
@@ -155,11 +192,13 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
       this._layout.xaxis.tickformat = "%b %d, %Y";
       this._layout.newLayout = "%b %d, %Y";
       this.updatePlot();
+      this.cdr.detectChanges();
     }
     else if (update === 3) {
       this._layout.xaxis.tickformat = "%d/%m/%Y";
       this._layout.newLayout = "%d/%m/%Y";
       this.updatePlot();
+      this.cdr.detectChanges();
     }
     else if (update === 4) {
       if (this.fourClicked) {
@@ -171,16 +210,21 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
         this.fourClicked = true;
       }
       this.updatePlot();
+      this.cdr.detectChanges();
     }
-    else if (update >= 5 && update <= 10) {
-      /** mapping is used in the frontend in updateLayout to determine how many days to go back based on the button clicked. The keys represent the button index and the values represent the number of days to go back from the last date in the data. */
+    else if (update === 10) {
+      // all dates: from the first to the last entry, independent of the spacing between entries
+      const firstDate = this.dateToString(this.stringToDate(this._data[0].x[0]));
+      const lastDate = this.dateToString(this.stringToDate(this._data[0].x[this._data[0].x.length - 1]));
+      this.applyLayout([firstDate, lastDate], this._layout.xaxis.tickformat);
+    }
+    else if (update >= 5 && update <= 9) {
       let mapping: { [key: number]: number } = {
         5: 14,      // 2 Weeks
         6: 31,      // 1 Month
         7: 91,      // 3 Months
         8: 183,     // 6 Months
-        9: 365,     // 1 Year
-        10: this._data[0].x.length // All time
+        9: 365      // 1 Year
       };
       let lastX = this._data[0].x[this._data[0].x.length - 1];
       let newDate: Date = this.stringToDate(lastX);
@@ -200,7 +244,7 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
   }
 
   protected dateToString(date: Date): string {
-    return date.toISOString().split('T')[0]; // returns 'YYYY-MM-DD'
+    return date.toISOString().split('T')[0];
   }
 
   @Input()
@@ -252,10 +296,8 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
   public set data(data: any) {
     if (!data) return;
 
-    // Duck typing: Check if it's a method (instantiated class) or a raw JSON array
-    let entries = typeof data.getEntriesList === 'function' ? data.getEntriesList().__internalArray() : data.entries;
+    let entries = typeof data.getEntriesList === 'function' ? (data.getEntriesList() ? data.getEntriesList().__internalArray() : undefined) : data.entries;
 
-    // Fallback if "data" is already the array
     if (Array.isArray(data)) entries = data;
 
     if (!entries || !Array.isArray(entries) || entries.length === 0) {
@@ -263,7 +305,6 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
       return;
     }
 
-    // Flush previous values
     this._data[0].x = [];
     this._data[0].open = [];
     this._data[0].high = [];
@@ -276,7 +317,7 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
       let label = typeof entry.getLabel === 'function' ? entry.getLabel() : entry.label;
       this._data[0].x.push(label);
 
-      let values = typeof entry.getValueList === 'function' ? entry.getValueList().__internalArray() : (entry.value || entry.values);
+      let values = typeof entry.getValueList === 'function' ? (entry.getValueList() ? entry.getValueList().__internalArray() : undefined) : (entry.value || entry.values);
 
       if (values && values.length >= 4) {
         this._data[0].open.push(values[0]);
@@ -284,7 +325,6 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
         this._data[0].low.push(values[2]);
         this._data[0].close.push(values[3]);
       } else if (typeof entry.getValue === 'function') {
-        // Fallback for old MontiCore getters
         this._data[0].open.push(entry.getValue(0));
         this._data[0].high.push(entry.getValue(1));
         this._data[0].low.push(entry.getValue(2));
@@ -292,14 +332,13 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
       }
     }
 
-    // Trigger Angular & Plotly Reactivity
-    this._data = [...this._data];
     this.updatePlot();
   }
 
   @Input()
   public set margins(margins: number[] | number) {
     if (margins != null) {
+      this.autoMargins = false;
       if (typeof margins === "number") {
         this._layout.margin = { t: margins, b: margins, l: margins, r: margins };
       } else {
@@ -314,10 +353,13 @@ export class GemCandlestickChart extends GemCandlestickChartComponent implements
         }
       }
     } else {
+      this.autoMargins = true;
       this._layout.margin = { t: this.topMargin, b: this.bottomMargin, l: this.leftMargin, r: this.rightMargin };
     }
     this.updatePlot();
   }
 
-  public ngOnInit(): void { }
+  public ngOnInit(): void {
+    super.ngOnInit();
+  }
 }

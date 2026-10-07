@@ -1,91 +1,47 @@
-<!-- (c) https://github.com/MontiCore/monticore -->
+<div style="position: relative; width: 100%; height: 100%; display: flex; flex-direction: column;">
 
-<div style="margin-bottom: 5px">
-  <gem-chart-options>
-    <li *ngIf="displayLegend === true">
-      <h3>Legend Position</h3>
-      <div class="legendButtons">
-        <button (click)="setLegendPosition('left')">Left</button>
-        <button (click)="setLegendPosition('top')">Top</button>
-        <button (click)="setLegendPosition('bottom')">Bottom</button>
-        <button (click)="setLegendPosition('right')">Right</button>
-      </div>
-    </li>
-    <li>
+  <div *ngIf="showConfig" style="position: absolute; top: 0px; left: 0px; z-index: 10;">
+    <gem-chart-options>
       <h3>Gauge Chart Settings</h3>
-      <label>
-        <input type="checkbox"
-          (change)="_showAxis = !_showAxis"
-        /> Disable Axis
-      </label>
-      <br>
-      <label [class.grayout]="!_showAxis">
-        <input class="numberInput" #sliderSelector
-          (change)="smallTickResizer(sliderSelector.value)"
-          type="number" min="0" max="4" value="0"
-        /> Helper Ticks Quantity
-      </label>
-      <br>
-      <label [class.grayout]="!_showAxis">
-        <input class="numberInput" #sliderSelector2
-          (change)="changeMin(sliderSelector2.value)"
-          type="number" value="{{_min}}"
-        /> Min Value
-      </label>
-      <br>
-      <label [class.grayout]="!_showAxis">
-        <input class="numberInput" #sliderSelector3
-          (change)="changeMax(sliderSelector3.value)"
-          type="number" value="{{_max}}"
-        /> Max Value
-      </label>
-      <br>
-      <label>
-        <input class="textInput" #sliderSelector4
-          (change)="changeUnit(sliderSelector4.value)"
-          type="text"
-        /> Unit
-      </label>
-    </li>
-  </gem-chart-options>
-</div>
+      <div class="settingsMenu">
+        <label>
+          <input class="numberInput" #minSelector
+                 (change)="changeMin(minSelector)"
+                 type="number" [value]="_min"
+          /> Min Value
+        </label>
+        <br>
+        <label>
+          <input class="numberInput" #maxSelector
+                 (change)="changeMax(maxSelector)"
+                 type="number" [value]="_max"
+          /> Max Value
+        </label>
+        <br>
+        <label>
+          <input class="textInput" #unitSelector
+                 (change)="changeUnit(unitSelector.value)"
+                 type="text" [value]="_unit"
+          /> Unit
+        </label>
+      </div>
+    </gem-chart-options>
+  </div>
 
-<div [ngClass]="changeContainer()" *ngIf="dataSets != null && dataSets.length > 0; else elseBlock">
-
-  <!-- Top Text -->
-  <div *ngIf="_textPosition === 'top'" class="external-text-value">
+  <div *ngIf="_textPosition === 'top' || _textPosition === 'center'" class="external-text-value">
     {{ _textValue }} <span *ngIf="_unit" class="unit-text">{{ _unit }}</span>
   </div>
 
-  <div class="wholeChartContainer">
-    <ngx-charts-gauge
-      [scheme]="colorScheme"
-      [results]="selectedDataSet"
-      [min]="_min"
-      [max]="_max"
-      [bigSegments]="bigTicks"
-      [smallSegments]="smallTicks"
-      [units]="_unit"
-      [showText]="showText"
-      [textValue]="_textValue"
-      [showAxis]="showAxis"
-      >
-    </ngx-charts-gauge>
+  <div class="wholeChartContainer" style="flex: 1; min-height: 0; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: space-evenly; align-items: center; gap: 10px; width: 100%;">
+    <div *ngFor="let trace of plotlyData" style="flex: 1 1 0; min-width: 150px; height: 100%; min-height: 120px;">
+      <plotly-plot [data]="[trace]" [layout]="_layout" [config]="_config"
+                   [useResizeHandler]="true"
+                   [style]="{width: '100%', height: '100%', display: 'block'}"></plotly-plot>
+    </div>
   </div>
 
-  <!-- Bottom Text -->
   <div *ngIf="_textPosition === 'bottom'" class="external-text-value">
     {{ _textValue }} <span *ngIf="_unit" class="unit-text">{{ _unit }}</span>
   </div>
 
-  <gem-chart-legend
-    [labels]="legendLabels"
-    [colors]="legendColors"
-    [displayLegend]="displayLegend"
-    >
-  </gem-chart-legend>
 </div>
-
-<ng-template #elseBlock>
-  <p>No data available</p>
-</ng-template>

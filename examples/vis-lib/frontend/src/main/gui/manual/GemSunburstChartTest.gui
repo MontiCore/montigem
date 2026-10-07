@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.charts.GemSunburstChart;
+import manual.*;
+
+page GemSunburstChartTest(List<Person> persons) {
+  @LayoutTester(input =
+    @GemSunburstChart(
+      data = getData(),
+      ignoreError = true,
+      showConfig = true
+    )
+  );
+}

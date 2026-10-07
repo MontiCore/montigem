@@ -1,1 +1,29 @@
-<div #chartContainer style="width: 100%; height: 100%; min-height: 80px;"></div>
+<div style="width: 100%; height: 100%; position: relative;">
+
+  <div *ngIf="showConfig" style="position: absolute; top: 0px; left: 0px; z-index: 10;">
+    <gem-chart-options>
+      <li style="list-style-type: none;">
+        <h3>Bullet Chart Settings</h3>
+        <div style="display: flex; flex-direction: column; row-gap: 5px;">
+          <button (click)="toggleNumber()">Value: {{ showNumber ? 'On' : 'Off' }}</button>
+          <button (click)="toggleDelta()">Difference to Reference: {{ showDelta ? 'On' : 'Off' }}</button>
+          <button (click)="toggleThreshold()">Threshold Marker: {{ showThreshold ? 'On' : 'Off' }}</button>
+        </div>
+      </li>
+    </gem-chart-options>
+  </div>
+
+  <div #outerContainer style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+    <div #innerContainer style="width: 100%; height: 100%; overflow: hidden; padding-left: 12px; box-sizing: border-box;">
+      <plotly-plot
+        [data]="_data"
+        [layout]="_layout"
+        [useResizeHandler]="true"
+        [config]="_config"
+        (afterPlot)="onAfterPlot($event)"
+        [style]="{width: '100%', height: '100%', minHeight: '80px', display: 'block'}">
+      </plotly-plot>
+    </div>
+  </div>
+
+</div>

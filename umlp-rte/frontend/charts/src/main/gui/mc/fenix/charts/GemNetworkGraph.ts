@@ -243,5 +243,7 @@ export class GemNetworkGraph extends GemNetworkGraphComponent {
     }
   }
 
-  public ngOnInit(): void { }
+  public ngOnInit(): void {
+    super.ngOnInit();
+  }
 }

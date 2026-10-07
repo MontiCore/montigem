@@ -12,14 +12,16 @@ page GemTimeSeriesChartExmaple (List<Person> persons, String lastClickedEvent = 
     component = @GemColumn(components = [
       chart1@GemTimeSeriesChart(
         data = computeData1(persons),
-        hideLiveDataToggle = true
+        hideLiveDataToggle = true,
+        showConfig = true
       ),
       @GemText(value = "Clicked Annotation: " + lastClickedEvent, size = "1.2rem"),
       chart2@GemTimeSeriesChart(
         data = computeData2(persons),
         hideLiveDataToggle = false,
         viewPort = "60s",
-        eventClick = onEventClick()
+        eventClick = onEventClick(),
+        showConfig = true
       )
     ]),
     basePath = "example_charts",

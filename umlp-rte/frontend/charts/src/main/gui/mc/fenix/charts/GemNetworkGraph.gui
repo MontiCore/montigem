@@ -15,5 +15,7 @@ component GemNetworkGraph(
   /** The graph data (nodes and edges) to be displayed. */
   GemNetworkData data,
   /** Whether an improved, force-directed layout algorithm is used to arrange the nodes. */
-  boolean improvedLayout = true
+  boolean improvedLayout = true,
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )

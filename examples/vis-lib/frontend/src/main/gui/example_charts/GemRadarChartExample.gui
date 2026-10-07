@@ -13,8 +13,8 @@ import common.ExamplePage;
 
 page GemRadarChartExample(
   List<Person> persons,
-  String width = "500px",
-  String height = "500px",
+  String width = "600px",
+  String height = "600px",
   boolean showLegend = true,
   boolean showLabels = true,
   int opacityPercent = 40
@@ -32,27 +32,47 @@ page GemRadarChartExample(
         ]),
         @GemRow(wrap = "wrap", vAlign = "center", hAlign = "left", components = [
           @GemCheckBoxInput(labelText = "Show Legend", checked = showLegend),
-          @GemCheckBoxInput(labelText = "Show Labels", checked = showLabels),
-          @GemText(value = "Opacity:"),
-          @GemRangeInput(minValue = 0, maxValue = 100, step = 10, value = opacityPercent, size = "300px")
+          @GemCheckBoxInput(labelText = "Show Labels", checked = showLabels)
         ]),
-        @GemColumn(
-          width = width,
+        @GemRow(
+          width = "auto",
+          height = height,
           components = [
-            @GemRow(
-              height = height,
+            @GemColumn(
+              width = width,
               components = [
-                radarchart@GemRadarChart(
-                  data = getData(),
-                  fill = true,
-                  stepSize = 1.0,
-                  min = 0.0,
-                  max = 5.0,
-                  width = "100%",
+                @GemRow(
                   height = "100%",
-                  showLegend = showLegend,
-                  showLabels = showLabels,
-                  opacity = opacityPercent / 100.0
+                  components = [
+                    radarchart@GemRadarChart(
+                      data = getData(),
+                      fill = true,
+                      stepSize = 1.0,
+                      min = 0.0,
+                      max = 5.0,
+                      width = "100%",
+                      height = "100%",
+                      showLegend = showLegend,
+                      showLabels = showLabels,
+                      opacity = opacityPercent / 100.0,
+                      showConfig = true
+                    )
+                  ]
+                )
+              ]
+            ),
+            @GemColumn(
+              width = "auto",
+              hAlign = "center",
+              components = [
+                @GemRangeInput(
+                  vertical = true,
+                  labelText = "Opacity",
+                  minValue = 0,
+                  maxValue = 100,
+                  step = 10,
+                  value = opacityPercent,
+                  size = height
                 )
               ]
             )

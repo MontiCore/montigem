@@ -78,6 +78,82 @@ tasks.register("copySourceCodeToAssets", Copy) {
   dependsOn "setupFrontend"
 }
 
+tasks.register("copyLayoutTests", Copy) {
+  description = "Copies the chart layout tests to the generated app directory and updates tsconfig.spec.json"
+  from("src/test/ts")
+  into layout.buildDirectory.dir("app/src/test/ts")
+  dependsOn "setupFrontend"
+  outputs.upToDateWhen { false }
+
+  doLast {
+    def tsconfigFile = file("${layout.buildDirectory.get().asFile}/app/tsconfig.spec.json")
+    if (tsconfigFile.exists()) {
+      def content = tsconfigFile.text
+      if (!content.contains('"gui2java2ts/manual/**/*.ts"')) {
+        content = content.replace('"src/**/*.d.ts"', '"src/**/*.d.ts",\n    "gui2java2ts/manual/**/*.ts"')
+        tsconfigFile.text = content
+      }
+    }
+  }
+}
+
+tasks.register("patchLayoutTests") {
+  dependsOn "sync_gui2java2ts"
+
+  doLast {
+    // Patch generated TS files to inline templateUrls for the test build
+    def manualDir = file("${layout.buildDirectory.get().asFile}/app/gui2java2ts/manual")
+    if (manualDir.exists()) {
+      manualDir.eachFileMatch(~/.*\.ts/) { tsFile ->
+        def text = tsFile.text
+        if (text.contains("templateUrl: config.templateUrl")) {
+          def targetTemplate = ""
+          def m = (text =~ /export const config =[\s\S]*?templateUrl:\s*'([^']+)'/)
+          if (m.find()) {
+            targetTemplate = m.group(1)
+          } else {
+            def compFile = new File(manualDir, tsFile.name.replace(".ts", "Component.ts"))
+            if (compFile.exists()) {
+              def compText = compFile.text
+              def m2 = (compText =~ /export const config =[\s\S]*?templateUrl:\s*'([^']+)'/)
+              if (m2.find()) {
+                targetTemplate = m2.group(1)
+              }
+            }
+          }
+          if (targetTemplate) {
+            text = text.replace("templateUrl: config.templateUrl", "templateUrl: '${targetTemplate}'")
+            text = text.replaceAll(/styleUrls:\s*\[[^\]]*\]/, "styleUrls: []")
+            text = text.replace("styleUrls: config.styleUrls", "styleUrls: []")
+            tsFile.text = text
+          }
+        }
+      }
+    }
+  }
+}
+
+// The layout tests measure rendered elements, so they run in a real browser (Vitest browser mode, see
+// config/angular.override.json); the install is a no-op if the browser revision is present already
+tasks.register("installLayoutTestBrowser", NpxTask) {
+  group = "verification"
+  description = "Installs the Playwright browser used by the chart layout tests"
+  command = "playwright"
+  args = ["install", "chromium-headless-shell"]
+  workingDir = layout.buildDirectory.dir("app").get().asFile
+  dependsOn npmInstall
+  // the Angular unit-test runner launches this Chrome instead, e.g. in CI
+  onlyIf { System.getenv("CHROME_BIN") == null }
+}
+
+tasks.register("chartLayoutTest", NpmTask) {
+  group = "verification"
+  description = "Runs the chart layout tests (Vitest in a headless browser)"
+  args = ["run", "test", "--", "--watch=false", "--include=src/test/ts/manual/**/*.spec.ts"]
+  workingDir = layout.buildDirectory.dir("app").get().asFile
+  dependsOn "copyLayoutTests", "patchLayoutTests", "createSymlink4Prod", "installLayoutTestBrowser"
+}
+
 // Ensure source code is copied when GUI models are synced/generated
 tasks.named("sync_gui2java2ts") {
   dependsOn "copySourceCodeToAssets"

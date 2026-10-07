@@ -1,277 +1,215 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  Input,
+  ElementRef,
+  ChangeDetectorRef,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  HostBinding,
+  ChangeDetectionStrategy
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { config, GemGaugeChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemGaugeChartComponent';
-import { NgxChartsModule, ScaleType } from "@swimlane/ngx-charts";
 import { GemGaugeChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemgaugecharttypes/GemGaugeChartData';
 import { autoColors } from './colors';
-import { GemChartLegend } from './GemChartLegend';
 import { GemChartOptions } from './GemChartOptions';
-import {GemListUtil} from "@umlp/commonj2ts";
+import { PlotlyModule } from 'angular-plotly.js';
+import * as Plotly from 'plotly.js-dist-min';
+import { setupResizeObserver } from './ResizeObserverUtil';
+
+PlotlyModule.plotlyjs = Plotly;
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [...config.imports, NgxChartsModule, GemChartOptions, GemChartLegend],
+  standalone: true,
+  imports: [...config.imports, CommonModule, GemChartOptions, PlotlyModule],
   selector: config.selector,
   styleUrls: config.styleUrls,
   templateUrl: config.templateUrl,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GemGaugeChart extends GemGaugeChartComponent {
-  public labels: string[];
+export class GemGaugeChart extends GemGaugeChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  /** data */
-  public dataSets: any = [];
+  @Input() height: number = 400;
 
-  /**all colors of the entries */
-  public colors = [];
+  @HostBinding('style.height.px')
+  get hostHeight() { return this.height || 400; }
 
-  /** used intern for showing the axis when function showAxis() is called  */
-  public _showAxis: boolean = true;
+  @HostBinding('style.max-height')
+  get hostMaxHeight() { return '100%'; }
 
-  /** intern variable to store the sensorType, can be changed via this.sensorType from extern */
-  public _sensorType: any = "All";
+  @HostBinding('style.width')
+  get hostWidth() { return '100%'; }
 
-  /** manually set how many ticks should be displayed */
-  public bigTicks: number;
+  @HostBinding('style.display')
+  get hostDisplay() { return 'block'; }
 
-  /** manually set how many small ticks between the big ticks should be displayed */
-  public smallTicks: number;
+  public plotlyData: any[] = [];
 
-  /** data that is actually shown */
-  public selectedDataSet: any = [];
-
-  /**labels for chart legend */
-  public legendLabels: string[];
-
-  /**colors for chart legend */
-  public legendColors: string[] = [];
-
-  /** defines the position of the legend */
-  public legendPosition: string;
-
-  /**variable that enables or disables the legend */
-  public displayLegend = true;
-
-  /** default settings */
-  view: any[] = [400, 400];
-
-  /**gives the colors from the constant autoColors */
-  public getColors() {
-    return autoColors;
-  }
-
-  /** color scheme for chart */
-  public colorScheme = {
-    name: 'default',
-    selectable: true,
-    group: ScaleType.Linear,
-    domain: this.getColors()
+  public _layout: any = {
+    autosize: true,
+    margin: { t: 55, b: 15, l: 35, r: 35 },
+    paper_bgcolor: 'transparent'
   };
 
-  /** defines the position of the text value */
-  public _textPosition: string = "center";
+  public _config: any = {
+    displaylogo: false,
+    responsive: true,
+    displayModeBar: false
+  };
 
-  ngOnInit(): void {
-    this.recalcBigTicks();
-  }
+  private resizeObserver!: ResizeObserver;
 
-  constructor() {
+  public _data!: GemGaugeChartData;
+  public _min: number = 0;
+  public _max: number = 100;
+  public _unit: string = '';
+  public _textValue: string = '';
+  public _textPosition: string = 'center';
+
+  constructor(private el: ElementRef, private cdr: ChangeDetectorRef) {
     super();
   }
 
-  /** when set it is displayed under the text value */
-  @Input()
-  public set unit(unit: string) {
-    this._unit = unit;
+  ngOnInit(): void {
+    super.ngOnInit();
   }
 
-  @Input()
-  public set textPosition(position: string) {
-    this._textPosition = position;
+  ngAfterViewInit() {
+    this.resizeObserver = setupResizeObserver(this.el.nativeElement, () => this.handleResize());
   }
 
-  public get textPosition(): string {
-    return this._textPosition;
+  ngOnDestroy() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   }
 
-  /**
-   * refreshes the displayed data, when the new given data has at least one element
-   * when there is no data given it uses the old data
-   */
+  private handleResize() {
+    // autosize only measures the container on the first render; each gauge is its own plot, so all of
+    // them have to be told to take the size of their (flex) container again
+    const plots = this.el.nativeElement.querySelectorAll('.js-plotly-plot');
+    plots.forEach((plot: HTMLElement) => (Plotly as any).Plots.resize(plot));
+  }
+
   @Input()
   public set data(data: GemGaugeChartData) {
-    if (!data) {
-      return;
-    }
-    (async () => {
-      this.labels = (await GemListUtil.toArraySync(data.getEntriesList())).map(entry => entry.getName());
-      this.dataSets = [];
-      const colors = [];
-      const labels = [];
-      let autocolors = this.getColors();
-      let pointerAutoColors = 0;
-
-      for await (const gCEntry of data.getEntriesList()) {
-        if (!CSS.supports('color', gCEntry.getBackgroundColor())) {
-          gCEntry.setBackgroundColor(autocolors[pointerAutoColors++]);
-        }
-        // Used library expects these fields, so we cannot use our generated datatypes
-        let entry = {
-          value: gCEntry.getValue(),
-          name: gCEntry.getName(),
-          type: gCEntry.getType(),
-          backgroundColor: gCEntry.getBackgroundColor()
-        };
-
-        labels.push(entry.name);
-        colors.push(entry.backgroundColor);
-        this.dataSets.push(entry);
-      }
-
-      this.legendLabels = labels;
-      this.legendColors = colors;
-      this.colors = colors;
-      this.colorScheme = {
-        ...this.colorScheme,
-        domain: this.colors
-      };
-
-      let t = this;
-
-      // Rename Sensor 1 to CO2 and Sensor 2 to Temperature
-      this.dataSets.forEach(function (entry) {
-        if (entry.name == "1") {
-          entry.name = "CO2";
-        } else if (entry.name == "2") {
-          entry.name = "Temperature";
-        }
-      });
-
-      this.dataSets.forEach(function (entry) {
-        if (entry.value < t._min) {
-          // Round down to whole tens
-          t._min = Math.floor(entry.value / 10) * 10;
-          t.recalcBigTicks();
-        }
-        if (entry.value > t._max) {
-          // Round up to whole tens
-          t._max = Math.ceil(entry.value / 10) * 10;
-          t.recalcBigTicks();
-        }
-
-      });
-
-      this.updateSelectedDataset();
-    })();
+    if (!data) return;
+    this._data = data;
+    this.updatePlotData();
   }
 
-  /** set SensorType from extern to filter the data */
   @Input()
-  set sensorType(sensorType) {
-    this._sensorType = sensorType;
-    this.updateSelectedDataset();
+  public set min(val: number) {
+    this._min = val !== undefined ? val : 0;
+    this.updatePlotData();
   }
 
-  /**
-   * function to calculate the count of the big Ticks
-   * so the count will be a multiple of 10 or 100 depending on the data
-   */
-  recalcBigTicks() {
-    this.bigTicks = (this._max - this._min) / 10; // Every 10 steps
-    while (this.bigTicks > 15) { // As long as more than 10 Ticks, half by quantity
-      if (this.bigTicks >= 100) {
-        this.bigTicks /= 10;
+  @Input()
+  public set max(val: number) {
+    this._max = val !== undefined ? val : 100;
+    this.updatePlotData();
+  }
+
+  @Input()
+  public set unit(val: string) {
+    this._unit = val;
+    this.updatePlotData();
+  }
+
+  @Input()
+  public set textValue(val: string) {
+    this._textValue = val;
+    this.cdr.detectChanges();
+  }
+
+  @Input()
+  public set textPosition(val: string) {
+    this._textPosition = val;
+    this.cdr.detectChanges();
+  }
+
+  /** applies a new minimum from the settings menu; empty, invalid or not below max resets the input */
+  public changeMin(input: HTMLInputElement) {
+    const val = input.value === '' ? NaN : Number(input.value);
+    if (Number.isFinite(val) && val < this._max) {
+      this.min = val;
+    } else {
+      input.value = String(this._min);
+    }
+  }
+
+  /** applies a new maximum from the settings menu; empty, invalid or not above min resets the input */
+  public changeMax(input: HTMLInputElement) {
+    const val = input.value === '' ? NaN : Number(input.value);
+    if (Number.isFinite(val) && val > this._min) {
+      this.max = val;
+    } else {
+      input.value = String(this._max);
+    }
+  }
+
+  public changeUnit(val: string) {
+    this.unit = val;
+  }
+
+  private wrapText(text: string, maxLen: number = 25): string {
+    if (!text) return '';
+    let words = text.split(' ');
+    let lines = [];
+    let currentLine = '';
+
+    words.forEach(word => {
+      if ((currentLine + word).length > maxLen) {
+        if (currentLine) lines.push(currentLine.trim());
+        currentLine = word + ' ';
       } else {
-        this.bigTicks /= 10;
-      }
-    }
-    this.bigTicks = Math.round(this.bigTicks);
-  }
-
-  public override setMin(min: number) {
-    super.setMin(min);
-    this.recalcBigTicks()
-  }
-
-  public override setMax(max: number) {
-    super.setMax(max);
-    this.recalcBigTicks()
-  }
-
-  /** for input range to select smallTicksCount */
-  smallTickResizer(n: string | number) {
-    this.smallTicks = +n + 1;
-    console.log(n);
-  }
-
-  changeMin(min: string) {
-    this._min = +min;
-  }
-
-  changeMax(max: string) {
-    this._max = +max;
-  }
-
-  changeUnit(unit: string) {
-    this._unit = unit;
-  }
-
-  /** get the setted sensorFilter */
-  get sensorType(): any {
-    return this._sensorType;
-  }
-
-  /** only show selected datatype */
-  updateSelectedDataset() {
-    this.selectedDataSet = [];
-    if(!this._textValueSetExternally) {
-      this._textValue = this._sensorType;
-    }
-
-    let t = this;
-
-    this.dataSets.forEach(function (entry: any) {
-      if (t._sensorType.toLowerCase() == "all"
-        || entry.type.toLowerCase() == t._sensorType.toLowerCase()) {
-        t.selectedDataSet.push(Object.assign({}, entry));
+        currentLine += word + ' ';
       }
     });
+    if (currentLine) lines.push(currentLine.trim());
 
+    return lines.join('<br>');
   }
 
-  /** returns wether to show a when a text is set or don't show it when no text is set */
-  public get showText(): boolean {
-    return !!this._textValue && this._textPosition === 'center';
-  }
+  private updatePlotData() {
+    if (!this._data || !this._data.getEntriesList()) return;
+    let entries = this._data.getEntriesList();
+    let traces = [];
 
-  /** changes the axis visibility and resets the slider */
-  public set showAxis(checked: boolean) {
-    this._showAxis = checked;
-  }
-
-  /** returns if the axis are visible */
-  public get showAxis(): boolean {
-    return this._showAxis;
-  }
-
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
-  }
-
-  /** changes container style depending on legend position */
-  public changeContainer() {
-    switch (this.legendPosition) {
-      case 'left':
-        return 'wholeChartWithLegendLeftContainer';
-      case 'top':
-        return 'wholeChartWithLegendTopContainer';
-      case 'bottom':
-        return 'wholeChartWithLegendBottomContainer';
-      case 'right':
-        return 'wholeChartWithLegendRightContainer';
-      default:
-        return 'wholeChartWithLegendBottomContainer';
+    if (this._layout.grid) {
+      delete this._layout.grid;
     }
-  }
 
+    let entriesArray = entries.__internalArray ? entries.__internalArray() : [];
+    for (let i = 0; i < entriesArray.length; i++) {
+      let entry = entriesArray[i];
+      let color = entry.getBackgroundColor();
+
+      if (!color || !CSS.supports('color', color)) {
+        color = '#1f77b4';
+      }
+
+      traces.push({
+        type: 'indicator',
+        mode: 'gauge+number',
+        value: entry.getValue(),
+        title: { text: this.wrapText(entry.getName(), 25), font: { size: 10 } },
+        number: { font: { size: 14 }, suffix: this._unit ? " " + this._unit : "" },
+        gauge: {
+          axis: { range: [this._min, this._max], tickwidth: 1 },
+          bar: { color: color },
+          bgcolor: "white",
+          borderwidth: 1,
+          bordercolor: "gray"
+        }
+      });
+    }
+
+    this.plotlyData = traces;
+    this._layout = { ...this._layout };
+    this.cdr.detectChanges();
+  }
 }

@@ -52,14 +52,21 @@ export class GemVennDiagram extends GemVennDiagramComponent {
       return;
     }
     (async () => {
-      const bgrColor = this.colorScheme.domain.map(x => x + "70");
-      this.labels = (await GemListUtil.toArraySync(data.getEntriesList())).map(entry => entry.getLabel());
+      const entries = await GemListUtil.toArraySync(data.getEntriesList());
+      this.labels = entries.map(entry => entry.getLabel());
       this._data = data;
 
-      this.legendLabels = this.labels.filter(entry => {
-        return entry !== undefined;
-      });
-      this.legendColors = bgrColor;
+      // only the sets themselves belong into the legend, not their intersections; the circles are
+      // colored in the order of the single sets, so the legend colors follow the same order
+      const legendLabels = [];
+      for (const entry of entries) {
+        const sets = await GemListUtil.toArraySync(entry.getSetsList());
+        if (sets.length === 1) {
+          legendLabels.push(entry.getLabel() || String(sets[0]));
+        }
+      }
+      this.legendLabels = legendLabels;
+      this.legendColors = legendLabels.map((_, i) => this.colorScheme.domain[i % this.colorScheme.domain.length] + "70");
 
       this.updateValues();
     })();

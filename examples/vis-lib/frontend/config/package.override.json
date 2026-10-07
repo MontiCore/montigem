@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@vitest/browser-playwright": "4.0.8"
+  }
+}

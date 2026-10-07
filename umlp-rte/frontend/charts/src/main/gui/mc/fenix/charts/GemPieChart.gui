@@ -15,5 +15,7 @@ component GemPieChart(
     /** The data (categories and their values) to be displayed in the chart. */
     GemPieChartData data,
     /** Radius of the inner hole in pixels; a value greater than 0 turns the pie chart into a donut chart. */
-    Integer innerRadius
+    Integer innerRadius,
+    /** Whether the chart's configuration panel is shown. */
+    boolean showConfig = false
 )

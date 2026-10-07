@@ -21,5 +21,7 @@ component GemHeatmapChart (
   /** Number of bins (cells) along the horizontal axis. */
   Integer xBins,
   /** Number of bins (cells) along the vertical axis. */
-  Integer yBins
+  Integer yBins,
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )

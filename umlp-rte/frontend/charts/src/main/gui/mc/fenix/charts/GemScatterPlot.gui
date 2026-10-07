@@ -18,5 +18,7 @@ component GemScatterPlot(
   /** Configuration (range, title) of the horizontal axis. */
   GemScatterPlotAxis xAxis,
   /** Configuration (range, title) of the vertical axis. */
-  GemScatterPlotAxis yAxis
+  GemScatterPlotAxis yAxis,
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )

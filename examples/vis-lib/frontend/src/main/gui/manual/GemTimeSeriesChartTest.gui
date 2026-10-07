@@ -1,0 +1,29 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.charts.GemTimeSeriesChart;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemText;
+import  manual.*;
+
+page GemTimeSeriesChartTest (List<Person> persons, String lastClickedEvent = "No event clicked yet") {
+  @LayoutTester(input =
+    chart1@GemTimeSeriesChart(
+      data = computeData1(persons),
+      hideLiveDataToggle = true,
+      height = "100%",
+      showConfig = true
+    )
+  );
+  @LayoutTester(input =
+    chart2@GemTimeSeriesChart(
+      data = computeData2(persons),
+      hideLiveDataToggle = false,
+      viewPort = "60s",
+      eventClick = onEventClick(),
+      height = "100%",
+      showConfig = true
+    )
+  );
+}

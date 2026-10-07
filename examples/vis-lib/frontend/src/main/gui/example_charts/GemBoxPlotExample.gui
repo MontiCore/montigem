@@ -14,13 +14,15 @@ page GemBoxPlotExample()
         min = 0.0,
         width = getSecondBoxPlotWidth(),
         height = getSecondBoxPlotHeight(),
-        horizontal=false
+        horizontal=false,
+        showConfig = true
       ),
       boxplot@GemBoxPlot(
         data = getBoxPlotData(),
         min = -5.0,
         width = getBoxPlotWidth(),
-        height = getBoxPlotHeight()
+        height = getBoxPlotHeight(),
+        showConfig = true
       )
     ]),
     basePath = "example_charts",

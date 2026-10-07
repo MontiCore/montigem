@@ -1,44 +1,59 @@
-/* (c) https://github.com/MontiCore/monticore */
-
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef, Component, Input } from '@angular/core';
 import { config, GemChartLegendComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemChartLegendComponent';
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: true,
   imports: [...config.imports],
   selector: config.selector,
   styleUrls: config.styleUrls,
   templateUrl: config.templateUrl,
 })
 export class GemChartLegend extends GemChartLegendComponent {
-  /**contains the entries of the legend */
   _entries: { label: string, color: string }[] = [];
 
-  /** setter that processes the color data to be shown correctly by the legend. */
-  public override setColors(colors: string[]) {
-    super.setColors(colors)
-    this.updateOnInputChange()
+  constructor(private cdr: ChangeDetectorRef) {
+    super();
   }
 
-  public override setLabels(labels: string[]) {
-    super.setLabels(labels)
-    this.updateOnInputChange()
+  public override setLabels(val: Array<string>) {
+    super.setLabels(val);
+    this.updateEntries();
   }
 
-  public updateOnInputChange() {
-    if(!this.getLabels() || !this.getColors()) {
-      return;
-    }
+  public override setColors(val: Array<string>) {
+    super.setColors(val);
+    this.updateEntries();
+  }
+
+  @Input()
+  public override set colors(colors: any) {
+    super.colors = colors;
+    this.updateEntries();
+  }
+
+  @Input()
+  public override set labels(labels: any) {
+    super.labels = labels;
+    this.updateEntries();
+  }
+
+  public updateEntries() {
     this._entries = [];
-
-    for (let i = 0; i < this.getLabels().length; i++) {
-      let legendEntry = {
-        label: this.getLabels()[i],
-        color: this.getColors()[i]
-      };
-      this._entries.push(legendEntry);
+    const labels = this.labels || this._labels || [];
+    const colors = this.colors || this._colors || [];
+    for (let i = 0; i < labels.length; i++) {
+      this._entries.push({
+        label: labels[i],
+        color: colors[i] || '#000000'
+      });
+    }
+    if (this.cdr) {
+      this.cdr.markForCheck();
     }
   }
 
-  public ngOnInit(): void { }
+  public override ngOnInit(): void {
+    super.ngOnInit();
+    this.updateEntries();
+  }
 }

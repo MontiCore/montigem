@@ -1,27 +1,39 @@
-<div style="margin-bottom: 5px">
-  <gem-chart-options>
-    <h3>Candlestick Chart Settings</h3>
-    <div class="candlestickchartbuttons">
-      <div class="period" *ngIf="period">
-        <button (click)="updateLayout(1)">1 week</button>
-        <button (click)="updateLayout(5)">2 weeks</button>
-        <button (click)="updateLayout(6)">1 month</button>
-        <button (click)="updateLayout(7)">3 months</button>
-        <button (click)="updateLayout(8)">6 months</button>
-        <button (click)="updateLayout(9)">1 year</button>
-        <button (click)="updateLayout(10)">All dates</button>
+<div style="width: 100%; height: 100%; position: relative; overflow: hidden;">
+  <div *ngIf="showConfig" style="position: absolute; top: 0px; left: 0px; z-index: 10; max-height: 100%; overflow-y: auto;">
+    <gem-chart-options>
+      <h3>Candlestick Chart Settings</h3>
+      <div class="candlestickchartbuttons">
+        <div class="period" *ngIf="period">
+          <button (click)="updateLayout(1)">1 week</button>
+          <button (click)="updateLayout(5)">2 weeks</button>
+          <button (click)="updateLayout(6)">1 month</button>
+          <button (click)="updateLayout(7)">3 months</button>
+          <button (click)="updateLayout(8)">6 months</button>
+          <button (click)="updateLayout(9)">1 year</button>
+          <button (click)="updateLayout(10)">All dates</button>
+        </div>
+        <br>
+        <div class="dateformat" >
+          <button (click)="updateLayout(2)">Month DD, YYYY</button>
+          <button (click)="updateLayout(3)">DD/MM/YYYY</button>
+        </div>
+        <br>
+        <div class="type">
+          <button (click)="updateLayout(4)">Candlestick/ OHLC</button>
+        </div>
       </div>
-      <br>
-      <div class="dateformat" >
-        <button (click)="updateLayout(2)">Month DD, YY</button>
-        <button (click)="updateLayout(3)">DD/MM/YY</button>
-      </div>
-      <br>
-      <div class="type">
-        <button (click)="updateLayout(4)">Candlestick/ OHLC</button>
-      </div>
+    </gem-chart-options>
+  </div>
+  <div #outerContainer style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+    <div #innerContainer style="width: 100%; height: 100%; overflow: hidden;">
+      <plotly-plot
+        [data]="_data"
+        [layout]="_layout"
+        [config]="_config"
+        [useResizeHandler]="true"
+        [style]="{width: '100%', height: '100%', display: 'block'}">
+      </plotly-plot>
     </div>
-  </gem-chart-options>
-</div>
+  </div>
 
-<div #chartContainer style="width: 100%; height: 100%; min-height: 400px;"></div>
+</div>

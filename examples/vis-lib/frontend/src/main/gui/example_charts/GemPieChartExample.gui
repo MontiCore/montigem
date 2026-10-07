@@ -9,7 +9,8 @@ page GemPieChartExample(List<Person> persons) {
   @ExamplePage(
     component = chart@GemPieChart(
       data = null,
-      innerRadius = 10
+      innerRadius = 10,
+      showConfig = true
     ),
     basePath = "example_charts",
     componentName = "GemPieChartExample"

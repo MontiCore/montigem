@@ -26,6 +26,8 @@ component GemSunburstChart (
   /** Colors used for the layers/segments of the chart. */
   List<String> colors,
   /** Whether errors in the input data are ignored instead of raised. */
-  Boolean ignoreError
+  Boolean ignoreError,
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )
 

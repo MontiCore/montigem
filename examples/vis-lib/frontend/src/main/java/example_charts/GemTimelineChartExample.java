@@ -29,6 +29,7 @@ public class GemTimelineChartExample extends GemTimelineChartExampleTOP {
 
   private List<Timeline>  getPersonlist(List<Person> persons) {
     List<Timeline> personList = new ArrayList<>();
+    if (persons == null) return personList;
     for (int i = 0 ; i< persons.size() && i < colors.length; i++) {
       TimelineBuilder timelineBuilder = new TimelineBuilder();
       TimelineBlockBuilder preBDay = new TimelineBlockBuilder()
@@ -53,7 +54,7 @@ public class GemTimelineChartExample extends GemTimelineChartExampleTOP {
           .deactivated(false)
           .hidden(false)
           .block(blockList);
-      personList.add(timelineBuilder);
+      personList.add(timelineBuilder.build().get());
     }
     return personList;
   }

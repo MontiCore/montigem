@@ -1,43 +1,61 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
+<div style="width: 100%; height: 100%; position: relative; display: flex; flex-direction: column;">
 
-<div style="margin-bottom: 5px">
-  <gem-chart-options>
-    <li *ngIf="displayLegend === true">
-      <h3>Legend Position</h3>
-      <div class="legendButtons">
-        <button (click)="setLegendPosition('left')">Left</button>
-        <button (click)="setLegendPosition('top')">Top</button>
-        <button (click)="setLegendPosition('bottom')">Bottom</button>
-        <button (click)="setLegendPosition('right')">Right</button>
-      </div>
-    </li>
-  </gem-chart-options>
-</div>
+  <div *ngIf="showConfig" style="position: absolute; top: 0px; left: 0px; z-index: 10; max-height: 100%; overflow-y: auto;">
+    <gem-chart-options>
+      <li *ngIf="displayLegend === true" style="list-style-type: none;">
+        <h3>Legend Position</h3>
+        <div class="legendButtons" style="display: flex; column-gap: 10px;">
+          <button (click)="setLegendPosition('left')">Left</button>
+          <button (click)="setLegendPosition('top')">Top</button>
+          <button (click)="setLegendPosition('bottom')">Bottom</button>
+          <button (click)="setLegendPosition('right')">Right</button>
+        </div>
+      </li>
+      <li style="list-style-type: none; margin-top: 10px;">
+        <h3>In-Chart Labels</h3>
+        <div class="legendButtons" style="display: flex; column-gap: 10px; flex-direction: column; row-gap: 5px;">
+          <button (click)="toggleMainPageLabels()">
+            Main Page Labels: {{ showMainPageInChartLabels ? 'On' : 'Off' }}
+          </button>
+          <button (click)="toggleInChartLabels()">
+            All Chart Labels: {{ showInChartLabels ? 'On' : 'Off' }}
+          </button>
+        </div>
+      </li>
+    </gem-chart-options>
+  </div>
 
-<div class="chartTitle" style="font-size: {{(20 * scaler) + 'px'}};"> {{entry?.getLabel()}} </div>
+  <div style="position: absolute; top: 10px; width: 100%; text-align: center; z-index: 5; pointer-events: none;">
+    <div class="chartTitle" style="font-size: {{(20 * scaler) + 'px'}};">
+      {{entry?.getLabel()}}
+    </div>
+  </div>
 
-<div [ngClass]="changeContainer()" *ngIf="hasData; else elseBlock">
-	<div class="wholeChartContainer">
-		<canvas
-			baseChart
-			[data]="{datasets: dataSets}"
-			[labels]="labels"
-			[options]="options"
-			[type]="'doughnut'"
-			>
-		</canvas>
-	</div>
-	<gem-chart-legend
-		[labels]="legendLabels"
-		[colors]="legendColors"
-		[displayLegend]="displayLegend"
-		>
-	</gem-chart-legend>
+  <div [ngClass]="changeContainer()" *ngIf="hasData; else elseBlock" style="flex: 1; min-width: 0; min-height: 0;">
+    <div class="wholeChartContainer" #plotContainer>
+      <plotly-plot
+        [data]="plotlyData"
+        [layout]="_layout"
+        [config]="_config"
+        [useResizeHandler]="true"
+        [style]="{width: '100%', height: '100%', display: 'block'}">
+      </plotly-plot>
+    </div>
+    <gem-chart-legend
+      [labels]="legendLabels"
+      [colors]="legendColors"
+      [displayLegend]="displayLegend">
+    </gem-chart-legend>
+  </div>
+
 </div>
 
 <ng-template #elseBlock>
-	<p>No data available</p>
-	<div *ngIf="errorMessage != null">
-		{{errorMessage}}
-	</div>
+  <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <p>No data available</p>
+    <div *ngIf="errorMessage != null">
+      {{errorMessage}}
+    </div>
+  </div>
 </ng-template>

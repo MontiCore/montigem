@@ -53,5 +53,7 @@ component GemTimeSeriesChart(
   /**
     Callback triggered when an event annotation is clicked.
   */
-  Event<TimeSeriesEvent> eventClick
+  Event<TimeSeriesEvent> eventClick,
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )
