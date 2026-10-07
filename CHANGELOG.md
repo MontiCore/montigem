@@ -38,48 +38,48 @@ For MontiGem users:
 -->
 ## 2026-10-07
 * Version 7.9.3-SNAPSHOT
-  * `@umlp/charts` moved to version 10.0.0
+    * `@umlp/charts` moved to version 10.0.0
 
 * Charts migrated to Plotly: `GemBarChart`, `GemBoxPlot`, `GemBulletChart`, `GemCandlestickChart`,
   `GemGaugeChart`, `GemLineChart`, `GemTimelineChart`, `GemHeatmapChart`, `GemPieChart`,
   `GemRadarChart`, `GemSunburstChart` and `GemScatterPlot`
-  * the component definitions (parameters) did not change, but the rendering, layout and
+    * the component definitions (parameters) did not change, but the rendering, layout and
     styling of the charts may differ from before
-  * charts now adapt to the size of their container
-  * `GemVennDiagram`, `GemNetworkGraph` and `GemTimeSeriesChart` still use their previous libraries
-  * vis-lib contains layout/resize tests for the charts (`examples/vis-lib/frontend/src/test/ts/manual`)
+    * charts now adapt to the size of their container
+    * `GemVennDiagram`, `GemNetworkGraph` and `GemTimeSeriesChart` still use their previous libraries
+    * vis-lib contains layout/resize tests for the charts (`examples/vis-lib/frontend/src/test/ts/manual`)
 
 * Every chart component has a configuration (context) menu, opened via the gear button
-  * new parameter `boolean showConfig = false` on every chart controls whether the gear button is shown
+    * new parameter `boolean showConfig = false` on every chart controls whether the gear button is shown
 
 ## 2026-08-12
 
 * version 7.9.2-SNAPSHOT contains
 
 * AppComponent ts,html and scss are now generated and do not have to be handwritten anymore
-  * if you want to modify them their new location is inside the hwc gui directory
-  * along with this change MontiGem apps are now using the standalone component bootstrap 
+    * if you want to modify them their new location is inside the hwc gui directory
+    * along with this change MontiGem apps are now using the standalone component bootstrap 
 
 * upgraded to Angular 22 
-  * every handwritten Typescript Angular components should add `changeDetection=ChangeDetectionStrategy.EAGER` to have the old zone.js based change detection and behavior
+    * every handwritten Typescript Angular components should add `changeDetection=ChangeDetectionStrategy.EAGER` to have the old zone.js based change detection and behavior
 
 ## 2026-08-06
 
 - enable package, tsconfig and angular.json override. This will greatly improve frontend dependency update roll-outs for the MontiGem team  
-  - see ProjectSetup.md on how to use them 
+    - see ProjectSetup.md on how to use them 
 
 ## 2026-07-31
 
 - Upgraded MontiGem to version 7.9.1-SNAPSHOT
-  - frontend TypeScript libraries moved to version >8.0.0  
+    - frontend TypeScript libraries moved to version >8.0.0  
 
 - JSweet transpilation updates which may require adaptations of handwritten typescript:
-  - GUI-DSL Lists are now `IUMLPList` (async) in TypeScript. 
-    - if you need a TypeScript array in TypeScript you should use `GemListUtil.toArray(list)`
-  - List, Set, and Stream are not transpiled to JavaScript native array operations 
+    - GUI-DSL Lists are now `IUMLPList` (async) in TypeScript. 
+        - if you need a TypeScript array in TypeScript you should use `GemListUtil.toArray(list)`
+    - List, Set, and Stream are not transpiled to JavaScript native array operations 
     anymore and instead use `AsyncList.ts`, `AsyncSet.ts`, `AsynStream.ts` implementations
     this enables correct behavior of GemLists 
-  - any constructor call is now async by default this is achieved by generating 
+    - any constructor call is now async by default this is achieved by generating 
     replacing any constructor call with the generated __<ClassName>Constructor
 
 - Client GemLists are now loaded in batches from the Backend
