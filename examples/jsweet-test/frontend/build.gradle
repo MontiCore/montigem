@@ -31,7 +31,7 @@ tasks.named("umlpJava2ts") {
   verbose = true
 }
 
-tasks.named("gui2java2ts") {
+tasks.named("guiJava2ts") {
   verbose = true
 }
 

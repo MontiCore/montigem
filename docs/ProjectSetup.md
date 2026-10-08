@@ -87,15 +87,15 @@ The generation process overview:
 The generated folders correspond to a gradle task and a section of the
 generation process, for example, the `gui2java` gradle task takes `*.gui` files
 as an input and gives them to the GUI generator, which outputs `*.scss`, `*.html`,
-`*.java` and `*.ts` files to the `gui2java` folder. Then the `gui2java2ts` task
+`*.java` and `*.ts` files to the `gui2java` folder. Then the `guiJava2ts` task
 copies them to the `gui2java2ts` folder and gives the `*.java` files to JSweet,
 which outputs `*.ts` files next to them. This section of the generation process
 produces the application's GUI. The settings of the generator, e.g.
 `guiCreateModels`, belong to `gui2java`, the settings of JSweet, e.g.
-`excludeSource`, to `gui2java2ts`.
+`excludeSource`, to `guiJava2ts`.
 
 Generally, the generation process has several steps and is described using
-`<input>2<output>` notation, e.g., `umlp2java`, `gui2java2ts`.
+`<input>2<output>` notation, e.g., `umlp2java`, `guiJava2ts`.
 
 > Generation process overview omits advanced transformations, which usually do
 > not require adjustments, such as `umlp2jsweetAdapter` or `gui2sym`. These

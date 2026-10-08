@@ -5,7 +5,7 @@ import de.monticore.gradle.common.CommonMCTask;
 import de.montigem.gradle.common.ContentSyncTask;
 import de.montigem.gradle.specific.CD2GUITask;
 import de.montigem.gradle.specific.CreateSymlinkTask;
-import de.montigem.gradle.specific.GUI2Java2TSTask;
+import de.montigem.gradle.specific.GUIJava2TSTask;
 import de.montigem.gradle.specific.GUI2JavaTask;
 import de.montigem.gradle.specific.GUIVariabilityTask;
 import de.montigem.gradle.specific.SetupFrontendTask;
@@ -69,8 +69,9 @@ public abstract class FrontendPlugin implements Plugin<Project> {
   public static final String UMLP_JAVA2TS_TASK = "umlpJava2ts";
   public static final String SYNC_UMLP_JAVA2TS_TASK = "sync_umlpJava2ts";
   public static final String SYNC_GUI2JAVA2TS_TASK = "sync_gui2java2ts";
+  public static final String SYNC_GUI2JAVA_TASK = "sync_gui2java";
   public static final String UMLP2JSWEET_OBSERVER_TASK = "umlp2jsweetObserver";
-  public static final String GUI2JAVA2TS_TASK = "gui2java2ts";
+  public static final String GUI_JAVA2TS_TASK = "guiJava2ts";
   public static final String CD2GUI_TASK = "cd2gui";
   public static final String GUI_VARIABILITY = "guiVariability";
   public static final String MERGE_GUI_MODELS_TASK = "mergeGuiModels";
@@ -136,6 +137,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
     Provider<Directory> gui2java2tsDir = project.getLayout().getBuildDirectory().dir("gui2java2ts");
     Provider<Directory> umlpJava2tsDir = project.getLayout().getBuildDirectory().dir("umlpJava2ts");
     Provider<Directory> syncGUI2Java2TSOut = project.getLayout().getBuildDirectory().dir("app/gui2java2ts");
+    Provider<Directory> syncGUI2JavaOut = project.getLayout().getBuildDirectory().dir("app/gui2java");
     Provider<Directory> syncUMLPJava2TSOut = project.getLayout().getBuildDirectory().dir("app/umlpJava2ts");
 
     Directory srcJSweet = project.getLayout().getProjectDirectory().dir("src/main/jsweet");
@@ -334,15 +336,14 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       }
       task.getOutputDir().set(gui2javaDir);
       task.getSymbolOutDir().set(gui2javaSymDir);
-      task.getTSOutputDir().set(gui2java2tsDir);
 
       task.getGUIGenJSweet().set(true);
       task.getGUIGenTSFunctionality().set(false);
     });
     mainSourceSet.getJava().srcDir(gui2java.flatMap(CommonMCTask::getOutputDir));
 
-    TaskProvider<GUI2Java2TSTask> gui2java2ts = project.getTasks().register(GUI2JAVA2TS_TASK, GUI2Java2TSTask.class);
-    gui2java2ts.configure(task -> {
+    TaskProvider<GUIJava2TSTask> guiJava2ts = project.getTasks().register(GUI_JAVA2TS_TASK, GUIJava2TSTask.class);
+    guiJava2ts.configure(task -> {
       task.setGroup(UMLP_GROUP_NAME);
 
       task.getGeneratedSources().set(gui2java.flatMap(CommonMCTask::getOutputDir));
@@ -414,7 +415,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
 
     TaskProvider<ContentSyncTask> syncGUI2Java2TS = project.getTasks().register(SYNC_GUI2JAVA2TS_TASK, ContentSyncTask.class, task -> {
       task.setGroup(UMLP_GROUP_NAME);
-      task.getFrom().from(gui2java2ts.flatMap(GUI2Java2TSTask::getOutputDir));
+      task.getFrom().from(guiJava2ts.flatMap(GUIJava2TSTask::getOutputDir));
       task.getFrom().from(umlp2jsweetObserver.flatMap(CommonMCTask::getOutputDir));
       task.getInto().set(syncGUI2Java2TSOut);
       // Angular needs no symbol files, and CD4A writes identity hash codes into .umlpsym
@@ -422,8 +423,15 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       // the GUI code imports the domain code, ng serve must not see new GUI code with old domain code
       task.mustRunAfter(syncUMLPJava2TS);
     });
+    // hand-written components reference generated templates in the output folder of the generator
+    TaskProvider<ContentSyncTask> syncGUI2Java = project.getTasks().register(SYNC_GUI2JAVA_TASK, ContentSyncTask.class, task -> {
+      task.setGroup(UMLP_GROUP_NAME);
+      task.getFrom().from(gui2java.flatMap(CommonMCTask::getOutputDir));
+      task.getInto().set(syncGUI2JavaOut);
+      task.getIncludes().add("**/*.html");
+    });
     TaskProvider<Task> generate = project.getTasks().named("generate");
-    generate.configure(task -> task.dependsOn(gui2java2ts, syncUMLPJava2TS, syncGUI2Java2TS));
+    generate.configure(task -> task.dependsOn(guiJava2ts, syncUMLPJava2TS, syncGUI2Java2TS, syncGUI2Java));
     project.getTasks().named("compileJava").configure(t -> t.dependsOn(generate));
 
     createSymlinkTask.configure(task -> {

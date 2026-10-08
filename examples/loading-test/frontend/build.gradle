@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import de.montigem.gradle.specific.GUI2Java2TSTask
+import de.montigem.gradle.specific.GUIJava2TSTask
 import de.montigem.gradle.specific.GUI2JavaTask
 import de.montigem.gradle.specific.UMLPJava2TSTask
 
@@ -28,7 +28,7 @@ tasks.named("gui2java", GUI2JavaTask) {
       "test_no_error.BuilderAndRouterNavigation"]
 }
 
-tasks.named("gui2java2ts", GUI2Java2TSTask) {
+tasks.named("guiJava2ts", GUIJava2TSTask) {
   verbose = false
 }
 

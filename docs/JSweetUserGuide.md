@@ -209,7 +209,7 @@ tasks.named("umlpJava2ts") {
   excludeSource.add("glob:**/MyBackendOnlyUtil.java")
 }
 
-tasks.named("gui2java2ts") {
+tasks.named("guiJava2ts") {
   excludeSource.add("glob:**/MyBackendOnlyUtil.java")
 }
 ```

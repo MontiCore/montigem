@@ -42,6 +42,12 @@ public abstract class ContentSyncTask extends DefaultTask {
   @Input
   public abstract ListProperty<String> getExcludes();
 
+  /**
+   * Only files matching these patterns are copied, all files if empty
+   */
+  @Input
+  public abstract ListProperty<String> getIncludes();
+
   @OutputDirectory
   public abstract DirectoryProperty getInto();
 
@@ -49,7 +55,7 @@ public abstract class ContentSyncTask extends DefaultTask {
   public void sync() throws IOException {
     // later sources win, as with DuplicatesStrategy.INCLUDE of Sync
     Map<String, File> files = new LinkedHashMap<>();
-    getFrom().getAsFileTree().matching(spec -> spec.exclude(getExcludes().get())).visit(details -> {
+    getFrom().getAsFileTree().matching(spec -> spec.include(getIncludes().get()).exclude(getExcludes().get())).visit(details -> {
       if (!details.isDirectory()) {
         files.put(details.getRelativePath().getPathString(), details.getFile());
       }

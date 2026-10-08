@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Optional;
 
-import static de.montigem.gradle.FrontendPlugin.GUI2JAVA2TS_TASK;
+import static de.montigem.gradle.FrontendPlugin.GUI_JAVA2TS_TASK;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_GUI_SYMBOLS_CONFIG;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_IMPORT_MAP_CONFIG;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_UMLP_MODELS_CONFIG;
@@ -162,7 +162,7 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
         // Alternative: use pnpm or yarn or something like this
         for (Project subproject : rteFrontend.getSubprojects()) {
           // the links point to the lib sources, which import the lib's generated code
-          task.dependsOn(subproject.getTasks().named(GUI2JAVA2TS_TASK));
+          task.dependsOn(subproject.getTasks().named(GUI_JAVA2TS_TASK));
 
           task.getLinks().put(
               project.getLayout().getBuildDirectory().dir("app/libs/@umlp/" + subproject.getName()).get().getAsFile(),

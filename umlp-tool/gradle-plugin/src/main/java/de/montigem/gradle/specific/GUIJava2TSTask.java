@@ -57,11 +57,11 @@ import java.util.stream.StreamSupport;
  */
 // cacheable because all inputs are relocatable
 @CacheableTask
-public abstract class GUI2Java2TSTask extends DefaultTask {
+public abstract class GUIJava2TSTask extends DefaultTask {
 
   private final Provider<? extends BuildService<?>> javaBeansCacheCleanup;
 
-  public GUI2Java2TSTask() {
+  public GUIJava2TSTask() {
     getJSweetRuntimeClassPath().from(getProject().getConfigurations()
         .matching(c -> c.getName().equals("runtimeClasspath")));
     // the adapter actions run the generator engine in isolated class loaders

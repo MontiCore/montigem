@@ -73,19 +73,6 @@ public abstract class GUI2JavaTask extends MGAllFilesTask {
     return getImportsDir().getAsFileTree().getElements().map(files -> RelativePaths.of(projectDir, files));
   }
 
-  /**
-   * The folder the generated files are copied to, if hand-written files reference them there
-   */
-  @Internal
-  public abstract DirectoryProperty getTSOutputDir();
-
-  @Input
-  @org.gradle.api.tasks.Optional
-  public Provider<String> getTSOutputPath() {
-    File projectDir = getProjectLayout().getProjectDirectory().getAsFile();
-    return getTSOutputDir().map(dir -> RelativePaths.of(projectDir, List.of(dir)).get(0));
-  }
-
   @OutputDirectory
   @org.gradle.api.tasks.Optional
   public abstract DirectoryProperty getSymbolOutDir();
@@ -189,11 +176,6 @@ public abstract class GUI2JavaTask extends MGAllFilesTask {
     if (this.getTSlib().isPresent()) {
       result.add("-" + UMLPToolOptions.GUI_GEN_FOR_TS_LIB.getCMD());
       result.add(getTSlib().get());
-    }
-
-    if (this.getTSOutputDir().isPresent()) {
-      result.add("-" + UMLPToolOptions.GUI_TS_OUTPUT.getCMD());
-      result.add(handlePath.apply(getTSOutputDir().getAsFile().get().toPath()));
     }
 
     return result;

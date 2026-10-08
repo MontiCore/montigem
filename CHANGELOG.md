@@ -51,16 +51,16 @@ For MontiGem users:
 * Every chart component has a configuration (context) menu, opened via the gear button
     * new parameter `boolean showConfig = false` on every chart controls whether the gear button is shown
 
-* the GUI generator has its own task `gui2java`, `gui2java2ts` only runs JSweet
+* the GUI generator has its own task `gui2java`, `gui2java2ts` became `guiJava2ts` and only runs JSweet
     * generator settings (e.g. `guiCreateModels`, `input`, `modelDir`, `symbolPath`) move to
-    `tasks.named("gui2java", GUI2JavaTask)`, JSweet settings (e.g. `excludeSource`) stay on `gui2java2ts`
-    * Gradle plugins that use `GUI2Java2TSTask` have to be compiled again
+    `tasks.named("gui2java", GUI2JavaTask)`, JSweet settings (e.g. `excludeSource`) move to `guiJava2ts`
+    * Gradle plugins that use `GUI2Java2TSTask` (now `GUIJava2TSTask`) have to be compiled again
     * migration: split the `gui2java2ts` block of the `build.gradle`
         ```groovy
         tasks.named("gui2java", GUI2JavaTask) {         // was gui2java2ts
           guiCreateModels = ["gui.CarCreate"]
         }
-        tasks.named("gui2java2ts", GUI2Java2TSTask) {   // JSweet settings only
+        tasks.named("guiJava2ts", GUIJava2TSTask) {     // JSweet settings only
           excludeSource.add("glob:**/MyBackendOnlyUtil.java")
         }
         ```

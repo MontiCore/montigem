@@ -10,7 +10,7 @@ import de.monticore.gradle.common.CommonMCTask;
 import de.montigem.gradle.DependencyPlugin;
 import de.montigem.gradle.MGBasePlugin;
 import de.montigem.gradle.specific.CreateNpmrcTask;
-import de.montigem.gradle.specific.GUI2Java2TSTask;
+import de.montigem.gradle.specific.GUIJava2TSTask;
 import de.montigem.gradle.specific.GUI2JavaTask;
 import de.montigem.gradle.specific.GUI2SymTask;
 import de.montigem.gradle.specific.LocalNpmAdduserTask;
@@ -82,7 +82,7 @@ import static de.montigem.gradle.FrontendBasePlugin.umlpVersion;
 import static de.montigem.gradle.FrontendBasePlugin.useLocalDependencies;
 import static de.montigem.gradle.FrontendPlugin.CD2JAVA_TASK;
 import static de.montigem.gradle.FrontendPlugin.CD2SYM_TASK;
-import static de.montigem.gradle.FrontendPlugin.GUI2JAVA2TS_TASK;
+import static de.montigem.gradle.FrontendPlugin.GUI_JAVA2TS_TASK;
 import static de.montigem.gradle.FrontendPlugin.JSWEET_TOOL_CONFIG;
 import static de.montigem.gradle.FrontendPlugin.SRC_UMLP_CONFIG;
 import static de.montigem.gradle.FrontendPlugin.UMLP_JAVA2TS_TASK;
@@ -459,7 +459,6 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
             task.getHandWrittenCodeDir().from(srcJava);
           }
           task.getOutputDir().set(gui2javaDir);
-          task.getTSOutputDir().set(gui2java2tsDir);
           task.getTSlib().set(libQName);
 
           task.getGUIGenJSweet().set(true);
@@ -469,8 +468,8 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
         });
         mainSourceSet.getJava().srcDir(gui2java.flatMap(CommonMCTask::getOutputDir));
 
-        TaskProvider<GUI2Java2TSTask> gui2java2ts = subproject.getTasks().register(GUI2JAVA2TS_TASK, GUI2Java2TSTask.class);
-        gui2java2ts.configure(task -> {
+        TaskProvider<GUIJava2TSTask> guiJava2ts = subproject.getTasks().register(GUI_JAVA2TS_TASK, GUIJava2TSTask.class);
+        guiJava2ts.configure(task -> {
           task.setGroup(UMLP_GROUP_NAME);
 
           task.getGeneratedSources().set(gui2java.flatMap(CommonMCTask::getOutputDir));
@@ -553,7 +552,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
 
         TaskProvider<NpmTask> buildLib = subproject.getTasks().register(BUILD_LIB_TASK, NpmTask.class, task -> {
           task.setGroup("build");
-          task.dependsOn(npmInstall, gui2java2ts);
+          task.dependsOn(npmInstall, guiJava2ts);
           if (inUMLP(subproject) && !inRTE(subproject) && useLocalDependencies(subproject)) {
             task.dependsOn(subproject.project(":umlp-rte:frontend").getTasks().named("build"));
           }

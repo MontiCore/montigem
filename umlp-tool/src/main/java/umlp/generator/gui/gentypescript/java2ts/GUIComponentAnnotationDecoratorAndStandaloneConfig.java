@@ -12,7 +12,6 @@ import de.monticore.guidsl._visitor.GUIDSLVisitor2;
 import de.monticore.io.paths.MCPath;
 import de.se_rwth.commons.Names;
 import de.se_rwth.commons.logging.Log;
-import umlp.generator.domain.UMLPGeneratorConfig;
 import umlp.generator.gui.GUIGeneratorUtil;
 import umlp.generator.gui.gentypescript.decorator.TSImportHelper;
 
@@ -98,9 +97,8 @@ public class GUIComponentAnnotationDecoratorAndStandaloneConfig implements GUIDS
           else {
             Optional<Path> hwTS = getTSHandwrittenFile(hwPath, gui.getComponentQName());
             if (hwTS.isPresent()) {
-              // the hand-written file references the HTML file where it is copied to
               htmlPath = util.predictRelativeImportPath(
-                  UMLPGeneratorConfig.getInstance().getTSOutput().orElse(outPath), hwTS.get(), Names.getPathFromPackage(qClassName) + ".html"
+                  outPath, hwTS.get(), Names.getPathFromPackage(qClassName) + ".html"
               );
             }
             else {

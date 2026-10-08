@@ -23,7 +23,6 @@ public enum UMLPToolOptions {
   OCL(Option.builder("ocl").longOpt("ocl").hasArgs().desc("Reads ocl file(s) (optional) and parses the contents").argName("file").build()),
   SYMTAB("s", "symboltable", "Serializes the symbol table of the given artifact.", "file", true),
   OUTPUT("o", "out", "Path of the output files.", "dir"),
-  GUI_TS_OUTPUT("tso", "tsOut", "Path the generated GUI files are copied to, if hand-written files reference them there.", "dir"),
   REPORTS("r", "report", "Prints reports of the artifact to the specified directory.", "dir", true),
   REPORT_BASE("rb", "report_base", "Base Directory used for relative paths in Reports.", "dir", true),
   REPORT_LEVEL("rl", "reportLevel", "all (default) writes all reports, incgen only the report that the incremental"
