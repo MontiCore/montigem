@@ -27,7 +27,7 @@ page Demo(DemoApp app) {
       ),
       @MonacoEditor(
         width = "100%",
-        height = "500px",
+        height = "700px",
         entry = app.srcInput,
         language = "MontiArc"
       )
