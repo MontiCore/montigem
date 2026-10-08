@@ -17,9 +17,4 @@ umlp MontiArcVizExperiment {
   }
 
   association [*] DemoApp -> (renderedFunction) RenderData [0..1];
-
-  <<singleton>>
-  class MainHolder {
-    Function4Display getMainFunction();
-  }
 }

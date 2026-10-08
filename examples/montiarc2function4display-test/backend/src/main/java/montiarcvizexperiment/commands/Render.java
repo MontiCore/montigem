@@ -1,5 +1,6 @@
 package montiarcvizexperiment.commands;
 
+import de.se_rwth.commons.Files;
 import de.se_rwth.commons.logging.Log;
 import ma2fustrumo.SimpleMontiArc2Function4DisplayConverter;
 import ma2fustrumo.SimpleMontiArcWriter;
@@ -43,6 +44,9 @@ public class Render extends RenderTOP {
     }
 
     var mainFunction = converter.convert(mainFunctionName);
+
+    Files.deleteFiles(writer.getMontiArcDirectory()); //cleanup
+
     return new SimpleResult<>(getId(), mainFunction, Function4Display.class.getName());
   }
 
