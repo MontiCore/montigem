@@ -1,8 +1,10 @@
 package demo;
 
+import mc.fenix.arrange.GemCard;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
 import mc.fenix.editor.MonacoEditor;
 import mc.fenix.functiondisplay.FunctionDisplay;
 import mc.fenix.input.GemTextInput;
@@ -34,7 +36,15 @@ page Demo(DemoApp app) {
         language = "MontiArc"
       )
     ]),
-    @GemColumn(width = "50%", height = "100%", vAlign = "stretch", components = [
+    @GemColumn(width = "50%", height = "100%", vAlign = "top", components = [
+      @GemCard(
+        title = "MontiArc Visualization Demo",
+        width = "100%",
+        component = @GemColumn(rowGap = ".5rem", components = [
+          @GemText(value = "The source code of this page demonstrates how to use the MA2FuStruMoTool to visualize a MontiArc component."),
+          @GemText(value = "Enter some valid MontiArc code in the editor window on the left, set the qualified path to the component and click the 'render' button. The component will be rendered below.")
+        ])
+      ),
       @FunctionDisplay(data = app.render(app.renderedFunction))
     ])
   ]);
