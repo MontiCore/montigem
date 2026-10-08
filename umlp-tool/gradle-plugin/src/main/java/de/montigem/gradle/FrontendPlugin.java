@@ -432,7 +432,6 @@ public abstract class FrontendPlugin implements Plugin<Project> {
     });
     TaskProvider<Task> generate = project.getTasks().named("generate");
     generate.configure(task -> task.dependsOn(guiJava2ts, syncUMLPJava2TS, syncGUI2Java2TS, syncGUI2Java));
-    project.getTasks().named("compileJava").configure(t -> t.dependsOn(generate));
 
     createSymlinkTask.configure(task -> {
       task.getLinks().put(
