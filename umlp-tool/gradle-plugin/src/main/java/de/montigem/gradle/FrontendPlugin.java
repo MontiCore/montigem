@@ -22,6 +22,7 @@ import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ExternalModuleDependency;
+import org.gradle.api.artifacts.ProjectDependency;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenRepositoryContentDescriptor;
 import org.gradle.api.attributes.Bundling;
@@ -34,6 +35,7 @@ import org.gradle.api.tasks.SourceSet;
 import org.gradle.api.tasks.SourceSetContainer;
 import org.gradle.api.tasks.SourceTask;
 import org.gradle.api.tasks.Sync;
+import org.gradle.api.tasks.TaskCollection;
 import org.gradle.api.tasks.TaskProvider;
 import org.gradle.internal.FileUtils;
 
@@ -43,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import static de.montigem.gradle.BackendPlugin.MERGE_UMLP_DIR;
 import static de.montigem.gradle.BackendPlugin.MERGE_UMLP_TASK;
@@ -262,10 +265,14 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       }
     });
 
-    if (backend.isPresent()) {
-      umlpJava2ts.configure(t -> t.dependsOn(backend.get().getTasks().named(UMLP2JAVA_TASK)));
-      umlpJava2ts.configure(t -> t.dependsOn(backend.get().getTasks().named(OCL2JAVA_TASK)));
-    }
+    // srcUMLPConfig carries no task dependencies: the tasks writing the sources of its projects
+    Set<String> sourceTaskNames = Set.of(UMLP2JAVA_TASK, OCL2JAVA_TASK,
+        TestInfrastructurePlugin.UMLP_TEST_INFRASTRUCTURE_TASK_NAME);
+    Callable<List<TaskCollection<Task>>> srcUMLPSourceTasks = () -> project.getConfigurations()
+        .getByName(SRC_UMLP_CONFIG).getAllDependencies().withType(ProjectDependency.class).stream()
+        .map(d -> project.project(d.getPath()).getTasks().matching(t -> sourceTaskNames.contains(t.getName())))
+        .toList();
+    umlpJava2ts.configure(t -> t.dependsOn(srcUMLPSourceTasks));
 
     TaskProvider<CD2JavaTask> cd2java = project.getTasks().register(CD2JAVA_TASK, CD2JavaTask.class);
     cd2java.configure(task -> {
@@ -299,7 +306,10 @@ public abstract class FrontendPlugin implements Plugin<Project> {
         task.getSymbolPath().from(project.getConfigurations().named(MONTIGEM_MODULE_GUI_SYMBOLS_CONFIG));
         task.getSymbolPath().from(project.getConfigurations().named(MONTIGEM_MODULE_IMPORT_MAP_CONFIG));
       }
-      task.getImportsDir().from(umlpJava2ts.flatMap(UMLPJava2TSTask::getOutputDir));
+      // the Java sources umlpJava2ts translates: the generator only checks which classes exist,
+      // .java and .ts alike, so it need not wait for the backend compilation and JSweet
+      task.getImportsDir().from(project.getConfigurations().named(SRC_UMLP_CONFIG));
+      task.dependsOn(srcUMLPSourceTasks);
       if (withCD2GUI.get()) {
         task.getSymbolPath().from(cd2gui.map(t -> t.getOutputDir().file("symbols")));
       }
