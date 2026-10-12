@@ -28,15 +28,15 @@ public class SimpleMontiArc2Function4DisplayConverter {
     tool.init();
     var failQuick = Log.isFailQuickEnabled();
     Log.enableFailQuick(false); //TODO that does not help for invalid input
-    tool.run(new String[]{
-        "-i",
-        montiArcDirectoryPath,
-        "-path",
-        frontendCd2PojoSymbolsDirectoryPath,
-        "-main",
-        mainFunctionName,
-        "-c2mc",
-    });
+    //directly call doRun to avoid unnecessary cli parsing
+    tool.doRun(new String[]{montiArcDirectoryPath},
+               new String[]{frontendCd2PojoSymbolsDirectoryPath},
+               mainFunctionName,
+               null,
+               null,
+               null,
+               true,
+               false);
     Log.enableFailQuick(failQuick);
 
     return tool.getResult4Display();

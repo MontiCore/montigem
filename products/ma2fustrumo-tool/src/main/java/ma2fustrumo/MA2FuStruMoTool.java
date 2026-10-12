@@ -133,7 +133,7 @@ public class MA2FuStruMoTool extends MontiArcTool {
    *                                  At least one path must be provided.
    * @param mainComponent             Sets the main component of the MontiArc model.
    * @param prettyPrintPath           Path to the directory where pretty-printed models should be
-   *                                 stored.
+   *                                  stored.
    *                                  If {@code null}, pretty-printing is disabled.
    *                                  If empty, models are printed to standard output.
    * @param symbolOutputPath          Path to the directory where the symbol table should be
