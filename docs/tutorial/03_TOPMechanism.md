@@ -1,127 +1,175 @@
 # TOP Mechanism
 
+!!! abstract "In this chapter"
+    - understand how hand-written code extends generated code
+    - learn the naming rules for the different kinds of extensions
+    - change the default route of the app as a first small exercise
+    - files you touch: `frontend/src/main/gui/AppGemRouting.ts`
+
 Most of the more advanced features of MontiGem involve extending generated code
-(models) with hand-written code. Such extensions are mostly done using so-called
-TOP-mechanism, which is described in this document, as well as its variations.
-This part mostly goes through the general concept, you will try using the
-TOP-mechanim in later tutorial steps.
+with hand-written code. Such extensions are mostly done using the so-called
+TOP mechanism, which is described in this chapter, as well as its variations.
+This chapter mostly goes through the general concept. You will use the TOP
+mechanism in the following chapters.
 
-The TOP-mechanism is a way to integrate hand-written code into generated code
-using inheritance. There are several other variations of TOP-mechanism that
-can be used in a MontiGem app development, all of them have similar principles.
+The TOP mechanism integrates hand-written code into generated code using
+inheritance. There are several variations of it in a MontiGem app, all of them
+follow similar principles.
 
-Further explanation will mention *source root* - a set of paths to folders that
-MontiGem considers to be folder containing the source code of an app.
+!!! warning "Never edit generated code"
+    Everything under `backend/build/` and `frontend/build/` is regenerated on
+    every build. Your changes there are lost without warning. That is why the
+    TOP mechanism exists: it gives every generated artifact a place where your
+    own code survives regeneration.
 
-Default app setup has source roots for:
+    For the same reason, do not delete `frontend/build/app` while the dev server
+    is running. It contains `hwc`, a link to your own sources.
+
+## Source roots
+
+The following explanation mentions the *source root*: a set of paths to folders
+that MontiGem considers to contain the source code of an app.
+
+The default app setup has source roots for:
 
 - **backend**
 
-    - `backend/build/umlp2java/` – code generated from models
-    - `backend/src/main/java` – hand-written code
+    - `backend/build/umlp2java/`: code generated from models
+    - `backend/src/main/java`: hand-written code
 
 - **frontend**
 
-    - `frontend/build/app/umlpJava2ts/`, `frontend/build/app/gui2java2ts/` – code generated from models
-    - `frontend/src/main/java` – hand-written Java code
-    - `frontend/src/main/gui` – hand-written TS, HTML, SCSS code and GUI models
+    - `frontend/build/app/umlpJava2ts/`, `frontend/build/app/gui2java2ts/`:
+      code generated from models
+    - `frontend/src/main/java`: hand-written Java code
+    - `frontend/src/main/gui`: hand-written TypeScript, HTML and SCSS code, and
+      GUI models
 
 - **models**
 
-    - `models` – folder with models
+    - `models`: folder with models
 
 !!! note
-    The path to the generated code is normally irrelevant for the app development,
-    since the paths are easier to find out from the qualified names of classes and
-    components.
+    The path to the generated code is normally irrelevant for app development,
+    since the paths are easier to find out from the qualified names of classes
+    and components.
 
-### TOP Backend Java Classes
+!!! info "HWC"
+    Hand-written code is abbreviated as *HWC* in MontiGem documentation and in
+    some folder names.
 
-Backend Java classes can be extended by defining a file with the same path
-from the source root as of the generated Java file and then extending the
-generated classes.
+## TOP for backend Java classes
 
-Simpler: given a qualified name of a class `foo.bar.Baz`, if you create a file
-`foo/bar/Baz.java` in source root of hand-written backend code, the generator
-will produce `foo/bar/BazTOP.java` file. You can then extend your `Baz` class
-with `BazTOP` (`Baz extends BazTOP`) to inherit and override its
-functionality. The generator will use your `Baz` class instead of the
-generated one.
-
-!!! note
-    If some generated backend service instantiates `Baz` object to
-    send it to the frontend, you can override instantiation logic using
-    TOP-mechanism to send an altered version of the object instead.
-
-### TOP Frontend TypeScript Classes from Class Diagram
-
-Frontend TypeScript classes generated from a class diagram can be extended by
-defining a file with the same path from the source root as of the generated
-TypeScript file and then extending the generated classes.
-
-!!! note
-    Basically the same schema as for backend Java classes
-
-Simpler: given a qualified name of a class `foo.bar.Baz`, if you create a file
-`foo/bar/Baz.ts` in source root of hand-written frontend code, the generator
-will produce `foo/bar/BazTOP.ts` file. You can then extend your `Baz` class
-with `BazTOP` (`Baz extends BazTOP`) to inherit and override its
-functionality.
-
-### TOP Mechanism with JSweet
-
-MontiGem targets application development completely with Java to enable app
-developers to write and execute e2e tests as unit tests. For this purpose the
-logic normally written in TypeScript is instead written in Java and then
-translated by MontiGem to an Angular-compatible TypeScript code.
-
-Transpiling Java code to TypeScript code means that concepts such as specific
-types, methods, statements, expressions, etc. from Java have to be mapped to an
-equivalent concept in TypeScript. One example is the `Integer` type from Java
-which is transpiled to a TypeScript `number`, e.g., whenever you return an
-`Integer` in a Java method the TypeScript method transpiled by JSweet will
-return a `number`.
-
-Frontend Java classes generated from GUI models can be extended by defining a
-file with the same path from the source root as of the generated Java file
-exactly as Backend Java classes. Additionally, you have to add the following
-annotation: `@umlp.jsweet.extension.annotation.Component` to the hand-written
+Backend Java classes can be extended by defining a file with the same path from
+the source root as the generated Java file and then extending the generated
 class.
 
-Simpler: given a GUI component `myapp.SomePage`, if you create a file
-`myapp/SomePage.java` in source root of hand-written frontend code, the
-generator will produce `myapp/SomePageTOP.java` file.
+Simpler: given a qualified name of a class `foo.bar.Baz`, if you create a file
+`foo/bar/Baz.java` in the source root of hand-written backend code, the
+generator will produce a `foo/bar/BazTOP.java` file. You can then extend your
+`Baz` class with `BazTOP` (`Baz extends BazTOP`) to inherit and override its
+functionality. The generator will use your `Baz` class instead of the generated
+one.
 
-**Important:** When overriding the `init()` method in a Java component, 
-always call `super.init()` first to ensure the initialization logic of 
-the generated `...TOP` class is executed.
+!!! note
+    The `...TOP` class only exists after the generator has run. Create your
+    hand-written file first, run the generator (e.g. `./gradlew :backend:umlp2java`),
+    and your IDE will resolve the symbols.
+
+!!! note
+    If some generated backend service instantiates a `Baz` object to send it to
+    the frontend, you can override the instantiation logic using the TOP
+    mechanism to send an altered version of the object instead.
+
+## TOP for frontend TypeScript classes from a class diagram
+
+Frontend TypeScript classes generated from a class diagram can be extended by
+defining a file with the same path from the source root as the generated
+TypeScript file and then extending the generated class.
+
+!!! note
+    Basically the same schema as for backend Java classes.
+
+Simpler: given a qualified name of a class `foo.bar.Baz`, if you create a file
+`foo/bar/Baz.ts` in the source root of hand-written frontend code, the generator
+will produce a `foo/bar/BazTOP.ts` file. You can then extend your `Baz` class
+with `BazTOP` (`Baz extends BazTOP`) to inherit and override its functionality.
+
+## TOP with JSweet
+
+MontiGem targets application development completely in Java to enable app
+developers to write and execute end-to-end tests as unit tests. For this purpose
+the logic normally written in TypeScript is instead written in Java and then
+translated by MontiGem to Angular-compatible TypeScript code. The translator is
+called JSweet.
+
+Transpiling Java code to TypeScript code means that concepts such as specific
+types, methods, statements and expressions from Java have to be mapped to an
+equivalent concept in TypeScript. One example is the `Integer` type from Java
+which is transpiled to a TypeScript `number`, e.g. whenever you return an
+`Integer` in a Java method the TypeScript method transpiled by JSweet returns a
+`number`.
+
+!!! warning "Not all Java works in the frontend"
+    Frontend Java is transpiled, so a few Java features are not available:
+    reflection, threads, most of the Java standard library beyond collections
+    and simple types, and static initializers with complex logic. Stick to
+    fields, loops, collections, `String` operations and lambdas. If you need
+    something else, calculate it in the backend (see the chapter about
+    [charts from the backend](./10_GUIAdvanced5.md)).
+
+Frontend Java classes generated from GUI models can be extended by defining a
+file with the same path from the source root as the generated Java file, exactly
+as for backend Java classes. Additionally, you should add the annotation
+`umlp.jsweet.extension.annotation.Component` to the hand-written class:
+
+```java
+import umlp.jsweet.extension.annotation.Component;
+
+@Component()
+public class SomePage extends SomePageTOP {
+}
+```
+
+Simpler: given a GUI component `myapp.SomePage`, if you create a file
+`myapp/SomePage.java` in the source root of hand-written frontend code, the
+generator will produce a `myapp/SomePageTOP.java` file.
+
+**Important:** When overriding the `init()` method in a Java component, always
+call `super.init()` first to ensure that the initialization logic of the
+generated `...TOP` class is executed. The same applies to `destroy()`.
+
+**Important:** Methods you override must carry `@Override`. Without it a typo in
+the method name silently creates a new, unused method.
 
 For more information on JSweet, see the [JSweet User Guide](../JSweetUserGuide.md).
 
-### TOP Frontend TypeScript Classes from GUI Models
+## TOP for frontend TypeScript classes from GUI models
 
-In some cases hand-written Java component extension is not enough, e.g., when
-the component uses a 3rd party library, like `d3.js`, or when the component
+In some cases a hand-written Java component extension is not enough, e.g. when
+the component uses a third-party library, like `d3.js`, or when the component
 logic requires DOM manipulations.
 
 Frontend TypeScript classes generated from GUI models can be extended by
-defining a file with the same path from the source root as of the generated
-TypeScript file and then extending the generated classes with `Component`
-suffix and using generated `config` constant.
+defining a file with the same path from the source root as the generated
+TypeScript file and then extending the generated class with the `Component`
+suffix and using the generated `config` constant.
 
 Simpler: given a GUI component `myapp.SomePage`, if you create a file
-`myapp/SomePage.ts` in source root of hand-written frontend code, the
+`myapp/SomePage.ts` in the source root of hand-written frontend code, the
 generator will produce `myapp/SomePageTOP.ts` and `myapp/SomePageComponent.ts`
-file. You can then extend your `SomePage` class with `SomePageComponent` to
-inherit and override its functionality. Additionally, you need to import and
-use `config` constant from the `myapp/SomePageComponent.ts` file:
+the next time you run `./gradlew :frontend:generate`.
+You can then extend your `SomePage` class with `SomePageComponent` to inherit
+and override its functionality. Additionally, you need to import and use the
+`config` constant from the `myapp/SomePageComponent.ts` file:
 
 ```ts
-import { SomePageComponent, config } from "@src/myapp/SomePageComponent";
-import { Component } from "@angular/core";
+import { SomePageComponent, config } from "myapp/SomePageComponent";
+import { ChangeDetectionStrategy, Component } from "@angular/core";
 
 @Component({
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [...config.imports],
   selector: config.selector,
   templateUrl: config.templateUrl,
@@ -132,74 +180,99 @@ export class SomePage extends SomePageComponent {
 }
 ```
 
-!!! note 
-    The `@Component(...)` annotation is always the same. There is a
-    technical limitation imposed by Ivy compiler (used in Angular framework)
-    that makes it difficult to completely eliminate this code. This issue will
-    be resolved in the future.
+!!! warning "Keep `changeDetection: ChangeDetectionStrategy.Eager`"
+    MontiGem apps use Angular 22. Without this line Angular does not update
+    the page when the data arrives from the backend. The page then stays empty
+    and the browser console shows no error.
 
 !!! note
-    If you have to overwrite the Angular logic in `SomePageComponent`
-    (this is very rarely the case) you have to overwrite the TypeScript file.
+    The `@Component(...)` annotation is always the same. There is a technical
+    limitation imposed by the Ivy compiler (used in the Angular framework) that
+    makes it difficult to completely eliminate this code. This issue will be
+    resolved in the future.
 
-### TOP Frontend Templates (HTML) and Stylesheets (SCSS)
+!!! note
+    A hand-written TypeScript file and a hand-written Java file for the same
+    component shadow each other. Use one of them, not both.
 
-Frontend HTML and SCSS files generated from GUI models can be **overwritten**
-by defining a file with the same path from the source root as of the generated
-HTML and SCSS files.
+## TOP for frontend templates (HTML) and stylesheets (SCSS)
 
-!!! note 
-    HTML and SCSS do not support inheritance, which is why the generated
-    code cannot be reused.
+Frontend HTML and SCSS files generated from GUI models can be **overwritten** by
+defining a file with the same path from the source root as the generated HTML
+and SCSS files.
+
+!!! note
+    HTML and SCSS do not support inheritance, which is why the generated code
+    cannot be reused.
 
 Simpler: given a GUI component `myapp.SomePage`, if you create a file
-`myapp/SomePage.html` in source root of hand-written frontend code, this file
-will be used instead of a generated one. The same applies to
-`myapp/SomePage.scss`
+`myapp/SomePage.html` in the source root of hand-written frontend code, this
+file will be used instead of the generated one. The same applies to
+`myapp/SomePage.scss`. You will do this in the chapter about the
+[GUI layout](./08_GUIAdvanced3.md).
+
+The project already contains an example: the root component of the app,
+`AppComponent`, is generated, but `frontend/src/main/gui/AppComponent.html` and
+`AppComponent.scss` replace its template and style to show the logo and the
+footer.
 
 !!! note
-    Most of current MontiGem builds do not generate SCSS file at all, but have
-    few default style definitions specified via `styles: config.styles` of a
+    Most current MontiGem builds do not generate an SCSS file at all, but have a
+    few default style definitions specified via `styles: config.styles` of the
     `Component` annotation.
 
-### TOP Frontend Routing
+## TOP for frontend routing
 
-Frontend routing files (with suffix `GemRouting.ts`) generated from GUI
+Frontend routing files (with the suffix `GemRouting.ts`) generated from a GUI
 **package** can be extended by defining a file with the same path from the
-source root as of the generated routing files.
+source root as the generated routing file.
 
 Simpler: given that there is a GUI page `myapp.SomePage`, if you create a file
-`MyappGemRouting.ts` in source root of hand-written frontend code, this file
-will be used instead of a generated one. The file contains a `routes`
-constant, that specifies the URL for all pages that reside in the
-corresponding package.
+`MyappGemRouting.ts` in the source root of hand-written frontend code, this file
+will be used instead of the generated one. The file contains a `routes`
+constant, that specifies the URL for all pages that reside in the corresponding
+package.
 
-There is global routing file `AppGemRouting.ts` that specifies routing for all
-components. Normally you would only override `AppGemRouting`, as the URL doesn't
-really matter to the end user. If you are curious about routing rules, the full
-set of rules are specified in the [Angular
-guide](https://v17.angular.io/guide/router).
+There is a global routing file `AppGemRouting.ts` that specifies the routing for
+all components. Normally you would only override `AppGemRouting`, as the URL
+doesn't really matter to the end user. If you are curious about routing rules,
+the full set of rules is specified in the
+[Angular guide](https://angular.dev/guide/routing).
 
-For example, try changing the default route in a hand-written extension of
-`AppGemRouting` by adjusting the `redirectTo` value:
+### Try it yourself
+
+The project already contains a hand-written `AppGemRouting.ts`. It sends a user
+who opens the app without a path to the start page:
+
 ```ts title="frontend/src/main/gui/AppGemRouting.ts"
 /* (c) https://github.com/MontiCore/monticore */
-import { Routes } from "@angular/router";
+import { Route } from "@angular/router";
 import { routes as routesTOP } from "AppGemRoutingTOP";
 
-export const routes: Routes = [
-  // set default path
+export const routes: Route[] = [
   {
     path: "",
     pathMatch: "full",
-    redirectTo: "gui/SimpleCarList"
+    redirectTo: "gui/Start"
   },
   ...routesTOP
 ]
 ```
-Since `routes` is a JSON object, you can create your own JSON object (must be
-assigned to `routes` variable) and reuse the contents of the generated
-`routesTOP` object with a spread operator (`...routesTOP`). In this example the
-hand-written `routes` makes sure that navigating to your website without
-specific path (e.g., `www.some-website.com` or http://localhost:4200 during the
-development), the app user will get redirected to the `SimpleCarList` page.
+
+Change the value of `redirectTo` to `"gui/SimpleCarList"` and save the file.
+
+`routes` is an array of route objects. You can build your own array (it must be
+assigned to the `routes` variable) and reuse the entries of the generated
+`routesTOP` array with the spread operator (`...routesTOP`). Angular uses the
+first matching route, so your entry wins over the generated ones.
+
+!!! note
+    This is hand-written TypeScript inside `frontend/src/main/gui`. The dev
+    server watches that folder, so it picks up the change on its own. You do not
+    need `generate` here.
+
+## Checkpoint
+
+- Open [http://localhost:4200](http://localhost:4200) without a path. The app
+  now redirects to `/gui/SimpleCarList` instead of `/gui/Start`.
+- Change `redirectTo` back to `"gui/Start"` if you prefer the start page.

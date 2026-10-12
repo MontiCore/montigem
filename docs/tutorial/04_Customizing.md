@@ -1,28 +1,39 @@
-# Customzing the App
+# Customizing
 
-As mentioned for the TOP-mechanism, hand-written code adaptions are necessary
-for a full stack application. Here is where and how to adapt the different parts
+!!! abstract "In this chapter"
+    - customize the start-up of the server application
+    - create, read, update and delete domain objects from code
+    - understand how backend and clients stay synchronized
+    - add your own REST endpoint
+    - no files to change: this chapter explains the concepts you use from the
+      next chapter on
+
+As mentioned for the TOP mechanism, hand-written code adaptations are necessary
+for a full-stack application. Here is where and how to adapt the different parts
 of the MontiGem-generated code.
 
-## Customizing the Server Application
+## Customizing the server application
 
 MontiGem generates server code to run the backend. The used technology framework
 is [Spring Boot](https://spring.io/projects/spring-boot) which provides the
-tools to enable server applications, end points, security, and more.
-The generated code is adaptable by using the TOP-mechanism.
+tools for server applications, endpoints, security, and more. The generated code
+is adaptable by using the TOP mechanism.
 
 ### Start-up
 
 The server application is generated from the UML class diagram. However, some
 custom start-up logic might require hand-written adaptations. The entry point
-for adapting the applicatoin start-up is adapting the `ServerApplication` class,
-e.g., `carrental.CarrentalServerApplication`. Here you can override the `init`
-method with the Spring Boot `@PostConstruct` annotation. A typical use case for
-this is the creation of start-up dummy data to test your product. You have
-already worked with the `initEntities()` method to do so while learning [class
-diagram basics](./01_ClassDiagramBasics.md#class).
+for adapting the application start-up is the `ServerApplication` class, e.g.
+`carrental.CarrentalServerApplication`. Here you can override the `init` method
+with the Spring Boot `@PostConstruct` annotation. A typical use case for this is
+the creation of start-up dummy data to test your product. You already worked
+with the `initEntities()` method while learning the
+[class diagram basics](./01_ClassDiagramBasics.md#try-it-yourself).
 
 ```java title="backend/src/main/java/carrental/CarrentalServerApplication.java"
+import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+
 public class CarrentalServerApplication extends CarrentalServerApplicationTOP {
 
   @PostConstruct
@@ -38,51 +49,53 @@ public class CarrentalServerApplication extends CarrentalServerApplicationTOP {
 }
 ```
 
-## Hand-Written Code Extensions: Create, Read, Update, Delete (CRUD) Operations
+## Hand-written code extensions: create, read, update, delete (CRUD)
 
-To handle domain objects a generated singleton class `Manager` is used (e.g.,
-`carrental.CarrentalManager`, `domain.DomainManager`). It offers methods to
-create, retrieve or delete a domain object. For example, for a domain object
-`Car`:
+To handle domain objects a generated singleton class `Manager` is used (e.g.
+`carrental.CarrentalManager`). It offers methods to create, retrieve or delete a
+domain object. For example, for a domain object `Car`:
 
-* `Manager.getCarSure(gemId)` returns the object
-* `Manager.getCarList()` returns all objects of the `Car` type
-* `Manager.carBuilder()` returns a builder
-* `Manager.deleteCar(...)` deletes the object if present
+* `CarrentalManager.getCarSure(gemId)` returns the object,
+* `CarrentalManager.carOpt(gemId)` returns an `Optional<Car>`,
+* `CarrentalManager.getCarList()` returns all objects of type `Car`,
+* `CarrentalManager.carBuilder()` returns a builder,
+* `CarrentalManager.deleteCar(gemId)` deletes the object if present.
 
-The Manager is available both in the backend and frontend. Both are synchronized
-via a websocket connection. Note that synchronization is ensured between all 
-clients and also the database.
+The manager is available both in the backend and in the frontend. Both are
+synchronized via a WebSocket connection. Note that synchronization is ensured
+between all clients and also the database.
 
 !!! note
     Most of the Java code in MontiGem is synchronous, it executes operations
-    sequentially. However, the Java code for GUI which works with domain objects
-    is translated to asynchronous TypeScript code for the app frontend. Since
-    the frontend is a single process, making requests asynchronous ensures that
-    the GUI stays responsive and enables user interaction while data is being
-    transferred from the server.
-    
+    sequentially. However, the Java code for the GUI which works with domain
+    objects is translated to asynchronous TypeScript code for the app frontend.
+    Since the frontend is a single process, making requests asynchronous ensures
+    that the GUI stays responsive and enables user interaction while data is
+    being transferred from the server.
+
     Example Java:
 
     ```java
-    Car c = CarrentalManager.getCarSure(4); 
-    // work with c object
+    Car c = CarrentalManager.getCarSure(4);
+    // work with the c object
     ```
 
     Example TypeScript:
 
     ```ts
     CarrentalManager.getCarSure(4).then((c: Car) => {
-      // work with c object
+      // work with the c object
     });
     ```
 
-Updating the objects happens by using setter methods of the objects. For
+Updating objects happens by using the setter methods of the objects. For
 example:
+
 ```java
-Car c = CarrentalManager.getCarSure(4); 
-c.setModel("DeLorean"); // update car model
+Car c = CarrentalManager.getCarSure(4);
+c.setModel("DeLorean"); // update the car model
 ```
+
 Synchronization with the manager and the server, all clients and the database
 happens automatically in the background. Each domain object offers methods to
 edit attributes and read associations.
@@ -90,24 +103,41 @@ edit attributes and read associations.
 ## Synchronization
 
 The communication between server and clients is implemented using a command
-pattern and websockets. For each action, e.g., creating/updating a domain
-object, MontiGem generates a command (Java/TS class) and corresponding
-(de-)serializers converting objects into JSON. When executing an action, e.g.,
-`car.setModel("DeLorean")`, these commands are exchanged between server and
-clients via a websocket endpoint and executed. The logic for each command can be
-overriden in its `CommandResult<T> doAction()` method. The server is responsible
-to broadcast changes to all clients and the database. Commands can be send by
-calling the singleton class `CommandManager`, e.g.,
-`CommandManager.executeCommand(new Car_SetModelCommand(4, "DeLorean");`.
-Sending the commands manually will be discussed in the next [tutorial
-step](./05_ClassDiagramAdvanced.md).
+pattern and WebSockets. For each action, e.g. creating or updating a domain
+object, MontiGem generates a command (a Java and TypeScript class) and
+corresponding (de)serializers converting objects into JSON. When executing an
+action, e.g. `car.setModel("DeLorean")`, these commands are exchanged between
+server and clients via a WebSocket endpoint and executed. The logic of a command
+can be overridden in its `doAction()` method.
 
-### Synchronization Example
+!!! info "Command names"
+    Commands generated for an attribute or an operation of a class follow the
+    schema `<Class>_<operation>`, for example `Car_setModel`, `Customer_create`
+    and `Customer_delete`. Commands generated for a method of a service class
+    are named after the method, for example `RentCar`. You will write such a
+    command in the [next chapter](./05_ClassDiagramAdvanced.md).
 
-Consider a scenario with a Database, a Server, and two Clients (A and B). All
+Commands can be sent manually by calling the singleton class `CommandManager`,
+e.g.
+
+```java
+CommandManager.executeCommand(new Car_setModel(4, "DeLorean"));
+```
+
+!!! info "Result types"
+    `doAction()` returns a result object:
+
+    - `StatusResult` for actions without a return value, created with
+      `StatusResult.ok(getId())` or `StatusResult.error(getId())`,
+    - `SimpleResult<T>` for actions that return one object,
+    - `ListResult<T>` for actions that return a list.
+
+### Synchronization example
+
+Consider a scenario with a database, a server, and two clients (A and B). All
 have loaded the same `Foo` object (ID: 1).
 
-1.  **Initial State:**
+1.  **Initial state:**
     *   Database: `Foo(1).bar = "initial"`
     *   Server: `Foo(1).bar = "initial"`
     *   Client A: `Foo(1).bar = "initial"`
@@ -116,46 +146,60 @@ have loaded the same `Foo` object (ID: 1).
 2.  **Action:** Client A executes `foo.setBar("updated")`.
 
 3.  **Propagation:**
-    *   **Client A:** Sends a `Foo_setBar(1, "updated")` command to the Server
+    *   **Client A:** sends a `Foo_setBar(1, "updated")` command to the server
         via WebSocket.
-    *   **Server:** Receives the command.
-        *   Executes it: Updates the in-memory object `Foo(1).bar = "updated"`.
-        *   Persists it: Updates the Database `Foo(1).bar = "updated"`.
-        *   Broadcasts: Sends the command to all *other* connected clients
+    *   **Server:** receives the command.
+        *   Executes it: updates the in-memory object `Foo(1).bar = "updated"`.
+        *   Persists it: updates the database `Foo(1).bar = "updated"`.
+        *   Broadcasts: sends the command to all *other* connected clients
             (Client B).
-    *   **Client B:** Receives `Foo_setBar(1, "updated")`.
-        *   Executes it: Updates its local object `Foo(1).bar = "updated"`.
-        *   The UI (if bound to `foo.bar`) updates automatically via the Observer pattern.
+    *   **Client B:** receives `Foo_setBar(1, "updated")`.
+        *   Executes it: updates its local object `Foo(1).bar = "updated"`.
+        *   The UI (if bound to `foo.bar`) updates automatically via the observer
+            pattern.
 
 This ensures that all participants eventually hold the same state.
 
-Commands can be send manually by calling the singleton class `CommandManager`,
-e.g., `CommandManager.executeCommand(new Car_SetModelCommand(4, "DeLorean DMC-12");`
+!!! note "Watching the traffic"
+    The backend console logs every command it receives and sends, for example
+    `Received: {"commandId":3,"commandType":"carrental.commands.RentCar",...}`.
+    This log is the fastest way to check whether a button in the GUI really
+    triggered the action you expected.
 
-### End-Points
+### Endpoints
 
-Synchronization happens over the command websocket endpoint. Spring Boot
-provides utilities to add end-points. You may need extra end-points to handle
-binary data, for example, an endpoint to store a PDF file. To do so, add a new
-class with the `@RestController` annotation. The location of the file does not
-matter as far as it is in the backend source code. Spring Boot will find it and
-take corresponding action:
+Synchronization happens over the command WebSocket endpoint. Spring Boot
+provides utilities to add endpoints. You may need extra endpoints to handle
+binary data, for example an endpoint to store a PDF file. To do so, add a new
+class with the `@RestController` annotation:
 
-```java
-package carrental.somewhere;
+```java title="backend/src/main/java/carrental/service/PDFEndpoint.java"
+package carrental.service;
 
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 public class PDFEndpoint {
-  @PostMapping(value="/pdf")
+  @PostMapping(value = "/pdf")
   public ResponseEntity<String> storePDF(
     @RequestPart("file") MultipartFile file,
     @RequestHeader("name") String name
   ) {
     // your code
+    return ResponseEntity.ok("stored " + name);
   }
 }
 ```
+
+!!! warning "The package matters"
+    Spring only scans the packages listed in `scanBasePackages` of the
+    `@SpringBootApplication` annotation in `CarrentalServerApplication.java`.
+    For this project that is `carrental.service` plus the MontiGem runtime
+    packages. Put your controller in `carrental.service` (or a subpackage), or
+    add your package to `scanBasePackages`. A controller in another package is
+    never instantiated and its endpoint returns 404.
