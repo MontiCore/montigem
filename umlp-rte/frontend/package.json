@@ -67,10 +67,10 @@
     "@types/lodash.isequal": "^4.5.8",
     "@types/three": "^0.160.0",
     "@types/node": "^24.x",
-    "@vitest/browser-playwright": "4.0.8",
+    "@vitest/browser-playwright": "4.1.11",
     "elkjs": "^0.9.3",
     "jsdom": "^26.x",
-    "vitest": "4.0.8",
+    "vitest": "4.1.11",
     "vitest-webgl-canvas-mock": "~1.1.0",
     "typescript": "~6.0.0"
   }

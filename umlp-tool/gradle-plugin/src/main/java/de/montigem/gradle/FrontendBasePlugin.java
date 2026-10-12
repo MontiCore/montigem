@@ -157,7 +157,8 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
       task.setGroup("verification");
       task.dependsOn(generate, npmUpdate, installTestBrowser);
       task.getCommand().set("ng");
-      task.getArgs().set(List.of("test"));
+      // never wait for file changes, even if Gradle runs in a terminal
+      task.getArgs().set(List.of("test", "--watch=false"));
       task.getTimeout().set(TEST_TIMEOUT);
     });
     var runAppTask = project.getTasks().register("runApp", NpxTask.class, task -> {
