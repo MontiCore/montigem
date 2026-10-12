@@ -70,6 +70,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.montigem.gradle.FrontendBasePlugin.GUI2JAVA_TASK;
+import static de.montigem.gradle.FrontendBasePlugin.TEST_TIMEOUT;
 import static de.montigem.gradle.FrontendBasePlugin.UMLP_GROUP_NAME;
 import static de.montigem.gradle.FrontendBasePlugin.addClientRTEDependency;
 import static de.montigem.gradle.FrontendBasePlugin.addGUITypesDependency;
@@ -579,6 +580,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.setGroup("verification");
           task.dependsOn(buildLib, installTestBrowser);
           task.getArgs().addAll(libQName.map(v -> List.of("run", "test", v)));
+          task.getTimeout().set(TEST_TIMEOUT);
           task.getWorkingDir().set(p.getLayout().getProjectDirectory().getAsFile());
           task.getEnvironment().putAll(isolatedNpmEnvironment);
           task.getInputs().files(srcGUI.getAsFileTree().matching(pattern -> {
