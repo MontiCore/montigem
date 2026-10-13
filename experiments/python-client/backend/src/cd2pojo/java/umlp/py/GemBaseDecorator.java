@@ -73,7 +73,7 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
           MCTypeFacade.getInstance().createQualifiedType("montigem_runtime.gembase.GemBase"));
     } else {
       // Fix for multi-files:
-      for (int i=0; i<decNode.getCDExtendUsage().getSuperclassList().size(); i++) {
+      for (int i = 0; i < decNode.getCDExtendUsage().getSuperclassList().size(); i++) {
         var x = decNode.getCDExtendUsage().getSuperclass(i);
         if (x instanceof ASTMCQualifiedType) {
           if (((ASTMCQualifiedType) x).getNameList().size() == 1) {
@@ -95,20 +95,20 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
     }
 
     decNode.addCDMember(CDAttributeFacade.getInstance()
-                            .createAttribute(CDBasisMill.modifierBuilder().build(),
-                                             createClassVar("str"), "TYPE",
-                                             stringLiteralExpr(node.getName())));
+        .createAttribute(CDBasisMill.modifierBuilder().build(),
+            createClassVar("str"), "TYPE",
+            stringLiteralExpr(node.getName())));
 
     decNode.addCDMember(CDAttributeFacade.getInstance()
-                            .createAttribute(CDBasisMill.modifierBuilder().build(),
-                                             createClassVar("str"), "PACKAGE",
-                                             stringLiteralExpr(domainName.toLowerCase()))); // TODO
+        .createAttribute(CDBasisMill.modifierBuilder().build(),
+            createClassVar("str"), "PACKAGE",
+            stringLiteralExpr(domainName.toLowerCase()))); // TODO
 
     var initFunction = CDMethodFacade.getInstance().createMethod(CDBasisMill.modifierBuilder().build(),
         "__init__",
         CDParameterFacade.getInstance().createParameter("typing.Any", "*args"),
         CDParameterFacade.getInstance().createParameter("typing.Any", "**kwargs")
-        );
+    );
     decNode.addCDMember(initFunction);
 
     glexOpt.ifPresent(glex -> glex.replaceTemplate(Pyutils.EMPTY_TEMPLATE,
@@ -132,24 +132,24 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
         // Attribute is a String -> turn into typing.Optional[str]
         typeArgument = MCTypeFacade.getInstance().createBasicTypeArgumentOf("str");
         decNode.setMCType(MCTypeFacade.getInstance()
-                              .createBasicGenericTypeOf(Arrays.asList("typing", "Optional"),
-                                                        Collections.singletonList(typeArgument)));
+            .createBasicGenericTypeOf(Arrays.asList("typing", "Optional"),
+                Collections.singletonList(typeArgument)));
         data.attrDataMap.computeIfAbsent(originalNode, x -> new AttrData("str"));
         decNode.setInitial(CD4CodeMill.literalExpressionBuilder().setLiteral(CD4CodeMill.nullLiteralBuilder().build()).build());
       } else if (inner.isPrimitive()) {
         // Attribute is a primitive -> turn into typing.Optional[...]
         typeArgument = MCTypeFacade.getInstance().createBasicTypeArgumentOf(inner.print());
         decNode.setMCType(MCTypeFacade.getInstance()
-                              .createBasicGenericTypeOf(Arrays.asList("typing", "Optional"),
-                                                        Collections.singletonList(typeArgument)));
+            .createBasicGenericTypeOf(Arrays.asList("typing", "Optional"),
+                Collections.singletonList(typeArgument)));
         data.attrDataMap.computeIfAbsent(originalNode, x -> new AttrData(inner.print()));
         decNode.setInitial(CD4CodeMill.literalExpressionBuilder().setLiteral(CD4CodeMill.nullLiteralBuilder().build()).build());
-      } else if (info.getTypeClass() == UmlpAttrHelper.RealType.GEM){
+      } else if (info.getTypeClass() == UmlpAttrHelper.RealType.GEM) {
         // Attribute is an optional domain class -> turn into Gem
         CD4C.getInstance().addImport(
             decoratorData.getAsDecorated((ASTCDClass) decoratorData.getParent(originalNode).get()),
             inner.printFullName());
-        decNode.setMCType(createGemType( inner.printFullName() + "." + inner.print()));
+        decNode.setMCType(createGemType(inner.printFullName() + "." + inner.print()));
         decNode.setInitial(createInitialEmptyGem());
         data.attrDataMap.computeIfAbsent(originalNode, x -> new AttrData(inner.printFullName()));
       } else {
@@ -157,7 +157,7 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
       }
 
 
-    } else if (info.getMultiplicity() ==  UmlpAttrHelper.Multiplicity.SET) {
+    } else if (info.getMultiplicity() == UmlpAttrHelper.Multiplicity.SET) {
 
       // Annotated[
       //    gembase.GemList, BeforeValidator(deserialize_gem_list), PlainSerializer(serialize_gem_list,
@@ -171,7 +171,7 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
         decNode.setMCType(createGemListType(inner.printFullName() + "." + inner.print()));
         decNode.setInitial(createInitialGemList());
 //        data.attrDataMap.computeIfAbsent(originalNode, x -> new AttrData(inner.printFullName()));
-      }else if (info.getTypeClass() == UmlpAttrHelper.RealType.BUILD_IN) {
+      } else if (info.getTypeClass() == UmlpAttrHelper.RealType.BUILD_IN) {
         var inner = info.getSymTypeExpression();
         CD4C.getInstance().addImport(
             decoratorData.getAsDecorated((ASTCDClass) decoratorData.getParent(originalNode).get()),
@@ -208,7 +208,7 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
         // (we should probably find a better way)
         ASTFieldAccessExpression expr = (ASTFieldAccessExpression) decNode.getInitial();
         var domain1 = CD4CodeMill.nameExpressionBuilder().setName(domainName).build();
-        var name = ((ASTNameExpression)expr.getExpression()).getName();
+        var name = ((ASTNameExpression) expr.getExpression()).getName();
         var fae1 = CD4CodeMill.fieldAccessExpressionBuilder().setExpression(domain1)
             .setName(name)
             .build();
@@ -223,7 +223,7 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
   }
 
   protected ASTMCQualifiedType createTypeFrom(SymTypeExpression symTypeExpression) {
-    return (MCTypeFacade.getInstance().createQualifiedType( symTypeExpression.printFullName() + "." + symTypeExpression.print()));
+    return (MCTypeFacade.getInstance().createQualifiedType(symTypeExpression.printFullName() + "." + symTypeExpression.print()));
   }
 
 
@@ -264,8 +264,8 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
 
   protected ASTMCBasicGenericType createClassVar(String t) {
     return MCTypeFacade.getInstance().createBasicGenericTypeOf("typing.ClassVar",
-                                                               MCTypeFacade.getInstance()
-                                                                   .createBasicTypeArgumentOf(t));
+        MCTypeFacade.getInstance()
+            .createBasicTypeArgumentOf(t));
   }
 
 
@@ -280,8 +280,8 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
   }
 
   public static class Data {
-    protected final Map<ASTCDAttribute, AttrData>  attrDataMap = new HashMap<>();
-    protected final Map<ASTCDClass, ASTCDMethod>  origClass2Init = new HashMap<>();
+    protected final Map<ASTCDAttribute, AttrData> attrDataMap = new HashMap<>();
+    protected final Map<ASTCDClass, ASTCDMethod> origClass2Init = new HashMap<>();
 
     public AttrData getData(ASTCDAttribute astcdAttribute) {
       return attrDataMap.get(astcdAttribute);

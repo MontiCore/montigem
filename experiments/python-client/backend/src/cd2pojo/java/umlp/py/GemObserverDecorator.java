@@ -53,21 +53,21 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
 
     var observerAttr = CDAttributeFacade.getInstance()
         .createAttribute(CDBasisMill.modifierBuilder().build(), MCTypeFacade.getInstance()
-                             .createBasicGenericTypeOf("typing.List", domainName+"." + node.getName() + SUFFIX),
-                         "_observer");
-    CD4C.getInstance().addImport(decNode, domainName+"." + node.getName() + SUFFIX);
+                .createBasicGenericTypeOf("typing.List", domainName + "." + node.getName() + SUFFIX),
+            "_observer");
+    CD4C.getInstance().addImport(decNode, domainName + "." + node.getName() + SUFFIX);
     var xxInstance = CD4CodeMill.fieldAccessExpressionBuilder().setExpression(
         CD4CodeMill.nameExpressionBuilder().setName(
-                domainName+"." + node.getName() + GemCommandObserverDecorator.SUFFIX + "." + node.getName() + GemCommandObserverDecorator.SUFFIX)
+                domainName + "." + node.getName() + GemCommandObserverDecorator.SUFFIX + "." + node.getName() + GemCommandObserverDecorator.SUFFIX)
             .build()).setName("INSTANCE").build();
     // Wild workaround for python?
     observerAttr.setInitial(CommonExpressionsMill.arrayAccessExpressionBuilder().setExpression(
             CommonExpressionsMill.nameExpressionBuilder().setName("").build())
-                                .setIndexExpression(
-                                    xxInstance)
-                                .build());
+        .setIndexExpression(
+            xxInstance)
+        .build());
     CD4C.getInstance()
-        .addImport(decNode, domainName+"." + node.getName() + GemCommandObserverDecorator.SUFFIX);
+        .addImport(decNode, domainName + "." + node.getName() + GemCommandObserverDecorator.SUFFIX);
     // TODO: Move the CommandObserver.INSTANCE to the umlp.py.GemCommandObserverDecorator
     addToClass(decNode, observerAttr);
 
@@ -77,16 +77,16 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
     classNameStack.add(node.getName());
 
     addElementToParent(decoratorData.getAsDecorated(decoratorData.getParent(node).get()),
-                       observerClass);
+        observerClass);
 
 
     var getScopeFunction = CDMethodFacade.getInstance()
         .createMethod(CDBasisMill.modifierBuilder().build(), CdPyUtilsPrinter.NotificationScope,
-                      "getScope");
+            "getScope");
     observerClass.addCDMember(getScopeFunction);
 
-  getData().decoratorData.computeIfAbsent(node,
-        astcdClass -> new GemObserverData(observerClass,observerAttr));
+    getData().decoratorData.computeIfAbsent(node,
+        astcdClass -> new GemObserverData(observerClass, observerAttr));
 
 
     if (node.isPresentCDExtendUsage()) {
@@ -114,7 +114,7 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
 
     switch (info.getMultiplicity()) {
       case MANDATORY:
-        case OPTIONAL:
+      case OPTIONAL:
         handleMandatory(node, observerDecClass, info);
 
         break;
@@ -132,13 +132,13 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
     String addMethodName = "Add" + node.getName();
     var add_set = CDMethodFacade.getInstance()
         .createMethod(CDBasisMill.modifierBuilder().PUBLIC().build(), "notify" + addMethodName,
-                      CDParameterFacade.getInstance().createParameter("typing.Any",
-                                                                      StringTransformations.uncapitalize(
-                                                                          classNameStack.peek())),
-                      CDParameterFacade.getInstance()
-                          .createParameter("montigem_runtime.gembase.GEM_ID", node.getName()),
-                      CDParameterFacade.getInstance().createParameter("int", "index_in_list")
-                     );
+            CDParameterFacade.getInstance().createParameter("typing.Any",
+                StringTransformations.uncapitalize(
+                    classNameStack.peek())),
+            CDParameterFacade.getInstance()
+                .createParameter("montigem_runtime.gembase.GEM_ID", node.getName()),
+            CDParameterFacade.getInstance().createParameter("int", "index_in_list")
+        );
     Pyutils.markAsAsync(add_set);
     addToClass(observerDecClass, add_set);
     addToClass(observerDecClass, createMaybeNotifyMethod(add_set));
@@ -160,12 +160,12 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
     for (var setter : decoratorData.getDecoratorData(GemSetterDecorator.class).getMethods(node)) {
       if (setter.getKind() == GemSetterDecorator.SetterMethodKind.ADD_LIST) {
         glexOpt.ifPresent(glex -> glex.addAfterTemplate("Setter:After", setter.getSetMethod(),
-                                                        new TemplateHookPoint(
-                                                            "cd2python.gemobserver.CallListAdd",
-                                                            addMethodName,
-                                                            StringTransformations.uncapitalize(
-                                                                classNameStack.peek()),
-                                                            setter.getParamName())));
+            new TemplateHookPoint(
+                "cd2python.gemobserver.CallListAdd",
+                addMethodName,
+                StringTransformations.uncapitalize(
+                    classNameStack.peek()),
+                setter.getParamName())));
       } else if (setter.getKind() == GemSetterDecorator.SetterMethodKind.REM_LIST) {
         glexOpt.ifPresent(glex -> glex.addAfterTemplate("Setter:After", setter.getSetMethod(),
             new TemplateHookPoint(
@@ -184,12 +184,12 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
     String methodName = "Set" + node.getName();
     var notify = CDMethodFacade.getInstance()
         .createMethod(CDBasisMill.modifierBuilder().PUBLIC().build(), "notify" + methodName,
-                      CDParameterFacade.getInstance().createParameter("typing.Any",
-                                                                      StringTransformations.uncapitalize(
-                                                                          classNameStack.peek())),
-                      CDParameterFacade.getInstance().createParameter("typing.Any", "_old_value"),
-                      CDParameterFacade.getInstance()
-                          .createParameter("typing.Any", node.getName()));
+            CDParameterFacade.getInstance().createParameter("typing.Any",
+                StringTransformations.uncapitalize(
+                    classNameStack.peek())),
+            CDParameterFacade.getInstance().createParameter("typing.Any", "_old_value"),
+            CDParameterFacade.getInstance()
+                .createParameter("typing.Any", node.getName()));
     Pyutils.markAsAsync(notify);
     addToClass(observerDecClass, notify);
 
@@ -201,40 +201,40 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
       if (info.getTypeClass() == UmlpAttrHelper.RealType.BUILD_IN ||
           info.getTypeClass() == UmlpAttrHelper.RealType.ENUM) {
         glexOpt.ifPresent(glex -> glex.addBeforeTemplate("Setter:Before", setter.getSetMethod(),
-                                                         new StringHookPoint(
-                                                             "_old_value = self." + setter.getParamName())));
+            new StringHookPoint(
+                "_old_value = self." + setter.getParamName())));
       } else if (info.getTypeClass() == UmlpAttrHelper.RealType.GEM) {
         glexOpt.ifPresent(glex -> glex.addBeforeTemplate("Setter:Before", setter.getSetMethod(),
-                                                         new StringHookPoint(
-                                                             "_old_value = self." + setter.getParamName() + ".gemId")));
+            new StringHookPoint(
+                "_old_value = self." + setter.getParamName() + ".gemId")));
       }
       glexOpt.ifPresent(glex -> glex.addAfterTemplate("Setter:After", setter.getSetMethod(),
-                                                      new TemplateHookPoint(
-                                                          "cd2python.gemobserver.CallMandatory",
-                                                          methodName,
-                                                          StringTransformations.uncapitalize(
-                                                              classNameStack.peek()),
-                                                          setter.getParamName())));
+          new TemplateHookPoint(
+              "cd2python.gemobserver.CallMandatory",
+              methodName,
+              StringTransformations.uncapitalize(
+                  classNameStack.peek()),
+              setter.getParamName())));
     }
   }
 
   protected ASTCDMethod createMaybeNotifyMethod(ASTCDMethod notifyMethod) {
     var maybe = CDMethodFacade.getInstance()
         .createMethod(CDBasisMill.modifierBuilder().PUBLIC().build(),
-                      "maybe" + StringTransformations.capitalize(notifyMethod.getName()));
+            "maybe" + StringTransformations.capitalize(notifyMethod.getName()));
     List<String> params = new ArrayList<>();
     for (var param : notifyMethod.getCDParameterList()) {
       maybe.addCDParameter(param.deepClone());
       params.add(param.getName());
     }
     maybe.addCDParameter(CDParameterFacade.getInstance()
-                             .createParameter(CdPyUtilsPrinter.NotificationScope, "scope"));
+        .createParameter(CdPyUtilsPrinter.NotificationScope, "scope"));
     Pyutils.markAsAsync(maybe);
     glexOpt.ifPresent(glex -> glex.replaceTemplate(Pyutils.EMPTY_TEMPLATE, maybe,
-                                                   new TemplateHookPoint( // a, _old_value, myStr
-                                                                          "cd2python.gemobserver.MaybeNotify",
-                                                                          notifyMethod.getName(),
-                                                                          params)));
+        new TemplateHookPoint( // a, _old_value, myStr
+            "cd2python.gemobserver.MaybeNotify",
+            notifyMethod.getName(),
+            params)));
     return maybe;
   }
 
@@ -262,11 +262,13 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
 
   public class GemObserverDecData {
     protected Map<ASTCDClass, GemObserverData> decoratorData = new HashMap<>();
+
     public GemObserverData getObserverData(ASTCDClass originalClass) {
       return decoratorData.get(originalClass);
     }
   }
-  public class  GemObserverData {
+
+  public class GemObserverData {
     public final ASTCDClass observerClass;
     public final ASTCDAttribute initialObserver;
 

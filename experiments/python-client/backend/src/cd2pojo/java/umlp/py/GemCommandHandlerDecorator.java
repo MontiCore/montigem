@@ -1,7 +1,6 @@
 package umlp.py;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import de.monticore.cd.codegen.decorators.IDecorator;
 import de.monticore.cd.codegen.decorators.data.AbstractDecorator;
 import de.monticore.cd.facade.CDMethodFacade;
@@ -15,7 +14,6 @@ import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._ast.ASTCDDefinition;
 import de.monticore.cdbasis._visitor.CDBasisVisitor2;
-import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.generating.templateengine.TemplateHookPoint;
 import de.se_rwth.commons.StringTransformations;
 import de.se_rwth.commons.logging.Log;
@@ -58,17 +56,17 @@ public class GemCommandHandlerDecorator extends AbstractDecorator<AbstractDecora
 
     var handleMethod = CDMethodFacade.getInstance()
         .createMethod(CDBasisMill.modifierBuilder().PUBLIC()
-                          .build(), "handleCommand",
-                      CDParameterFacade.getInstance().createParameter("typing.Any", "message"),
-                      CDParameterFacade.getInstance()
-                          .createParameter("typing.Any", "domain_manager")
-                     );
+                .build(), "handleCommand",
+            CDParameterFacade.getInstance().createParameter("typing.Any", "message"),
+            CDParameterFacade.getInstance()
+                .createParameter("typing.Any", "domain_manager")
+        );
     Pyutils.markAsAsync(handleMethod);
     glexOpt.ifPresent(glex -> glex.replaceTemplate(Pyutils.EMPTY_TEMPLATE,
-                                                   handleMethod,
-                                                   new TemplateHookPoint(
-                                                       "cd2python.commandconsumer.handle",
-                                                       this.commandList)));
+        handleMethod,
+        new TemplateHookPoint(
+            "cd2python.commandconsumer.handle",
+            this.commandList)));
     addToClass(commandObserverClass, handleMethod);
     commandObserverClass = null;
   }
@@ -119,7 +117,7 @@ public class GemCommandHandlerDecorator extends AbstractDecorator<AbstractDecora
         switch (info.getTypeClass()) {
           case GEM:
             if (isBidirectional) {
-              if (role.getAssoc().getLeft() == role){
+              if (role.getAssoc().getLeft() == role) {
                 return; // do not add duplicate
               }
 
@@ -131,8 +129,8 @@ public class GemCommandHandlerDecorator extends AbstractDecorator<AbstractDecora
                   domainName,
                   PyGenService.isList(role.getAssoc().getRight().getAssocSide()),
                   PyGenService.isList(role.getAssoc().getLeft().getAssocSide())
-                  );
-              addCommand(domainName.toLowerCase() + ".commands.associations." + StringTransformations.capitalize(assocName) + "_add", "cd2python.commandconsumer.handleAddGemBi", data );
+              );
+              addCommand(domainName.toLowerCase() + ".commands.associations." + StringTransformations.capitalize(assocName) + "_add", "cd2python.commandconsumer.handleAddGemBi", data);
               addCommand(domainName.toLowerCase() + ".commands.associations." + StringTransformations.capitalize(assocName) + "_remove", "cd2python.commandconsumer.handleRemGemBi", data);
             } else {
               addCommand(domainName.toLowerCase() + ".commands." + clazzName + "_add" + StringTransformations.capitalize(node.getName()), "cd2python.commandconsumer.handleAddGem", node.getName());
@@ -162,7 +160,7 @@ public class GemCommandHandlerDecorator extends AbstractDecorator<AbstractDecora
         switch (info.getTypeClass()) {
           case GEM:
             if (isBidirectional) {
-              if (role.getAssoc().getLeft() == role){
+              if (role.getAssoc().getLeft() == role) {
                 return; // do not add duplicate
               }
               addCommand(cmdName, "cd2python.commandconsumer.handleSetGemBi", Arrays.asList(
@@ -224,7 +222,7 @@ public class GemCommandHandlerDecorator extends AbstractDecorator<AbstractDecora
   public Iterable<Class<? extends IDecorator>> getMustRunAfter() {
     // TODO: Setter
     return Iterables.concat(super.getMustRunAfter(),
-                            Arrays.asList(GemSetterDecorator.class));
+        Arrays.asList(GemSetterDecorator.class));
   }
 
 

@@ -5,12 +5,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Collections2;
 import de.monticore.cd.codegen.CdUtilsPrinter;
-import de.monticore.cd4code.CD4CodeMill;
 import de.monticore.cd4code._prettyprint.CD4CodeFullPrettyPrinter;
 import de.monticore.cd4codebasis._ast.ASTCDParameter;
-import de.monticore.cd4codebasis._ast.ASTCDThrowsDeclaration;
-import de.monticore.cdbasis._ast.ASTCDPackage;
-import de.monticore.cdinterfaceandenum._ast.ASTCDEnumConstant;
 import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.generating.templateengine.TemplateController;
@@ -20,15 +16,12 @@ import de.monticore.literals.mccommonliterals._prettyprint.MCCommonLiteralsPrett
 import de.monticore.prettyprint.CommentPrettyPrinter;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.types.mcbasictypes._ast.ASTMCImportStatement;
-import de.monticore.types.mcbasictypes._ast.ASTMCObjectType;
 import de.monticore.types.mcbasictypes._ast.ASTMCPrimitiveType;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedName;
 import de.monticore.types.mcbasictypes._ast.ASTMCReturnType;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.types.mcbasictypes._ast.ASTMCVoidType;
 import de.monticore.types.mcbasictypes._prettyprint.MCBasicTypesPrettyPrinter;
-import de.monticore.types.typeparameters._ast.ASTTypeParameters;
-import de.monticore.types3.SymTypeRelations;
 import de.monticore.umlmodifier._ast.ASTModifier;
 import umlp.py.printer.PythonMYSimpleGenericTypesPrinter;
 
@@ -38,7 +31,9 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-/** AST specific helper to print AST nodes. */
+/**
+ * AST specific helper to print AST nodes.
+ */
 public class CdPyUtilsPrinter extends CdUtilsPrinter {
 
   public static final String NotificationScope = "montigem_runtime.gembase.NotificationScope";
@@ -117,7 +112,6 @@ public class CdPyUtilsPrinter extends CdUtilsPrinter {
   }
 
 
-
   /**
    * Converts a list of import statements to a string list.
    *
@@ -127,9 +121,11 @@ public class CdPyUtilsPrinter extends CdUtilsPrinter {
   public String printImportList(Collection<ASTMCImportStatement> importStatements) {
     StringBuilder sb = new StringBuilder();
     // Some built-in imports have to be removed (e.g. import str)
-    importStatements.stream().map(i->fullPrettyPrinter.prettyprint(i))
-            .filter(importLine -> !builtIns.contains(importLine))
-                .forEach(importLine -> {sb.append(importLine).append("\n");});
+    importStatements.stream().map(i -> fullPrettyPrinter.prettyprint(i))
+        .filter(importLine -> !builtIns.contains(importLine))
+        .forEach(importLine -> {
+          sb.append(importLine).append("\n");
+        });
     return "#printImportList\n" + sb.toString().replace("import de.se_rwth.commons.logging.Log", "#import de.se_rwth.commons.logging.Log") + "\n#end printImportList";
   }
 
@@ -187,14 +183,14 @@ public class CdPyUtilsPrinter extends CdUtilsPrinter {
                         + cdParam.getName()
                         + ": "
                         + printType(cdParam.getMCType()) + " " + glex.defineHookPoint(tc, "PyParam::Initial", cdParam)
-                                  ));
+            ));
   }
 
-  public boolean isVoidType (ASTMCType type) {
+  public boolean isVoidType(ASTMCType type) {
     return type instanceof ASTMCVoidType;
   }
 
-  public boolean isVoidType (ASTMCReturnType type) {
+  public boolean isVoidType(ASTMCReturnType type) {
     return type.isPresentMCVoidType();
   }
 

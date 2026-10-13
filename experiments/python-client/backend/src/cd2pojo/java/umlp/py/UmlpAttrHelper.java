@@ -62,7 +62,7 @@ public class UmlpAttrHelper {
     } else if (MCCollectionSymTypeRelations.isList(symTypeExpression)) {
       return createFromGeneric(Multiplicity.SET, symTypeExpression, true);
     } else if (symTypeExpression.isPrimitive() || SymTypeRelations.isCompatible(symTypeExpression,
-                                                                                getString())) {
+        getString())) {
       return new AttrData(RealType.BUILD_IN, Multiplicity.MANDATORY, false, symTypeExpression);
     } else if (symTypeExpression.getTypeInfo() instanceof CDTypeSymbol
         && ((CDTypeSymbol) symTypeExpression.getTypeInfo()).isIsEnum()) {

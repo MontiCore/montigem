@@ -118,7 +118,7 @@ public class GemSetterDecorator extends AbstractDecorator<GemSetterDecorator.Set
               new TemplateHookPoint(templateName + "Add", attrName)));
 
           this.setterData.attributesData.computeIfAbsent(node, x -> new ArrayList<>()).add(
-              new MethodInformation(SetterMethodKind.ADD_LIST, addMethod, templateName + "Add",  attrName));
+              new MethodInformation(SetterMethodKind.ADD_LIST, addMethod, templateName + "Add", attrName));
           addToClass(parentDecClass, addMethod);
         }
         //

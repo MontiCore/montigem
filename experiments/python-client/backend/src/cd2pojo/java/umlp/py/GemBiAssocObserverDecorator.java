@@ -98,13 +98,12 @@ public class GemBiAssocObserverDecorator extends AbstractDecorator<AbstractDecor
     CD4C.getInstance().addImport(biObserverClass, domainName + "." + domainName + "Manager");
     String otherSideClassName =
         side.getSymbol().getOtherSide().getType().getTypeInfo().getEnclosingScope().getName() + "." +
-        side.getSymbol().getOtherSide().getType().print() + "." +
-        side.getSymbol().getOtherSide().getType().print();
+            side.getSymbol().getOtherSide().getType().print() + "." +
+            side.getSymbol().getOtherSide().getType().print();
 
     if (!otherSide.isPresentCDCardinality() || otherSide.getCDCardinality().isOne() || otherSide.getCDCardinality().isOpt()) {
       // mandatory or opt
       String methodName = "Set" + otherSide.getName();
-
 
 
       var notify = CDMethodFacade.getInstance()
@@ -113,7 +112,7 @@ public class GemBiAssocObserverDecorator extends AbstractDecorator<AbstractDecor
               CDParameterFacade.getInstance().createParameter("typing.Any", "_update_obj"),
               CDParameterFacade.getInstance().createParameter("montigem_runtime.gembase.GEM_ID", "_old_value"),
               CDParameterFacade.getInstance().createParameter("montigem_runtime.gembase.GEM_ID", "_new_value")
-                       );
+          );
       Pyutils.markAsAsync(notify);
       Pyutils.markAsOverride(glexOpt, notify);
       glexOpt.ifPresent(glex -> glex.replaceTemplate(Pyutils.EMPTY_TEMPLATE,
@@ -136,7 +135,7 @@ public class GemBiAssocObserverDecorator extends AbstractDecorator<AbstractDecor
                 CDParameterFacade.getInstance().createParameter("typing.Any", "_update_obj"),
                 CDParameterFacade.getInstance().createParameter("montigem_runtime.gembase.GEM_ID", "new_gem_id"),
                 CDParameterFacade.getInstance().createParameter("int", "index_in_list")
-                         );
+            );
         Pyutils.markAsAsync(notify);
         Pyutils.markAsOverride(glexOpt, notify);
         glexOpt.ifPresent(glex -> glex.replaceTemplate(Pyutils.EMPTY_TEMPLATE,
@@ -159,7 +158,7 @@ public class GemBiAssocObserverDecorator extends AbstractDecorator<AbstractDecor
                 CDParameterFacade.getInstance().createParameter("typing.Any", "_update_obj"),
                 CDParameterFacade.getInstance().createParameter("montigem_runtime.gembase.GEM_ID", "removed_gem_id"),
                 CDParameterFacade.getInstance().createParameter("int", "index_in_list")
-                         );
+            );
         Pyutils.markAsAsync(notify);
         Pyutils.markAsOverride(glexOpt, notify);
         glexOpt.ifPresent(glex -> glex.replaceTemplate(Pyutils.EMPTY_TEMPLATE,
