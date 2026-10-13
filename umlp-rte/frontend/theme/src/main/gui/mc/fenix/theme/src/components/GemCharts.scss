@@ -1,0 +1,45 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+/*
+  Dark mode for the Plotly based charts (GemBarChart, GemPieChart, GemRadarChart, ...).
+  Plotly writes its default colors as inline styles, e.g. "fill: rgb(68, 68, 68)" for texts. Only these
+  defaults of the neutral parts (background, axes, grid, legend, titles) are overridden, colors set by
+  the charts or their data stay as they are. Texts inside slices, bars and hover labels are left out,
+  as Plotly picks their color by the contrast to the colored area behind them.
+*/
+@mixin gem-charts-dark-theme() {
+  .dark-theme .js-plotly-plot {
+    /* paper and plot area */
+    .main-svg {
+      background: transparent !important;
+    }
+
+    .legend > rect.bg,
+    .plotbg path,
+    .plotbg rect {
+      fill: transparent !important;
+    }
+
+    /* background of the gauge of GemGaugeChart and GemBulletChart (its colored steps are drawn there too) */
+    .bg-arc path[style*="fill: rgb(255, 255, 255)"],
+    .bg-bullet rect[style*="fill: rgb(255, 255, 255)"] {
+      fill: var(--color-border) !important;
+    }
+
+    /* axis labels, titles, legend entries, numbers of indicators */
+    text[style*="fill: rgb(68, 68, 68)"]:not(.slicetext):not(.bartext):not(.textpoint *):not(.hoverlayer *) {
+      fill: var(--text-main) !important;
+    }
+
+    /* axis lines, ticks and zero lines */
+    [style*="stroke: rgb(68, 68, 68)"]:not(.trace *):not(.legend *):not(.hoverlayer *),
+    [style*="stroke: rgb(0, 0, 0)"]:not(.trace *):not(.legend *):not(.hoverlayer *) {
+      stroke: var(--text-muted) !important;
+    }
+
+    /* grid lines */
+    [style*="stroke: rgb(238, 238, 238)"] {
+      stroke: var(--color-border) !important;
+    }
+  }
+}

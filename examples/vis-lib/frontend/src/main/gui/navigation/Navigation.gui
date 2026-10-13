@@ -5,21 +5,30 @@ import mc.fenix.navigation.GemNavItem;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemDarkModeSwitch;
 
 import common.LandingPage;
+import common.OtherOverview;
+import example_arrange.ArrangeOverview;
+import example_basic.BasicOverview;
+import example_charts.ChartsOverview;
+import example_input.InputOverview;
+import manual.ChartsTestOverview;
 
+// activeCategory follows the current route, see NavigationRouteSync.ts
 component Navigation(String activeCategory = "Basic") {
   @GemColumn(components = [
 
-    // 1. Row: Categories
+    // 1. Row: Categories, each opens the overview page of its category
     @GemRow(wrap = "wrap", vAlign = "center", components = [
-      @GemButton(label = "Home", leftClick = navigate(@LandingPage())),
-      @GemButton(label = "Basic", leftClick = setCategoryBasic()),
-      @GemButton(label = "Input", leftClick = setCategoryInput()),
-      @GemButton(label = "Arrange", leftClick = setCategoryArrange()),
-      @GemButton(label = "Charts", leftClick = setCategoryCharts()),
-      @GemButton(label = "Test", leftClick = setCategoryTest()),
-      @GemButton(label = "Other", leftClick = setCategoryOther())
+      @GemButton(label = "Home", active = activeCategory == "Home", leftClick = navigate(@LandingPage())),
+      @GemButton(label = "Basic", active = activeCategory == "Basic", leftClick = navigate(@BasicOverview())),
+      @GemButton(label = "Input", active = activeCategory == "Input", leftClick = navigate(@InputOverview())),
+      @GemButton(label = "Arrange", active = activeCategory == "Arrange", leftClick = navigate(@ArrangeOverview())),
+      @GemButton(label = "Charts", active = activeCategory == "Charts", leftClick = navigate(@ChartsOverview())),
+      @GemButton(label = "Test", active = activeCategory == "Test", leftClick = navigate(@ChartsTestOverview())),
+      @GemButton(label = "Other", active = activeCategory == "Other", leftClick = navigate(@OtherOverview())),
+      @GemDarkModeSwitch()
     ]),
 
     // 2. Row: Items (guarded by activeCategory)
@@ -30,6 +39,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "LoadingSpinner", target = "/example_basic/GemLoadingSpinnerExample");
         @GemNavItem(title = "Audio", target = "/example_basic/GemAudioExample");
         @GemNavItem(title = "Button", target = "/example_basic/GemButtonExample");
+        @GemNavItem(title = "DarkModeSwitch", target = "/example_basic/GemDarkModeSwitchExample");
         @GemNavItem(title = "Icon", target = "/example_basic/GemIconExample");
         @GemNavItem(title = "Image", target = "/example_basic/GemImageExample");
         @GemNavItem(title = "Link", target = "/example_basic/GemLinkExample");
@@ -59,6 +69,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "Dialog", target = "/example_arrange/GemDialogExample");
         @GemNavItem(title = "Card", target = "/example_arrange/GemCardExample");
         @GemNavItem(title = "Column", target = "/example_arrange/GemColumnExample");
+        @GemNavItem(title = "Column2", target = "/example_arrange/GemColumnExample2");
         @GemNavItem(title = "Row", target = "/example_arrange/GemRowExample");
         @GemNavItem(title = "Row2", target = "/example_arrange/GemRowExample2");
         @GemNavItem(title = "Grid", target = "/example_arrange/GemGridExample");

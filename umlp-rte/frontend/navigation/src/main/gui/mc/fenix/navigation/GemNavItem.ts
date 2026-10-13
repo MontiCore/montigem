@@ -1,7 +1,8 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import { ChangeDetectorRef, Component } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, Scroll } from "@angular/router";
+import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
+import { Subscription } from 'rxjs';
 import { config, GemNavItemComponent } from '../../../../../../build/gui2java2ts/mc/fenix/navigation/GemNavItemComponent';
 import { filter } from 'rxjs/operators';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,6 +19,8 @@ export class GemNavItem extends GemNavItemComponent {
 
   public isActive: boolean = false;
 
+  private routerSubscription: Subscription;
+
   public constructor(
     protected route: ActivatedRoute,
     protected router: Router,
@@ -27,22 +30,26 @@ export class GemNavItem extends GemNavItemComponent {
   }
 
   ngOnInit() {
-    this.router.events.pipe(
-      filter(event => event instanceof Scroll)
-    ).subscribe(event => {
-      if ((event as Scroll).routerEvent instanceof NavigationEnd) {
-        const url = ((event as Scroll).routerEvent as NavigationEnd).urlAfterRedirects;
-        this.updateActiveState(url);
-      }
-    });
+    // items can be created after the navigation ended (e.g. inside a @guard), so check the current url as well
+    this.updateActiveState(this.router.url);
+    this.routerSubscription = this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(event => this.updateActiveState((event as NavigationEnd).urlAfterRedirects));
+  }
+
+  public override ngOnDestroy(): void {
+    super.ngOnDestroy();
+    this.routerSubscription?.unsubscribe();
   }
 
   private updateActiveState(url: string): void {
     if (this.target == null) {
       this.isActive = false;
-      return;
+    } else {
+      // ignore query parameters and fragments
+      this.isActive = url.split(/[?#]/)[0] === this.target;
     }
-    this.isActive = url === this.target;
+    this.cdRef.markForCheck();
   }
 
   public navigateOrAct() {

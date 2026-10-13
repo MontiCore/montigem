@@ -1,6 +1,6 @@
-# MontiGem Theming
+# MontiGem Default Theme
 
-This article documents the revision of the design system used across MontiGem applications. It describes what changed, how the new theming system is structured, how it is consumed by a MontiGem app, how to create a new theme, and how to make a GemComponent compatible with the system.
+This article documents the revision of the design system used across MontiGem applications. It describes what changed, how the new theme system is structured, how it is consumed by a MontiGem app, how to create a new theme, and how to make a GemComponent compatible with the system.
 
 ## 1. What changed?
 
@@ -20,7 +20,7 @@ The following chapters explain how the resulting system works and how it can be 
 
 ## 2. Using different themes
 
-The theming system is built around two central files and a folder of interchangeable color schemes.
+The theme system is built around two central files and a folder of interchangeable color schemes.
 
 ### The component mixin: `_index.scss`
 

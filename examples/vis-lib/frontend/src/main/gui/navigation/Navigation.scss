@@ -57,11 +57,53 @@
     text-decoration: none;
   }
 
-  /* Style for Category Buttons (GemButton) */
+  /* Style for Category Buttons (GemButton), same look as the items in the second row */
   .gem-button {
     min-width: 120px; /* Make category buttons wider */
     margin: 2px;
     font-weight: 500;
+    background-color: transparent;
+    color: var(--navbar-text);
+  }
+
+  .gem-button:hover:enabled {
+    background-color: var(--navbar-hover);
+    color: var(--color-primary);
+    box-shadow: none;
+  }
+
+  /* Category of the current page */
+  .gem-button.gem-button-active,
+  .gem-button.gem-button-active:hover:enabled {
+    background-color: var(--color-primary);
+    color: var(--text-on-primary);
+    font-weight: 600;
+    box-shadow: var(--card-shadow);
+  }
+
+  /* Second row: sub-menu of the active category, indented on a recessed band */
+  > gem-column > gem-row:nth-of-type(2) {
+    margin: 8px 0 2px 1rem;
+    padding: 4px 8px;
+    background-color: var(--color-bg);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 0 6px 6px 0;
+
+    &:empty {
+      display: none;
+    }
+
+    .gem-nav-item {
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      min-width: 80px;
+      background-color: transparent;
+    }
+  }
+
+  /* Dark mode switch at the right end of the category row */
+  gem-dark-mode-switch {
+    margin-left: auto;
   }
 }
 

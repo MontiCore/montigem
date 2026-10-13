@@ -23,12 +23,22 @@ component GemButton(
   /** Button text. */
   String label = "",
   /**
+    Accessible name for screen readers. Set it when the button has no
+    visible text, e.g. if `content` only contains an icon.
+  */
+  String ariaLabel = "",
+  /**
     Button content if a more complex element than text is required.
     If label and content are both set, only content is shown.
   */
   List<GUIViewElement> content,
   /** If true, the button cannot be clicked. */
   boolean disabled = false,
+  /**
+    If true, the button is highlighted as the currently selected one,
+    e.g. the active category in a navigation bar.
+  */
+  boolean active = false,
   /** Callback that is executed when a button is clicked. */
   Event<Void> leftClick,
 

@@ -2,8 +2,10 @@
 
 <button
   type="button"
-  role="button"
   class="gem-button"
+  [class.gem-button-active]="isActive()"
+  [attr.aria-current]="isActive() ? 'true' : null"
+  [attr.aria-label]="getAriaLabel() || null"
   [disabled]="isDisabled() ? 'disabled' : null"
   (click)="getLeftClick()()"
 >

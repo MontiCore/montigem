@@ -19,7 +19,9 @@ component MonacoEditor(
   /** Programming language used for syntax highlighting. */
   String language = "Java",
 
-  /** Editor color theme. Default dark theme is `"vs-dark"`. */
+  /** Editor color theme. Default dark theme is `"vs-dark"`.
+      The light themes `"vs"`, `"vs-light"`, `"Light +"` and `"hc-light"` switch to their dark
+      counterpart while the dark mode of the app is active (see GemDarkModeSwitch). */
   String theme = "Light +",
 
   /** Whether the glyph margin (used e.g. for decorations) is shown. */

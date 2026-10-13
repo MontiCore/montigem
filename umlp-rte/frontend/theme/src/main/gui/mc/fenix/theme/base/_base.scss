@@ -33,7 +33,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-img, video {
+// :where() keeps specificity at zero, so component styles and size parameters
+// (e.g. GemImage height) always win over these defaults
+:where(img, video) {
   max-width: 100%;
   height: auto;
   display: block;

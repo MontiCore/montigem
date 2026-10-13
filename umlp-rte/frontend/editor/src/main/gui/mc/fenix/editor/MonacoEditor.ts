@@ -9,6 +9,19 @@ import * as monacoTypes from "monaco-editor";
 // See: https://stackoverflow.com/questions/79536928/cannot-make-the-model-markers-to-appear-in-monaco-editor-inside-angular-compone
 declare var monaco: typeof monacoTypes;
 
+/** Light themes that are replaced by their dark counterpart while the dark mode of the app is active */
+const DARK_THEME_OF: { [theme: string]: string } = {
+  'vs': 'vs-dark',
+  'vs-light': 'vs-dark',
+  'Light +': 'vs-dark',
+  'hc-light': 'hc-black',
+};
+
+/** The dark mode of the app is set by GemDarkModeSwitch */
+function isDarkMode(): boolean {
+  return document.body.classList.contains('dark-theme');
+}
+
 export function provideMonacoEditor(config: NgxMonacoEditorConfig = {}): Provider[] {
   return [
     { provide: NGX_MONACO_EDITOR_CONFIG, useValue: config }
@@ -51,6 +64,7 @@ export class MonacoEditor extends MonacoEditorComponent implements AfterViewInit
   private resizeObserver: ResizeObserver;
   private contentSizeListener: monacoTypes.IDisposable;
   private decorationsCollection: monacoTypes.editor.IEditorDecorationsCollection | null = null;
+  private darkModeObserver: MutationObserver;
 
   /**
    * Adapt the component here if you want to add any options
@@ -58,7 +72,7 @@ export class MonacoEditor extends MonacoEditorComponent implements AfterViewInit
   public _options : any = {
     value: this._entry,
     language: this._language,
-    theme: this._theme,
+    theme: this.getEffectiveTheme(),
     readOnly: this._disabled,
     glyphMargin: this._glyphMargin,
     automaticLayout: false,
@@ -116,12 +130,29 @@ export class MonacoEditor extends MonacoEditorComponent implements AfterViewInit
       }
     });
     this.resizeObserver.observe(this.elementRef.nativeElement);
+
+    // follow the dark mode of the app, the theme is global for all monaco editors
+    this.darkModeObserver = new MutationObserver(() => {
+      if (typeof monaco !== 'undefined') {
+        monaco.editor.setTheme(this.getEffectiveTheme());
+      }
+    });
+    this.darkModeObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  /** The theme of this editor, or its dark counterpart while the dark mode of the app is active */
+  public getEffectiveTheme(): string {
+    if (isDarkMode() && DARK_THEME_OF[this._theme] != null) {
+      return DARK_THEME_OF[this._theme];
+    }
+    return this._theme;
   }
 
   ngOnDestroy() {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    this.darkModeObserver?.disconnect();
     if (this.contentSizeListener) {
         this.contentSizeListener.dispose();
     }
@@ -295,7 +326,7 @@ export class MonacoEditor extends MonacoEditorComponent implements AfterViewInit
     this._options = {
       value: this._entry,
       language: this._language,
-      theme: this._theme,
+      theme: this.getEffectiveTheme(),
       readOnly: this._disabled,
       glyphMargin: this._glyphMargin,
       automaticLayout: false,

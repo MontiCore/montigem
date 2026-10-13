@@ -51,21 +51,47 @@ For MontiGem users:
 * Every chart component has a configuration (context) menu, opened via the gear button
     * new parameter `boolean showConfig = false` on every chart controls whether the gear button is shown
 
-* the GUI generator has its own task `gui2java`, `gui2java2ts` became `guiJava2ts` and only runs JSweet
-    * generator settings (e.g. `guiCreateModels`, `input`, `modelDir`, `symbolPath`) move to
-    `tasks.named("gui2java", GUI2JavaTask)`, JSweet settings (e.g. `excludeSource`) move to `guiJava2ts`
-    * Gradle plugins that use `GUI2Java2TSTask` (now `GUIJava2TSTask`) have to be compiled again
-    * migration: split the `gui2java2ts` block of the `build.gradle`
-        ```groovy
-        tasks.named("gui2java", GUI2JavaTask) {         // was gui2java2ts
-          guiCreateModels = ["gui.CarCreate"]
-        }
-        tasks.named("guiJava2ts", GUIJava2TSTask) {     // JSweet settings only
-          excludeSource.add("glob:**/MyBackendOnlyUtil.java")
-        }
-        ```
+* Fixes for the MontiGem theme (see 7.9.2), which may change the layout of existing pages:
+    * `GemRow` and `GemColumn` default to `height = "auto"` and `width = "auto"` (was `"100%"`);
+      set `height = "100%"` explicitly where a container should fill its parent
+    * `GemText` defaults to `width = "auto"` and `height = "auto"` (was `"100%"`)
+    * `hAlign = "left"` and `vAlign = "top"` in `GemRow`/`GemColumn` work again
+    * `GemButton` no longer has a minimum width of `8rem` and no extra inner margin, so the
+      `width` and `margin` parameters are respected; new parameter `String ariaLabel` for buttons without
+      visible text
+    * `GemImage` respects its `width`/`height` parameters and no longer gets a margin and border from the theme
+    * Sass `@import` deprecation warnings are silenced in the generated `angular.json`
+
+* `GemButton` has a new parameter `boolean active = false` that highlights the button as the selected one
+  (e.g. the current category of a navigation bar)
+* `GemNavItem` highlights the entry of the current page again; it no longer depends on router `Scroll` events
+  and also checks the current route when it is created
+* The label of `GemLoadingSpinner` uses the theme's text color, so it is readable in dark mode
+* The header cells of `GemTable` are styled like the header of a `GemCard` (with the smaller padding of a table cell)
+* `GemMarkdown` supports the dark mode (text, tables, code blocks, quotes and rules use the colors of the theme)
+* `MonacoEditor` follows the dark mode of the app: the light themes `vs`, `vs-light`, `Light +` and `hc-light`
+  switch to `vs-dark` resp. `hc-black` while the dark mode is active
+* `GemNavList` uses the navbar colors of the theme (also in dark mode) and left-aligns the text of its items
+* Dark mode fixes for the inputs:
+    * `GemRangeInput`: readable label and tick labels; no highlight box when the slider is clicked
+    * `GemDropdownInput` and `GemAutocompleteInput`: dark field and dark list of options
+    * Edited inputs (e.g. `GemTextareaInput`) are highlighted dark grey instead of light green while focused
+      and invalid inputs dark red instead of light pink
+    * `GemDateInput`: dark calendar popup
+* Dark mode for the charts:
+    * The Plotly based charts get a transparent background, light axis labels, titles and legends and dark grid lines
+      (see `GemCharts.scss` of the theme); colors given by the charts or their data are kept
+    * The settings menu of `GemChartOptions` and the labels of `GemChartLegend` use the colors of the theme
 
 ## 2026-08-12: 7.9.2-SNAPSHOT
+* New MontiGem default theme (#4920), see `docs/unstructured/MontiDefTheme.md`
+    * the SCSS files of the Gem components moved to `umlp-rte/frontend/theme/src/main/gui/mc/fenix/theme/src/components`
+      and were renamed to PascalCase (e.g. `GemButton.scss`)
+    * colors are defined as CSS variables in exchangeable theme designs (`base/theme-designs`, e.g. `rwth-blue`)
+    * new component `GemDarkModeSwitch` toggles between light and dark mode
+    * to use the theme, an app's `styles.scss` imports `@umlp/theme/.../theme` and calls `@include montigem-theme();`
+    * the look of existing pages changes (buttons, inputs, cards, images, ...)
+
 * AppComponent ts,html and scss are now generated and do not have to be handwritten anymore
     * if you want to modify them their new location is inside the hwc gui directory
     * along with this change MontiGem apps are now using the standalone component bootstrap 

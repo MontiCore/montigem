@@ -44,7 +44,7 @@ export class GemChartLegend extends GemChartLegendComponent {
     for (let i = 0; i < labels.length; i++) {
       this._entries.push({
         label: labels[i],
-        color: colors[i] || '#000000'
+        color: colors[i] || 'var(--text-main)'
       });
     }
     if (this.cdr) {

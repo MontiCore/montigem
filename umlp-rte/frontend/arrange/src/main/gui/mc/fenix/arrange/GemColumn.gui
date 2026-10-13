@@ -8,11 +8,11 @@ component GemColumn(
   /**
     Height of the component in `px`, `%`, `vh`.
   */
-  String height = "100%",
+  String height = "auto",
   /**
     Width of the component in `px`, `%`, `vh`.
   */
-  String width = "100%",
+  String width = "auto",
   /**
     Horizontal alignment of the embedded components. Invalid values are ignored.
     Possible values:

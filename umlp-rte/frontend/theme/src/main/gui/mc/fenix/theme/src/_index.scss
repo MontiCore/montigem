@@ -10,6 +10,7 @@
 @import "./components/GemNavItem";
 @import "./components/GemNavList";
 @import "./components/GemMarkdown";
+@import "./components/GemCharts";
 @import "./components/GemColumn";
 @import "./Dialog";
 @import "./components/GemGrid";
@@ -46,6 +47,7 @@
   @include gem-video-theme();
   @include gem-nav-list-theme();
   @include gem-markdown-theme();
+  @include gem-charts-dark-theme();
   @include gem-column-theme();
   @include dialog-theme($rwth-blue-2, $rwth-black, $rwth-black-4);
   @include gem-grid-theme();
@@ -56,7 +58,14 @@
   @include gem-tree-node-theme();
   @include checkbox-input-theme($rwth-black-3, $montigem-white);
   @include gem-date-input-theme();
-  @include dropdown-input-theme($gray-dark, $rwth-black-3, $rwth-black-5, $rwth-black-4, $brand-danger, $brand-warning);
+  @include dropdown-input-theme(
+      light-dark($gray-dark, var(--text-main)),
+      light-dark($rwth-black-3, var(--color-border)),
+      light-dark($rwth-black-5, var(--color-surface)),
+      light-dark($rwth-black-4, var(--btn-hover-bg)),
+      $brand-danger,
+      $brand-warning
+  );
   @include range-two-thumbs-input-theme(
       $rwth-black-3,
       $rwth-blue,

@@ -13,10 +13,10 @@ import { config, GemColumnComponent } from '../../../../../../build/gui2java2ts/
 })
 export class GemColumn extends GemColumnComponent {
   @HostBinding('style.height')
-  override _height: string = '100%';
+  override _height: string = 'auto';
 
   @HostBinding('style.width')
-  override _width: string = '100%';
+  override _width: string = 'auto';
 
   @HostBinding('style.align-content')
   @HostBinding('style.align-items')
@@ -43,7 +43,7 @@ export class GemColumn extends GemColumnComponent {
     if (hAlign === 'left') {
       this._hAlign = 'flex-start'
     }
-    if (hAlign === 'right') {
+    else if (hAlign === 'right') {
       this._hAlign = 'flex-end'
     }
     else {
@@ -60,7 +60,7 @@ export class GemColumn extends GemColumnComponent {
     if (vAlign === 'top') {
       this._vAlign = 'flex-start'
     }
-    if (vAlign === 'bottom') {
+    else if (vAlign === 'bottom') {
       this._vAlign = 'flex-end'
     }
     else {

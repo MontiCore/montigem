@@ -4,7 +4,7 @@
   <div class="gem-legend" style="display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: center; row-gap: 4px; column-gap: 12px; margin: 0; padding: 2px 0; width: 100%;">
     <div class="gem-entries" *ngFor="let input of _entries" style="display: flex; flex-direction: row; align-items: center; margin: 1px 4px;">
       <span class="gem-color" [style.background-color]="input.color || '#00549f'" style="display: inline-block; width: 10px; height: 10px; min-width: 10px; min-height: 10px; border-radius: 50%; margin-right: 5px; flex-shrink: 0;"></span>
-      <span class="gem-label" style="font-size: 13px; font-family: 'Open Sans', verdana, arial, sans-serif; color: #333; white-space: nowrap;">{{ input.label }}</span>
+      <span class="gem-label" style="font-size: 13px; font-family: 'Open Sans', verdana, arial, sans-serif; color: light-dark(#333, var(--text-main)); white-space: nowrap;">{{ input.label }}</span>
     </div>
   </div>
 </div>

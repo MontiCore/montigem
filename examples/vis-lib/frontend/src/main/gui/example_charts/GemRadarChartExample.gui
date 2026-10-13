@@ -72,7 +72,8 @@ page GemRadarChartExample(
                   maxValue = 100,
                   step = 10,
                   value = opacityPercent,
-                  size = height
+                  // label and min/max values need 126px, so the whole slider is as high as the chart
+                  size = "calc(" + height + " - 126px)"
                 )
               ]
             )

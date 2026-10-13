@@ -289,12 +289,14 @@ Formulare
     background-color: $rwth-blue-3;
   }
 
-  .ng-dirty.ng-valid:focus {
-    background-color: $rwth-green-3;
+  /* dark grey instead of light green so the light text stays readable, sliders get no highlight at all */
+  .ng-dirty.ng-valid:focus:not([type="range"]) {
+    background-color: $acronio-black-1;
   }
 
-  .ng-dirty.ng-invalid {
-    background-color: $rwth-magenta-3;
+  /* dark red instead of light pink so the light text stays readable */
+  .ng-dirty.ng-invalid:not([type="range"]) {
+    background-color: $acronio-red-1;
   }
 }
 
