@@ -240,14 +240,12 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
     for (File file : input) {
       if (file.isFile()) {
         if (file.getName().endsWith(".java")) {
-          removeWildcardImports(file.toPath());
           individualInputPaths.add(file.toPath());
         }
       }
       else if (file.exists()) {
         try (Stream<Path> o = Files.walk(file.toPath())) {
           o.filter(f -> f.getFileName().toString().endsWith(".java"))
-              .peek(this::removeWildcardImports)
               .forEach(individualInputPaths::add);
         }
       }
@@ -256,27 +254,5 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
       }
     }
     return individualInputPaths;
-  }
-
-  private void removeWildcardImports(Path path) {
-    try {
-      String content = Files.readString(path);
-      boolean changed = false;
-      if (content.contains("import java.util.*;")) {
-        content = content.replace("import java.util.*;", 
-            "import java.util.List;\nimport java.util.Map;\nimport java.util.Set;\nimport java.util.Collection;\nimport java.util.ArrayList;\nimport java.util.HashMap;\nimport java.util.HashSet;\nimport java.util.Optional;\nimport java.util.Objects;\nimport java.util.Arrays;\nimport java.util.Collections;\nimport java.util.Iterator;\nimport java.util.LinkedHashMap;\nimport java.util.LinkedHashSet;\nimport java.util.UUID;");
-        changed = true;
-      }
-      if (content.contains("import java.util.function.*;")) {
-        content = content.replace("import java.util.function.*;", 
-            "import java.util.function.Function;\nimport java.util.function.Consumer;\nimport java.util.function.Supplier;\nimport java.util.function.Predicate;\nimport java.util.function.BiConsumer;\nimport java.util.function.BiFunction;\nimport java.util.function.UnaryOperator;\nimport java.util.function.BinaryOperator;");
-        changed = true;
-      }
-      if (changed) {
-        Files.writeString(path, content);
-      }
-    } catch (IOException e) {
-      getLogger().warn("Failed to replace wildcard imports in: " + path.toAbsolutePath());
-    }
   }
 }
