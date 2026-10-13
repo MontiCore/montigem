@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import de.monticore.cd.codegen.CDGenService;
 import de.monticore.cd.codegen.CdUtilsPrinter;
 import de.monticore.cd4codebasis._ast.ASTCDMethod;
+import de.monticore.cd4codebasis._ast.ASTCDParameterTOP;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
@@ -62,11 +63,11 @@ public class AssocListMutatorDecorator extends UMLPMandatoryMutatorDecorator {
     }
 
     methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalRemove", service.getNativeAttributeName(ast.getName()), remove, targetName, sourceName, managerName).get());
-    List<ASTCDMethod> notifyMethods = createNotifyMethods(methodList);
+    List<ASTCDMethod> notifyMethods = createNotifyMethods(methodList, ast.getModifier().isLocal());
 
     methodList.addAll(notifyMethods);
     methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.RemoveByIdSure", service.getNativeAttributeName(ast.getName())).get());
-    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.RemoveByIdSureNoScope", service.getNativeAttributeName(ast.getName())).get());
+    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.RemoveByIdSureNoScope", service.getNativeAttributeName(ast.getName()), ast.getModifier().isLocal()?"LOCAL":"ALL").get());
 
     methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.Clear", service.getNativeAttributeName(ast.getName()), targetName).get());
     methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.RetainAll", service.getNativeAttributeName(ast.getName()), targetName).get());
@@ -78,15 +79,16 @@ public class AssocListMutatorDecorator extends UMLPMandatoryMutatorDecorator {
     return methodList;
   }
 
-  protected List<ASTCDMethod> createNotifyMethods(List<ASTCDMethod> methodList) {
+  protected List<ASTCDMethod> createNotifyMethods(List<ASTCDMethod> methodList, boolean isLocal) {
     ArrayList<ASTCDMethod> retList = Lists.newArrayList();
     for (ASTCDMethod method : methodList) {
       ASTCDMethod newMethod = method.deepClone();
       newMethod.removeCDParameter(newMethod.sizeCDParameters() - 1);
       String body = (newMethod.getMCReturnType().isPresentMCVoidType()) ? "" : "return ";
+      String notificationScope = isLocal ? "LOCAL" : "ALL";
       body += method.getName() + "(" +
-              Joiners.COMMA.join(newMethod.streamCDParameters().map(s -> s.getName()).collect(Collectors.toList())) +
-              ", NotificationScope.ALL);";
+              Joiners.COMMA.join(newMethod.streamCDParameters().map(ASTCDParameterTOP::getName).collect(Collectors.toList())) +
+              ", NotificationScope." + notificationScope + "); /* AssocListMutatorDecorator#createNotifyMethods */";
       glex.replaceTemplate(EMPTY_BODY, newMethod, new StringHookPoint(body));
       retList.add(newMethod);
     }

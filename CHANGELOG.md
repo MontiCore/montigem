@@ -36,6 +36,9 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-10-14: 7.9.3-SNAPSHOT
+* Support for the `local` modifier of class diagrams 
+ 
 ## 2026-10-07: 7.9.3-SNAPSHOT
 * `@umlp/charts` moved to version 10.0.0
 

@@ -44,8 +44,9 @@ public class UMLPMandatoryMutatorDecorator extends MandatoryMutatorDecorator {
   @Override
   protected ASTCDMethod createSetter(ASTCDAttribute ast) {
     ASTCDMethod method = super.createSetter(ast);
+    String notificationScope = ast.getModifier().isLocal() ? "LOCAL" : "ALL";
     glex.replaceTemplate(EMPTY_BODY, method, new StringHookPoint("this." + method.getName() + "("
-            + StringTransformations.uncapitalize(ast.getName()) + ", NotificationScope.ALL);"));
+            + StringTransformations.uncapitalize(ast.getName()) + ", NotificationScope." + notificationScope + ");"));
     return method;
   }
 
@@ -60,8 +61,9 @@ public class UMLPMandatoryMutatorDecorator extends MandatoryMutatorDecorator {
   protected ASTCDMethod createGemSetter(ASTCDAttribute ast) {
     String name = String.format(SET, StringTransformations.capitalize(service.getNativeAttributeName(ast.getName())+"Gem"));
     ASTCDMethod method3 = this.getCDMethodFacade().createMethod(PUBLIC.build(), name, this.getCDParameterFacade().createParameters(ast));
+    String notificationScope = ast.getModifier().isLocal() ? "LOCAL" : "ALL";
     glex.replaceTemplate(EMPTY_BODY, method3, new StringHookPoint("this." + method3.getName() + "("
-        + StringTransformations.uncapitalize(ast.getName()) + ", NotificationScope.ALL);"));
+        + StringTransformations.uncapitalize(ast.getName()) + ", NotificationScope." + notificationScope + ");"));
     return method3;
   }
 

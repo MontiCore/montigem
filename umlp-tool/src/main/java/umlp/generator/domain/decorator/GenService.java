@@ -353,6 +353,9 @@ public class GenService {
     return side.getSymbol().getAssoc().getAssociation().getAstNode().getModifier().isDerived();
   }
 
+  public static boolean isSymbolLocal(ASTCDAssocSide side) {
+    return side.getSymbol().getAssoc().getAssociation().getAstNode().getModifier().isLocal();
+  }
   public static boolean hasImplTemplate(ASTCDAssocSide side){
     ASTCDAssociation assoc = side.getSymbol().getAssoc().getAssociation().getAstNode();
     ASTModifier m = assoc.getModifier();

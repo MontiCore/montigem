@@ -115,5 +115,20 @@ For large applications, you can split your data model into multiple `.umlp` file
 
 For details on the merging process and conflict resolution, see [Class Diagram Merge](../unstructured/CDMerge.md).
 
+## 2.6 Local Modifier
+
+When using the `local` modifier keyword with an association or attribute,
+the objects.
+This is especially useful for UI states, as local singletons do not trigger updates on other clients.
+
+```classdiagram
+<<singleton>>
+local class UIState {
+  int currentMousePosition;
+}
+local association UIState -> SomeOtherClass [*];
+```
+
+
 ---
 [< Previous: Introduction](01_Introduction.md) | [Back to Index](../MontiGem_Documentation.md) | [Next: GUI Modeling >](03_GUIModeling.md)
