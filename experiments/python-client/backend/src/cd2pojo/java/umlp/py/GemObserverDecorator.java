@@ -88,8 +88,20 @@ public class GemObserverDecorator extends AbstractDecorator<GemObserverDecorator
   getData().decoratorData.computeIfAbsent(node,
         astcdClass -> new GemObserverData(observerClass,observerAttr));
 
-//    GlobalExtensionManagement glex = glexOpt.get();
 
+    if (node.isPresentCDExtendUsage()) {
+      // Observers also require class hierarchy
+      for (var superClass : node.getCDExtendUsage().getSuperclassList()) {
+        if (!observerClass.isPresentCDExtendUsage())
+          observerClass.setCDExtendUsage(CD4CodeMill.cDExtendUsageBuilder().uncheckedBuild());
+        observerClass.getCDExtendUsage().addSuperclass(MCTypeFacade.getInstance().createQualifiedType(domainName
+            + "." + superClass.printType() + GemObserverDecorator.SUFFIX
+            + "." + superClass.printType() + GemObserverDecorator.SUFFIX
+        ));
+        CD4C.getInstance().addImport(observerClass,
+            domainName + "." + superClass.printType() + GemObserverDecorator.SUFFIX);
+      }
+    }
 
   }
 

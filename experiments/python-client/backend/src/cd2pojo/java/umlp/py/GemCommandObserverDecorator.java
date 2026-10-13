@@ -74,6 +74,18 @@ public class GemCommandObserverDecorator extends AbstractDecorator<AbstractDecor
                                                     new StringHookPoint(
                                                         commandObserverClass.getName() + ".INSTANCE = " + commandObserverClass.getName() + "()")));
 
+    if (node.isPresentCDExtendUsage()) {
+      // CommandObservers also require class hierarchy
+      for (var superClass : node.getCDExtendUsage().getSuperclassList()) {
+        // add to the left -> higher prio
+        commandObserverClass.getCDExtendUsage().addSuperclass(0, MCTypeFacade.getInstance().createQualifiedType(domainName
+            + "." + superClass.printType() + GemCommandObserverDecorator.SUFFIX
+            + "." + superClass.printType() + GemCommandObserverDecorator.SUFFIX
+        ));
+        CD4C.getInstance().addImport(commandObserverClass,
+            domainName + "." + superClass.printType() + GemCommandObserverDecorator.SUFFIX);
+      }
+    }
   }
 
   @Override
