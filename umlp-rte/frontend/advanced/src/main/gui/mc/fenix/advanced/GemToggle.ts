@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostBinding } from '@angular/core';
-import { config, GemToggleComponent } from '../../../../../../build/gui2java2ts/mc/fenix/basic/GemToggleComponent';
+import { config, GemToggleComponent } from '../../../../../../build/gui2java2ts/mc/fenix/advanced/GemToggleComponent';
 
 @Component({
   standalone: true,
@@ -11,11 +11,11 @@ import { config, GemToggleComponent } from '../../../../../../build/gui2java2ts/
   templateUrl: config.templateUrl,
 })
 export class GemToggle extends GemToggleComponent {
-  @HostBinding('style.--gem-toggle-color')
-  _color: string = '#2563eb';
+  @HostBinding('style.--gem-toggle-on-color')
+  _onColor: string = '#2563eb';
 
-  @HostBinding('style.--gem-toggle-inactive-color')
-  _inactiveColor: string = '#9ca3af';
+  @HostBinding('style.--gem-toggle-off-color')
+  _offColor: string = '#9ca3af';
 
   @HostBinding('style.--gem-toggle-width')
   _width: string = '44px';
@@ -28,7 +28,8 @@ export class GemToggle extends GemToggleComponent {
       return;
     }
 
-    this.state = !this.isState();
-    this.toggled.emit(this.isState());
+    this.switchedOn = !this.isSwitchedOn();
+    this.switchedOnChange.emit(this.isSwitchedOn());
+    this.toggled.emit(this.isSwitchedOn());
   }
 }

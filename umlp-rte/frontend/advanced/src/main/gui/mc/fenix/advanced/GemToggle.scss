@@ -22,18 +22,18 @@
   padding: 0;
   border: 0;
   border-radius: calc(var(--gem-toggle-height) / 2);
-  background: var(--gem-toggle-inactive-color);
+  background: var(--gem-toggle-off-color);
   cursor: pointer;
   transition: background-color 160ms ease;
 }
 
 .gem-toggle-control:focus-visible {
-  outline: 2px solid var(--gem-toggle-color);
+  outline: 2px solid var(--gem-toggle-on-color);
   outline-offset: 2px;
 }
 
 .gem-toggle-active {
-  background: var(--gem-toggle-color);
+  background: var(--gem-toggle-on-color);
 }
 
 .gem-toggle-thumb {

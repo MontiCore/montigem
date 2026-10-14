@@ -16,7 +16,6 @@ import example_basic.GemAudioExample;
 import example_basic.GemVideoExample;
 import example_basic.GemDarkModeSwitchExample;
 import example_basic.GemTooltipExample;
-import example_basic.GemToggleExample;
 
 page BasicOverview() {
   @GemColumn(
@@ -41,8 +40,7 @@ page BasicOverview() {
             @ComponentCard(title = "Audio", icon = "audiotrack", description = "Play audio files.", click = navigate(@GemAudioExample())),
             @ComponentCard(title = "Video", icon = "videocam", description = "Play video files.", click = navigate(@GemVideoExample())),
             @ComponentCard(title = "Dark Mode Switch", icon = "dark_mode", description = "Toggle between light and dark themes.", click = navigate(@GemDarkModeSwitchExample())),
-            @ComponentCard(title = "Tooltip", icon = "info", description = "Show a hint when hovering a component.", click = navigate(@GemTooltipExample())),
-            @ComponentCard(title = "Toggle", icon = "toggle_on", description = "Switch a boolean state on or off.", click = navigate(@GemToggleExample()))
+            @ComponentCard(title = "Tooltip", icon = "info", description = "Show a hint when hovering a component.", click = navigate(@GemTooltipExample()))
         ]
       )
     ]

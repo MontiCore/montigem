@@ -1,17 +1,20 @@
 /* (c) https://github.com/MontiCore/monticore */
-package mc.fenix.basic;
+package mc.fenix.advanced;
 
 /**
   Toggle switch that lets the user turn a binary option on or off with a
   single click.
 */
 component GemToggle(
-  /** Current state of the toggle. `true` means switched on. */
-  boolean state = false,
+  /**
+    Whether the toggle is switched on (`true`) or off (`false`). Can also be
+    set from user code.
+  */
+  ?boolean switchedOn = false,
   /** Color of the toggle track when it is switched on. */
-  String color = "#2563eb",
+  String onColor = "#2563eb",
   /** Color of the toggle track when it is switched off. */
-  String inactiveColor = "#9ca3af",
+  String offColor = "#9ca3af",
   /**
     Text shown next to the toggle. Also used as the name screen readers
     announce for the toggle. If empty, no label is shown.
