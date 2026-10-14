@@ -26,7 +26,7 @@ tasks.named("umlpJava2ts", UMLPJava2TSTask) {
   verbose = true
 }
 
-tasks.named("guijava2ts", GUIJava2TSTask) {
+tasks.named("guiJava2ts", GUIJava2TSTask) {
   // Resolve the domain classes of the dashboard module (e.g., DashboardModuleConfig)
   symbolPath.from(configurations.montigemModuleUMLPSymbols)
 }
