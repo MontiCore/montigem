@@ -12,9 +12,6 @@ import { config, GemDividerComponent } from '../../../../../../build/gui2java2ts
   templateUrl: config.templateUrl,
 })
 export class GemDivider extends GemDividerComponent {
-  @HostBinding('style.display')
-  _display: string = 'block';
-
   @HostBinding('style.height')
   override _height: string = '1px';
 
@@ -23,9 +20,6 @@ export class GemDivider extends GemDividerComponent {
 
   @HostBinding('style.background-color')
   override _color: string = '#e0e0e0';
-
-  @HostBinding('style.margin')
-  _margin: string = '10px 0';
 
   public ngOnInit(): void { }
 }
