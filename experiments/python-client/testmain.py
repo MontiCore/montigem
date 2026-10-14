@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append('build/py_out')
 sys.path.append('runtime-package/src')
 
@@ -8,12 +9,11 @@ from MyDomain import MyDomainManager
 
 from montigem_runtime.commandmanager import CommandManager, ainput
 
-
 command_manager: CommandManager = CommandManager()
 my_domain_manager = MyDomainManager.MyDomainManager(command_manager)
 
-
 import asyncio
+
 
 async def get_me_a_b(index=0) -> B.B:
   available_B = await my_domain_manager.list_filtered(MyDomain.B.B)
@@ -22,9 +22,13 @@ async def get_me_a_b(index=0) -> B.B:
       gemId=await my_domain_manager.get_free_gem_id(),
     ))
     return new_b
-  return await my_domain_manager.get( MyDomain.B.B, available_B["list"][index])
+  return await my_domain_manager.get(MyDomain.B.B, available_B["list"][index])
+
 
 async def inputhandler():
+  """
+  Handle the inputs send from the test
+  """
   await asyncio.sleep(1)
   print("sleep done")
 
@@ -63,12 +67,11 @@ async def inputhandler():
     print(my_b)
     my_b2 = await get_me_a_b(1)
 
-
     available_A = await my_domain_manager.list_filtered(MyDomain.A.A)
     print(available_A)
     if len(available_A["list"]) > 0:
       print("yay")
-      my_a = await my_domain_manager.get( MyDomain.A.A, available_A["list"][0])
+      my_a = await my_domain_manager.get(MyDomain.A.A, available_A["list"][0])
     else:
       my_a = await my_domain_manager.create(MyDomain.A.A(
         gemId=await my_domain_manager.get_free_gem_id(),
@@ -79,7 +82,6 @@ async def inputhandler():
     x = await ainput("Test")
     print("x")
     print(x)
-    import montigem_runtime
     print(type(my_b2))
     await my_a.setB(my_b2.gemId, montigem_runtime.gembase.NotificationScope.ALL)
 
@@ -89,6 +91,7 @@ async def inputhandler():
 import MyDomain.MyDomainCommandHandler
 
 cmd_handler = MyDomain.MyDomainCommandHandler.MyDomainCommandHandler()
+
 
 async def main():
   async def external_consumer():
@@ -101,16 +104,20 @@ async def main():
       else:
         print("TODO")
 
-  consumer = asyncio.create_task(external_consumer())
-  inputkler = asyncio.create_task(inputhandler())
-
   host = "localhost"
   port = "8081"
   if len(sys.argv) == 2:
     port = sys.argv[1]
-  commtasks = asyncio.create_task(command_manager.connect(f"ws://{host}:{port}/umlp/api/command"))
 
-  await asyncio.gather(commtasks, consumer, inputkler)
+  async with asyncio.TaskGroup() as tg:
+    # register the tasks as part of a task group
+    # the command-managers connection
+    tg.create_task(command_manager.connect(host=f"ws://{host}:{port}/umlp/api/command"))
+    # its forwarding of task to the command handler
+    tg.create_task(command_manager.command_forwarding_consumer(cmd_handler, my_domain_manager))
+    # and finally our own logic
+    tg.create_task(inputhandler())
+
+
 if __name__ == "__main__":
   asyncio.run(main())
-
