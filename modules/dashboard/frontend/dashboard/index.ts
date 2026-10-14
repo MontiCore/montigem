@@ -414,8 +414,8 @@ export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_
 export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_getDeSer';
 export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_get_filtered';
 export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_get_filteredDeSer';
-export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_setLength';
-export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_setLengthDeSer';
+export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_setHeight';
+export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_setHeightDeSer';
 export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_setWidth';
 export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_setWidthDeSer';
 export * from './build/umlpJava2ts/dashboardmodule/commands/DashboardModuleSize_subscribeManagerEvents';

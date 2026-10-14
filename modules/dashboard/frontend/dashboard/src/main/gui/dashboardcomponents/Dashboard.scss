@@ -3,6 +3,17 @@
   background-color: var(--view-background);
 }
 
+// The MontiGem theme picks its colors with light-dark(), i.e., by the color scheme (by default the one of the OS).
+// Couple it to the dashboard's own dark mode toggle (body.dark-theme), so that, e.g., the card titles and
+// chart texts switch together with the dashboard colors
+:host {
+  color-scheme: light;
+}
+
+body.dark-theme :host {
+  color-scheme: dark;
+}
+
 body.dark-theme :host ::ng-deep .gem-button {
   border: 1px solid #e0e0e0;
 }
@@ -309,6 +320,13 @@ body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
   min-height: 0 !important;
   display: flex;
   align-items: center;
+}
+
+// the selected view tab wraps its name input and the close button in a gem-row with an inline
+// align-items: stretch, which kept the name at the top of the tab
+:host > gem-row ::ng-deep gem-button .gem-button > gem-row {
+  height: 100%;
+  align-items: center !important;
 }
 
 :host > gem-row ::ng-deep gem-button .gem-button gem-text-input {

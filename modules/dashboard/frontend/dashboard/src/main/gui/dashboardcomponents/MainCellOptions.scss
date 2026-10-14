@@ -69,3 +69,10 @@
     border-color: #ff0000;
   }
 }
+
+// the theme sets the font family on every element (* { font-family: Arial, ... }), which overrides the
+// monospace font monaco sets on its view lines and lets the caret and selection drift from the text.
+// :where() keeps the specificity low, so monaco's own font rules (e.g., for the codicons) still apply.
+:host ::ng-deep :where(.monaco-editor) * {
+  font-family: inherit;
+}

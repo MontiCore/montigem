@@ -23,3 +23,12 @@ afterEvaluate {
     symbolPath.from(lib.configurations.named(MGBasePlugin.MONTIGEM_MODULE_GUI_SYMBOLS_CONFIG))
   }
 }
+
+// Publish the GUI symbols and the import map of the module (umlp.modules:dashboard depends on them)
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+    }
+  }
+}

@@ -1,5 +1,5 @@
+// no min-height: the card body fills the cell, a fixed minimum would let the pie overflow small cells
 :host ::ng-deep .pieChart {
-  min-height: 170px !important;
   background-color: var(--background-color) !important;
 }
 

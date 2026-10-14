@@ -102,7 +102,7 @@ public class View extends ViewTOP{
         .viz(cell.getViz())
         .data(cell.getData())
         .position(DashboardModuleManager.dashboardModulePositionBuilder().x(cell.getPosition().getX()).y(cell.getPosition().getY()))
-        .size(DashboardModuleManager.dashboardModuleSizeBuilder().width(cell.getSize().getWidth()).length(cell.getSize().getLength()));
+        .size(DashboardModuleManager.dashboardModuleSizeBuilder().width(cell.getSize().getWidth()).height(cell.getSize().getHeight()));
     builder.addObserver(new CellConfigObserver() {
       @Override
       public void maybeNotifySetViz(CellConfig cellConfig, VizType oldValue, VizType o, NotificationScope scope) {

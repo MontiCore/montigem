@@ -149,7 +149,7 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
     const x = await pos.getX();
     const y = await pos.getY();
     const width = await size.getWidth();
-    const height = await size.getLength();
+    const height = await size.getHeight();
     const id = await cell.getGemId();
     const widget = this.gridComp.grid.addWidget({
       id: String(id),
@@ -211,7 +211,7 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
 
     const size = await cell.getSize();
     const sizeW = await size.getWidth();
-    const sizeL = await size.getLength();
+    const sizeH = await size.getHeight();
 
     const pos = await cell.getPosition();
     const posX = await pos.getX();
@@ -223,9 +223,9 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
     const safeH = typeof activeNode.h === 'number' ? activeNode.h : 3;
 
     //if there was any changes to the cells parameters update them
-    if (sizeW != safeW || sizeL != safeH) {
+    if (sizeW != safeW || sizeH != safeH) {
       size.setWidth(safeW);
-      size.setLength(safeH);
+      size.setHeight(safeH);
     }
     if (safeX !== posX || safeY !== posY) {
       pos.setX(safeX);

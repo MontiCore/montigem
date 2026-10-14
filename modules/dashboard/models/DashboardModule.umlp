@@ -136,7 +136,7 @@ umlp DashboardModule {
   }
 
   class DashboardModuleSize {
-    double length;
+    double height;
     double width;
   }
 

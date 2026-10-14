@@ -14,6 +14,14 @@ dependencies {
   // Interpreter for the data scripts of the dashboard cells
   api project(':modules:dashboard:lang')
   implementation "com.h2database:h2:${h2_database}"
+  // Neo4j DAOs (see umlp2java below)
+  implementation group: 'org.neo4j.driver', name: 'neo4j-java-driver', version: "$neo4j_java_driver_version"
+}
+
+// Also generate the Neo4j DAOs, such that the module can be used by applications using Neo4j
+// (SQL stays the default database access of the module)
+umlp2java {
+  genNeo4j.set(true)
 }
 
 publishing {

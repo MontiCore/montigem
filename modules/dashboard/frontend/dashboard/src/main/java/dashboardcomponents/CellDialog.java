@@ -39,7 +39,7 @@ public class CellDialog extends CellDialogTOP {
           """;
 
         DashboardModuleSize defaultSize = DashboardModuleManager.dashboardModuleSizeBuilder()
-            .length(3.0)
+            .height(4.0)
             .width(3.0);
         DashboardModulePosition defaultPosition = DashboardModuleManager.dashboardModulePositionBuilder()
             .x(0.0)
