@@ -5,7 +5,6 @@ export * from "./src/main/gui/mc/fenix/basic/GemDarkModeSwitch";
 export * from "./src/main/gui/mc/fenix/basic/GemIcon";
 export * from "./src/main/gui/mc/fenix/basic/GemImage";
 export * from "./src/main/gui/mc/fenix/basic/GemLink";
-export * from "./src/main/gui/mc/fenix/basic/GemStatusIcon";
 export * from "./src/main/gui/mc/fenix/basic/GemText";
 export * from "./src/main/gui/mc/fenix/basic/GemTooltip";
 export { GemVideo } from "./build/gui2java2ts/mc/fenix/basic/GemVideoComponent";

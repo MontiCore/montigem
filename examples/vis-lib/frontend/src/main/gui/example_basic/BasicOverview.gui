@@ -16,7 +16,6 @@ import example_basic.GemAudioExample;
 import example_basic.GemVideoExample;
 import example_basic.GemDarkModeSwitchExample;
 import example_basic.GemTooltipExample;
-import example_basic.GemStatusIconExample;
 
 page BasicOverview() {
   @GemColumn(
@@ -35,7 +34,6 @@ page BasicOverview() {
             @ComponentCard(title = "Button", icon = "smart_button", description = "Clickable button for actions.", click = navigate(@GemButtonExample())),
             @ComponentCard(title = "Text", icon = "text_fields", description = "Display text content.", click = navigate(@GemTextExample())),
             @ComponentCard(title = "Icon", icon = "star", description = "Material Design icons.", click = navigate(@GemIconExample())),
-            @ComponentCard(title = "Status Icon", icon = "traffic", description = "Icon colored by a status.", click = navigate(@GemStatusIconExample())),
             @ComponentCard(title = "Image", icon = "image", description = "Embed images.", click = navigate(@GemImageExample())),
             @ComponentCard(title = "Link", icon = "link", description = "Hyperlinks to other pages.", click = navigate(@GemLinkExample())),
             @ComponentCard(title = "Loading Spinner", icon = "loop", description = "Indicate loading state.", click = navigate(@GemLoadingSpinnerExample())),

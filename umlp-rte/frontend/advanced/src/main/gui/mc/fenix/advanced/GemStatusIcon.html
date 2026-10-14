@@ -1,6 +1,6 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
 
-<span class="gem-status-icon" [title]="getStatus() ?? ''">
+<span class="gem-status-icon" [title]="getCurrentStatus() ?? ''">
   <mat-icon
     class="gem-status-icon-symbol"
     [fontIcon]="_currentIcon()"
@@ -9,5 +9,5 @@
     [style.width]="_iconSize()"
     [style.height]="_iconSize()"
   ></mat-icon>
-  <span *ngIf="isShowLabel()" class="gem-status-icon-label">{{ getStatus() }}</span>
+  <span *ngIf="isShowLabel()" class="gem-status-icon-label">{{ getCurrentStatus() }}</span>
 </span>

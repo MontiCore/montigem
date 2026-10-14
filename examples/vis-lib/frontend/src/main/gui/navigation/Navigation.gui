@@ -43,7 +43,6 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "Icon", target = "/example_basic/GemIconExample");
         @GemNavItem(title = "Image", target = "/example_basic/GemImageExample");
         @GemNavItem(title = "Link", target = "/example_basic/GemLinkExample");
-        @GemNavItem(title = "StatusIcon", target = "/example_basic/GemStatusIconExample");
         @GemNavItem(title = "Text", target = "/example_basic/GemTextExample");
         @GemNavItem(title = "Tooltip", target = "/example_basic/GemTooltipExample");
         @GemNavItem(title = "Video", target = "/example_basic/GemVideoExample");
@@ -123,6 +122,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "CAD Viewer", target = "/example_cad/GemCADExample");
         @GemNavItem(title = "Function Display", target = "/example_functiondisplay/FunctionDisplayExample");
         @GemNavItem(title = "Markdown", target = "/example_advanced/GemMarkdownExample");
+        @GemNavItem(title = "StatusIcon", target = "/example_advanced/GemStatusIconExample");
         @GemNavItem(title = "NavList", target = "/common/NavListExample");
         //@GemNavItem(title = "Chart Tests", target = "/manual/ChartsTestOverview");
       }

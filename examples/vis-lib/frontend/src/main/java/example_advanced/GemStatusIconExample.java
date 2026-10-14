@@ -1,5 +1,5 @@
 /* (c) https://github.com/MontiCore/monticore */
-package example_basic;
+package example_advanced;
 
 import umlp.jsweet.extension.annotation.Component;
 
