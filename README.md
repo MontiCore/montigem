@@ -58,7 +58,6 @@ You can try UMLP using the [Vis-Lib Example](./examples/vis-lib).
 * **umlp-rte** contains the implementation of the run-time environment, i.e., the code that is the same for all applications
 * **umlp-tool** contains the implementation of the language, tool, and generator
 
-<<<<<<< HEAD
 ## Developing with MontiGem
 
 MontiGem is available either as a CLI jar tool or a Gradle plugin that wraps the CLI. 
@@ -104,10 +103,3 @@ The tool can be called with the following options:
 | -use_shell |                            | If the backend is generated, generate additional spring shell classes
 | -use_spring |                           | If the backend is generated, generate additional spring classes
 | -v | --version                          | Prints version information 
-
-=======
-## Scripts
-
-* **run backend**: gradle {folder_path}:backend:run
-* **run frontend**: gradle {folder_path}:frontend:run
-* **refresh frontend**: gradle {folder_path}:frontend:sync_gui2java2ts

@@ -102,5 +102,3 @@ include ':modules:dashboard:frontend'
 include ':modules:dashboard:frontend:dashboard'
 include ':modules:dashboard:lang'
 
-include ':modules:sovd-gateway'
-include ':modules:sovd-gateway-it:backend'
