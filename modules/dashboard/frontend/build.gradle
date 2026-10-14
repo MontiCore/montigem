@@ -1,7 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import de.montigem.gradle.MGBasePlugin
-import de.montigem.gradle.specific.GUI2Java2TSTask
+import de.montigem.gradle.specific.GUIJava2TSTask
 import de.montigem.gradle.specific.UMLP2TSTask
 
 plugins {
@@ -15,7 +15,7 @@ montigem {
 // The lib tasks are registered by the plugin after evaluation
 afterEvaluate {
   def lib = project(":modules:dashboard:frontend:dashboard")
-  lib.tasks.named("gui2java2ts", GUI2Java2TSTask) {
+  lib.tasks.named("guiJava2ts", GUIJava2TSTask) {
     guiCreateModels = ["dashboardcomponents.CellDialog"]
   }
   // The domain model imports the chart types (e.g., GemPieChartData) of the RTE
