@@ -1,10 +1,13 @@
 import enum
+import importlib
+import inspect
 import typing
 from typing import Any
 from montigem_runtime.commandmanager import CommandManager, Command, uncap
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr
 from collections.abc import Iterator, AsyncIterator
 import asyncio
+
 
 class NotificationScope(enum.Enum):
   MINIMAL = 0
@@ -15,7 +18,9 @@ class NotificationScope(enum.Enum):
   def contains(self, other: 'NotificationScope'):
     return other.value <= self.value
 
+
 GEM_ID = typing.Annotated[int, "is_gem_id"]
+
 
 class GemBase(BaseModel):
   gemId: int
@@ -29,15 +34,25 @@ class GemBase(BaseModel):
 def create_gem_deserializer(type: Any):
   return lambda value: deserialize_gem(value, type)
 
-def deserialize_gem(value: Any, type = None) -> 'Gem':
+
+def deserialize_gem(value: Any, type=None) -> 'Gem':
   if isinstance(value, Gem):
+    if value._target is None:
+      value._target = type
     return value
-  else:
-    return Gem[type](value)
+  # if isinstance(value, GemBase):
+  #   value = value.gemId
+  return Gem[type](value, target=type)
+
+
+def empty_gem(type: str) -> 'Gem':
+  """Default value of a Gem field: unset, but aware of its target type"""
+  return Gem[type](target=type)
 
 
 def serialize_gem(value: 'Gem') -> int:
   return value.gemId
+
 
 def create_gem_list_deserializer(type: Any):
   return lambda value: deserialize_gem_list(value, type)
@@ -46,7 +61,7 @@ def create_gem_list_deserializer(type: Any):
 def deserialize_gem_list(value: Any, type=None) -> 'GemList':
   if isinstance(value, GemList):
     return value
-  elif isinstance(value, list): #todo: is origin?
+  elif isinstance(value, list):  # todo: is origin?
     r = GemList[type]()
     r.indexes = value
     return r
@@ -55,6 +70,7 @@ def deserialize_gem_list(value: Any, type=None) -> 'GemList':
   else:
     raise 'Unknown type'
 
+
 def serialize_gem_list(value: 'GemList') -> typing.List[int]:
   return value.indexes
 
@@ -62,15 +78,62 @@ def serialize_gem_list(value: 'GemList') -> typing.List[int]:
 DataT = typing.TypeVar('DataT', bound=GemBase)
 
 
-class Gem(BaseModel, typing.Generic[DataT]):
-  gemId: int = -1
+def resolve_gem_class(target: str) -> typing.Type[GemBase]:
+  """Resolves a qualified type name such as 'MyDomain.B' or 'MyDomain.B.B' to its GemBase class"""
+  try:
+    obj = importlib.import_module(target)
+  except ImportError:
+    module_name, _, cls_name = target.rpartition('.')
+    obj = getattr(importlib.import_module(module_name), cls_name)
+  if inspect.ismodule(obj):
+    # generated modules contain a class of the same name (MyDomain.B -> MyDomain.B.B)
+    obj = getattr(obj, target.rpartition('.')[2])
+  return obj
 
-  def __init__(self, /, gemId=-1, **data: Any) -> None:
+
+class Gem(BaseModel, typing.Generic[DataT]):
+  """
+  Lazy reference to a domain object.
+
+    b = await my_a.assocB              # loads the referenced object
+    v = await my_a.assocB.fieldOfB     # loads it and reads an attribute
+    await my_a.directB.setFieldOfB(42) # loads it and calls an async method
+  """
+  gemId: int = -1
+  _target: typing.Optional[str] = PrivateAttr(default=None)
+
+  def __init__(self, /, gemId=-1, target: typing.Optional[str] = None, **data: Any) -> None:
     super().__init__(**data)
     self.gemId = gemId
+    self._target = target
 
   def set_gemid(self, gem_id):
     self.gemId = gem_id
+
+  def target_class(self) -> typing.Type[DataT]:
+    if self._target is None:
+      raise TypeError("Gem has no target type, unable to resolve it")
+    return resolve_gem_class(self._target)
+
+  async def load(self) -> DataT:
+    if self.gemId < 0:
+      raise ValueError(f"Gem of {self._target} is not set")
+    cls = self.target_class()
+    return await DomainManager.for_package(cls.PACKAGE).get(cls, self.gemId)
+
+  def __await__(self) -> typing.Generator[Any, None, DataT]:
+    return self.load().__await__()
+
+  def __getattr__(self, name: str) -> Any:
+    # only called if regular lookup fails; keep pydantic internals & private attributes intact
+    if name.startswith('_'):
+      return super().__getattr__(name)
+
+    async def call():
+      obj = await self.load()
+      return getattr(obj, name)
+
+    return ChainableAsyncCall(call)
 
 
 class GemList(BaseModel, typing.Generic[DataT]):
@@ -94,6 +157,7 @@ class GemList(BaseModel, typing.Generic[DataT]):
   def gem_ids(self) -> Iterator[GEM_ID]:
     return map(self.get_gem_id, self.indexes)
 
+
 class GlobalGemList(GemList):
   _cache: typing.MutableMapping[int, DataT] = {}
 
@@ -108,19 +172,34 @@ class GlobalGemList(GemList):
   def get(self, gem_id: int) -> DataT:
     return self._cache[gem_id]
 
+
 class GemProtocolException(Exception):
-  def __init__(self, message, command: typing.Optional[Command], resp:Any):
+  def __init__(self, message, command: typing.Optional[Command], resp: Any):
     self.message = message
     super().__init__(self.message)
 
+
 class DomainManager:
+  _instances: typing.ClassVar[
+    typing.MutableMapping[str, 'DomainManager']] = {}  # technically support multiple managers
   global_state: typing.MutableMapping[typing.Type[GemBase], GlobalGemList]
   domain_name: str
+
   def __init__(self, domain_name: str, command_manager: CommandManager):
     self.domain_name = domain_name
     self.command_manager = command_manager
     self.global_state = {}
+    DomainManager._instances[domain_name.lower()] = self
+
   G = typing.TypeVar("G", bound=GemBase)
+
+  @classmethod
+  def for_package(cls, domain: str) -> 'DomainManager':
+    """The manager responsible for a domain"""
+    try:
+      return cls._instances[domain.lower()]
+    except KeyError:
+      raise LookupError(f"No DomainManager registered for domain {domain!r}") from None
 
   def get_global_list(self, domaintype: typing.Type[G]) -> GlobalGemList[G]:
     if domaintype not in self.global_state:
@@ -141,10 +220,11 @@ class DomainManager:
       return glist.get(gem_id)
 
     command = Command(commandType=f"{domaintype.PACKAGE}.commands.{domaintype.TYPE}_get",
-            gemId=gem_id)
+                      gemId=gem_id)
     resp = await self.command_manager.send(command)
     if not resp['successful']:
-      raise GemProtocolException(f"Get of {domaintype}#{gem_id} not successful", command=command, resp=resp)
+      raise GemProtocolException(f"Get of {domaintype}#{gem_id} not successful", command=command,
+                                 resp=resp)
     r = domaintype.model_validate(resp["value"])
     glist.set(gem_id, r)
     return r
@@ -162,14 +242,14 @@ class DomainManager:
 
   async def create(self, obj: G) -> G:
     cmd = Command(commandType=f"{obj.PACKAGE}.commands.{obj.TYPE}_create",
-           **{uncap(obj.TYPE): obj})
+                  **{uncap(obj.TYPE): obj})
     r = await self.command_manager.send(cmd)
     if not r["successful"]:
       raise GemProtocolException(f"Create not successful", command=cmd, resp=r)
     return await self.get(type(obj), obj.gemId)
 
-
-  async def get_list(self, domaintype: typing.Type[G], gem_id_iterator:Iterator[GEM_ID]) -> AsyncIterator[G]:
+  async def get_list(self, domaintype: typing.Type[G], gem_id_iterator: Iterator[GEM_ID]) -> \
+  AsyncIterator[G]:
     """
 
     [obj.name async for obj in my_manager.get_list(MyDomain.Type, parent.list.gem_ids()]
@@ -180,3 +260,35 @@ class DomainManager:
     """
     for gem_id in gem_id_iterator:
       yield await self.get(domaintype, gem_id)
+
+
+class ChainableAsyncCall:
+  """
+  A lazy, chainable async attribute access / call, used as a helper to proxy gems.
+  Nothing is executed until the chain is awaited:
+    await gem.attr.other
+    await gem.attr.setOther(42)
+  """
+
+  def __init__(self, factory):
+    # factory: zero-arg async function producing the value of this chain step
+    self._factory = factory
+
+  def __await__(self):
+    return self._factory().__await__()
+
+  def __getattr__(self, name):
+    # attribute access only: resolve (and await, e.g. a Gem's lazy attribute), but never call
+    async def chained():
+      attr = getattr(await self, name)
+      return await attr if inspect.isawaitable(attr) else attr
+
+    return ChainableAsyncCall(chained)
+
+  def __call__(self, *args, **kwargs):
+    # call the resolved callable and await its result if it is a coroutine (async method)
+    async def chained():
+      result = (await self)(*args, **kwargs)
+      return await result if inspect.isawaitable(result) else result
+
+    return ChainableAsyncCall(chained)

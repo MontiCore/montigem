@@ -150,7 +150,7 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
             decoratorData.getAsDecorated((ASTCDClass) decoratorData.getParent(originalNode).get()),
             inner.printFullName());
         decNode.setMCType(createGemType(inner.printFullName() + "." + inner.print()));
-        decNode.setInitial(createInitialEmptyGem());
+        decNode.setInitial(createInitialEmptyGem(inner.printFullName() + "." + inner.print()));
         data.attrDataMap.computeIfAbsent(originalNode, x -> new AttrData(inner.printFullName()));
       } else {
         Log.error("Unhandled " + decNode.getMCType().printType(), decNode.get_SourcePositionStart());
@@ -192,7 +192,7 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
           decoratorData.getAsDecorated((ASTCDClass) decoratorData.getParent(originalNode).get()),
           originalNode.getSymbol().getType().printFullName());
       decNode.setMCType(createGemType(originalNode.getSymbol().getType().printFullName() + "." + originalNode.getSymbol().getType().print()));
-      decNode.setInitial(createInitialEmptyGem());
+      decNode.setInitial(createInitialEmptyGem(originalNode.getSymbol().getType().printFullName() + "." + originalNode.getSymbol().getType().print()));
       data.attrDataMap.computeIfAbsent(originalNode, x -> new AttrData(originalNode.getSymbol().getType().printFullName()));
     } else if (info.getTypeClass() == UmlpAttrHelper.RealType.BUILD_IN) {
       // do nothing, keep default
@@ -227,10 +227,11 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
   }
 
 
-  private ASTExpression createInitialEmptyGem() {
+  private ASTExpression createInitialEmptyGem(String classname) {
+    // empty_gem("pck.Type") instead of Gem() -> the default value knows its target type (required for lazy loading)
     return CD4CodeMill.callExpressionBuilder()
-        .setExpression(CD4CodeMill.nameExpressionBuilder().setName("montigem_runtime.gembase.Gem").build())
-        .setArguments(CD4CodeMill.argumentsBuilder().build()).build();
+        .setExpression(CD4CodeMill.nameExpressionBuilder().setName("montigem_runtime.gembase.empty_gem").build())
+        .setArguments(CD4CodeMill.argumentsBuilder().addExpression(stringLiteralExpr(classname)).build()).build();
   }
 
   private ASTExpression createInitialGemList() {
