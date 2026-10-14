@@ -1,10 +1,75 @@
-# Charts
+# Charts Frontend
+
+!!! abstract "In this chapter"
+    - record historical data with a second domain class
+    - build a dashboard page with a line, a bar and a pie chart
+    - calculate the chart data in hand-written frontend code
+    - files you touch: `models/Carrental.umlp`,
+      `backend/src/main/java/carrental/CarrentalServerApplication.java`,
+      `frontend/src/main/gui/gui/Dashboard.gui`,
+      `frontend/src/main/java/gui/Dashboard.java`,
+      `frontend/src/main/gui/gui/navigation/NavContainer.gui`
 
 Here we create a page with a bunch of charts. The process is no different from
 creating a normal page, but we often have to use hand-written functions.
+
+## Data for the charts
+
+A chart needs data with a history. Add a class that records the mileage of a car
+at a point in time, and an association from `Car` to it:
+
+```java title="models/Carrental.umlp"
+class MileageDataPoint {
+  LocalDateTime recordDate;
+  float mileage;
+}
+
+association [1] Car -> MileageDataPoint [*];
+```
+
+The association gives `Car` the methods `addMileageDataPoint(...)` and
+`getMileageDataPointList()`.
+
+Create some data points in `initEntities()`. A small helper keeps the code
+readable:
+
+```java title="backend/src/main/java/carrental/CarrentalServerApplication.java"
+protected void initEntities() {
+  /* customers and cars as before */
+
+  addMileage(ford, LocalDateTime.of(2024, 7, 1, 0, 0), 800.0f);
+  addMileage(ford, LocalDateTime.of(2024, 8, 1, 0, 0), 1000.0f);
+  addMileage(toyota, LocalDateTime.of(2024, 7, 1, 0, 0), 60000.0f);
+  addMileage(toyota, LocalDateTime.of(2024, 7, 15, 0, 0), 60500.0f);
+  addMileage(toyota, LocalDateTime.of(2024, 8, 1, 0, 0), 61000.0f);
+  addMileage(vw, LocalDateTime.of(2024, 7, 15, 0, 0), 2000.0f);
+  addMileage(vw, LocalDateTime.of(2024, 8, 1, 0, 0), 2500.0f);
+}
+
+private void addMileage(Car car, LocalDateTime recordDate, float mileage) {
+  MileageDataPoint point = CarrentalManager.mileageDataPointBuilder()
+      .recordDate(recordDate)
+      .mileage(mileage)
+      .build()
+      .get();
+  car.addMileageDataPoint(point);
+}
+```
+
+Note that the cars have data points on different dates. That is on purpose: the
+chart code below has to deal with gaps.
+
+Restart the backend and update the frontend:
+
+```sh
+./gradlew :frontend:generate
+```
+
+## The dashboard page
+
 First, we create the following page GUI model:
 
-```ts
+```ts title="frontend/src/main/gui/gui/Dashboard.gui"
 package gui;
 
 import mc.fenix.arrange.GemRow;
@@ -18,10 +83,11 @@ import Carrental.Car;
 
 page Dashboard(List<Car> cars) {
   @NavContainer(content = [
-    @GemRow(wrap = "wrap", rowGap = "10px", hAlign = "space-evenly", components = [
+    @GemRow(wrap = "wrap", rowGap = "10px", colGap = "10px", hAlign = "space-evenly", components = [
 
         @GemCard(
-          width = "40%",
+          width = "45%",
+          height = "400px",
           title = "Mileage increase over time",
           component = @GemLineChart(data = getMileageIncrease(cars))
         )
@@ -31,10 +97,24 @@ page Dashboard(List<Car> cars) {
 }
 ```
 
-The charts typically have an input with a complex structure. For example,
-`GemLineChart` expects an object of type `GemLineChartData` with following
-definition (This definition is already internally provided. Don't add it to
-your class diagram):
+!!! note "A chart takes the size of its card"
+    A chart fills the space that its container gives it. Give the card a
+    `height`. Without one the chart has no room and is drawn over the border of
+    the card. Each chart card in this chapter gets `height = "400px"` and half of
+    the row as `width`, so the dashboard shows two charts side by side.
+
+Add the page to the navigation bar:
+
+```ts title="frontend/src/main/gui/gui/navigation/NavContainer.gui"
+@GemNavItem(title = "Dashboard", target = "/gui/Dashboard")
+```
+
+Add it to the navigation list in `CustomerOverview.gui` as well, as in the
+chapter about [functions in the GUI](./06_GUIAdvanced1.md).
+
+Charts typically have an input with a complex structure. For example,
+`GemLineChart` expects an object of type `GemLineChartData`. This class diagram
+is already provided by the chart library. Do not add it to your class diagram:
 
 ```java
 classdiagram GemLineChartTypes {
@@ -46,7 +126,7 @@ classdiagram GemLineChartTypes {
 
   public class GemLineChartEntry {
     String label;
-    List<Integer> data;
+    List<Double> data;
     String borderColor;
     String backgroundColor;
     String pointBackgroundColor;
@@ -55,34 +135,54 @@ classdiagram GemLineChartTypes {
 }
 ```
 
-- `labels` of `GemLineChartData` represent points on x axis from left to right.
-- `entries` of `GemLineChartData` represent statistics for each single item, in this example for each
-  different car.
-- `label` of `GemLineChartEntry` represent the name of the item, such as name of
-  a car.
-- `data` of `GemLineChartEntry` are y axis values that correspond to x axis
-  points. The size of data should be equal to `labels` size and must be ordered
-  according to the x axis points.
+- `labels` of `GemLineChartData` represent points on the x axis from left to
+  right.
+- `entries` of `GemLineChartData` represent the statistics for each single item,
+  in this example for each different car.
+- `label` of `GemLineChartEntry` represents the name of the item, such as the
+  name of a car.
+- `data` of `GemLineChartEntry` are the y axis values that correspond to the x
+  axis points. The size of `data` should be equal to the size of `labels` and
+  must be ordered according to the x axis points.
 
-Next, we implement the function `getMileageIncrease` using TOP-mechanism for the Java  
-class `Dashboard.java`, which was automatically generated for us by MontiGem:
+!!! warning "Check the types"
+    The data of a line chart is a `List<Double>`, the data of a bar chart a
+    `List<Integer>`, and a pie chart entry holds a single `Integer`. Look at the
+    class diagram of the chart you use before you write the code.
 
-```java
+## Implementing the chart data
+
+Next, we implement the function `getMileageIncrease` using the TOP mechanism for
+the Java class `Dashboard.java`, which was automatically generated for us by
+MontiGem. Create the file `frontend/src/main/java/gui/Dashboard.java`:
+
+```java title="frontend/src/main/java/gui/Dashboard.java"
+package gui;
+
+import carrental.Car;
+import carrental.MileageDataPoint;
+import mc.fenix.charts.gemlinecharttypes.GemLineChartData;
+import mc.fenix.charts.gemlinecharttypes.GemLineChartDataBuilder;
+import mc.fenix.charts.gemlinecharttypes.GemLineChartEntry;
+import mc.fenix.charts.gemlinecharttypes.GemLineChartEntryBuilder;
+import umlp.jsweet.extension.annotation.Component;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-/*import*/
+import java.util.Collections;
+import java.util.List;
 
-@umlp.jsweet.extension.annotation.Component
+@Component()
 public class Dashboard extends DashboardTOP {
 
+  @Override
   public GemLineChartData getMileageIncrease(List<Car> cars) {
     // if data is not present return nothing
     if (cars == null) {
       return null;
     }
-    // create an array of dates to use them as x axis points later
+    // collect all dates to use them as x axis points later
     List<LocalDateTime> dates = new ArrayList<>();
-
     for (Car c : cars) {
       for (MileageDataPoint mileage : c.getMileageDataPointList()) {
         dates.add(mileage.getRecordDate());
@@ -91,96 +191,7 @@ public class Dashboard extends DashboardTOP {
     // sort dates
     dates.sort((l, r) -> l.compareTo(r));
 
-    List<String> labels = new ArrayList<>();
-    for (LocalDateTime date : dates) {
-      String xAxisPoint = date.toString();
-        if (!labels.contains(xAxisPoint)) {
-          // use string representation of (non-repeating) dates as x axis points
-          labels.add(xAxisPoint);
-        }
-    }
-
-    List<GemLineChartEntry> entries = new ArrayList<>();
-    for (Car c : cars) {
-      // create an entry for each car:
-      // label (1st arg) is the name of the car, data (2nd arg) are the mileage data for each date
-      GemLineChartEntry entry = new GemLineChartEntryBuilder().label(
-              c.getMake() + " " + c.getModel() + " " + c.getName()).data(Arrays.asList(labels.size())).build().get();
-      entries.add(entry);
-      for (MileageDataPoint mileage : c.getMileageDataPointList()) {
-        String xAxisPoint = mileage.getRecordDate().toString();
-        int xAxisPointIndex = labels.indexOf(xAxisPoint);
-        entry.getDataList().set(xAxisPointIndex, (int) mileage.getMileage().floatValue());
-      }
-    }
-        
-    // optional: add interpolated itermediate points to entries where the data is not available
-    for (GemLineChartEntry entry : entries) {
-      for (int i = 0; i < entry.getDataList().size(); ++i) {
-        Integer data = entry.getData(i);
-        if (data == null) {
-          this.interpolateData(entry.getDataList(), i);
-        }
-      }
-    }
-
-    GemLineChartData data = 
-            new GemLineChartDataBuilder().entries(entries).labels(labels).build().get();
-    return data;
-  }
-
-  public void interpolateData(List<Integer> stat, int interpolatedIndex) {
-    int left = 0;
-    int leftI = 0;
-    int right = 0;
-    int rightI = 0;
-    for (int i = 0; i < stat.size(); ++i) {
-      if (stat.get(i) != null && interpolatedIndex > i) {
-        left = stat.get(i);
-        leftI = i;
-      }
-    }
-
-    for (int i = 0; i < stat.size(); ++i) {
-      if (stat.get(i) != null && interpolatedIndex < i) {
-        right = stat.get(i);
-        rightI = i;
-        break;
-      }
-    }
-
-    stat.set(interpolatedIndex, left + ((right - left) / (rightI - leftI)) * (interpolatedIndex - leftI));
-  }
-}
-```
-
-There are several important points to be aware of:
-
-1.  A method should always check whether data is present. In case it isn't, the
-    component will handle the output in some way. Otherwise, if you try to
-    access attributes of a non-existing object, the browser will throw an
-    exception which if not caught may break the page.
-
-      ```ts
-      // if data is not present return nothing
-      if (cars == null) {
-        return null;
-      }
-      ```
-
-2.  Then you can create the labels (x axis) of the chart:
-
-    ```java
-    List<LocalDateTime> dates = new ArrayList<>();
-
-    for (Car c : cars) {
-      for (MileageDataPoint mileage : c.getMileageDataPointList()) {
-        dates.add(mileage.getRecordDate());
-      }
-    }
-      
-    dates.sort((l,r) -> l.compareTo(r));
-
+    // use string representations of the (non-repeating) dates as x axis points
     List<String> labels = new ArrayList<>();
     for (LocalDateTime date : dates) {
       String xAxisPoint = date.toString();
@@ -188,129 +199,162 @@ There are several important points to be aware of:
         labels.add(xAxisPoint);
       }
     }
-    ```
-    
-    The labels are, in this case, unique dates, sorted from the earliest to the
-    latest. The dates must also be formatted to strings to be properly
-    displayed.
 
-3.  The entries are created for each item (cars) and the y axis data is inserted
-    according to the order of the labels:
-
-    ```java
+    // create an entry for each car: the label is the name of the car,
+    // the data are the mileage values for each date (null where no data exists)
     List<GemLineChartEntry> entries = new ArrayList<>();
-    
-    for (Car c : cars){
+    for (Car c : cars) {
+      List<Double> values = new ArrayList<>(Collections.nCopies(labels.size(), (Double) null));
       GemLineChartEntry entry = new GemLineChartEntryBuilder()
           .label(c.getMake() + " " + c.getModel() + " " + c.getName())
-          .data(Arrays.asList(labels.size()))
-          .build().get();
+          .data(values)
+          .build()
+          .get();
       entries.add(entry);
       for (MileageDataPoint mileage : c.getMileageDataPointList()) {
         String xAxisPoint = mileage.getRecordDate().toString();
         int xAxisPointIndex = labels.indexOf(xAxisPoint);
-        entry.getDataList().set(xAxisPointIndex, (int) mileage.getMileage().floatValue());
+        entry.getDataList().set(xAxisPointIndex, (double) mileage.getMileage());
       }
     }
-    ```
 
-4.  The data may be not present for every point of x axis. In that case the line
-    of the line chart is not continuos. However, we can interpolate data if
-    showing the data flow is more important than actual data at specific points
-    in time:
-
-    ```java
-    // optional: add interpolated itermediate points to entries where the data is not available
-    for (GemLineChartEntry entry : entries){
+    // optional: interpolate points where a car has no data for a date
+    for (GemLineChartEntry entry : entries) {
       for (int i = 0; i < entry.getDataList().size(); ++i) {
-      Integer data = entry.getData(i);
+        Double data = entry.getData(i);
         if (data == null) {
           this.interpolateData(entry.getDataList(), i);
         }
       }
     }
-    ```
-    The method `interpolateData` is also written by hand, but generally would look the
-    same for the different cases. Thus, we add:
+
+    return new GemLineChartDataBuilder().entries(entries).labels(labels).build().get();
+  }
+}
+```
+
+The class is not complete yet: it calls `interpolateData`, which we add in step 4
+below.
+
+There are several important points to be aware of:
+
+1.  A method should always check whether data is present. If it isn't, the
+    component handles the empty output. Otherwise, if you try to access
+    attributes of a non-existing object, the browser throws an exception which,
+    if not caught, may break the page.
+
     ```java
-    public void interpolateData(List<Integer> stat, int interpolatedIndex) {
-      int left = 0;
-      int leftI = 0;
-      int right = 0;
-      int rightI = 0;
-      for (int i = 0; i < stat.size(); ++i) {
-        if (stat.get(i) != null && interpolatedIndex > i) {
+    if (cars == null) {
+      return null;
+    }
+    ```
+
+2.  Then you can create the labels (x axis) of the chart. The labels are, in this
+    case, unique dates, sorted from the earliest to the latest. The dates must
+    also be formatted to strings to be properly displayed. The chart library
+    recognizes the date strings and spaces them on a time axis.
+
+3.  The entries are created for each item (car) and the y axis data is inserted
+    according to the order of the labels. The list of values must have the same
+    length as the list of labels:
+
+    ```java
+    List<Double> values = new ArrayList<>(Collections.nCopies(labels.size(), (Double) null));
+    ```
+
+    !!! warning
+        `Arrays.asList(labels.size())` does **not** do this. It creates a list
+        with a single element, the number itself, and writing to any other index
+        throws an `IndexOutOfBoundsException`.
+
+4.  The data may not be present for every point of the x axis. In that case the
+    line of the line chart is not continuous. However, we can interpolate data if
+    showing the data flow is more important than the actual data at specific
+    points in time. The method `interpolateData` is also written by hand, but
+    generally looks the same for different cases:
+
+    ```java title="frontend/src/main/java/gui/Dashboard.java"
+    /**
+     * Fills the value at interpolatedIndex with a linear interpolation between the
+     * nearest known values to the left and to the right. If there is no known value
+     * on one side, the value of the other side is copied.
+     */
+    public void interpolateData(List<Double> stat, int interpolatedIndex) {
+      Double left = null;
+      int leftI = -1;
+      Double right = null;
+      int rightI = -1;
+      for (int i = interpolatedIndex - 1; i >= 0; --i) {
+        if (stat.get(i) != null) {
           left = stat.get(i);
           leftI = i;
+          break;
         }
       }
-
-      for (int i = 0; i < stat.size(); ++i) {
-        if (stat.get(i) != null && interpolatedIndex < i) {
+      for (int i = interpolatedIndex + 1; i < stat.size(); ++i) {
+        if (stat.get(i) != null) {
           right = stat.get(i);
           rightI = i;
           break;
         }
       }
-
-      stat.set(interpolatedIndex,left + ((right - left) / (rightI - leftI)) * (interpolatedIndex - leftI));
+      if (left == null && right == null) {
+        return;
+      }
+      if (left == null) {
+        stat.set(interpolatedIndex, right);
+      } else if (right == null) {
+        stat.set(interpolatedIndex, left);
+      } else {
+        double step = (right - left) / (rightI - leftI);
+        stat.set(interpolatedIndex, left + step * (interpolatedIndex - leftI));
+      }
     }
     ```
 
-5.  We can now create the data:
+5.  Finally the data object is created with its builder:
+
     ```java
-    GemLineChartData data = new GemLineChartDataBuilder().entries(entries).labels(labels).build().get();
+    return new GemLineChartDataBuilder().entries(entries).labels(labels).build().get();
     ```
-    You would normally expect to directly return the data. This does not
-    work with the Angular framework, because of the following reason: The method that
-    returns line chart data gets triggered whenever something changes in the
-    user interface. Angular makes sure to update the interface whenever a new object
-    is returned by such method. This means that if you return a new object in a
-    method, Angular will update the user interface, which will trigger the method
-    again, which will force Angular to update the user interface again, etc.
 
-    BUT because of a smart observability functionality which is added during the 
-    JSweet transpilation the function only gets called when its arguments are
-    updated.
+## More charts
 
-    ```ts
-    protected mileageIncrease: { data: GemLineChartData, hash: string } = { data: null, hash: '' };
+Similarly we can create other charts, such as a bar chart and a pie chart:
 
-    const data = new GemLineChartData(entries, labels);
+```ts title="frontend/src/main/gui/gui/Dashboard.gui"
+package gui;
 
-    // Angular requirement
-    // check if the calculated value is equal to the previous one
-    if (JSON.stringify(data) !== this.mileageIncrease.hash) {
-      // if data is new save the new state
-      this.mileageIncrease = { data: data, hash: JSON.stringify(data) };
-    }
-    return this.mileageIncrease.data;
-    ```
-    
-    We calculate a "hash" of the data using `JSON.stringify` function and write
-    it into a local variable together with the data. Whenever the data gets
-    updated, the hash changes and so is the returned object.
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemCard;
+import mc.fenix.charts.GemLineChart;
+import mc.fenix.charts.GemBarChart;
+import mc.fenix.charts.GemPieChart;
 
-Similarly we can create other charts, such as bar chart and pie chart:
-```ts
-/* package, imports */
+import gui.navigation.NavContainer;
+
+import Carrental.Car;
+
 page Dashboard(List<Car> cars) {
   @NavContainer(content = [
-    @GemRow(wrap = "wrap", rowGap = "10px", hAlign = "space-evenly", components = [
+    @GemRow(wrap = "wrap", rowGap = "10px", colGap = "10px", hAlign = "space-evenly", components = [
 
       @GemCard(
-        width = "40%",
+        width = "45%",
+        height = "400px",
         title = "Mileage increase over time",
         component = @GemLineChart(data = getMileageIncrease(cars))
       ),
 
       @GemCard(
-        width = "40%",
+        width = "45%",
+        height = "400px",
         title = "Average mileage",
         component = @GemBarChart(data = getMileageAvg(cars))
       ),
 
       @GemCard(
+        width = "45%",
         height = "400px",
         title = "Availability",
         component = @GemPieChart(data = getAvailability(cars))
@@ -321,11 +365,104 @@ page Dashboard(List<Car> cars) {
 }
 ```
 
+The bar chart data is similar to the line chart data, and the pie chart data has
+a much simpler structure:
+
+```java title="frontend/src/main/java/gui/Dashboard.java"
+@Override
+public GemBarChartData getMileageAvg(List<Car> cars) {
+  if (cars == null) {
+    return null;
+  }
+  // one bar per car, the value is the average of its mileage data points
+  List<String> labels = new ArrayList<>();
+  List<Integer> averages = new ArrayList<>();
+  for (Car c : cars) {
+    labels.add(c.getMake() + " " + c.getModel() + " " + c.getName());
+    float sum = 0;
+    int count = 0;
+    for (MileageDataPoint mileage : c.getMileageDataPointList()) {
+      sum += mileage.getMileage();
+      count++;
+    }
+    averages.add(count == 0 ? 0 : (int) (sum / count));
+  }
+  // label and stack of a bar chart entry are optional attributes
+  GemBarChartEntry entry = new GemBarChartEntryBuilder()
+      .label(Optional.of("Average mileage"))
+      .data(averages)
+      .build()
+      .get();
+  List<GemBarChartEntry> entries = new ArrayList<>();
+  entries.add(entry);
+  return new GemBarChartDataBuilder().entries(entries).labels(labels).build().get();
+}
+
+@Override
+public GemPieChartData getAvailability(List<Car> cars) {
+  if (cars == null) {
+    return null;
+  }
+  int available = 0;
+  int rented = 0;
+  int maintenance = 0;
+  for (Car c : cars) {
+    if (c.getRentableStatus() == RentableStatus.AVAILABLE) {
+      available++;
+    } else if (c.getRentableStatus() == RentableStatus.RENTED) {
+      rented++;
+    } else {
+      maintenance++;
+    }
+  }
+  List<GemPieChartEntry> entries = new ArrayList<>();
+  entries.add(new GemPieChartEntryBuilder().label("available").value(available).build().get());
+  entries.add(new GemPieChartEntryBuilder().label("rented").value(rented).build().get());
+  entries.add(new GemPieChartEntryBuilder().label("maintenance").value(maintenance).build().get());
+  return new GemPieChartDataBuilder().entries(entries).build().get();
+}
+```
+
+The additional imports are:
+
+```java title="frontend/src/main/java/gui/Dashboard.java"
+import carrental.RentableStatus;
+import mc.fenix.charts.gembarcharttypes.GemBarChartData;
+import mc.fenix.charts.gembarcharttypes.GemBarChartDataBuilder;
+import mc.fenix.charts.gembarcharttypes.GemBarChartEntry;
+import mc.fenix.charts.gembarcharttypes.GemBarChartEntryBuilder;
+import mc.fenix.charts.gempiecharttypes.GemPieChartData;
+import mc.fenix.charts.gempiecharttypes.GemPieChartDataBuilder;
+import mc.fenix.charts.gempiecharttypes.GemPieChartEntry;
+import mc.fenix.charts.gempiecharttypes.GemPieChartEntryBuilder;
+import java.util.Optional;
+```
+
+Apply the changes:
+
+```sh
+./gradlew :frontend:generate
+```
+
 The result:
 
 ![charts](./charts.png)
 
-The bar chart data is similar to the line chart data and the 
-pie chart data has a much simpler structure. You can take a 
-look at the [documentation](../gendoc_components/Frontend-RTE.md)
-to get a general idea about structuring the data.
+!!! warning "Known issue: the dates are shifted"
+    The frontend shifts every `LocalDateTime` by the offset of your time zone.
+    In Germany the line chart therefore starts on June 30 instead of July 1.
+    The chart from the [next chapter](./10_GUIAdvanced5.md) is calculated in the
+    backend and shows the right dates.
+
+You can take a look at the
+[documentation for library components](../gendoc_components/Frontend-RTE.md) to
+get a general idea about structuring the data of other chart types.
+
+## Checkpoint
+
+- The navigation bar has an entry "Dashboard".
+- [http://localhost:4200/gui/Dashboard](http://localhost:4200/gui/Dashboard)
+  shows three cards. The line chart has one line per car, the bar chart one bar
+  per car, the pie chart the three status values.
+- Rent a car on the car overview page and go back to the dashboard: the pie
+  chart has changed.

@@ -1,0 +1,13 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.basic;
+
+/**
+  Tooltip shows a short text when the user hovers over or focuses the wrapped
+  component.
+*/
+component GemTooltip(
+  /** Text displayed in the tooltip. If empty, no tooltip is shown. */
+  String text = "",
+  /** Component that shows the tooltip when hovered or focused. */
+  GUIViewElement component = null
+)

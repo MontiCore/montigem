@@ -8,7 +8,8 @@ import common.ExamplePage;
 page GemCandlestickChartExample() {
   @ExamplePage(
     component = @GemCandlestickChart(
-      data = getData()
+      data = getData(),
+      showConfig = true
     ),
     basePath = "example_charts",
     componentName = "GemCandlestickChartExample"

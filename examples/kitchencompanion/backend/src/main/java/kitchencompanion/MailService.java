@@ -1,25 +1,15 @@
 package kitchencompanion;
 
 import jsweet.lang.Erased;
-import org.h2.value.Value;
-import umlp.jsweet.extension.annotation.BackendOnly;
-import umlp.jsweet.extension.annotation.BackendOnlyModes;
 
-import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.File;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Properties;
 
-import static java.util.Locale.GERMAN;
-import static umlp.backendrte.service.websocket.WebSocketConfig.UMLP_DOMAINNAME_ENV;
 @Erased
 public abstract class MailService {
-
-
+  
   protected static final String IDENTIFIER = "KitchenCompanion";
   protected final static Properties properties = new Properties();
 

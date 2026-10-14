@@ -198,6 +198,14 @@ public class GUIGeneratorUtil {
     CREATE_MODELS = createModels;
   }
 
+  public static void cleanUp() {
+    // keep the instance, several generators hold it in static fields
+    if (instance != null) {
+      instance.DOMAIN_AND_MODULE_MODELS = null;
+      instance.CREATE_MODELS = null;
+    }
+  }
+
   public final String print(ASTNode node) {
     printer.setPrintComments(false);
     return printer.prettyprint(node);

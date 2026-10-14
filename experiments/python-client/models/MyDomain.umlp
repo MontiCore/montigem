@@ -63,4 +63,7 @@ classdiagram MyDomain { //b
   enum MyEnum {
     A, B, C;
   }
+
+  class SuperClass {}
+  class ChildClass extends SuperClass {}
 }

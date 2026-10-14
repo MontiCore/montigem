@@ -8,18 +8,26 @@ import mc.fenix.basic.GemButton;
 import mc.fenix.basic.GemDarkModeSwitch;
 
 import common.LandingPage;
+import common.OtherOverview;
+import example_arrange.ArrangeOverview;
+import example_basic.BasicOverview;
+import example_charts.ChartsOverview;
+import example_input.InputOverview;
+import manual.ChartsTestOverview;
 
+// activeCategory follows the current route, see NavigationRouteSync.ts
 component Navigation(String activeCategory = "Basic") {
   @GemColumn(components = [
 
-    // 1. Row: Categories
+    // 1. Row: Categories, each opens the overview page of its category
     @GemRow(wrap = "wrap", vAlign = "center", components = [
-      @GemButton(label = "Home", leftClick = navigate(@LandingPage())),
-      @GemButton(label = "Basic", leftClick = setCategoryBasic()),
-      @GemButton(label = "Input", leftClick = setCategoryInput()),
-      @GemButton(label = "Arrange", leftClick = setCategoryArrange()),
-      @GemButton(label = "Charts", leftClick = setCategoryCharts()),
-      @GemButton(label = "Other", leftClick = setCategoryOther()),
+      @GemButton(label = "Home", active = activeCategory == "Home", leftClick = navigate(@LandingPage())),
+      @GemButton(label = "Basic", active = activeCategory == "Basic", leftClick = navigate(@BasicOverview())),
+      @GemButton(label = "Input", active = activeCategory == "Input", leftClick = navigate(@InputOverview())),
+      @GemButton(label = "Arrange", active = activeCategory == "Arrange", leftClick = navigate(@ArrangeOverview())),
+      @GemButton(label = "Charts", active = activeCategory == "Charts", leftClick = navigate(@ChartsOverview())),
+      @GemButton(label = "Test", active = activeCategory == "Test", leftClick = navigate(@ChartsTestOverview())),
+      @GemButton(label = "Other", active = activeCategory == "Other", leftClick = navigate(@OtherOverview())),
       @GemDarkModeSwitch()
     ]),
 
@@ -36,6 +44,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "Image", target = "/example_basic/GemImageExample");
         @GemNavItem(title = "Link", target = "/example_basic/GemLinkExample");
         @GemNavItem(title = "Text", target = "/example_basic/GemTextExample");
+        @GemNavItem(title = "Tooltip", target = "/example_basic/GemTooltipExample");
         @GemNavItem(title = "Video", target = "/example_basic/GemVideoExample");
       },
 
@@ -84,6 +93,25 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "NetworkGraph", target = "/example_charts/GemNetworkGraphExample");
         @GemNavItem(title = "NewNetworkChart", target = "/example_network/NetworkChartExample");
         @GemNavItem(title = "GemScatterPlot", target = "/example_charts/GemScatterPlotExample");
+      },
+
+      @guard(activeCategory == "Test") {
+        @GemNavItem(title = "ChartsTestOverview", target = "/manual/ChartsTestOverview");
+        @GemNavItem(title = "GemBarChartTest", target = "/manual/GemBarChartTest");
+        @GemNavItem(title = "GemPieChartTest", target = "/manual/GemPieChartTest");
+        @GemNavItem(title = "GemBulletChartTest", target = "/manual/GemBulletChartTest");
+        @GemNavItem(title = "GemBoxPlotTest", target = "/manual/GemBoxPlotTest");
+        @GemNavItem(title = "GemHeatmapChartTest", target = "/manual/GemHeatmapChartTest");
+        @GemNavItem(title = "GemSunburstChartTest", target = "/manual/GemSunburstChartTest");
+        @GemNavItem(title = "GemTimelineChartTest", target = "/manual/GemTimelineChartTest");
+        @GemNavItem(title = "GemLineChartTest", target = "/manual/GemLineChartTest");
+        @GemNavItem(title = "GemGaugeChartTest", target = "/manual/GemGaugeChartTest");
+        @GemNavItem(title = "GemRadarChartTest", target = "/manual/GemRadarChartTest");
+        @GemNavItem(title = "GemTimeSeriesChartTest", target = "/manual/GemTimeSeriesChartTest");
+        @GemNavItem(title = "GemCandlestickChartTest", target = "/manual/GemCandlestickChartTest");
+        @GemNavItem(title = "GemScatterPlotTest", target = "/manual/GemScatterPlotTest");
+        @GemNavItem(title = "GemVennDiagramTest", target = "/manual/GemVennDiagramTest");
+        @GemNavItem(title = "GemNetworkGraphTest", target = "/manual/GemNetworkGraphTest");
       },
 
       @guard(activeCategory == "Other") {

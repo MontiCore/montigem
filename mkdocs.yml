@@ -30,7 +30,7 @@ extra_css:
   - stylesheets/extra.css
 
 
-site_url: https://monticore.pages.rwth-aachen.de/monticore/umlp
+site_url: https://monticore.pages.rwth-aachen.de/umlp
 
 copyright: '(c) https://github.com/MontiCore/monticore'
 
@@ -78,9 +78,11 @@ nav:
     - Charts Backend: 'tutorial/10_GUIAdvanced5.md'
     - E2E Testing (simulated GUI): 'tutorial/11_E2ETestingWithSimulatedGUI.md'
     - OCL GUI Validity Checking: 'tutorial/12_OCLGUIValidityChecking.md'
+    - What's Next: "tutorial/13_WhatsNext.md"
   - GUI Component Library: 'gendoc_components/Frontend-RTE.md'
   - Changelog: 'CHANGELOG.md'
   - More Documentation:
+    - Reference: 'MontiGem_Documentation.md'
     - Helpful Links: 'HelpfulLinks.md'
     - GUI Validity Generator Internals: 'GUIValidityDev.md'
   - License: http://monticore.github.io/monticore/00.org/Licenses/LICENSE-MONTICORE-3-LEVEL/

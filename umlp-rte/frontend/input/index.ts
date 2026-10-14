@@ -2,6 +2,7 @@ export * from './src/main/gui/mc/fenix/input/GemAutocompleteInput';
 export * from './src/main/gui/mc/fenix/input/GemCheckBoxInput';
 export * from './src/main/gui/mc/fenix/input/GemDropdownInput';
 export * from './src/main/gui/mc/fenix/input/GemDualRangeInput';
+export * from './src/main/gui/mc/fenix/input/GemFileInput';
 export * from './src/main/gui/mc/fenix/input/GemRangeInput';
 export * from './src/main/gui/mc/fenix/input/GemRadioInput';
 export * from './src/main/gui/mc/fenix/input/GemTextareaInput';

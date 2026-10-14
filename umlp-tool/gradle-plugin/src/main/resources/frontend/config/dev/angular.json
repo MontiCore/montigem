@@ -44,7 +44,10 @@
             "stylePreprocessorOptions": {
               "includePaths": [
                 "src"
-              ]
+              ],
+              "sass": {
+                "silenceDeprecations": ["import"]
+              }
             },
             "scripts": [],
             "preserveSymlinks": true

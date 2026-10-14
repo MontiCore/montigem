@@ -1,0 +1,12 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_monaco;
+
+import mc.fenix.editor.MonacoEditor;
+
+/**
+  Read-only JSON code with syntax highlighting, follows the dark mode of the app.
+*/
+component JsonSnippet(String code) {
+  @MonacoEditor(entry = code, language = "json", disabled = true, theme = "vs-light",
+    glyphMargin = false, showMinimap = false, autoHeight = true);
+}

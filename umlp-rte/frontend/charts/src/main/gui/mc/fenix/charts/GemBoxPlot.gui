@@ -34,5 +34,7 @@ component GemBoxPlot(
   Integer height = 400,
 
   /** Direction of the boxes (diagram as a whole).  */
-  boolean horizontal = true
+  boolean horizontal = true,
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )

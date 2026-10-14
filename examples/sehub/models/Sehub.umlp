@@ -48,6 +48,9 @@ classdiagram Sehub {
     String title;
     String description;
     IssueState state;
+    IssueType type;
+    boolean blocker;
+    int storyPoints;
   }
 
   association discussion [0..1] Issue <-> (posts) Post [*];
@@ -56,6 +59,18 @@ classdiagram Sehub {
     UNASSIGNED,
     IN_PROGRESS,
     DONE;
+  }
+
+  // More constants than a pie chart shows, so CD2GUI draws a bar chart for it
+  enum IssueType {
+    BUG,
+    FEATURE,
+    DOCUMENTATION,
+    REFACTORING,
+    TEST,
+    BUILD,
+    SECURITY,
+    PERFORMANCE;
   }
 
   class Post {
@@ -74,7 +89,7 @@ classdiagram Sehub {
     <<hidden_in_overview>>
     String nameExtension;
     <<hidden_in_overview>>
-    String modified;
+    java.time.LocalDateTime modified;
     <<key_attribute>>
     String name;
     <<hidden_in_overview>>

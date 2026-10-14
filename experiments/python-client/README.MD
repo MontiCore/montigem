@@ -96,6 +96,7 @@ E.g., myList = `[1,2,3]` is an ArrayIndexAccessExpr with the Name `1,2,3` as the
 Install `montigem_runtime` via pip
 
 ```python
+import asyncio
 from montigem_runtime.commandmanager import CommandManager
 
 # initialize
@@ -105,23 +106,22 @@ my_domain_manager = MyDomainManager.MyDomainManager(command_manager)
 #
 cmd_handler = MyDomain.MyDomainCommandHandler.MyDomainCommandHandler()
 
-async def main():
-  async def external_consumer():
-    while True:
-      message = await command_manager.queue_in.get()  # Wait for a message
-      print(f"Received message: {message}", file=sys.stderr)
-      if "commandType" in message:
-        await cmd_handler.handleCommand(message, my_domain_manager)
-      else:
-        raise Exception("Unexpected message, missing commandType")
 
-  consumer = asyncio.create_task(external_consumer())
+async def main():
+  async def do_stuff():
+    # do stuff here, such as
+    my_elem = my_domain_manager.get(MyDomainType, 42)
 
   host = "localhost"
   port = "8081"
-  commtasks = asyncio.create_task(command_manager.connect(f"ws://{host}:{port}/umlp/api/command"))
 
-  await asyncio.gather(commtasks, consumer)
+  async with asyncio.TaskGroup() as tg:
+
+    tg.create_task(command_manager.connect(host=f"ws://{host}:{port}/umlp/api/command"))
+    tg.create_task(command_manager.command_forwarding_consumer(cmd_handler, my_domain_manager))
+    tg.create_task(do_stuff)
+
+
 if __name__ == "__main__":
   asyncio.run(main())
 ```

@@ -13,7 +13,8 @@ page GemHeatmapChartExample(List<Person> persons) {
       xBins = 10,
       yBins = 10,
       xLabel = "Machine Temperature [\u00B0C]",
-      yLabel = "Rotation Speed [RPM]"
+      yLabel = "Rotation Speed [RPM]",
+      showConfig = true
     ),
     basePath = "example_charts",
     componentName = "GemHeatmapChartExample"

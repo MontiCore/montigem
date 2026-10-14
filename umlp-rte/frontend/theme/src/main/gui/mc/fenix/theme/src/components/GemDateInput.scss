@@ -70,4 +70,81 @@
     color: var(--text-muted);
     pointer-events: none;
   }
+
+  /* Calendar of flatpickr in dark mode (it is appended to the body) */
+  .dark-theme .flatpickr-calendar {
+    background: var(--color-surface);
+    color: var(--text-main);
+    box-shadow: 0 0 0 1px var(--color-border), var(--card-shadow);
+
+    &.arrowTop::before { border-bottom-color: var(--color-border); }
+    &.arrowTop::after { border-bottom-color: var(--color-surface); }
+    &.arrowBottom::before { border-top-color: var(--color-border); }
+    &.arrowBottom::after { border-top-color: var(--color-surface); }
+
+    .flatpickr-months .flatpickr-month,
+    .flatpickr-months .flatpickr-prev-month,
+    .flatpickr-months .flatpickr-next-month,
+    .flatpickr-current-month .flatpickr-monthDropdown-months,
+    .flatpickr-current-month input.cur-year {
+      color: var(--text-main);
+      fill: var(--text-main);
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+      background-color: var(--color-surface);
+    }
+
+    .flatpickr-current-month .flatpickr-monthDropdown-months:hover,
+    .numInputWrapper:hover {
+      background: var(--btn-hover-bg);
+    }
+
+    .numInputWrapper span.arrowUp::after { border-bottom-color: var(--text-main); }
+    .numInputWrapper span.arrowDown::after { border-top-color: var(--text-main); }
+
+    span.flatpickr-weekday {
+      color: var(--text-muted);
+    }
+
+    .flatpickr-day {
+      color: var(--text-main);
+
+      &.today {
+        border-color: var(--text-muted);
+      }
+
+      &:not(.selected):not(.startRange):not(.endRange):not(.flatpickr-disabled):hover,
+      &:not(.selected):not(.startRange):not(.endRange):focus,
+      &.inRange {
+        background: var(--btn-hover-bg);
+        border-color: var(--btn-hover-bg);
+      }
+
+      &.prevMonthDay,
+      &.nextMonthDay,
+      &.flatpickr-disabled,
+      &.flatpickr-disabled:hover {
+        color: var(--text-muted);
+        opacity: 0.6;
+      }
+    }
+
+    &.hasTime .flatpickr-time {
+      border-top-color: var(--color-border);
+    }
+
+    .flatpickr-time input,
+    .flatpickr-time .flatpickr-am-pm,
+    .flatpickr-time .flatpickr-time-separator {
+      color: var(--text-main);
+    }
+
+    .flatpickr-time input:hover,
+    .flatpickr-time input:focus,
+    .flatpickr-time .flatpickr-am-pm:hover,
+    .flatpickr-time .flatpickr-am-pm:focus {
+      background: var(--btn-hover-bg);
+    }
+  }
 }

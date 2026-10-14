@@ -31,5 +31,7 @@ component GemTimelineChart (
   /** Width of the component in `px`, `%`, `vh`, etc. */
   String width = "100%",
   /** Height of the component in `px`, `%`, `vh`, etc. */
-  String height = "350px"
+  String height = "350px",
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )

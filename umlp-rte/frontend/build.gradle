@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import de.montigem.gradle.specific.GUI2Java2TSTask
+import de.montigem.gradle.specific.GUIJava2TSTask
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
@@ -99,9 +99,9 @@ afterEvaluate {
     group = "build"
 
     montigem.libs.each { subproject ->
-      def gui2java2tsTask = subproject.tasks.named("gui2java2ts", GUI2Java2TSTask)
-      dependsOn(gui2java2tsTask)
-      inputs.files(gui2java2tsTask.map { it.outputs.files })
+      def guiJava2tsTask = subproject.tasks.named("guiJava2ts", GUIJava2TSTask)
+      dependsOn(guiJava2tsTask)
+      inputs.files(guiJava2tsTask.map { it.outputs.files })
     }
 
     def outputFile = layout.buildDirectory.file("generated-resources/jsweetasync.json")
@@ -111,7 +111,7 @@ afterEvaluate {
       def slurper = new JsonSlurper()
       def mergedList = []
       montigem.libs.each { subproject ->
-        def task = subproject.tasks.named("gui2java2ts", GUI2Java2TSTask).get()
+        def task = subproject.tasks.named("guiJava2ts", GUIJava2TSTask).get()
         def adapterDir = task.getJSweetAdapterDir()
         if (adapterDir.isPresent()) {
           def file = new File(adapterDir.get().asFile, "jsweet-async-methods.json")
@@ -131,7 +131,8 @@ afterEvaluate {
       }
       def out = outputFile.get().asFile
       out.parentFile.mkdirs()
-      out.text = JsonOutput.prettyPrint(JsonOutput.toJson(["@Async": ["exact": mergedList]]))
+      // JSweet writes the methods in a different order in every build, the jar must not change because of that
+      out.text = JsonOutput.prettyPrint(JsonOutput.toJson(["@Async": ["exact": mergedList.sort()]]))
     }
   }
 

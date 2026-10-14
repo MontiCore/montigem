@@ -30,7 +30,7 @@ public class GemManagerDecorator extends AbstractDecorator<AbstractDecorator.NoD
     addElementToParent(decoratorData.getAsDecorated(node), managerClass);
 
     var initFunction = CDMethodFacade.getInstance().createMethod(CDBasisMill.modifierBuilder().build(),
-         "__init__",
+        "__init__",
         CDParameterFacade.getInstance().createParameter("montigem_runtime.commandmanager.CommandManager", "command_manager"));
     managerClass.addCDMember(initFunction);
 

@@ -20,6 +20,19 @@ page GemCardExample() {
         height = "300px",
         titleComponent = @GemLink(url = "https://www.google.com/", text = "Google link"),
         component = @GemButton(label = "A button")
+      ),
+      @GemCard(
+        title = "Collapsible Card",
+        collapsible = true,
+        component = @GemText(value = "This card body can be collapsed or expanded by clicking on the header or chevron icon.")
+      ),
+      @GemCard(
+        title = "Collapsible Card with Actions",
+        collapsible = true,
+        component = @GemColumn(components = [
+          @GemText(value = "Cards can contain complex components and still be collapsed smoothly."),
+          @GemButton(label = "Action Button")
+        ])
       )
     ]),
     basePath = "example_arrange",

@@ -1,217 +1,158 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, ChangeDetectionStrategy,Input, SimpleChanges } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  HostBinding,
+  Input,
+  OnDestroy,
+  OnInit,
+  ViewChild
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { config, GemHeatmapChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemHeatmapChartComponent';
-import { NgxChartsModule, ScaleType } from "@swimlane/ngx-charts";
 import { GemChartOptions } from './GemChartOptions';
+import { PlotlyModule } from 'angular-plotly.js';
+import * as Plotly from 'plotly.js-dist-min';
 import { GemHeatmapChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemheatmapcharttypes/GemHeatmapChartData';
+import { setupResizeObserver } from './ResizeObserverUtil';
+
+PlotlyModule.plotlyjs = Plotly;
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [...config.imports, GemChartOptions, NgxChartsModule],
+  standalone: true,
+  imports: [...config.imports, CommonModule, GemChartOptions, PlotlyModule],
   selector: config.selector,
   styleUrls: config.styleUrls,
   templateUrl: config.templateUrl,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class GemHeatmapChart extends GemHeatmapChartComponent {
+export class GemHeatmapChart extends GemHeatmapChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  public _data: GemHeatmapChartData;
-  public _xLabel: string;
-  public _yLabel: string;
-  public _xBins: number;
-  public _yBins: number;
+  @HostBinding('style.height.px')
+  get hostHeight() {
+    return this.height || 500;
+  }
 
-  @Input() defaultColor?: string = "#303C46";
+  @HostBinding('style.max-height')
+  get hostMaxHeight() {
+    return '100%';
+  }
+
+  @HostBinding('style.width')
+  get hostWidth() {
+    return '100%';
+  }
+
+  @HostBinding('style.display')
+  get hostDisplay() {
+    return 'block';
+  }
+
+  @Input() height?: number;
+
+  public _data!: GemHeatmapChartData;
+  public _xBins: number = 6;
+  public _yBins: number = 6;
+
+  public _xLabel: string = '';
+  public _yLabel: string = '';
+
+  private resizeObserver!: ResizeObserver;
+
+  @ViewChild('innerContainer') innerContainer!: ElementRef;
+  @ViewChild('outerContainer') outerContainer!: ElementRef;
+
+  @Input() defaultColor?: string = '#303C46';
   @Input() defaultXBins?: number = 6;
   @Input() defaultYBins?: number = 6;
 
-
-  /**
-   * Updates internal parameters based on Inputs
-   */
-  ngOnChanges(changes: SimpleChanges) {
-    for (const propName in changes) {
-      if (changes.hasOwnProperty(propName)) {
-        switch (propName) {
-          case 'data': {
-            if (this.data) this.rearrange_array(this.data.getEntriesList()).then(arr => this.computed_data = arr);
-            break;
-          }
-          case 'xBins': {
-            if (this.xBins) this._xBins = this.xBins;
-            if (this.data) this.rearrange_array(this.data.getEntriesList()).then(arr => this.computed_data = arr);
-            break;
-          }
-          case 'yBins': {
-            if (this.yBins) this._yBins = this.yBins;
-            if (this.data) this.rearrange_array(this.data.getEntriesList()).then(arr => this.computed_data = arr);
-            break;
-          }
-          case 'defaultColor': {
-            if (/^#[0-9A-F]{6}$/i.test(this.defaultColor)) this.enter_color(this.defaultColor);
-            break;
-          }
-        }
-      }
-    }
-  }
-
-
-
-  /**
-   * @param min_num_seperations The lower bound for the number of columns in the chart
-   */
   private min_num_seperations = 1;
-  /**
-   * @param max_num_seperations The upper bound for the number of columns in the chart
-   */
   private max_num_seperations = 32;
 
-  /**
-   * @param computed_data Data used as input for [NGX-Charts Heatmap]{@link https://swimlane.gitbook.io/ngx-charts/v/docs-test/examples/heat-map-chart}
-   */
-  computed_data;
+  public plotlyData: any[] = [];
 
-  /**
-   * Sets some Input values for [NGX-Charts Heatmap]{@link https://swimlane.gitbook.io/ngx-charts/v/docs-test/examples/heat-map-chart}
-   */
-  showXAxis = true;
-  showYAxis = true;
-  gradient = false;
-  displayLegend = true;
-  showXAxisLabel = true;
-  showYAxisLabel = true;
+  colorScheme = ['#A3CAEC', '#98BCDB', '#8CAECB', '#819FBA', '#7591AA', '#6A8399', '#5E7588', '#536778', '#3C4A57', '#303C46'];
 
-
-
-
-  /**
-   * @param colorScheme The default color-scheme
-   */
-  colorScheme = {
-    name: 'default',
-    selectable: true,
-    group: ScaleType.Linear,
-    domain: ['#A3CAEC', '#98BCDB', '#8CAECB', '#819FBA', '#7591AA', '#6A8399', '#5E7588', '#536778', '#536778', '#3C4A57', '#303C46']
+  _layout: any = {
+    autosize: true,
+    margin: { t: 30, b: 60, l: 50, r: 20 },
+    showlegend: false,
+    xaxis: { automargin: true },
+    yaxis: { automargin: true }
   };
-  /**
-   * @param colorscalefactor The secondary color is calculated as being colorscalefactor away from white/black when starting at the selected color
-   */
-  colorscalefactor = 0.3;
-  /**
-   * @param color_domain_mid_steps How many mid-steps there should in the colorScheme between selected and secondary color.
-   */
-  color_domain_mid_steps = 10;
 
-  /**
-   * Creates a new @param colorScheme based on @param value
-   * @param value A Hex Color String
-   */
-  enter_color(value: string) {
-    var color = parseInt(value.substr(1), 16);
-    var blue = (color % 256);
-    var green = ((color - blue) / 256) % 256;
-    var red = (color - blue - (256 * green)) / 65536;
+  _config: any = { displaylogo: false, responsive: true };
 
-    if ((blue + green + red) > 381) {
-      var secondary_red = red * this.colorscalefactor;
-      var secondary_green = green * this.colorscalefactor;
-      var secondary_blue = blue * this.colorscalefactor;
-    }
-    else {
-      var secondary_red = 255 - (255 - red) * this.colorscalefactor;
-      var secondary_green = 255 - (255 - green) * this.colorscalefactor;
-      var secondary_blue = 255 - (255 - blue) * this.colorscalefactor;
-    }
+  constructor(private el: ElementRef, private cdr: ChangeDetectorRef) {
+    super();
+  }
 
-    var new_domain = [];
-    for (var i = 0; i < this.color_domain_mid_steps; i++) {
-      new_domain.push(this.color_to_html_hex(((this.color_domain_mid_steps - i) * secondary_red + i * red) / this.color_domain_mid_steps, ((this.color_domain_mid_steps - i) * secondary_green + i * green) / this.color_domain_mid_steps, ((this.color_domain_mid_steps - i) * secondary_blue + i * blue) / this.color_domain_mid_steps));
-    }
-    new_domain.push(value);
-    new_domain.push(value);
-    this.colorScheme = {
-      name: 'default',
-      selectable: true,
-      group: ScaleType.Linear,
-      domain: new_domain
+  @Input()
+  public set data(data: GemHeatmapChartData | any) {
+    if (!data) return;
+    this._data = data;
+    const entries = typeof data.getEntriesList === 'function' ? (data.getEntriesList() ? data.getEntriesList().__internalArray() : undefined) : data.entries;
+    if (!entries || !Array.isArray(entries)) return;
+    const { xLabels, yLabels, z } = this.computeHeatmap(entries);
+
+    const domain = this.colorScheme;
+    const colorscale = domain.map((c, i) => [i / (domain.length - 1), c]);
+
+    const trace = {
+      z: z,
+      x: xLabels,
+      y: yLabels,
+      type: 'heatmap',
+      colorscale: colorscale,
+      hoverongaps: false,
+      colorbar: { titleside: 'right' },
+      xgap: 2,
+      ygap: 2
     };
+
+    this.plotlyData = [trace];
+    this.updateAxisTitles();
+    this.cdr.detectChanges();
   }
 
-  /**
-   * @param redv Red value (0-255)
-   * @param greenv Green value (0-255)
-   * @param bluev  Blue value (0-255)
-   * @returns Hex Color String from the given color values
-   */
-  color_to_html_hex(redv, greenv, bluev) {
-    return ('#' + ('0' + Math.floor(redv).toString(16)).slice(-2) + ('0' + Math.floor(greenv).toString(16)).slice(-2) + ('0' + Math.floor(bluev).toString(16)).slice(-2));
-  }
+  private computeHeatmap(entries: any[]) {
+    if (!entries || entries.length === 0) return { xLabels: [], yLabels: [], z: [] };
 
+    let minX = entries[0].getXValue ? entries[0].getXValue() : entries[0].xValue;
+    let maxX = minX;
+    let minY = entries[0].getYValue ? entries[0].getYValue() : entries[0].yValue;
+    let maxY = minY;
 
-
-
-  /**
-   * Updates internal parameters @param _xBins and  @param computed_data based on User-Inputs
-   */
-  enter_x_bins(value: string | number) {
-    if (typeof value === "number") {
-      if (value < this.min_num_seperations) { this._xBins = this.min_num_seperations; }
-      else if (value > this.max_num_seperations) { this._xBins = this.max_num_seperations; }
-      else this._xBins = value;
-    } else { this._xBins = +value; }
-    if (this.data) this.rearrange_array(this.data.getEntriesList()).then(arr => this.computed_data = arr);
-  }
-
-  /**
-   * Updates internal parameters @param _yBins and  @param computed_data based on User-Inputs
-   */
-  enter_y_bins(value: string | number) {
-    if (typeof value === "number") {
-      if (value < this.min_num_seperations) { this._yBins = this.min_num_seperations; }
-      else if (value > this.max_num_seperations) { this._yBins = this.max_num_seperations; }
-      else this._yBins = value;
-    } else { this._yBins = +value; }
-    if (this.data) this.rearrange_array(this.data.getEntriesList()).then(arr => this.computed_data = arr);
-  }
-
-
-  /**
-   * @param somedata A list of entries.
-   * @returns a matrix of entries.
-   */
-  async rearrange_array(somedata) : Promise<Array<any>>{
-    if (!somedata || (await somedata.size()) === 0) return [];
-
-    let minX = (await somedata.get(0)).getXValue();
-    let maxX = (await somedata.get(0)).getXValue();
-    let minY = (await somedata.get(0)).getYValue();
-    let maxY = (await somedata.get(0)).getYValue();
-
-    for await (const entry of somedata) {
-      if (entry.getXValue() < minX) minX = entry.getXValue();
-      if (entry.getXValue() > maxX) maxX = entry.getXValue();
-      if (entry.getYValue() < minY) minY = entry.getYValue();
-      if (entry.getYValue() > maxY) maxY = entry.getYValue();
+    for (const e of entries) {
+      const xv = e.getXValue ? e.getXValue() : e.xValue;
+      const yv = e.getYValue ? e.getYValue() : e.yValue;
+      if (xv < minX) minX = xv;
+      if (xv > maxX) maxX = xv;
+      if (yv < minY) minY = yv;
+      if (yv > maxY) maxY = yv;
     }
 
     if (minX === maxX) maxX += 1;
     if (minY === maxY) maxY += 1;
 
-    const xBins = this._xBins || this.xBins || this.defaultXBins || 6;
-    const yBins = this._yBins || this.yBins || this.defaultYBins || 6;
+    const xBins = this._xBins || this.defaultXBins || 6;
+    const yBins = this._yBins || this.defaultYBins || 6;
 
     const stepX = (maxX - minX) / xBins;
     const stepY = (maxY - minY) / yBins;
 
     const grid = new Array(xBins);
-    for (let i = 0; i < xBins; i++) {
-      grid[i] = new Array(yBins).fill(0);
-    }
+    for (let i = 0; i < xBins; i++) grid[i] = new Array(yBins).fill(0);
 
-    for await(const entry of somedata) {
-      let xIdx = Math.floor((entry.getXValue() - minX) / stepX);
-      let yIdx = Math.floor((entry.getYValue() - minY) / stepY);
+    for (const e of entries) {
+      const xv = e.getXValue ? e.getXValue() : e.xValue;
+      const yv = e.getYValue ? e.getYValue() : e.yValue;
+      let xIdx = Math.floor((xv - minX) / stepX);
+      let yIdx = Math.floor((yv - minY) / stepY);
       if (xIdx >= xBins) xIdx = xBins - 1;
       if (yIdx >= yBins) yIdx = yBins - 1;
       if (xIdx < 0) xIdx = 0;
@@ -219,20 +160,157 @@ export class GemHeatmapChart extends GemHeatmapChartComponent {
       grid[xIdx][yIdx]++;
     }
 
-    const computed_d = [];
-    for (let i = 0; i < xBins; i++) {
-      const xLabel = Math.floor(minX + i * stepX) + "-" + Math.floor(minX + (i + 1) * stepX);
-      const series = [];
-      for (let j = 0; j < yBins; j++) {
-        const yLabel = Math.floor(minY + j * stepY) + "-" + Math.floor(minY + (j + 1) * stepY);
-        series.push({ name: yLabel, value: grid[i][j] });
+    const z: number[][] = [];
+    for (let j = 0; j < yBins; j++) {
+      const row = [];
+      for (let i = 0; i < xBins; i++) {
+        row.push(grid[i][j]);
       }
-      computed_d.push({ name: xLabel, series: series });
+      z.push(row);
     }
 
-    return computed_d;
-  };
+    const xLabels = [];
+    const yLabels = [];
+    for (let i = 0; i < xBins; i++) {
+      xLabels.push(Math.floor(minX + i * stepX) + '-' + Math.floor(minX + (i + 1) * stepX));
+    }
+    for (let j = 0; j < yBins; j++) {
+      yLabels.push(Math.floor(minY + j * stepY) + '-' + Math.floor(minY + (j + 1) * stepY));
+    }
+
+    return { xLabels, yLabels, z };
+  }
+
+  public enter_color(value: string) {
+    if (!value || !/^#[0-9A-F]{6}$/i.test(value)) return;
+
+    const steps = 6;
+    const color = parseInt(value.substr(1), 16);
+    const blue = (color % 256);
+    const green = ((color - blue) / 256) % 256;
+    const red = (color - blue - (256 * green)) / 65536;
+    const domain = [];
+
+    // from a light tint for the lowest count to the selected color for the highest, like the default scheme;
+    // the lightest step keeps a share of the color, pure white cells would vanish on the white background
+    const minFactor = 0.35;
+    for (let i = 0; i < steps; i++) {
+      const factor = minFactor + (1 - minFactor) * i / (steps - 1);
+      const r = Math.round(255 * (1 - factor) + red * factor);
+      const g = Math.round(255 * (1 - factor) + green * factor);
+      const b = Math.round(255 * (1 - factor) + blue * factor);
+      domain.push('#' + ('0' + r.toString(16)).slice(-2) + ('0' + g.toString(16)).slice(-2) + ('0' + b.toString(16)).slice(-2));
+    }
+    this.colorScheme = domain;
+
+    if (this.plotlyData && this.plotlyData.length > 0) {
+      const colorscale = this.colorScheme.map((c, i) => [i / (this.colorScheme.length - 1), c]);
+      this.plotlyData[0].colorscale = colorscale;
+      this.updatePlot();
+      this.cdr.detectChanges();
+    }
+  }
+
+  @Input()
+  public set xBins(value: number) {
+    this.enter_x_bins(value);
+  }
+
+  @Input()
+  public set yBins(value: number) {
+    this.enter_y_bins(value);
+  }
+
+  public enter_x_bins(value: string | number) {
+    const bins = this.toBinCount(value);
+    if (bins === null) return;
+    this.setXBins(bins);
+    if (this._data) this.data = this._data;
+  }
+
+  public enter_y_bins(value: string | number) {
+    const bins = this.toBinCount(value);
+    if (bins === null) return;
+    this.setYBins(bins);
+    if (this._data) this.data = this._data;
+  }
+
+  /** returns a whole number of bins within the allowed range, or null for empty or invalid input */
+  private toBinCount(value: string | number): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const bins = Math.round(+value);
+    if (!Number.isFinite(bins)) return null;
+    return Math.max(this.min_num_seperations, Math.min(this.max_num_seperations, bins));
+  }
+
+  public setXLabel(value: string) {
+    super.setXLabel(value);
+    this.updateAxisTitles();
+  }
+
+  public setYLabel(value: string) {
+    super.setYLabel(value);
+    this.updateAxisTitles();
+  }
+
+  public ngOnInit(): void {
+    super.ngOnInit();
+  }
+
+  ngAfterViewInit() {
+    this.resizeObserver = setupResizeObserver(this.el.nativeElement, (w, h) => this.handleResize(w, h));
+  }
+
+  ngOnDestroy() {
+    if (this.resizeObserver) this.resizeObserver.disconnect();
+  }
+
+  private handleResize(width: number, height: number) {
+    if (width === 0 || height === 0) return;
+
+    const fontSize = 12;
+
+    this._layout.margin = {
+      t: 30,
+      b: 50,
+      l: 50,
+      r: 30
+    };
+
+    if (this.autoMarginsEnabled()) {
+      if (!this._layout.xaxis) this._layout.xaxis = {};
+      if (!this._layout.yaxis) this._layout.yaxis = {};
+
+      this._layout.xaxis.automargin = true;
+      this._layout.yaxis.automargin = true;
+
+      this._layout.xaxis.tickfont = { size: fontSize };
+      this._layout.yaxis.tickfont = { size: fontSize };
+    }
+
+    this.updatePlot();
+    this.cdr.detectChanges();
+  }
+
+  private updateAxisTitles(): void {
+    if (!this._layout.xaxis) this._layout.xaxis = {};
+    if (!this._layout.yaxis) this._layout.yaxis = {};
+    this._layout.xaxis.title = this.xLabel ? { text: this.xLabel, standoff: 12 } : undefined;
+    this._layout.yaxis.title = this.yLabel ? { text: this.yLabel, standoff: 12 } : undefined;
+    this.updatePlot();
+  }
+
+  private autoMarginsEnabled() {
+    return true;
+  }
+
+  private updatePlot(): void {
+    this.plotlyData = [...this.plotlyData];
+    this._layout = { ...this._layout, margin: { ...this._layout.margin }, xaxis: { ...this._layout.xaxis }, yaxis: { ...this._layout.yaxis } };
+  }
 
 
-  public ngOnInit(): void { }
+  public changeContainer() {
+    return '';
+  }
 }

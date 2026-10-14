@@ -34,14 +34,20 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
     super(null, context, null);
   }
 
+  /**
+   * @param compilationUnit the scanned unit, JSweet needs it to report the source position of an internal error
+   */
+  public JSweetCoCoChecker(JSweetContext context, CompilationUnitTree compilationUnit) {
+    super(null, context, compilationUnit);
+  }
+
   protected JSweetCoCoChecker(TranspilationHandler logHandler, JSweetContext context, CompilationUnitTree compilationUnit) {
     super(logHandler, context, compilationUnit);
   }
 
   @Override
   public Void visitClass(ClassTree classTree, Trees trees) {
-    Symbol.ClassSymbol classSymbol = (Symbol.ClassSymbol) trees.getElement(
-        trees.getPath(getCurrentPath().getCompilationUnit(), classTree));
+    Symbol.ClassSymbol classSymbol = (Symbol.ClassSymbol) trees.getElement(getCurrentPath());
 
     boolean classIsBackendOnlyOrErased = classSymbol.getAnnotationMirrors().stream()
         .anyMatch(a -> a.getAnnotationType().toString()
@@ -58,8 +64,7 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
 
   @Override
   public Void visitMethod(MethodTree methodTree, Trees trees) {
-    Symbol.MethodSymbol methodSymbol = (Symbol.MethodSymbol) trees.getElement(
-        trees.getPath(getCurrentPath().getCompilationUnit(), methodTree));
+    Symbol.MethodSymbol methodSymbol = (Symbol.MethodSymbol) trees.getElement(getCurrentPath());
 
     boolean methodOrAttrIsBackendOnlyOrErased = methodSymbol.getAnnotationMirrors().stream()
         .anyMatch(a -> a.getAnnotationType().toString()
@@ -77,8 +82,7 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
 
   @Override
   public Void visitVariable(VariableTree variableTree, Trees trees) {
-    Symbol.VarSymbol varSymbol = (Symbol.VarSymbol) trees.getElement(
-        trees.getPath(getCurrentPath().getCompilationUnit(), variableTree));
+    Symbol.VarSymbol varSymbol = (Symbol.VarSymbol) trees.getElement(getCurrentPath());
     if(varSymbol.enclClass() == null || !(varSymbol.owner instanceof Symbol.ClassSymbol)) {
       super.visitVariable(variableTree, trees);
       return null;
@@ -118,8 +122,9 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
    */
   @Override
   public Void visitMethodInvocation(MethodInvocationTree invocation, Trees trees) {
+    // a path from the current one, searching the compilation unit for each tree is costly
     Symbol.MethodSymbol methodSymbol = (Symbol.MethodSymbol) trees.getElement(
-        trees.getPath(getCurrentPath().getCompilationUnit(), invocation.getMethodSelect()));
+        new TreePath(getCurrentPath(), invocation.getMethodSelect()));
     checkUnsupportedApis(invocation, methodSymbol);
     super.visitMethodInvocation(invocation, trees);
     return null;

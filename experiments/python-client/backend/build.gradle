@@ -67,6 +67,9 @@ dependencies {
 
 test {
   dependsOn(tasks.named("transformGemToPy"))
+  // Ensure the test runs when the inputs change
+  inputs.dir(layout.projectDirectory.dir("../runtime-package"))
+  inputs.file(layout.projectDirectory.file("../testmain.py"))
 }
 
 tasks.register("cd2pojoJar", Jar) {

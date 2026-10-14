@@ -1,6 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import de.montigem.gradle.specific.GUI2Java2TSTask
+import de.montigem.gradle.specific.GUI2JavaTask
 
 plugins {
   id "de.rwth.se.montigem-frontend"
@@ -10,7 +10,7 @@ configurations {
   testRuntimeClasspath.exclude group: 'de.monticore.language-server', module: 'monticore-language-server-runtime'
 }
 
-tasks.named("gui2java2ts", GUI2Java2TSTask) {
+tasks.named("gui2java", GUI2JavaTask) {
   guiCreateModels = [
       "gui.login.UserCreate",
       "gui.project.ProjectCreate",

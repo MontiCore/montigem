@@ -36,34 +36,89 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
-## 2026-08-12
+## 2026-10-14: 7.9.3-SNAPSHOT
+* Support for the `local` modifier of class diagrams 
+ 
+## 2026-10-07: 7.9.3-SNAPSHOT
+* `@umlp/charts` moved to version 10.0.0
 
-* version 7.9.2-SNAPSHOT contains
+* Charts migrated to Plotly: `GemBarChart`, `GemBoxPlot`, `GemBulletChart`, `GemCandlestickChart`,
+  `GemGaugeChart`, `GemLineChart`, `GemTimelineChart`, `GemHeatmapChart`, `GemPieChart`,
+  `GemRadarChart`, `GemSunburstChart` and `GemScatterPlot`
+    * the component definitions (parameters) did not change, but the rendering, layout and
+    styling of the charts may differ from before
+    * charts now adapt to the size of their container
+    * `GemVennDiagram`, `GemNetworkGraph` and `GemTimeSeriesChart` still use their previous libraries
+    * vis-lib contains layout/resize tests for the charts (`examples/vis-lib/frontend/src/test/ts/manual`)
+
+* Every chart component has a configuration (context) menu, opened via the gear button
+    * new parameter `boolean showConfig = false` on every chart controls whether the gear button is shown
+
+* Fixes for the MontiGem theme (see 7.9.2), which may change the layout of existing pages:
+    * `GemRow` and `GemColumn` default to `height = "auto"` and `width = "auto"` (was `"100%"`);
+      set `height = "100%"` explicitly where a container should fill its parent
+    * `GemText` defaults to `width = "auto"` and `height = "auto"` (was `"100%"`)
+    * `hAlign = "left"` and `vAlign = "top"` in `GemRow`/`GemColumn` work again
+    * `GemButton` no longer has a minimum width of `8rem` and no extra inner margin, so the
+      `width` and `margin` parameters are respected; new parameter `String ariaLabel` for buttons without
+      visible text
+    * `GemImage` respects its `width`/`height` parameters and no longer gets a margin and border from the theme
+    * Sass `@import` deprecation warnings are silenced in the generated `angular.json`
+
+* `GemButton` has a new parameter `boolean active = false` that highlights the button as the selected one
+  (e.g. the current category of a navigation bar)
+* `GemNavItem` highlights the entry of the current page again; it no longer depends on router `Scroll` events
+  and also checks the current route when it is created
+* The label of `GemLoadingSpinner` uses the theme's text color, so it is readable in dark mode
+* The header cells of `GemTable` are styled like the header of a `GemCard` (with the smaller padding of a table cell)
+* `GemMarkdown` supports the dark mode (text, tables, code blocks, quotes and rules use the colors of the theme)
+* `MonacoEditor` follows the dark mode of the app: the light themes `vs`, `vs-light`, `Light +` and `hc-light`
+  switch to `vs-dark` resp. `hc-black` while the dark mode is active
+* `GemNavList` uses the navbar colors of the theme (also in dark mode) and left-aligns the text of its items
+* Dark mode fixes for the inputs:
+    * `GemRangeInput`: readable label and tick labels; no highlight box when the slider is clicked
+    * `GemDropdownInput` and `GemAutocompleteInput`: dark field and dark list of options
+    * Edited inputs (e.g. `GemTextareaInput`) are highlighted dark grey instead of light green while focused
+      and invalid inputs dark red instead of light pink
+    * `GemDateInput`: dark calendar popup
+* Dark mode for the charts:
+    * The Plotly based charts get a transparent background, light axis labels, titles and legends and dark grid lines
+      (see `GemCharts.scss` of the theme); colors given by the charts or their data are kept
+    * The settings menu of `GemChartOptions` and the labels of `GemChartLegend` use the colors of the theme
+
+## 2026-08-12: 7.9.2-SNAPSHOT
+* New MontiGem default theme (#4920), see `docs/unstructured/MontiDefTheme.md`
+    * the SCSS files of the Gem components moved to `umlp-rte/frontend/theme/src/main/gui/mc/fenix/theme/src/components`
+      and were renamed to PascalCase (e.g. `GemButton.scss`)
+    * colors are defined as CSS variables in exchangeable theme designs (`base/theme-designs`, e.g. `rwth-blue`)
+    * new component `GemDarkModeSwitch` toggles between light and dark mode
+    * to use the theme, an app's `styles.scss` imports `@umlp/theme/.../theme` and calls `@include montigem-theme();`
+    * the look of existing pages changes (buttons, inputs, cards, images, ...)
 
 * AppComponent ts,html and scss are now generated and do not have to be handwritten anymore
-  * if you want to modify them their new location is inside the hwc gui directory
-  * along with this change MontiGem apps are now using the standalone component bootstrap 
+    * if you want to modify them their new location is inside the hwc gui directory
+    * along with this change MontiGem apps are now using the standalone component bootstrap 
 
 * upgraded to Angular 22 
-  * every handwritten Typescript Angular components should add `changeDetection=ChangeDetectionStrategy.EAGER` to have the old zone.js based change detection and behavior
+    * every handwritten Typescript Angular components should add `changeDetection=ChangeDetectionStrategy.EAGER` to have the old zone.js based change detection and behavior
 
 ## 2026-08-06
 
 - enable package, tsconfig and angular.json override. This will greatly improve frontend dependency update roll-outs for the MontiGem team  
-  - see ProjectSetup.md on how to use them 
+    - see ProjectSetup.md on how to use them 
 
-## 2026-07-31
+## 2026-07-31: 7.9.1-SNAPSHOT
 
 - Upgraded MontiGem to version 7.9.1-SNAPSHOT
-  - frontend TypeScript libraries moved to version >8.0.0  
+    - frontend TypeScript libraries moved to version >8.0.0  
 
 - JSweet transpilation updates which may require adaptations of handwritten typescript:
-  - GUI-DSL Lists are now `IUMLPList` (async) in TypeScript. 
-    - if you need a TypeScript array in TypeScript you should use `GemListUtil.toArray(list)`
-  - List, Set, and Stream are not transpiled to JavaScript native array operations 
+    - GUI-DSL Lists are now `IUMLPList` (async) in TypeScript. 
+        - if you need a TypeScript array in TypeScript you should use `GemListUtil.toArray(list)`
+    - List, Set, and Stream are not transpiled to JavaScript native array operations 
     anymore and instead use `AsyncList.ts`, `AsyncSet.ts`, `AsynStream.ts` implementations
     this enables correct behavior of GemLists 
-  - any constructor call is now async by default this is achieved by generating 
+    - any constructor call is now async by default this is achieved by generating 
     replacing any constructor call with the generated __<ClassName>Constructor
 
 - Client GemLists are now loaded in batches from the Backend

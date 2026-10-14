@@ -13,9 +13,11 @@ page GemBarChartFromCommand(App app, List<Person> persons, String myStringValue 
     data = app.getBarChart(persons, myStringValue),
     stacked = false,
     maxValue = 10,
-    minValue = null
+    minValue = null,
+    showConfig = true
   );
   piechart@GemPieChart(
-    data = app.getPieChart(persons, myStringValue)
+    data = app.getPieChart(persons, myStringValue),
+    showConfig = true
   );
 }

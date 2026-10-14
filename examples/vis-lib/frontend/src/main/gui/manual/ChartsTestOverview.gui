@@ -6,28 +6,26 @@ import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import common.ComponentCard;
 
-import manual.BarTest;
-import manual.BoxPlotTest;
-import manual.BulletTest;
-import manual.CandlestickTest;
-import manual.GaugeChartTest;
-import manual.HeatmapTest;
-import manual.LineChartTest;
-import manual.NetworkGraphTest;
-import manual.PieTest;
-import manual.RadarChartTest;
-import manual.ScatterPlotTest;
-import manual.SunburstTest;
-import manual.TimelineTest;
-import manual.TimeSeriesTest;
-import manual.VennDiagramTest;
+import manual.GemBarChartTest;
+import manual.GemBoxPlotTest;
+import manual.GemBulletChartTest;
+import manual.GemCandlestickChartTest;
+import manual.GemGaugeChartTest;
+import manual.GemHeatmapChartTest;
+import manual.GemLineChartTest;
+import manual.GemNetworkGraphTest;
+import manual.GemPieChartTest;
+import manual.GemSunburstChartTest;
+import manual.GemTimelineChartTest;
+import manual.GemTimeSeriesChartTest;
+import manual.GemVennDiagramTest;
 
 page ChartsTestOverview() {
   @GemColumn(
     hAlign = "center",
     components = [
-      @GemText(value = "Charts Overview", size = "2rem", weight = "bold", height = "auto", width = "auto"),
-      @GemText(value = "Explore the available chart components", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+      @GemText(value = "Chart Tests Overview", size = "2rem", weight = "bold", height = "auto", width = "auto"),
+      @GemText(value = "Manual test pages for chart components", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
 
       @GemRow(
         wrap = "wrap",
@@ -36,21 +34,19 @@ page ChartsTestOverview() {
         colGap = "20px",
         width = "100%",
         components = [
-            @ComponentCard(title = "Bar Chart Test", icon = "bar_chart", description = "Compare categorical data.", click = navigate(@BarTest())),
-            @ComponentCard(title = "Pie Chart Test", icon = "pie_chart", description = "Show proportions.", click = navigate(@PieTest())),
-            @ComponentCard(title = "Line Chart Test", icon = "show_chart", description = "Visualize trends over time.", click = navigate(@LineChartTest())),
-            @ComponentCard(title = "Gauge Chart Test", icon = "speed", description = "Display single value within range.", click = navigate(@GaugeChartTest())),
-            @ComponentCard(title = "Radar Chart Test", icon = "radar", description = "Compare multivariate data.", click = navigate(@RadarChartTest())),
-            @ComponentCard(title = "Scatter Plot Test", icon = "scatter_plot", description = "Show relationship between variables.", click = navigate(@ScatterPlotTest())),
-            @ComponentCard(title = "Venn Diagram Test", icon = "bubble_chart", description = "Visualize set relationships.", click = navigate(@VennDiagramTest())),
-            @ComponentCard(title = "Network Graph Test", icon = "hub", description = "Display nodes and edges.", click = navigate(@NetworkGraphTest())),
-            @ComponentCard(title = "Heatmap Test", icon = "grid_on", description = "Visualize data density.", click = navigate(@HeatmapTest())),
-            @ComponentCard(title = "Sunburst Test", icon = "donut_large", description = "Hierarchical data visualization.", click = navigate(@SunburstTest())),
-            @ComponentCard(title = "Timeline Test", icon = "view_timeline", description = "Events over time.", click = navigate(@TimelineTest())),
-            @ComponentCard(title = "Time Series Test", icon = "timeline", description = "Interactive time series data.", click = navigate(@TimeSeriesTest())),
-            @ComponentCard(title = "Box Plot Test", icon = "candlestick_chart", description = "Statistical distribution.", click = navigate(@BoxPlotTest())),
-            @ComponentCard(title = "Bullet Chart Test", icon = "linear_scale", description = "Performance against target.", click = navigate(@BulletTest())),
-            @ComponentCard(title = "Candlestick Test", icon = "waterfall_chart", description = "Financial data visualization.", click = navigate(@CandlestickTest()))
+            @ComponentCard(title = "Bar Chart Test", icon = "bar_chart", description = "Test scenarios for Bar Charts.", click = navigate(@GemBarChartTest())),
+            @ComponentCard(title = "Pie Chart Test", icon = "pie_chart", description = "Test scenarios for Pie Charts.", click = navigate(@GemPieChartTest())),
+            @ComponentCard(title = "Line Chart Test", icon = "show_chart", description = "Test scenarios for Line Charts.", click = navigate(@GemLineChartTest())),
+            @ComponentCard(title = "Gauge Chart Test", icon = "speed", description = "Test scenarios for Gauge Charts.", click = navigate(@GemGaugeChartTest())),
+            @ComponentCard(title = "Venn Diagram Test", icon = "bubble_chart", description = "Test scenarios for Venn Diagrams.", click = navigate(@GemVennDiagramTest())),
+            @ComponentCard(title = "Network Graph Test", icon = "hub", description = "Test scenarios for Network Graphs.", click = navigate(@GemNetworkGraphTest())),
+            @ComponentCard(title = "Heatmap Test", icon = "grid_on", description = "Test scenarios for Heatmaps.", click = navigate(@GemHeatmapChartTest())),
+            @ComponentCard(title = "Sunburst Test", icon = "donut_large", description = "Test scenarios for Sunburst Charts.", click = navigate(@GemSunburstChartTest())),
+            @ComponentCard(title = "Timeline Test", icon = "view_timeline", description = "Test scenarios for Timelines.", click = navigate(@GemTimelineChartTest())),
+            @ComponentCard(title = "Time Series Test", icon = "timeline", description = "Test scenarios for Time Series Charts.", click = navigate(@GemTimeSeriesChartTest())),
+            @ComponentCard(title = "Box Plot Test", icon = "candlestick_chart", description = "Test scenarios for Box Plots.", click = navigate(@GemBoxPlotTest())),
+            @ComponentCard(title = "Bullet Chart Test", icon = "linear_scale", description = "Test scenarios for Bullet Charts.", click = navigate(@GemBulletChartTest())),
+            @ComponentCard(title = "Candlestick Test", icon = "waterfall_chart", description = "Test scenarios for Candlestick Charts.", click = navigate(@GemCandlestickChartTest()))
         ]
       )
     ]

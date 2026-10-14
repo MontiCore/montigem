@@ -1,0 +1,14 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.advanced;
+
+/**
+ * Displays a snackbar of toast elements (notifications at the bottom right)
+ *  @Snackbar(toastElements =
+ *      @iterate(String text : myList) {
+ *        @ToastElement(value = text);
+ *      },
+ *      visible = !myList.isEmpty()
+ *    );
+ */
+component Snackbar(GUIViewElement toastElements, boolean visible)
+//  List<GuiViewElement> alone does not work, because the GuiDSL does not support a spread operator

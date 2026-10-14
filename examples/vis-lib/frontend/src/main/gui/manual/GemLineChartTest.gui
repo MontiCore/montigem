@@ -1,0 +1,18 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.charts.GemLineChart;
+import manual.*;
+
+page GemLineChartTest(List<Person> persons) {
+  @LayoutTester(input =
+    linechart@GemLineChart(
+     data = null,
+     enableBackgroundColor = false,
+     maxValue = null,
+     minValue = null,
+     showConfig = true
+    )
+  );
+}

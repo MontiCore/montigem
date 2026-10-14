@@ -1,0 +1,134 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.wholeChartWithLegendLeftContainer,
+.wholeChartWithLegendRightContainer,
+.wholeChartWithLegendTopContainer,
+.wholeChartWithLegendBottomContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.wholeChartWithLegendLeftContainer {
+  flex-direction: row-reverse;
+}
+
+.wholeChartWithLegendRightContainer {
+  flex-direction: row;
+}
+
+.wholeChartWithLegendTopContainer {
+  flex-direction: column-reverse;
+}
+
+.wholeChartWithLegendBottomContainer {
+  flex-direction: column;
+}
+
+.wholeChartContainer {
+  position: relative;
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  /* the height vis-network used before (its canvas default) when the host has no height of its own */
+  min-height: 150px;
+}
+
+/*
+ * vis-network sizes its canvas to 100% of the container and re-measures on every resize. If the canvas
+ * took part in the layout, the stretched container would grow with it (plus its border) endlessly next
+ * to a side legend. Positioned absolutely, the canvas takes the container's size without affecting it.
+ */
+.wholeChartContainer ::ng-deep .vis-network {
+  position: absolute !important;
+  inset: 0;
+}
+
+#network {
+  border: 1px solid lightgray;
+}
+
+/* the legend keeps its natural size, the graph takes the remaining space */
+gem-chart-legend {
+  flex: none;
+}
+
+.wholeChartWithLegendLeftContainer gem-chart-legend,
+.wholeChartWithLegendRightContainer gem-chart-legend {
+  max-width: 40%;
+}
+
+/* next to the graph the entries are listed vertically instead of wrapping in a row */
+.wholeChartWithLegendLeftContainer ::ng-deep .gem-legend,
+.wholeChartWithLegendRightContainer ::ng-deep .gem-legend {
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+.legendButtons {
+  display: flex;
+  column-gap: 10px;
+  justify-content: space-between;
+}
+
+#loadingBar {
+  position: absolute;
+  display: none;
+  transition: all 0.5s ease;
+  opacity: 1;
+}
+
+#text {
+  position: absolute;
+  top: 8px;
+  left: 530px;
+  width: 30px;
+  height: 50px;
+  margin: auto;
+  font-size: 22px;
+  color: #000000;
+}
+
+div.outerBorder {
+  position: absolute;
+  width: 600px;
+  height: 44px;
+  border: 8px solid rgba(0, 0, 0, 0.1);
+  background: linear-gradient(to bottom, rgba(252, 252, 252, 1) 0%, rgba(237, 237, 237, 1) 100%);
+  border-radius: 72px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+#border {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 500px;
+  height: 23px;
+  margin: auto;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+
+#bar {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 20px;
+  height: 20px;
+  margin: auto;
+  border-radius: 11px;
+  border: 2px solid rgba(30, 30, 30, 0.05);
+  background: rgb(0, 173, 246);
+  box-shadow: 2px 0px 4px rgba(0, 0, 0, 0.4);
+}

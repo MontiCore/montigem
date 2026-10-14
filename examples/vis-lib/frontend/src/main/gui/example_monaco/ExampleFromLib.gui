@@ -21,8 +21,8 @@ page ExampleFromLib(Person p) {
         language="mySpecialLanguage"
       ),
       @GemText(value="You will also have to add the following lines to your frontend's config/package.override.json and config/angular.override.json!"),
-      @GemText(value="{\n                        \"dependencies\": {\n                          \"@umlp/editor\": \"^<<insert correct version here>>>\",\n                        }\n                      }",  fontFamily = "'Lucida Console', Courier, monospace"),
-      @GemText(value="{\n                        \"projects\": {\n                          \"client\": {\n                            \"architect\": {\n                              \"build\": {\n                                \"options\": {\n                                  \"assets\": [\n                                    \"src/favicon.ico\",\n                                    \"src/assets\",\n                                    {\n                                      \"glob\": \"**/*\",\n                                      \"input\": \"node_modules/monaco-editor\",\n                                      \"output\": \"/assets/monaco/\"\n                                    }\n                                  ]\n                                }\n                              }\n                            }\n                          }\n                        }\n                      }\n      ", fontFamily = "'Lucida Console', Courier, monospace")
+      @JsonSnippet(code = "{\n  \"dependencies\": {\n    \"@umlp/editor\": \"^<<insert correct version here>>>\"\n  }\n}"),
+      @JsonSnippet(code = "{\n  \"projects\": {\n    \"client\": {\n      \"architect\": {\n        \"build\": {\n          \"options\": {\n            \"assets\": [\n              \"src/favicon.ico\",\n              \"src/assets\",\n              {\n                \"glob\": \"**/*\",\n                \"input\": \"node_modules/monaco-editor\",\n                \"output\": \"/assets/monaco/\"\n              }\n            ]\n          }\n        }\n      }\n    }\n  }\n}")
     ]),
     basePath = "example_monaco",
     componentName = "ExampleFromLib"

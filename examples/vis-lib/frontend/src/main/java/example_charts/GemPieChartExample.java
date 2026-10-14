@@ -21,7 +21,7 @@ public class GemPieChartExample extends GemPieChartExampleTOP {
     }
     List<GemPieChartEntry> dataEntries = new ArrayList<>();
     dataEntries.add(new GemPieChartEntry(0, "People born before 1993", Optional.empty()));
-    dataEntries.add(new GemPieChartEntry(0, "People born in and after 1993", Optional.of("#000000")));
+    dataEntries.add(new GemPieChartEntry(0, "People born in and after 1993", Optional.of("#57ab27")));
 
     int group1 = 0;
     int group2 = 0;

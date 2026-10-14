@@ -184,31 +184,32 @@ public class JavaTimeAdapter extends AbstractAdapter {
 
       printMacroName(methodName);
 
-      this.print("((d) => { ").println();
+      // The amount is passed in as parameter n instead of being printed into the arrow function:
+      // it may contain an await (e.g. an association navigation), which is only allowed in the
+      // enclosing async function, not in the synchronous arrow function.
+      this.print("((d, n) => { ").println();
       this.print("let res = new Date(d.getTime()); ").println();
 
       if ("Months".equals(baseName) || "Years".equals(baseName)) {
         this.print("let checkDay = res.getUTCDate(); ").println();
         this.print("res." + jsSetter + "(res." + jsGetter + "()").println();
-        this.print(isPlus ? " + " : " - ").println();
-        this.print(invocation.getArguments().get(0)).println();
+        this.print(isPlus ? " + n" : " - n").println();
         this.print("); ").println();
         this.print("if (res.getUTCDate() !== checkDay) { res.setUTCDate(0); } ").println();
       } else if ("Nanos".equals(baseName)) {
         this.print("res." + jsSetter + "(res." + jsGetter + "()").println();
-        this.print(isPlus ? " + Math.floor(" : " - Math.floor(").println();
-        this.print(invocation.getArguments().get(0)).print(" / 1000000)").println();
+        this.print(isPlus ? " + Math.floor(n / 1000000)" : " - Math.floor(n / 1000000)").println();
         this.print("); ").println();
       } else {
         this.print("res." + jsSetter + "(res." + jsGetter + "()").println();
-        this.print(isPlus ? " + (" : " - (").println();
-        this.print(invocation.getArguments().get(0)).println();
+        this.print(isPlus ? " + (n" : " - (n").println();
         if (factor > 1) this.print(" * " + factor).println();
         this.print(")); ").println();
       }
 
       this.print("return res; })(").println();
       printDateTarget(invocation, isLocalDateTime);
+      this.print(", ").print(invocation.getArguments().get(0)).println();
       this.print(")").println();
       return true;
     }

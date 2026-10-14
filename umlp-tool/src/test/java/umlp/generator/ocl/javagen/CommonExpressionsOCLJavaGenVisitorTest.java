@@ -136,6 +136,32 @@ class CommonExpressionsOCLJavaGenVisitorTest {
         printFlattenedFieldAccess("Collection"));
   }
 
+  @Test
+  void printsCalleeAsMethodWhenItsTypeIsNoFunction() {
+    // the type of an overloaded method like String.startsWith is not always a function type
+    var receiver = OCLMill.nameExpressionBuilder().setName("title").build();
+    var callee = OCLMill.fieldAccessExpressionBuilder()
+        .setExpression(receiver)
+        .setName("startsWith")
+        .build();
+    var call = OCLMill.callExpressionBuilder()
+        .setExpression(callee)
+        .setArguments(OCLMill.argumentsBuilder()
+            .addExpression(OCLMill.nameExpressionBuilder().setName("prefix").build())
+            .build())
+        .build();
+    var stringType = SymTypeExpressionFactory.createTypeObject(new TypeSymbol("String"));
+    NoRegexOCLTypeCheck3.getDelegate().getType4Ast().setTypeOfExpression(receiver, stringType);
+    NoRegexOCLTypeCheck3.getDelegate().getType4Ast()
+        .setTypeOfExpression(callee, SymTypeExpressionFactory.createObscureType());
+
+    IndentPrinter printer = new IndentPrinter();
+    var generator = new OCL2UMLPJavaCodeGenerator(printer);
+    call.accept(generator.getTraverser());
+
+    assertEquals("(title.startsWith(prefix))", printer.getContent());
+  }
+
   private TypeSymbol mockOwnerType(String fullName) {
     TypeSymbol owner = mock(TypeSymbol.class);
     when(owner.getFullName()).thenReturn(fullName);

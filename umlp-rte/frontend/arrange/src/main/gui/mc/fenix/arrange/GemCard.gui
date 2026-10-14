@@ -27,7 +27,11 @@ component GemCard(
   */
   GUIViewElement titleComponent,
   /** Component displayed in body of the card. */
-  GUIViewElement component
+  GUIViewElement component,
+  /**
+    Whether the card can be collapsed/expanded.
+  */
+  boolean collapsible = false
 ) {
   @GemColumn(style = "mat-elevation-z8", height = "100%", components = [
     @GemRow(style = "gem-card-header"),

@@ -12,6 +12,7 @@ import de.monticore.symboltable.serialization.JsonPrinter;
 import de.se_rwth.commons.Names;
 import de.se_rwth.commons.logging.Log;
 import org.apache.commons.cli.CommandLine;
+import umlp.UMLPToolOptions;
 import umlp.GUIDSLReports;
 import umlp.MillConf;
 import umlp.TagRelated;
@@ -108,9 +109,11 @@ public class GuiPipeline extends Pipeline<UMLPPipelineData> {
 
   public final IOperation.ISimpleOperation<DataWithGenSetupAndModel> model_pipe_init_reporting =
       data -> {
-        data.getData().guidsl_reportManagerFactory =
+        GUIDSLReports reports =
             new GUIDSLReports(data.getData().outDir.getPath(), data.getData().reportDir.getPath(),
                 data.getData().reportPathOutput, data.getData().hwcPath);
+        reports.setReportLevel(UMLPToolOptions.reportLevel(data.getData().cmd));
+        data.getData().guidsl_reportManagerFactory = reports;
         Reporting.init(data.getData().outDir.getPath(), data.getData().reportDir.getPath(),
             data.getData().guidsl_reportManagerFactory);
         Reporting.on(getReportingOnModelName(data.getPath()));

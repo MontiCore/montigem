@@ -65,7 +65,7 @@ def guiVariability = tasks.register('guiVariability', GUIVariabilityTask) {
   outputDir = layout.buildDirectory.dir("guiVariability")
 }
 
-gui2java2ts {
+gui2java {
   guiCreateModelsAsFile = file(cd2gui.flatMap { it.getOutputDir().file("meta/domain/guiCreateTextModels") })
   input.setFrom(guiVariability.flatMap { it.getOutputDir() })
   symbolPath.from(cd2gui.flatMap { it.getOutputDir().file("symbols") })

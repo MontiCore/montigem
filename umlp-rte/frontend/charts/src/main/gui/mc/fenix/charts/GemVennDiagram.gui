@@ -13,5 +13,7 @@ import mc.fenix.charts.GemVennDiagramTypes.GemVennDiagramData;
 */
 component GemVennDiagram(
     /** The sets and their overlaps to be displayed in the diagram. */
-    GemVennDiagramData data
+    GemVennDiagramData data,
+    /** Whether the chart's configuration panel is shown. */
+    boolean showConfig = false
 )

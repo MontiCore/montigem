@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.charts.GemPieChart;
+import manual.*;
+
+page GemPieChartTest(List<Person> persons) {
+  @LayoutTester(input =
+    @GemPieChart(
+      data = getData(),
+      innerRadius = 10,
+      showConfig = true
+    )
+  );
+}

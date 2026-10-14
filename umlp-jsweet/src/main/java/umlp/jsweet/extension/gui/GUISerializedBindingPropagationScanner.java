@@ -18,8 +18,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -118,8 +120,20 @@ public class GUISerializedBindingPropagationScanner extends AbstractTreeScanner 
 
     private ExecutableElement callerPendant;
 
+    // the members of a type are listed once, not once per method
+    private final Map<TypeElement, Map<String, ExecutableElement>> pendants = new HashMap<>();
+
     protected TransitiveScanner(JSweetContext context) {
       super(null, context, null);
+    }
+
+    /** the last method with each name, like the former loop over the members */
+    private Map<String, ExecutableElement> pendantsByName(TypeElement type) {
+      Map<String, ExecutableElement> byName = new HashMap<>();
+      for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
+        byName.put(method.getSimpleName().toString(), method);
+      }
+      return byName;
     }
 
     @Override
@@ -130,12 +144,8 @@ public class GUISerializedBindingPropagationScanner extends AbstractTreeScanner 
       if (caller != null && caller.getKind() != ElementKind.CONSTRUCTOR
           && caller.getEnclosingElement() instanceof TypeElement) {
         callerType = (TypeElement) caller.getEnclosingElement();
-        String pendantName = caller.getSimpleName().toString() + "ForAngular";
-        for (ExecutableElement candidate : ElementFilter.methodsIn(callerType.getEnclosedElements())) {
-          if (candidate.getSimpleName().contentEquals(pendantName)) {
-            callerPendant = candidate;
-          }
-        }
+        callerPendant = pendants.computeIfAbsent(callerType, this::pendantsByName)
+            .get(caller.getSimpleName().toString() + "ForAngular");
       }
       Void result = callerPendant != null ? super.visitMethod(node, trees) : null;
       callerType = null;

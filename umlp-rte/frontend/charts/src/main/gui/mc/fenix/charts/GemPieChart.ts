@@ -19,6 +19,7 @@ import { GemChartOptions } from './GemChartOptions';
 import {GemListUtil} from "@umlp/commonj2ts";
 import { PlotlyModule } from 'angular-plotly.js';
 import * as Plotly from 'plotly.js-dist-min';
+import { setupResizeObserver } from './ResizeObserverUtil';
 
 PlotlyModule.plotlyjs = Plotly;
 
@@ -167,26 +168,12 @@ export class GemPieChart extends GemPieChartComponent implements OnInit, AfterVi
   }
 
   public ngOnInit(): void {
+    super.ngOnInit();
     this.applyLegendPosition(this.legendPosition);
   }
 
   ngAfterViewInit() {
-    setTimeout(() => {
-      const initialRect = this.el.nativeElement.getBoundingClientRect();
-      if (initialRect.width > 0 && initialRect.height > 0) {
-        this.handleResize(initialRect.width, initialRect.height);
-      }
-      window.dispatchEvent(new Event('resize'));
-    }, 0);
-
-    this.resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        setTimeout(() => {
-          this.handleResize(entry.contentRect.width, entry.contentRect.height);
-        }, 0);
-      }
-    });
-    this.resizeObserver.observe(this.el.nativeElement);
+    this.resizeObserver = setupResizeObserver(this.el.nativeElement, (w, h) => this.handleResize(w, h));
   }
 
   ngOnDestroy() {
@@ -200,8 +187,7 @@ export class GemPieChart extends GemPieChartComponent implements OnInit, AfterVi
       return;
     }
 
-    const isSmall = width < 450 || height < 250;
-    const fontSize = isSmall ? 9 : 12;
+    const fontSize = 12;
 
     if (this._layout.legend) {
       this._layout.legend = { ...this._layout.legend, font: { ...(this._layout.legend.font || {}), size: fontSize } };

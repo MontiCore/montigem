@@ -9,7 +9,21 @@ import de.monticore.ocl.ocl.OCLMill;
 import de.monticore.ocl.setexpressions._ast.*;
 import jsweet.lang.Erased;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Collection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Objects;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.UUID;
 
 /**
  * Utility class for handling set isin/notin logic in OCL to Cypher translation

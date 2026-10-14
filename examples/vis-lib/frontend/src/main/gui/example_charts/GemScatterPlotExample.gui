@@ -3,15 +3,15 @@ package example_charts;
 
 import Domain.Person;
 import mc.fenix.charts.GemScatterPlot;
-import mc.fenix.charts.GemScatterPlotAxis;
 import common.ExamplePage;
 
 page GemScatterPlotExample(List<Person> persons) {
   @ExamplePage(
-    component = simple@GemScatterPlot(
-      data = null,
+    component = @GemScatterPlot(
+      data = getSimpleData(),
       xAxis = null,
-      yAxis = null
+      yAxis = null,
+      showConfig = true
     ),
     basePath = "example_charts",
     componentName = "GemScatterPlotExample"

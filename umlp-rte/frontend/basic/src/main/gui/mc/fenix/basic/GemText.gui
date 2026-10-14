@@ -21,8 +21,8 @@ component GemText(
   String weight = "unset",
   /** Font family. Example: `"Gill Sans", sans-serif` */
   String fontFamily = "unset",
-  /** Width of the input field. */
-  String width = "100%",
-  /** Height of the input field. */
-  String height = "100%"
+  /** Width of the text in `px`, `%`, `em`, etc. By default as wide as its content or the layout allows. */
+  String width = "auto",
+  /** Height of the text in `px`, `%`, `em`, etc. By default as high as its content. */
+  String height = "auto"
 )

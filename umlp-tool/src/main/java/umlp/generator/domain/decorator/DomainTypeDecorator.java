@@ -128,7 +128,8 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
     // create method void set%Name%Absent()
     method = getCD4C().addMethod(cdType, getSetAbsentTemplate(), ast.getName());
     method.clearCDParameters();
-    glex.replaceTemplate(EMPTY_BODY, method, new StringHookPoint("this." + method.getName() + "(NotificationScope.ALL);"));
+    String notificationScope = ast.getModifier().isLocal() ? "LOCAL" : "ALL";
+    glex.replaceTemplate(EMPTY_BODY, method, new StringHookPoint("this." + method.getName() + "(NotificationScope." + notificationScope + ");"));
 
   }
 
@@ -152,6 +153,7 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
       ASTModifier targetMod = attribute.getModifier();
       ASTModifier sourceMod = visibleAttribute.getModifier();
       targetMod.setDerived(sourceMod.isDerived());
+      targetMod.setLocal(sourceMod.isLocal() || domainType.getModifier().isLocal());
 
       if(sourceMod.isPresentStereotype() && sourceMod.getStereotype().contains(DERIVED_IMPL_TEMPLATE)){
         copyImplTemplateStereo(targetMod, sourceMod);
@@ -198,6 +200,7 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
           getMCTypeFacade().createBasicGenericTypeOf(GenService.isList(assocSide) ? "GemList" : "Gem", type),
           GenService.createName(assocSide.getName())
       );
+      attribute.getModifier().setLocal(assocSide.getModifier().isLocal() || GenService.isSymbolLocal(assocSide));
       if (GenService.isSymbolDerived(assocSide)) {
         attribute.getModifier().setDerived(true);
         if(GenService.hasImplTemplate(assocSide)){

@@ -3,7 +3,10 @@ package dummy;
 
 import sehub.Project;
 
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 public class ExtractorUtils {
 
@@ -11,8 +14,17 @@ public class ExtractorUtils {
   public static final int SIMPLE_NAME_POS = 0;
 
   public static final int NAME_EXTENSION_POS = 1;
-  public static final SimpleDateFormat ARTIFACTS_DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
   public static final String DIRECTORY_FILE_TYPE = "";
+
+  /**
+   * Converts the last modification time of a file to the value of Artifact.modified
+   * @param lastModified milliseconds since the epoch, as returned by File.lastModified()
+   * @return the time in the system time zone, to the second
+   */
+  public static LocalDateTime toModified(long lastModified) {
+    return LocalDateTime.ofInstant(Instant.ofEpochMilli(lastModified), ZoneId.systemDefault())
+        .truncatedTo(ChronoUnit.SECONDS);
+  }
 
   /**
    * Make all paths unique in their appearance so only "/" is used never "\"

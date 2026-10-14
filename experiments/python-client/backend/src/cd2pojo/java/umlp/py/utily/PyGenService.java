@@ -4,7 +4,7 @@ import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdassociation._ast.ASTCDCardinality;
 
 public class PyGenService {
-  private PyGenService(){
+  private PyGenService() {
     // functional module
   }
 
@@ -13,7 +13,7 @@ public class PyGenService {
         && (assoc.getCDCardinality().isMult() || assoc.getCDCardinality().isAtLeastOne());
   }
 
-  public static boolean isList(ASTCDCardinality cardinality){
+  public static boolean isList(ASTCDCardinality cardinality) {
     return cardinality.isMult() || cardinality.isAtLeastOne();
   }
 }

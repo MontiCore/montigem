@@ -12,7 +12,8 @@ page PieChart(List<Person> persons) {
   @GemColumn(rowGap = "10px", width = "100%", components = [
     chart@GemPieChart(
       data = null,
-      innerRadius = 10
+      innerRadius = 10,
+      showConfig = true
     )
   ]);
 }

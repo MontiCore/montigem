@@ -197,6 +197,9 @@ build_no_build_cache:
 
 check_forbidden_methods:
   stage: check
+  # a grep over the sources: it starts with the pipeline and needs no build cache
+  needs: []
+  cache: []
   script:
     - |
       if grep -R --line-number \

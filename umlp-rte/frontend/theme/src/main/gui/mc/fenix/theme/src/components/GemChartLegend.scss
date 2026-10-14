@@ -1,7 +1,9 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 .gem-center {
-  display: table;
+  display: flex;
+  justify-content: center;
+  width: 100%;
   margin: 0 auto;
 }
 
@@ -9,18 +11,20 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: left;
+  justify-content: center;
   align-items: center;
   height: max-content;
   margin: 0px;
   overflow-y: auto;
   width: 100%;
-  justify-self: stretch;
+  justify-self: center;
+  row-gap: 4px;
+  column-gap: 12px;
 }
 
 //scrollbar when overflow happens
 .gem-legend::-webkit-scrollbar {
-  height: 8px;
+  height: 6px;
 }
 
 .gem-legend::-webkit-scrollbar-track {
@@ -41,31 +45,37 @@
 .gem-entries {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-left: 7px;
-  margin-right: 7px;
+  margin-left: 4px;
+  margin-right: 4px;
+  margin-top: 1px;
+  margin-bottom: 1px;
 }
 
 .gem-label {
   display: flex;
   flex: 1 1 auto;
-  margin-left: 5px;
+  margin-left: 2px;
   white-space: nowrap;
   min-width: 0;
-  font-size: 18px;
-  font-family: "Times New Roman", Times, serif;
+  font-size: 13px;
+  font-family: "Open Sans", verdana, arial, sans-serif;
   align-items: center;
   justify-content: flex-start;
-  color: black;
+  color: #333;
 }
 
 .gem-color {
-  display: flex;
-  border-radius: 100%;
-  max-width: 12px;
-  max-height: 12px;
-  min-width: 12px;
-  min-height: 12px;
+  display: inline-block;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  min-width: 10px;
+  min-height: 10px;
+  max-width: 10px;
+  max-height: 10px;
+  margin-right: 6px;
+  flex-shrink: 0;
   align-self: center;
 }

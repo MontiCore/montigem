@@ -1,8 +1,8 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.montigem.gradle.specific;
 
+import de.montigem.gradle.common.LinkSafeFiles;
 import de.montigem.gradle.common.RelativePaths;
-import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
@@ -30,6 +30,7 @@ import org.gradle.workers.WorkerExecutor;
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -160,23 +161,22 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
 
     File outputDir = getOutputDir().get().getAsFile();
 
-    // every run transpiles all sources, so outputs of removed classes must not survive
-    FileUtils.deleteDirectory(outputDir);
     outputDir.mkdirs();
     File nodeInit = new File(workingDir, ".node-init");
     if (!nodeInit.exists()) {
       nodeInit.mkdirs();
     }
+    // JSweet rewrites only changed outputs, the list tells which of the old ones are still outputs
+    File outputList = new File(workingDir, "outputs.txt");
+    Files.deleteIfExists(outputList.toPath());
 
 
     // classpath passed to jsweet
     List<String> classPath = new ArrayList<>();
     classPath.add(getJSweetRuntimeClassPath().getAsPath());
 
-    // Prepare a WorkQueue in the jsweet class path
-    WorkQueue workQueue = getWorkerExecutor().classLoaderIsolation(spec ->
-        spec.getClasspath().from(getJSweetClassPath())
-    );
+    // JSweet runs in a class loader that stays open between builds, see Java2TSAction
+    WorkQueue workQueue = getWorkerExecutor().noIsolation();
 
     // collect all .java files
     Set<Path> individualInputPaths = walkAndCollectJavaFiles(getInput().getFiles());
@@ -217,10 +217,22 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
       params.getExtractedCandiesJavascriptDir().set(candiesJsOut);
       params.getClassPath().set(String.join(File.pathSeparator, classPath));
       params.getNodeVersion().set(getNodeVersion().orElse(Java2TSTask.NODE_VERSION));
+      params.getJSweetClassPath().from(getJSweetClassPath());
+      // the UMLP adapters run the same rule in their merged async scanner
+      params.getAutoPropagateAsync().set(false);
+      params.getOutputList().set(outputList);
     });
 
     // Block until jsweet finishes
     workQueue.await();
+
+    // every run transpiles all sources, so outputs of removed classes must not survive
+    Set<Path> outputs = Files.readAllLines(outputList.toPath(), StandardCharsets.UTF_8).stream()
+        .map(p -> Path.of(p).toAbsolutePath().normalize())
+        .collect(Collectors.toSet());
+    // absolute paths, it must not end up in the build cache
+    Files.delete(outputList.toPath());
+    LinkSafeFiles.deleteContentsExcept(outputDir.toPath(), outputs);
   }
 
   protected Set<Path> walkAndCollectJavaFiles(Set<File> input) throws IOException {

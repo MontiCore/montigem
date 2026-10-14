@@ -70,6 +70,8 @@ public abstract class AbstractDecorator {
   }
 
   public static void cleanUp() {
+    // the tool class loader is reused for the next project, which may have no OCL files
+    hasOCL = false;
     origins.clear();
     origins = new LinkedHashMap<>();
     originHookPoint = new OriginHookPoint(origins);

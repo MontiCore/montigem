@@ -1,0 +1,24 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+.gem-settings-list {
+  width: fit-content;
+  border: solid 1px light-dark(#ccc, var(--color-border));
+  border-radius: 5px;
+  background: light-dark(#fff, var(--color-surface));
+  color: var(--text-main);
+  text-align: left;
+  padding: 10px;
+  margin: 0;
+}
+
+::ng-deep {
+  .gem-settings-list > li {
+    list-style-type: none;
+    border-bottom: solid 1px light-dark(#8b8b8b, var(--color-border));
+    padding: 8px 0;
+  }
+
+  .gem-settings-list > li:last-child {
+    border-bottom: none;
+  }
+}

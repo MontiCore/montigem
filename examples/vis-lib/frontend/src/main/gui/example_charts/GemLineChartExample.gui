@@ -11,9 +11,10 @@ page GemLineChartExample(List<Person> persons) {
     component = @GemRow(height = "450px", components = [
       linechart@GemLineChart(
         data = null,
-        enableBackgroundColor = true,
+        enableBackgroundColor = false,
         maxValue = null,
-        minValue = null
+        minValue = null,
+        showConfig = true
       )
     ]),
     basePath = "example_charts",

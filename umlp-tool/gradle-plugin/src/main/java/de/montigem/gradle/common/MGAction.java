@@ -2,7 +2,9 @@
 package de.montigem.gradle.common;
 
 import de.monticore.gradle.common.AToolAction;
-import de.monticore.gradle.internal.isolation.CachedIsolation;
+import org.gradle.api.model.ObjectFactory;
+
+import javax.inject.Inject;
 
 /**
  * (classpath isolated) execution of the UMLPTool for a Gradle WorkAction.
@@ -10,12 +12,15 @@ import de.monticore.gradle.internal.isolation.CachedIsolation;
  */
 public abstract class MGAction extends AToolAction {
 
-  protected static final CachedIsolation.WithClassPath isolator = new CachedIsolation.WithClassPath();
+  protected static final WarmIsolation isolator = new WarmIsolation();
+
+  @Inject
+  protected abstract ObjectFactory getObjects();
 
   @Override
   protected void doRun(String[] args) {
     final String prefix = "[" + getParameters().getProgressName().get() + "] ";
-    isolator.executeInClassloader(UMLPToolInvoker.class.getName(), "run",
-        args, prefix, getParameters().getExtraClasspathElements());
+    isolator.run(UMLPToolInvoker.class.getName(), args, prefix,
+        getParameters().getExtraClasspathElements().getFiles(), getObjects());
   }
 }

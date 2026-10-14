@@ -25,7 +25,7 @@
     "@umlp/arrange": "^9.0.0",
     "@umlp/basic": "^10.0.0",
     "@umlp/cad": "^9.0.0",
-    "@umlp/charts": "^9.0.0",
+    "@umlp/charts": "^10.0.0",
     "@umlp/commonj2ts": "^9.0.0",
     "@umlp/input": "^10.0.0",
     "@umlp/navigation": "^9.0.0",
@@ -46,7 +46,7 @@
     "@angular/compiler-cli": "~22.1.0",
     "@types/node": "^24.x",
     "jsdom": "^26.x",
-    "vitest": "4.0.8",
+    "vitest": "4.1.11",
     "typescript": "~6.0.0"
   }
 }

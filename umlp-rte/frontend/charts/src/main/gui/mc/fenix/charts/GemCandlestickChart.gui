@@ -17,5 +17,7 @@ import mc.fenix.charts.GemCandlestickChartTypes.GemCandlestickChartData;
 */
 component GemCandlestickChart(
   /** The data entries to be displayed in the candlestick chart. Each entry is expected to provide values in the order: open, high, low, close. */
-  GemCandlestickChartData data
+  GemCandlestickChartData data,
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )

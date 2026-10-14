@@ -12,6 +12,7 @@ import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.IgnoreEmptyDirectories;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
@@ -28,11 +29,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-// Task might not be a @CacheableTask since relative paths are generated for HWC-files
+// cacheable because the generated imports of HWC files are relative, all inputs must stay relocatable
+@CacheableTask
 public abstract class GUI2JavaTask extends MGAllFilesTask {
 
   public GUI2JavaTask() {
     super("GUI2JavaTask");
+    // the imports path is no input file collection, see getImportedFilePaths()
+    dependsOn(getImportsDir());
   }
 
   // hand-written web files next to the models are only checked for existence by the generator
@@ -58,9 +62,16 @@ public abstract class GUI2JavaTask extends MGAllFilesTask {
         .map(files -> RelativePaths.of(projectDir, files));
   }
 
-  @InputFiles
-  @PathSensitive(PathSensitivity.RELATIVE)
+  // imports path of the tool, fingerprinted by getImportedFilePaths()
+  @Internal
   public abstract ConfigurableFileCollection getImportsDir();
+
+  // the generator only checks which files exist in the imports path, see TSImportHelper
+  @Input
+  public Provider<List<String>> getImportedFilePaths() {
+    File projectDir = getProjectLayout().getProjectDirectory().getAsFile();
+    return getImportsDir().getAsFileTree().getElements().map(files -> RelativePaths.of(projectDir, files));
+  }
 
   @OutputDirectory
   @org.gradle.api.tasks.Optional

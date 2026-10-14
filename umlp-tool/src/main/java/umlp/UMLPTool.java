@@ -41,6 +41,7 @@ import de.monticore.symboltable.serialization.json.JsonObject;
 import de.monticore.symboltable.serialization.json.UserJsonString;
 import de.se_rwth.commons.logging.Log;
 import freemarker.template.SimpleHash;
+import oclwitherrormessages.OCLWithErrorMessagesMill;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -59,12 +60,14 @@ import umlp.generator.domain.UMLAttrToAssocTrafo;
 import umlp.generator.domain.UMLImportTrafo;
 import umlp.generator.domain.UMLPGeneratorConfig;
 import umlp.generator.domain.UMLSetDefaultsTrafo;
+import umlp.generator.gui.GUIGeneratorUtil;
 import umlp.generator.gui.GUINodeIdTrafo;
 import umlp.generator.gui.coco.GUIDSLCoCosForUMLP;
 import umlp.generator.gui.coco.SymbolBoundNameExpressionsFinder;
 import umlp.generator.gui.genjava.decorator.CallTypeDeriver;
 import umlp.generator.gui.genjava.decorator.InitDependencyTree;
 import umlp.generator.gui.genjava.decorator.StaticObjectsCollector;
+import umlp.generator.gui.genjava.prettyprinter.ExpressionPrinterConfig;
 import umlp.generator.gui.gentypescript.printer.TSImportMap;
 import umlp.generator.util.TagLookUp;
 
@@ -178,6 +181,7 @@ public class UMLPTool extends UMLPToolTOP {
     Log.ensureInitialization();
     //init CLI options
     Options options = initOptions();
+    UMLPPipelineData data = null;
 
     try {
       CommandLineParser parser = new DefaultParser();
@@ -193,7 +197,7 @@ public class UMLPTool extends UMLPToolTOP {
       UMLPToolPipeline pipeline = new UMLPToolPipeline(cmd);
 
       // Here we could further modify the Pipeline
-      UMLPPipelineData data = new UMLPPipelineData(cmd, options, this);
+      data = new UMLPPipelineData(cmd, options, this);
 
       // Give the module system access to the tool pipeline
       invokeModuleSystemForToolConfig(data, pipeline);
@@ -208,6 +212,11 @@ public class UMLPTool extends UMLPToolTOP {
       Log.error("0xB005 An exception occurred while processing the CLI input!", e);
     }
     finally {
+      if (data != null) {
+        data.closePaths();
+      }
+      // the OCL symbol table builds its own path from the symbol path, see OCL2JavaGeneratorTool.initSymtab
+      OCLWithErrorMessagesMill.globalScope().getSymbolPath().close();
       // Close all file systems
       MCPath.closeAllJarFileSystems();
       // Close all file handles (if last usage!)
@@ -248,6 +257,8 @@ public class UMLPTool extends UMLPToolTOP {
 
     // Fix some memory leaks (singletons with a List/Map/Caches... storing ASTNodes/Symbols/... )
     InitDependencyTree.cleanUp();
+    GUIGeneratorUtil.cleanUp();
+    ExpressionPrinterConfig.cleanUp();
     SymbolBoundNameExpressionsFinder.unsetInstance();
     CDDeSerHelper.reset(); // This https://git.rwth-aachen.de/monticore/monticore/-/issues/4306
     StaticObjectsCollector.unsetInstance();

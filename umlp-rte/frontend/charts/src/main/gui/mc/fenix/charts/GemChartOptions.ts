@@ -8,7 +8,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.Eager,
   imports: [CommonModule, OverlayModule],
   selector: 'gem-chart-options',
-  styleUrls: [],
+  styleUrls: ['./GemChartOptions.scss'],
   templateUrl: './GemChartOptions.html'
 })
 export class GemChartOptions {

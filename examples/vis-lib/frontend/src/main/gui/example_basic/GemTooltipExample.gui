@@ -1,0 +1,35 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import mc.fenix.basic.GemTooltip;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
+import mc.fenix.arrange.GemRow;
+import common.ExamplePage;
+import mc.fenix.arrange.GemColumn;
+
+page GemTooltipExample() {
+  @ExamplePage(
+    component = @GemColumn(components = [
+      @GemRow(
+        colGap = "15px",
+        vAlign = "center",
+        components = [
+          @GemTooltip(
+            text = "Saves the current document",
+            component = @GemButton(label = "Save")
+          ),
+          @GemTooltip(
+            text = "More information",
+            component = @GemIcon(name = "info", size = "24px")
+          ),
+          @GemTooltip(
+            text = "Tooltips also work on plain text",
+            component = @GemText(value = "Hover me", width = "auto", height = "auto")
+          )
+        ]
+      )
+    ])
+  );
+}

@@ -30,5 +30,7 @@ component GemBulletChart(
   List<Integer> range,
 
   /** The step values used for generating the axis scale or ticks. */
-  List<Integer> steps
+  List<Integer> steps,
+  /** Whether the chart's configuration panel is shown. */
+  boolean showConfig = false
 )

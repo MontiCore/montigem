@@ -1,0 +1,17 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.charts.GemTimelineChart;
+import manual.*;
+
+page GemTimelineChartTest (List<Person> persons) {
+  @LayoutTester(input =
+    @GemTimelineChart(
+      data = computeDate(persons),
+      blockClick = getBlockClick(),
+      height = "100%",
+      showConfig = true
+    )
+  );
+}

@@ -1,4 +1,35 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
-<div #tLChart></div>
+<div style="position: relative; width: 100%; height: 100%;">
 
+  <div *ngIf="showConfig" style="position: absolute; top: 0px; left: 0px; z-index: 10;">
+    <gem-chart-options>
+      <li>
+        <h3>Legend</h3>
+        <div class="legendButtons">
+          <button (click)="toggleLegend()">Legend: {{ displayLegend ? 'On' : 'Off' }}</button>
+        </div>
+      </li>
+      <li *ngIf="displayLegend">
+        <h3>Legend Position</h3>
+        <div class="legendButtons">
+          <button (click)="setLegendPosition('top')">Top</button>
+          <button (click)="setLegendPosition('bottom')">Bottom</button>
+          <button (click)="setLegendPosition('right')">Right</button>
+        </div>
+      </li>
+    </gem-chart-options>
+  </div>
 
+  <div #outerContainer class="wholeChartContainer" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+    <div #innerContainer style="width: 100%; height: 100%;">
+      <plotly-plot
+        [data]="plotlyData"
+        [layout]="_layout"
+        [config]="_config"
+        [useResizeHandler]="true"
+        (plotlyClick)="handlePlotClick($event)"
+        [style]="{width: '100%', height: '100%', display: 'block'}">
+      </plotly-plot>
+    </div>
+  </div>
+</div>

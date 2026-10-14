@@ -9,7 +9,8 @@ page GemTimelineChartExample (List<Person> persons) {
   @ExamplePage(
     component = @GemTimelineChart(
       data = computeDate(persons),
-      blockClick = getBlockClick()
+      blockClick = getBlockClick(),
+      showConfig = true
     ),
     basePath = "example_charts",
     componentName = "GemTimelineChartExample"

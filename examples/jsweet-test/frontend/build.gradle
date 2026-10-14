@@ -31,12 +31,14 @@ tasks.named("umlpJava2ts") {
   verbose = true
 }
 
-tasks.named("gui2java2ts") {
+tasks.named("guiJava2ts") {
   verbose = true
 }
 
 test {
   dependsOn tasks.named("npmInstall"), tasks.named("buildApp")
+  // each test JVM starts its own backend and frontend server on free ports
+  maxParallelForks = 2
   useJUnitPlatform() {
     excludeTags "SlowTest"
   }

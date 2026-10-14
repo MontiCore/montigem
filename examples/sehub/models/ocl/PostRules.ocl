@@ -1,0 +1,34 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import Sehub.*;
+
+/**
+ * Rules for the posts of an issue discussion. See UserRules.ocl for how
+ * CD2GUI shows them.
+ */
+ocl PostRules {
+
+  context Post p inv PostHasText:
+    !p.text.isEmpty();
+    shortError: "Empty post";
+    error: "A post must have a text";
+
+  // The seed data violates this rule with the two responses, whose titles
+  // start with " | "
+  context Post p inv TitleNotPadded:
+    !p.title.startsWith(" ");
+    shortError: "Title starts with a blank";
+    error: "Post titles must not start with a blank";
+
+  // Optional of a [0..1] association and "implies"
+  context Post p inv ResponseIsMarked:
+    p.parent.isPresent() implies p.title.startsWith("Re: ");
+    shortError: "Response not marked with Re:";
+    error: "A response must start its title with \"Re: \"";
+
+  // association role of a [1] association followed by an attribute
+  context Post p inv AuthorHasEmail:
+    p.author.email.contains("@");
+    shortError: "Author without e-mail";
+    error: "The author of a post needs a valid e-mail address";
+}

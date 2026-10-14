@@ -3,6 +3,7 @@ package umlp.cli;
 import de.monticore.generating.templateengine.reporting.Reporting;
 import de.se_rwth.commons.logging.Log;
 import org.apache.commons.cli.CommandLine;
+import umlp.UMLPToolOptions;
 import umlp.UMLPReports;
 import umlp.UMLPTool;
 import umlp.cli.common.IOperation;
@@ -70,7 +71,9 @@ public class UMLPToolPipeline extends Pipeline<UMLPPipelineData> {
 
   public UMLPToolPipeline(CommandLine cmd) {
     setupUMLPReports = data -> {
-      data.umlp_reportManagerFactory = new UMLPReports(data.outDir.getPath(), data.reportDir.getPath(), data.reportPathOutput, data.hwcPath, data.tool.buildJsonData(data.cmd));
+      UMLPReports reports = new UMLPReports(data.outDir.getPath(), data.reportDir.getPath(), data.reportPathOutput, data.hwcPath, data.tool.buildJsonData(data.cmd));
+      reports.setReportLevel(UMLPToolOptions.reportLevel(data.cmd));
+      data.umlp_reportManagerFactory = reports;
       Reporting.init(data.outDir.getPath(), data.reportDir.getPath(), data.umlp_reportManagerFactory);
       String report_on = data.inputFile.getName().replace(".", "__");   // TODO: Is this name unique? Should it be unique?
       Reporting.on(report_on);

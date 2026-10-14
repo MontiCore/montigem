@@ -1,7 +1,4 @@
-
-
-## MontiGem: Model-Driven Development of Data-Centric Web 
-Applications 
+# MontiGem: Model-Driven Development of Data-Centric Web Applications 
 
 [MontiGem](https://www.se-rwth.de/research/MontiGem/) is a 
 model-driven generator framework for developing data-centric web 
@@ -11,19 +8,19 @@ describe the relevant domain, user interfaces, constraints, and
 access-control rules using the 
 [Unified Modelling Language](https://www.se-rwth.de/research/Unified-Modeling-Language/). 
 MontiGem transforms these models into substantial parts of an 
-executable application that is immediately executable. 
+executable application that is immediately executable.  
 
 MontiGem can be used for generation of substantial parts of the final 
 software product as well as for quick prototyping in a Low-Code 
-style. 
+style.  
 
 The central input is a domain model expressed as a [UML class 
-diagram](https://www.se-rwth.de/research/Unified-Modeling-Language/). 
+diagram](https://www.se-rwth.de/research/Unified-Modeling-Language/).  
 
-[The *class diagrams* used for this application can be viewed here.](${TODO: Link auf entsprechende Seite}) 
+[The *class diagrams* used for this application can be viewed here.](${classDiagramLink})  
 
 Additional models can describe application-specific views and 
-graphical interfaces. 
+graphical interfaces.  
 
  * *GUI models* describe specific views (click around to see some).
    These fuses can be composed from atomic components and smaller 
@@ -31,7 +28,7 @@ graphical interfaces.
  * *Object Constraint Language (OCL)* models specify data constraints, 
    validation rules, and simple business logic, 
  * *tagging models* attach 
-   *roles and access rights* to domain elements. 
+   *roles and access rights* to domain elements.  
 
 From these models, MontiGem generates: 
 
@@ -48,13 +45,13 @@ From these models, MontiGem generates:
 
 The generated code provides lots of *extension points* so that handwritten code can be 
 easily added. For a systematic adaptation of the code MontiGem  uses 
-*extensible templates* during the generation process. 
+*extensible templates* during the generation process.  
 
 MontiGem is built using the [MontiCore language 
 workbench](https://github.com/MontiCore/tutorial/), which supports 
 the development, composition, and processing of various 
 [domain-specific 
-languages](https://www.se-rwth.de/research/Domain-Specific-Languages/). 
+languages](https://www.se-rwth.de/research/Domain-Specific-Languages/).  
 
 ## Development Method
 
@@ -70,19 +67,19 @@ consistently. Changes to the domain model are consistently propagated
 across several application layers, avoiding inconsistencies between 
 database, backend, communication, and frontend code. Development 
 efficiency is increased and the results are fully deterministic and 
-repeatable. 
+repeatable.  
 
 MontiGem is particularly suitable for applications dominated by 
 structured data, forms, tables, validation, user roles, and 
 conventional create-read-update-delete operations. Extension 
 packages, e.g. for [digital twin 
 cockpits](https://www.se-rwth.de/research/Digital-Twins/), and AI 
-application/chatbot integration exist. 
+application/chatbot integration exist.  
  
 The framework has been applied in several research and industrial 
 projects, including financial management, IoT device tracking, 
 chatbot development, energy management, privacy-policy analysis, and 
-model-based engineering tools. 
+model-based engineering tools.  
 
 ## Related Topics
 - [MontiGem](https://www.se-rwth.de/research/MontiGem/)

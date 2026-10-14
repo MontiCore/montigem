@@ -34,85 +34,249 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
- * This class adds the async keyword to every method that targets
- * an asynchronous RTE method.
+ * Marks methods and lambdas as async and awaits the invocations of async methods.
+ * Combines the rule of JSweet's AsyncAwaitPropagationScanner, the UMLP rules (async RTE calls,
+ * GemList accessors, List iterations, constructors) and the propagation along the class
+ * hierarchy, and scans all compilation units again until no rule adds an async method or lambda.
  */
 public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
 
   private final boolean transpileToAsync;
 
-  private boolean stillWorking = false;
-
   private final GUIAdapterUtils adapterUtils;
 
-  /**
-   * Creates a new global scanner.
-   */
+  private boolean stillWorking = false;
+
+  // The rules do not cover the same trees: the UMLP rules skip @Erased classes and methods, the
+  // arguments of this(...) and super(...), and invocations of unknown methods. The JSweet rule
+  // skips the candy packages and invocations of unknown methods.
+  private int umlpRulesOff = 0;
+
+  private int jsweetRuleOff = 0;
+
+  // the class hierarchy does not change during the scan, so its lookups are cached
+  private final Map<TypeElement, Map<String, List<ExecutableElement>>> declaredMethods = new HashMap<>();
+
+  private final Map<TypeElement, Map<String, List<ExecutableElement>>> methodsByName = new HashMap<>();
+
+  private final Map<ExecutableElement, List<ExecutableElement>> matchingMethods = new HashMap<>();
+
+  private final Map<ExecutableElement, Set<ExecutableElement>> matchingSuperMethods = new HashMap<>();
+
+  private final Map<MethodInvocationTree, Optional<TypeElement>> receiverTypes = new IdentityHashMap<>();
+
+  private final Map<TypeElement, Boolean> hwcComponentsOrDirectives = new HashMap<>();
+
+  private final Map<TypeElement, Boolean> lists = new HashMap<>();
+
   public UMLPAsyncAwaitPropagationScanner(JSweetContext context, boolean transpileToAsync) {
     super(null, context, null);
     this.adapterUtils = new GUIAdapterUtils(types(), context, util());
     this.transpileToAsync = transpileToAsync;
   }
 
+  public void process(List<CompilationUnitTree> compilationUnits, Trees trees) {
+    do {
+      stillWorking = false;
+      for (CompilationUnitTree compilationUnit : compilationUnits) {
+        scan(compilationUnit, trees);
+      }
+    } while (stillWorking);
+  }
+
+  @Override
+  public Void visitCompilationUnit(CompilationUnitTree topLevel, Trees trees) {
+    this.compilationUnit = topLevel;
+    boolean candy = util().getPackageFullNameForCompilationUnit(topLevel)
+        .startsWith(JSweetConfig.LIBS_PACKAGE + ".");
+    return scanWithout(candy, false, () -> super.visitCompilationUnit(topLevel, trees));
+  }
+
   @Override
   public Void visitClass(ClassTree node, Trees trees) {
     // Do not inspect any @Erased classes (and possible mark interfaces as async)
-    if (context.hasAnnotationType(Util.getElement(node), JSweetConfig.ANNOTATION_ERASED)) {
-      return null;
+    boolean erased = context.hasAnnotationType(Util.getElement(node), JSweetConfig.ANNOTATION_ERASED);
+    return scanWithout(false, erased, () -> super.visitClass(node, trees));
+  }
+
+  @Override
+  public Void visitMethod(MethodTree node, Trees trees) {
+    ExecutableElement method = Util.getElement(node);
+    propagateAlongHierarchy(method);
+    // Do not check erased methods further -> this leads to very weird js code
+    boolean erased = context.hasAnnotationType(method, JSweetConfig.ANNOTATION_ERASED);
+    if (umlpRulesOff == 0 && !erased) {
+      addAsyncIfOverridingAsync(node, method);
     }
-    return super.visitClass(node, trees);
+    return scanWithout(false, erased, () -> super.visitMethod(node, trees));
+  }
+
+  @Override
+  public Void visitMethodInvocation(MethodInvocationTree invocation, Trees trees) {
+    ExecutableElement method = Util.getElement(invocation.getMethodSelect());
+    if (method == null) {
+      return scanWithout(true, true, () -> super.visitMethodInvocation(invocation, trees));
+    }
+    if (jsweetRuleOff == 0) {
+      awaitAsyncInvocation(invocation, method);
+    }
+    boolean constructor = method.getKind() == ElementKind.CONSTRUCTOR;
+    if (umlpRulesOff == 0 && !constructor) {
+      awaitUMLPInvocation(invocation, method, trees);
+    }
+    return scanWithout(false, constructor, () -> super.visitMethodInvocation(invocation, trees));
   }
 
   @Override
   public Void visitNewClass(NewClassTree invocation, Trees trees) {
-    if(!transpileToAsync) {
-      return super.visitNewClass(invocation, trees);
-    }
-    Element e = Util.getElement(((JCTree.JCNewClass) invocation).getTree());
-    if (e instanceof ExecutableElement) {
-      ExecutableElement constructor = (ExecutableElement) e;
-      // this is your constructor
-      if (adapterUtils.isSubTypeOf((TypeElement) constructor.getEnclosingElement(), "java.util.List") ||
-        !UMLPAdapterUtils.isJdkType((TypeElement) constructor.getEnclosingElement())) {
-        // context.addAwaitInvocation(invocation); TODO is this necessary?
-        addAsyncKeywordToMethod();
-
-        // Mark Lamdba as Async
-        LambdaExpressionTree lambdaParent = getParent(LambdaExpressionTree.class);
-        if (lambdaParent != null) {
-            context.addAsyncLambda(lambdaParent);
+    if (umlpRulesOff == 0 && transpileToAsync) {
+      Element e = Util.getElement(((JCTree.JCNewClass) invocation).getTree());
+      if (e instanceof ExecutableElement) {
+        TypeElement type = (TypeElement) e.getEnclosingElement();
+        if (isList(type) || !UMLPAdapterUtils.isJdkType(type)) {
+          addAsyncKeywordToMethod();
+          addAsyncKeywordToLambda();
         }
       }
     }
     return super.visitNewClass(invocation, trees);
   }
 
-
+  // For UMLP all List iterations are asynchronous, making methods using for each loops also asynchronous
   @Override
-  public Void visitMethodInvocation(MethodInvocationTree invocation, Trees trees) {
+  public Void visitEnhancedForLoop(EnhancedForLoopTree node, Trees trees) {
+    if (umlpRulesOff == 0) {
+      TypeMirror expressionType = Util.getType(node.getExpression());
+      if (types().isSubtype(types().erasure(expressionType), types().erasure(util().getType(List.class)))) {
+        addAsyncKeywordToMethod();
+        addAsyncKeywordToLambda();
+      }
+    }
+    return super.visitEnhancedForLoop(node, trees);
+  }
+
+  protected Void scanWithout(boolean jsweetRule, boolean umlpRules, Supplier<Void> scan) {
+    jsweetRuleOff += jsweetRule ? 1 : 0;
+    umlpRulesOff += umlpRules ? 1 : 0;
     try {
-      ExecutableElement method = Util.getElement(invocation.getMethodSelect());
-      if (method == null) {
-        return null;
-      }
+      return scan.get();
+    } finally {
+      jsweetRuleOff -= jsweetRule ? 1 : 0;
+      umlpRulesOff -= umlpRules ? 1 : 0;
+    }
+  }
 
-      if (method.getKind() == ElementKind.CONSTRUCTOR) {
-        return null;
+  /**
+   * An async method makes the methods it overrides async, and a method overriding an async
+   * method becomes async.
+   */
+  protected void propagateAlongHierarchy(ExecutableElement method) {
+    if (method.getKind() == ElementKind.CONSTRUCTOR) {
+      return;
+    }
+    boolean inObject = ((TypeElement) method.getEnclosingElement()).getQualifiedName()
+        .contentEquals("java.lang.Object");
+    if (isAsync(method)) {
+      addAsyncWithOverloads(method);
+      if (!inObject) {
+        matchingMethods(method).forEach(this::addAsyncWithOverloads);
       }
+    }
+    else if (!inObject && matchingMethods(method).stream().anyMatch(this::isAsync)) {
+      addAsyncWithOverloads(method);
+    }
+  }
 
-      boolean isAsyncFromSuper = false;
+  protected void addAsyncIfOverridingAsync(MethodTree node, ExecutableElement method) {
+    // Constructors CAN NOT be async
+    // CBu: now they can ;)
+    if (method.getKind() == ElementKind.CONSTRUCTOR
+        && method.getEnclosingElement().getKind() != ElementKind.ENUM && transpileToAsync) {
+      addAsyncKeywordToMethod(node);
+    }
+    Element parent = Util.getElement(getParent());
+    if (!(parent instanceof TypeElement)) {
+      return;
+    }
+    // Methods overriding async methods must be async again
+    if (methodsByName((TypeElement) parent, node.getName().toString()).stream().anyMatch(this::isAsync)) {
+      addAsyncKeywordToMethod(node);
+    }
+    // Also methods which are void and overriding any async methods must be async again
+    if ("void".equals(method.getReturnType().toString())
+        && matchingSuperMethods((TypeElement) parent, method).stream().anyMatch(this::isAsync)) {
+      addAsyncKeywordToMethod(node);
+    }
+  }
+
+  /** the rule of JSweet's AsyncAwaitPropagationScanner */
+  protected void awaitAsyncInvocation(MethodInvocationTree invocation, ExecutableElement method) {
+    try {
+      if (isAsync(method) && !"void".equals(method.getReturnType().toString())) {
+        addAsyncKeywordToMethod();
+        addAsyncKeywordToLambda();
+        Tree directParent = getParent();
+        if (!(context.isAwaitInvocation(invocation) || (directParent instanceof MethodInvocationTree
+            && (directParent.toString().equals("await") || directParent.toString().endsWith(".await"))))) {
+          context.addAwaitInvocation(invocation);
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  protected void awaitUMLPInvocation(MethodInvocationTree invocation, ExecutableElement method, Trees trees) {
+    try {
       // Methods overriding async methods from the RTE must be async again
-      ExpressionTree select = invocation.getMethodSelect();
+      boolean isAsyncFromSuper = receiverType(invocation, method, trees)
+          .map(receiver -> methodsByName(receiver, method.getSimpleName().toString()).stream()
+              .anyMatch(this::isAsync))
+          .orElse(false);
+
+      if (isAsyncFromSuper || isAsync(method)) {
+        context.addAwaitInvocation(invocation);
+        addAsyncKeywordToMethod();
+        addAsyncKeywordToLambda();
+      }
+      else if (isHWCComponentOrDirective(Util.getElement(getParent(ClassTree.class)))
+          && isInvocatedGemListAccessor(invocation)) {
+        context.addAwaitInvocation(invocation);
+        addAsyncKeywordToMethod();
+        addAsyncKeywordToLambda();
+      }
+      else if (transpileToAsync && isAsyncFunctionalInterfaceInvocation(method)
+          && targetIsAsyncLambda(invocation)) {
+        // A java.util.function.* invocation (e.g. Function.apply) whose target is an already-async
+        // lambda will generate "await (async target => ...)" in JavaBasicsAdapter. Propagate async
+        // upward so the containing lambda is also marked async.
+        context.addAwaitInvocation(invocation);
+        addAsyncKeywordToMethod();
+        addAsyncKeywordToLambda();
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  protected Optional<TypeElement> receiverType(MethodInvocationTree invocation, ExecutableElement method,
+      Trees trees) {
+    return receiverTypes.computeIfAbsent(invocation, i -> {
       Element receiverType = null;
+      ExpressionTree select = invocation.getMethodSelect();
       if (select instanceof MemberSelectTree mst) {
         TypeMirror typeMirror =
             trees.getTypeMirror(new TreePath(getCurrentPath(), mst.getExpression()));
-
         if (typeMirror instanceof DeclaredType declaredType) {
           receiverType = declaredType.asElement();
         }
@@ -120,65 +284,8 @@ public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
         // implicit receiver (this)
         receiverType = method.getEnclosingElement();
       }
-      if (receiverType instanceof TypeElement) {
-        TypeElement parentElement = (TypeElement) receiverType;
-        ExecutableElement methodElement = Util.getElement(invocation.getMethodSelect());
-        List<ExecutableElement> candidates = new ArrayList<>();
-        util().findMethodDeclarationsInType(
-            parentElement,
-            Collections.singleton(methodElement.getSimpleName().toString()),
-            Collections.emptySet(),
-            candidates
-        );
-        findMethodsInInterfaces(parentElement, methodElement.getSimpleName().toString(), candidates);
-        for (ExecutableElement candidate : candidates) {
-          if (context.hasAnnotationType(candidate, JSweetConfig.ANNOTATION_ASYNC)) {
-            isAsyncFromSuper = true;
-            break;
-          }
-        }
-      }
-
-      boolean isAsync = false;
-
-      if (isAsyncFromSuper || context.hasAnnotationType(method, JSweetConfig.ANNOTATION_ASYNC)) {
-        context.addAwaitInvocation(invocation);
-        addAsyncKeywordToMethod();
-        isAsync = true;
-      }
-
-      else if (adapterUtils.isHWCComponentOrDirective(Util.getElement(getParent(ClassTree.class))) &&
-          isInvocatedGemListAccessor(invocation, trees)) {
-        context.addAwaitInvocation(invocation);
-        addAsyncKeywordToMethod();
-        isAsync = true;
-      } else if (transpileToAsync && isAsyncFunctionalInterfaceInvocation(method)
-          && targetIsAsyncLambda(invocation)) {
-        // A java.util.function.* invocation (e.g. Function.apply) whose target is an already-async
-        // lambda will generate "await (async target => ...)" in JavaBasicsAdapter. Propagate async
-        // upward so the containing lambda is also marked async (multi-pass via stillWorking).
-        if (!context.isAwaitInvocation(invocation)) {
-          context.addAwaitInvocation(invocation);
-        }
-        addAsyncKeywordToMethod();
-        LambdaExpressionTree lambdaParent = getParent(LambdaExpressionTree.class);
-        if (lambdaParent != null && !context.isAsyncLambda(lambdaParent)) {
-          context.addAsyncLambda(lambdaParent);
-          stillWorking = true;
-        }
-      }
-
-      if (isAsync) {
-        LambdaExpressionTree lambdaParent = getParent(LambdaExpressionTree.class);
-        if (lambdaParent != null) {
-          context.addAsyncLambda(lambdaParent);
-        }
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    return super.visitMethodInvocation(invocation, trees);
+      return receiverType instanceof TypeElement type ? Optional.of(type) : Optional.empty();
+    });
   }
 
   private boolean isAsyncFunctionalInterfaceInvocation(ExecutableElement method) {
@@ -207,91 +314,32 @@ public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
     return tree;
   }
 
-  private boolean isInvocatedGemListAccessor(MethodInvocationTree invocation, Trees trees) {
+  private boolean isInvocatedGemListAccessor(MethodInvocationTree invocation) {
     Element invocatedType = types().asElement(Util.getType(invocation));
-    if (invocatedType != null && invocatedType instanceof TypeElement &&
-        adapterUtils.isSubTypeOf((TypeElement) invocatedType, "java.util.List")) {
-      return true;
-    }
-    return false;
+    return invocatedType instanceof TypeElement && isList((TypeElement) invocatedType);
   }
 
-  // For UMLP all List iterations are asynchronous, making methods using for each loops also asynchronous
-  @Override
-  public Void visitEnhancedForLoop(EnhancedForLoopTree node, Trees trees) {
-    TypeMirror expressionType = Util.getType(node.getExpression());
-    if (types().isSubtype(types().erasure(expressionType), types().erasure(util().getType(List.class)))) {
-      addAsyncKeywordToMethod();
-      addAsyncKeyWordToLambda();
-    }
-    return super.visitEnhancedForLoop(node, trees);
+  protected boolean isList(TypeElement type) {
+    return lists.computeIfAbsent(type, t -> adapterUtils.isSubTypeOf(t, "java.util.List"));
   }
 
-  @Override
-  public Void visitMethod(MethodTree node, Trees trees) {
-    Element elementOfMethod = Util.getElement(node);
-    // Do not check erased methods further -> this leads to very weird js code
-    if (context.hasAnnotationType(elementOfMethod, JSweetConfig.ANNOTATION_ERASED)) {
-      return null;
-    }
+  protected boolean isHWCComponentOrDirective(TypeElement type) {
+    return hwcComponentsOrDirectives.computeIfAbsent(type, adapterUtils::isHWCComponentOrDirective);
+  }
 
-    // Constructors CAN NOT be async
-    // CBu: now they can ;)
-    if (elementOfMethod.getKind() == ElementKind.CONSTRUCTOR
-        && elementOfMethod.getEnclosingElement().getKind() != ElementKind.ENUM && transpileToAsync) {
-      addAsyncKeywordToMethod(node);
-    }
-
-    Element elementOfParent = Util.getElement(getParent());
-    if (context.hasAnnotationType(elementOfMethod)) {
-      return super.visitMethod(node, trees);
-    }
-
-    // Methods overriding async methods must be async again
-    if (elementOfParent instanceof TypeElement) {
-      TypeElement parentElement = (TypeElement) elementOfParent;
-      List<ExecutableElement> candidates = new ArrayList<>();
-      util().findMethodDeclarationsInType(
-          parentElement,
-          Collections.singleton(node.getName().toString()),
-          Collections.emptySet(),
-          candidates
-      );
-      findMethodsInInterfaces(parentElement, node.getName().toString(), candidates);
-      for (ExecutableElement candidate : candidates) {
-        if (context.hasAnnotationType(candidate, JSweetConfig.ANNOTATION_ASYNC)) {
-          addAsyncKeywordToMethod(node);
-          break;
-        }
-      }
-    }
-
-    // Also methods which are void and overriding any async methods must be async again
-    if (elementOfMethod instanceof ExecutableElement && elementOfParent instanceof TypeElement) {
-      TypeElement parentElement = (TypeElement) elementOfParent;
-      ExecutableElement methodElement = (ExecutableElement) elementOfMethod;
-
-      if ("void".equals(methodElement.getReturnType().toString())) {
-        for (ExecutableElement superMethodElement : adapterUtils.listMatchingSuperMethods(
-            parentElement, methodElement)) {
-          if (context.hasAnnotationType(superMethodElement, JSweetConfig.ANNOTATION_ASYNC)) {
-            addAsyncKeywordToMethod(node);
-          }
-        }
-      }
-    }
-    return super.visitMethod(node, trees);
+  protected boolean isAsync(Element element) {
+    return context.hasAnnotationType(element, JSweetConfig.ANNOTATION_ASYNC);
   }
 
   private void addAsyncKeywordToMethod() {
-    MethodTree methodTree = getParent(MethodTree.class);
-    addAsyncKeywordToMethod(methodTree);
+    addAsyncKeywordToMethod(getParent(MethodTree.class));
   }
 
-  private void addAsyncKeyWordToLambda() {
+  private void addAsyncKeywordToLambda() {
     LambdaExpressionTree lambdaParent = getParent(LambdaExpressionTree.class);
-    if (lambdaParent != null) {
+    if (lambdaParent != null && !context.isAsyncLambda(lambdaParent)) {
       context.addAsyncLambda(lambdaParent);
+      stillWorking = true;
     }
   }
 
@@ -300,23 +348,10 @@ public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
   private void addAsyncKeywordToMethod(MethodTree methodTree) {
     if (methodTree != null) {
       ExecutableElement methodElement = Util.getElement(methodTree);
-      if (!context.hasAnnotationType(methodElement, JSweetConfig.ANNOTATION_ASYNC)) {
+      if (!isAsync(methodElement)) {
         context.addExtraAnnotationType(methodElement, JSweetConfig.ANNOTATION_ASYNC);
-
-        if (context.isInvalidOverload(methodElement)) {
-          OverloadScanner.Overload overload = context.getOverload(
-              (TypeElement) methodElement.getEnclosingElement(), methodElement);
-
-          for (OverloadScanner.OverloadMethodEntry overloadEntry : overload.getEntries()) {
-            context.addExtraAnnotationType(overloadEntry.methodElement,
-                JSweetConfig.ANNOTATION_ASYNC);
-          }
-        }
-        List<ExecutableElement> candidates = new ArrayList<>();
-        util().collectMatchingMethodDeclarationsInType(
-            (TypeElement) methodElement.getEnclosingElement(), methodTree.getName().toString(),
-            (ExecutableType) methodElement.asType(), true, candidates);
-        for (ExecutableElement candidate : candidates) {
+        addAsyncToOverloads(methodElement);
+        for (ExecutableElement candidate : matchingMethods(methodElement)) {
           context.addExtraAnnotationType(candidate, JSweetConfig.ANNOTATION_ASYNC);
         }
         stillWorking = true;
@@ -324,14 +359,88 @@ public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
     }
   }
 
-  private void findMethodsInInterfaces(
-      TypeElement typeElement,
-      String methodName,
-      List<ExecutableElement> result) {
-
-    findMethodsInInterfaces(typeElement, methodName, result, new HashSet<>());
+  private void addAsyncWithOverloads(ExecutableElement method) {
+    if (method.getKind() == ElementKind.CONSTRUCTOR) {
+      return;
+    }
+    if (!isAsync(method)) {
+      context.addExtraAnnotationType(method, JSweetConfig.ANNOTATION_ASYNC);
+      stillWorking = true;
+    }
+    addAsyncToOverloads(method);
   }
 
+  private void addAsyncToOverloads(ExecutableElement method) {
+    if (context.isInvalidOverload(method)) {
+      OverloadScanner.Overload overload = context.getOverload(
+          (TypeElement) method.getEnclosingElement(), method);
+      for (OverloadScanner.OverloadMethodEntry overloadEntry : overload.getEntries()) {
+        if (!isAsync(overloadEntry.methodElement)) {
+          context.addExtraAnnotationType(overloadEntry.methodElement, JSweetConfig.ANNOTATION_ASYNC);
+          stillWorking = true;
+        }
+      }
+    }
+  }
+
+  /** the method itself and the methods it overrides, in its super classes and interfaces */
+  protected List<ExecutableElement> matchingMethods(ExecutableElement method) {
+    return matchingMethods.computeIfAbsent(method, m -> {
+      List<ExecutableElement> candidates = new ArrayList<>();
+      collectMatchingMethods((TypeElement) m.getEnclosingElement(), m.getSimpleName().toString(),
+          (ExecutableType) m.asType(), candidates);
+      return candidates;
+    });
+  }
+
+  // Util.collectMatchingMethodDeclarationsInType with overrides, but on the declared methods by name
+  private void collectMatchingMethods(TypeElement type, String name, ExecutableType methodType,
+      List<ExecutableElement> result) {
+    if (type == null) {
+      return;
+    }
+    for (ExecutableElement candidate : declaredMethods(type, name)) {
+      if (util().isInvocable((ExecutableType) candidate.asType(), methodType)) {
+        result.add(candidate);
+      }
+    }
+    if (type.getSuperclass() != null && !Object.class.getName().equals(type.getSuperclass().toString())) {
+      collectMatchingMethods((TypeElement) types().asElement(type.getSuperclass()), name, methodType, result);
+    }
+    for (TypeElement anInterface : util().getInterfaces(type)) {
+      collectMatchingMethods(anInterface, name, methodType, result);
+    }
+  }
+
+  protected Set<ExecutableElement> matchingSuperMethods(TypeElement type, ExecutableElement method) {
+    return matchingSuperMethods.computeIfAbsent(method, m -> adapterUtils.listMatchingSuperMethods(type, m));
+  }
+
+  /** the methods with this name in the type, its super classes and the interfaces of all of them */
+  protected List<ExecutableElement> methodsByName(TypeElement type, String name) {
+    return methodsByName.computeIfAbsent(type, t -> new HashMap<>()).computeIfAbsent(name, n -> {
+      List<ExecutableElement> candidates = new ArrayList<>();
+      // like Util.findMethodDeclarationsInType, which does not look into interfaces
+      for (TypeElement t = type; t != null; t = util().getSuperclass(t)) {
+        candidates.addAll(declaredMethods(t, n));
+      }
+      findMethodsInInterfaces(type, n, candidates, new HashSet<>());
+      return candidates;
+    });
+  }
+
+  /** the methods and constructors declared in the type with this name */
+  protected List<ExecutableElement> declaredMethods(TypeElement type, String name) {
+    return declaredMethods.computeIfAbsent(type, t -> {
+      Map<String, List<ExecutableElement>> byName = new HashMap<>();
+      for (Element element : t.getEnclosedElements()) {
+        if (element instanceof ExecutableElement method) {
+          byName.computeIfAbsent(method.getSimpleName().toString(), k -> new ArrayList<>()).add(method);
+        }
+      }
+      return byName;
+    }).getOrDefault(name, Collections.emptyList());
+  }
 
   private void findMethodsInInterfaces(
       TypeElement typeElement,
@@ -346,15 +455,8 @@ public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
       Element interfaceElement = types().asElement(interfaceMirror);
       if (interfaceElement instanceof TypeElement) {
         TypeElement interfaceTypeElement = (TypeElement) interfaceElement;
-        for (Element element : interfaceTypeElement.getEnclosedElements()) {
-          if (element instanceof ExecutableElement) {
-            ExecutableElement execElement = (ExecutableElement) element;
-            if (execElement.getSimpleName().toString().equals(methodName)) {
-              result.add(execElement);
-            }
-          }
-        }
-        findMethodsInInterfaces(interfaceTypeElement, methodName, result);
+        result.addAll(declaredMethods(interfaceTypeElement, methodName));
+        findMethodsInInterfaces(interfaceTypeElement, methodName, result, new HashSet<>());
       }
     }
 
@@ -372,14 +474,4 @@ public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
       }
     }
   }
-
-  public void process(List<CompilationUnitTree> compilationUnits, Trees trees) {
-    do {
-      stillWorking = false;
-      for (CompilationUnitTree compilationUnit : compilationUnits) {
-        scan(compilationUnit, trees);
-      }
-    } while (stillWorking);
-  }
-
 }

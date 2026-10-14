@@ -1,0 +1,53 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import Sehub.*;
+
+/**
+ * Rules for the members of a project and the projects themselves.
+ *
+ * The OCL generator of the UMLP tool turns every invariant into a check<Name>
+ * and a getError<Name> method. CD2GUI calls both: the overview page of the
+ * context class gets a constraint card with the number of violating objects,
+ * and the inputs of the editing pages show the message of their attribute.
+ * Every invariant therefore needs a name and the error:/shortError: clauses.
+ *
+ * The rules are spread over several .ocl files on purpose, to show that
+ * CD2GUI picks up all of them.
+ */
+ocl UserRules {
+
+  // ===================================================================
+  // User
+  // ===================================================================
+
+  context User u inv UsernameWithoutSpaces:
+    !u.username.contains(" ");
+    shortError: "Username contains a space";
+    error: "A username must not contain spaces";
+
+  context User u inv ValidEmail:
+    u.email.contains("@") && u.email.contains(".");
+    shortError: "Invalid e-mail";
+    error: "The e-mail address must contain an @ and a domain";
+
+  // ===================================================================
+  // Project
+  // ===================================================================
+
+  // size() of a [*] association
+  context Project p inv ProjectHasMembers:
+    p.users.size() >= 1;
+    shortError: "No members";
+    error: "A project needs at least one member";
+
+  // method call with an attribute as argument
+  context Project p inv FullNameContainsName:
+    p.fullName.contains(p.name);
+    shortError: "Full name does not match name";
+    error: "The full name of a project must contain its short name";
+
+  context Project p inv GitUrlIsHttps:
+    p.git.startsWith("https://");
+    shortError: "Git URL not https";
+    error: "The git URL of a project must use https";
+}

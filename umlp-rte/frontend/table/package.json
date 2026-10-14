@@ -8,7 +8,7 @@
     "rxjs": "~7.8.0"
   },
   "name": "@umlp/table",
-  "version": "9.0.2",
+  "version": "9.1.0",
   "sideEffects": false,
   "dependencies": {
     "tslib": "^2.3.0"

@@ -197,13 +197,17 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
           List<Path> symbolPaths = new ArrayList<>(data.data.importedSymbolPath.getEntries());
           List<String> domainModels = DOMAIN.isSelected(data.data.cmd) ? List.of(data.data.cmd.getOptionValues(DOMAIN.getCMD())) : List.of();
 
+          // One symbol table for all OCL files: the generator later type-checks the invariants of every
+          // file, so a per-file reset would leave the earlier files in a stale global scope (order-dependent)
+          OCL2JavaGeneratorTool.initSymtab(symbolPaths, domainModels);
+          if (data.symbolPath != null && data.symbolPath.toFile().exists()) {
+            SymbolTableUtil.loadSymbolFile(data.symbolPath.toString());
+          }
+
           for (URL modelUrl : oclFiles) {
             try {
               File oclFile = new File(modelUrl.toURI());
               // Use OCLWithErrorMessagesMill to parse so we don't lose error messages
-
-              OCL2JavaGeneratorTool.initSymtab(symbolPaths, domainModels);
-
               Optional<ASTOCLCompilationUnit> oclCompilationUnit;
               try {
                 oclCompilationUnit = OCLWithErrorMessagesMill.parser().parse(oclFile.getAbsolutePath());
@@ -216,10 +220,6 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
               }
               ASTOCLCompilationUnit oCLAst = oclCompilationUnit.get();
               data.oclCompilationUnits.add(oCLAst);
-
-              if (data.symbolPath != null && data.symbolPath.toFile().exists()) {
-                SymbolTableUtil.loadSymbolFile(data.symbolPath.toString());
-              }
               OCL2JavaGeneratorTool.createSymtab(oCLAst);
             } catch (URISyntaxException e) {
               throw new RuntimeException(e);

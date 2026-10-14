@@ -20,7 +20,8 @@ page GemBulletChartExample(
             title = "Profit of MontiCore Inc. from stocks",
             subtitle = "in US $",
             range = range,
-            steps = steps
+            steps = steps,
+            showConfig = true
         ),
         bulletchart2@GemBulletChart(
             value = 3500,
@@ -29,7 +30,8 @@ page GemBulletChartExample(
             title = "Profit of MontiCore Inc. from stocks",
             subtitle = "in US $",
             range = [0, 5000],
-            steps = [1500, 3000]
+            steps = [1500, 3000],
+            showConfig = true
         ),
         targetMetChart@GemBulletChart(
             value = 4500,
@@ -38,7 +40,8 @@ page GemBulletChartExample(
             title = "Revenue",
             subtitle = "in k$",
             range = [0, 5000],
-            steps = [2000, 3500]
+            steps = [2000, 3500],
+            showConfig = true
         ),
         targetMissedChart@GemBulletChart(
             value = 65,
@@ -47,7 +50,8 @@ page GemBulletChartExample(
             title = "Customer Satisfaction",
             subtitle = "Score (0-100)",
             range = [0, 100],
-            steps = [50, 75]
+            steps = [50, 75],
+            showConfig = true
         ),
         manyStepsChart@GemBulletChart(
             value = 750,
@@ -56,7 +60,8 @@ page GemBulletChartExample(
             title = "Server Load",
             subtitle = "Requests/sec",
             range = [0, 1000],
-            steps = [200, 400, 600, 800]
+            steps = [200, 400, 600, 800],
+            showConfig = true
         ),
         minimalChart@GemBulletChart(
             value = 12,
@@ -65,7 +70,8 @@ page GemBulletChartExample(
             title = "Defect Rate",
             subtitle = "%",
             range = [0, 20],
-            steps = []
+            steps = [],
+            showConfig = true
         )
       ]),
       basePath = "example_charts",

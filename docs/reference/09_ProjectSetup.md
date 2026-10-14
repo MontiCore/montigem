@@ -58,6 +58,33 @@ Start Hot Reload:
 Currently Known Limitations:
 * During reload an error-message might be shown for a few seconds
 
+### Warm Generator and JSweet
+The generator and JSweet stay loaded for 10 minutes after their last use, so the build after an edit starts faster.
+At most 4 class loaders of each stay open. A large parallel build closes its class loaders after 6 seconds.
+The system property `umlp.toolLoaderIdleSeconds` sets the time, e.g. in `gradle.properties`:
+```properties
+systemProp.umlp.toolLoaderIdleSeconds=6
+```
+The value `6` gives the behavior of earlier versions, e.g. when the memory of the machine is low.
+
+### Windows on CPUs with Efficiency Cores
+Intel CPUs from the 12th generation on have fast performance cores and slower efficiency cores.
+Windows may run the Gradle daemon on the efficiency cores, because it runs in the background.
+Single generator and JSweet steps then take up to 3 times longer, and the build times vary a lot.
+Run this once in a PowerShell with administrator rights, with the `java.exe` of the JDK that runs Gradle:
+```powershell
+powercfg /powerthrottling disable /path "C:\Program Files\Java\jdk-21\bin\java.exe"
+```
+`powercfg /powerthrottling list` shows the setting, `powercfg /powerthrottling reset /path "<same path>"` removes it.
+
+### Fewer Reports
+By default, the generators write all MontiCore reports to `build/mc_reports`, about 18 files per model.
+If you do not read them, keep only the report that the incremental build needs, e.g. in `gradle.properties`:
+```properties
+umlp.reports=incgen
+```
+The setting is an input of the generator tasks, so a change runs the generators again.
+
 ## Notes for Developers of UMLP-Tool
 The gradle-``UMLPTask`` supports incremental builds.
 It only runs when a _relevant_ input has changed.

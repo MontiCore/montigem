@@ -1,84 +1,29 @@
 /* (c) https://github.com/MontiCore/monticore */
 
+:host {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  container-type: inline-size;
+}
+
 .wholeChartContainer {
-  width: auto;
-  /* Use flex-grow to fill available space, but allow shrinking */
-  flex: 1;
-  min-height: 0;
-  /* height: 100%;  <-- Removed fixed height */
-  display: flex; /* Ensure content (ngx-charts) fills this container */
-  justify-content: center;
-  align-items: center;
-}
-
-/* Ensure ngx-charts fills the container */
-:host ::ng-deep ngx-charts-gauge {
-    width: 100%;
-    height: 100%;
-    display: block;
-}
-
-.wholeChartWithLegendLeftContainer {
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: row-reverse;
 }
 
-.wholeChartWithLegendTopContainer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column-reverse;
-}
-
-.wholeChartWithLegendBottomContainer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.wholeChartWithLegendRightContainer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: row;
-}
-
-.legendButtons {
-  display: flex;
-  column-gap: 10px;
-  justify-content: space-between;
-}
-
-.numberInput {
-  width: 50px;
-}
-
-.textInput {
-  width: 150px;
-}
-
-.grayout {
-  opacity: 0.5;
-  filter: alpha(opacity = 50);
-  pointer-events: none;
-}
-
-/* Reduce font size of the gauge value text (internal) */
-:host ::ng-deep .text-value {
-  font-size: 60px !important;
-}
-
-/* Style for external text value (top/bottom) */
 .external-text-value {
-  font-size: 1rem;
+  font-size: clamp(8px, 3cqi, 0.85rem);
   font-weight: bold;
   text-align: center;
   width: 100%;
   margin: 5px 0;
-  flex-shrink: 0; /* Prevent text from shrinking */
+  flex-shrink: 0;
+  color: #333;
+
+  line-height: 1.1;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .unit-text {
@@ -88,7 +33,22 @@
   margin-left: 5px;
 }
 
-/* Ensure legend doesn't shrink too much */
-gem-chart-legend {
-    flex-shrink: 0;
+.settingsMenu {
+  margin-top: 10px;
+}
+
+.settingsMenu label {
+  font-size: 11px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  color: #333;
+}
+
+.numberInput {
+  width: 50px;
+  margin-bottom: 5px;
+}
+
+.textInput {
+  width: 100px;
+  margin-bottom: 5px;
 }

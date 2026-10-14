@@ -27,20 +27,27 @@ import org.gradle.api.tasks.bundling.ZipEntryCompression;
 import org.gradle.jvm.tasks.Jar;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
-import static de.montigem.gradle.FrontendPlugin.GUI2JAVA2TS_TASK;
+import static de.montigem.gradle.FrontendPlugin.GUI_JAVA2TS_TASK;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_GUI_SYMBOLS_CONFIG;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_IMPORT_MAP_CONFIG;
 import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_UMLP_MODELS_CONFIG;
 import static de.montigem.gradle.module.ModuleFrontendPlugin.BUILD_LIB_TASK;
+import static de.montigem.gradle.module.ModuleFrontendPlugin.INSTALL_TEST_BROWSER_TASK;
 
 /**
  * Common UMLP frontend setup.
  * Specific tasks for JSweet or No-Jsweet are configured in the specific plugins
  */
 public abstract class FrontendBasePlugin implements Plugin<Project> {
+
+  /**
+   * vitest can hang after it failed to start its workers, e.g. under the load of a full build
+   */
+  public static final Duration TEST_TIMEOUT = Duration.ofMinutes(15);
 
   public static final String SETUP_FRONTEND_TASK = "setupFrontend";
   public static final String UMLP2TS_TASK = "umlp2ts";
@@ -132,11 +139,27 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
           .withPropertyName("installedPackages");
       task.getOutputs().dir(app.map(dir -> dir.dir("dist/client"))).withPropertyName("dist");
     });
+    // browser-based app tests need the browser revision of the installed playwright, as the lib
+    // tests do, the install is a no-op if that revision is present already
+    TaskProvider<NpxTask> installTestBrowser = project.getTasks().register(INSTALL_TEST_BROWSER_TASK, NpxTask.class, task -> {
+      task.setGroup("verification");
+      task.setDescription("Installs the Playwright browser used by the app tests.");
+      task.dependsOn(npmUpdate);
+      task.getCommand().set("playwright");
+      task.getArgs().set(List.of("install", "chromium-headless-shell"));
+      task.onlyIf("playwright is installed", t -> project.getLayout().getBuildDirectory()
+          .file("app/node_modules/playwright-core").get().getAsFile().exists());
+      // the Angular unit-test runner launches this Chrome instead, e.g. in CI
+      task.onlyIf("CHROME_BIN is not set", t ->
+          !project.getProviders().environmentVariable("CHROME_BIN").isPresent());
+    });
     var testAppTask = project.getTasks().register("testApp", NpxTask.class, task -> {
       task.setGroup("verification");
-      task.dependsOn(generate, npmUpdate);
+      task.dependsOn(generate, npmUpdate, installTestBrowser);
       task.getCommand().set("ng");
-      task.getArgs().set(List.of("test"));
+      // never wait for file changes, even if Gradle runs in a terminal
+      task.getArgs().set(List.of("test", "--watch=false"));
+      task.getTimeout().set(TEST_TIMEOUT);
     });
     var runAppTask = project.getTasks().register("runApp", NpxTask.class, task -> {
       task.setGroup("application");
@@ -162,7 +185,7 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
         // Alternative: use pnpm or yarn or something like this
         for (Project subproject : rteFrontend.getSubprojects()) {
           // the links point to the lib sources, which import the lib's generated code
-          task.dependsOn(subproject.getTasks().named(GUI2JAVA2TS_TASK));
+          task.dependsOn(subproject.getTasks().named(GUI_JAVA2TS_TASK));
 
           task.getLinks().put(
               project.getLayout().getBuildDirectory().dir("app/libs/@umlp/" + subproject.getName()).get().getAsFile(),

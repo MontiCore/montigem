@@ -1,0 +1,14 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.charts.GemVennDiagram;
+
+page GemVennDiagramTest(List<Person> persons) {
+   @LayoutTester(input =
+     venndiagramm@GemVennDiagram(
+      data = null,
+      showConfig = true
+     )
+  );
+}

@@ -158,14 +158,17 @@ public class CD2GUIPipeline extends Pipeline<UMLPPipelineData> {
       if (!oclFiles.isEmpty()) {
         List<Path> symbolPaths = new ArrayList<>(data.getData().importedSymbolPath.getEntries());
         List<String> domainModels = DOMAIN.isSelected(data.getData().cmd) ? List.of(data.getData().cmd.getOptionValues(DOMAIN.getCMD())) : List.of();
-        
+
+        // One symbol table for all OCL files, see UMLPFilePipeline#loadOCL
+        OCL2JavaGeneratorTool.initSymtab(symbolPaths, domainModels);
+        if (data.getSymbolPath() != null && data.getSymbolPath().toFile().exists()) {
+          SymbolTableUtil.loadSymbolFile(data.getSymbolPath().toString());
+        }
+
         for (URL modelUrl : oclFiles) {
           try {
             File oclFile = new File(modelUrl.toURI());
             // Use OCLWithErrorMessagesMill to parse so we don't lose error messages
-            
-            OCL2JavaGeneratorTool.initSymtab(symbolPaths, domainModels);
-            
             Optional<ASTOCLCompilationUnit> oclCompilationUnit;
             try {
               oclCompilationUnit = OCLWithErrorMessagesMill.parser().parse(oclFile.getAbsolutePath());
@@ -177,10 +180,6 @@ public class CD2GUIPipeline extends Pipeline<UMLPPipelineData> {
             }
             ASTOCLCompilationUnit oCLAst = oclCompilationUnit.get();
             data.addOclCompilationUnit(oCLAst);
-            
-            if (data.getSymbolPath() != null && data.getSymbolPath().toFile().exists()) {
-              SymbolTableUtil.loadSymbolFile(data.getSymbolPath().toString());
-            }
             OCL2JavaGeneratorTool.createSymtab(oCLAst);
           } catch (URISyntaxException e) {
             throw new RuntimeException(e);

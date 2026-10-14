@@ -29,5 +29,5 @@ component GemBarChart(
   /** Minimum value shown on the value axis. */
   Integer minValue,
   /** Whether the chart's configuration panel is shown. */
-  boolean showConfig = true
+  boolean showConfig = false
 )
