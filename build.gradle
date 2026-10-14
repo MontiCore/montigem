@@ -363,7 +363,9 @@ tasks.register("ciDeployRTE"){
 
 allprojects {
   plugins.withId("com.google.cloud.tools.jib") {
-    if (System.getenv("CI") != null) {
+    // Only configure registry auth where credentials are provided (e.g. GitLab CI);
+    // Jib rejects null values, which would break the configuration phase otherwise
+    if (System.getenv("CI") != null && System.getenv("CI_REGISTRY_USER") != null) {
       System.setProperty("jib.console", "plain")
       extensions.configure("jib") { jib ->
         jib.from {

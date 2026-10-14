@@ -1,0 +1,118 @@
+# (c) https://github.com/MontiCore/monticore
+name: Build MKDocs
+
+on:
+  workflow_dispatch: # allow manual runs from the Actions tab
+  pull_request: # run this test pipeline on pull requests (if markdown and/or the docs directory was changed)
+    paths:
+      - "**.md"
+      - "docs/**"
+      - ".github/workflows/deploy_pages.yml"
+      - "comment2doc/**" # sources of the generated GUI component docs
+      - "umlp-rte/frontend/**"
+      - "examples/vis-lib/frontend/**"
+  workflow_run: # and when the jars have been published (release_mg.yml)
+    workflows: [ "Build" ]
+    types:
+      - completed
+
+
+permissions:
+  contents: read # This action may run somewhat unsafe code
+
+jobs:
+  # Generates the GUI component documentation (docs/gendoc_components) and its
+  # screenshots (docs/gendoc_img). Needs Chrome, hence the self-hosted runner + container.
+  gendoc:
+    runs-on: self-hosted
+    container:
+      image: registry.git.rwth-aachen.de/monticore/container-registry/gradle8.14.4-chrome-installed
+      credentials:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    env:
+      GRADLE_COMMON_ARGS: "-P mavenPassword=${{ secrets.mavenPassword }} -P mavenUser=${{ secrets.mavenUser }}"
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      CHROME_BIN: "/usr/bin/google-chrome-stable"
+      PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
+
+    # After release_mg.yml only if it succeeded (build_pages and deploy are skipped with this job)
+    if: >-
+      github.ref == 'refs/heads/dev' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    steps:
+      - name: Checkout project sources
+        uses: actions/checkout@v7
+      - name: Generate component docs and screenshots
+        shell: bash
+        run: |
+          # Double the Gradle daemon heap for this job only
+          sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx8192m -Dfile.encoding=UTF-8/' gradle.properties
+          export JAVA_OPTS="-Xmx2g"
+          # Separate calls: comment2doc:md requires the screenshots in docs/gendoc_img,
+          # but Gradle does not guarantee the task order within a single invocation
+          mkdir -p docs/gendoc_img
+          gradle :examples:vis-lib:frontend:screenshot --refresh-dependencies --stacktrace $GRADLE_COMMON_ARGS
+          gradle comment2doc:md --stacktrace $GRADLE_COMMON_ARGS
+      - name: Upload generated docs
+        uses: actions/upload-artifact@v7
+        with:
+          name: gendoc
+          path: |
+            docs/gendoc_components
+            docs/gendoc_img
+          retention-days: 1
+          if-no-files-found: error
+
+  build_pages:
+    runs-on: ubuntu-latest
+
+    if: github.ref == 'refs/heads/dev'
+    needs: gendoc
+    steps:
+      - name: Checkout project sources
+        uses: actions/checkout@v7
+      - name: Download generated docs
+        uses: actions/download-artifact@v8
+        with:
+          name: gendoc
+          path: docs/
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Install python packages
+        run: pip install mkdocs mkdocs-material
+      - name: Copy changelog into the docs
+        run: cp CHANGELOG.md ./docs/
+      - name: Build the docs into a site directory
+        run: mkdocs build --verbose --clean #--strict
+      - name: Upload static files as artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v5 # or specific "vX.X.X" version tag for this action
+        with:
+          path: site/
+
+  deploy:
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    container:
+      image: registry.git.rwth-aachen.de/monticore/container-registry/gradle8.14.4-chrome-installed
+      credentials:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    if: github.ref == 'refs/heads/dev' # only for the dev branch!
+    needs: build_pages
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

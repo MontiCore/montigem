@@ -2,7 +2,8 @@ import json
 import typing
 import sys
 from asyncio import gather, create_task, Future, sleep
-import traceback
+# from gembase import GemBase
+
 from pydantic import BaseModel, ConfigDict, Field
 
 from websockets.asyncio.client import connect
@@ -24,7 +25,6 @@ async def ainput(string: str) -> str:
 
 class CommandManager:
   instance: 'CommandManager' = None
-  do_debug: bool = False
 
   def __init__(self):
     self.queue_in = asyncio.Queue()
@@ -40,11 +40,10 @@ class CommandManager:
     print("called connect" + host)
 
     async def receive_messages(websocket):
-      print("receive_messages started")
+      print("receive_messages")
       """Receives messages from WebSocket and puts them into the incoming queue."""
       async for message in websocket:
-        if self.do_debug:
-          print("receive " + str(message), file=sys.stderr)
+        print("receive " + str(message), file=sys.stderr)
         msg = json.loads(message)
         # complete future
         if  ("statusResult" in msg
@@ -64,8 +63,7 @@ class CommandManager:
       """Gets messages from the outgoing queue and sends them through the WebSocket."""
       while True:
         message = await self.queue_out.get()  # Waits for a message to send
-        if self.do_debug:
-          print("---> send " + str(message), file=sys.stderr)
+        print("---> send " + str(message), file=sys.stderr)
         await websocket.send(message)
 
     async with connect(host) as websocket:
@@ -92,20 +90,6 @@ class CommandManager:
     self.wait_for_command_map[used_cmd_id] = f
     await self.queue_out.put(msg.model_dump_json(exclude_none=True))
     return await f
-
-  async def command_forwarding_consumer(self, cmd_handler, manager):
-    while True:
-      message = await self.queue_in.get()  # Wait for a message
-      if self.do_debug:
-        print(f"command manager > Received message: {message}", file=sys.stderr)
-      if "commandType" in message:
-        try:
-          await cmd_handler.handleCommand(message, manager)
-        except BaseException as e:
-          print("command manager > Received and failed to handle message", str(message), e)
-          traceback.print_exc()
-      else:
-        raise Exception(f"command manager > Unexpected message, missing commandType")
 
 class Command(BaseModel):
   model_config = ConfigDict(extra="allow")  # Pydantic v2

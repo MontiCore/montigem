@@ -1,0 +1,65 @@
+name: Build
+
+# GitLab (build_with_deploy): only: refs: - dev
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  build_and_publish_jars:
+    name: build_and_publish_jars
+    runs-on: self-hosted
+
+    container:
+      image: registry.git.rwth-aachen.de/monticore/container-registry/gradle8.14.4-chrome-installed
+      credentials:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    env:
+      CI_REGISTRY_USER: ${{ secrets.REGISTRY_USER }} # required for jib configuration
+      CI_REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }} # required for jib configuration
+      GRADLE_COMMON_ARGS: "-P mavenPassword=${{ secrets.mavenPassword }} -P mavenUser=${{ secrets.mavenUser }}"
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      CHROME_BIN: "/usr/bin/google-chrome-stable"
+      PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Build and deploy
+        shell: bash
+        run: |
+          # Workspace-relative paths are set here, as env values in the job are not shell-expanded
+          # (and ${{ github.workspace }} resolves to the host path in container jobs)
+          export GRADLE_OPTS="-Dmaven.repo.local=$GITHUB_WORKSPACE/.m2"
+          export GRADLE_USER_HOME="$GITHUB_WORKSPACE/.gradle"
+          export NPM_CONFIG_CACHE="$GITHUB_WORKSPACE/.npm"
+          LOG="$GITHUB_WORKSPACE/build.log"
+
+          # Double the Gradle daemon heap for this job only
+          sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx8192m -Dfile.encoding=UTF-8/' gradle.properties
+
+          # Gradle launcher JVM memory
+          export JAVA_OPTS="-Xmx2g"
+
+          gradle --version 2>&1 | tee "$LOG"
+
+          gradle :umlp-tool:build :umlp-rte:build :umlp-jsweet:build --refresh-dependencies --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 >> "$LOG" 2> >(tee -a "$LOG" >&2)
+
+          # Publish RTE, test-RTE, jsweet, modules and python-client backend (without docker images)
+          gradle ciDeployRTE --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 $ARGS3 >> "$LOG" 2> >(tee -a "$LOG" >&2)
+
+          # Publish generator and gradle plugin
+          gradle :umlp-tool:publish :umlp-tool:gradle-plugin:publish --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS >> "$LOG" 2> >(tee -a "$LOG" >&2)
+
+          # Add downloaded node distribution to PATH
+          export PATH="$PATH:$(dirname $(find "$GITHUB_WORKSPACE" -type f -name "node" -print -quit))"
+
+          cd umlp-tool
+
+          gradle packageUMLPWithGUIVscodePlugin -P buildVscodePlugin=true --info $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 >> "$LOG" 2> >(tee -a "$LOG" >&2)
+
+          # >(tee -a ...) starts tee background process, wait to ensure everything is written
+          wait

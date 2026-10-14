@@ -1,0 +1,29 @@
+name: "Trigger MontiVerse on PR"
+
+on:
+  pull_request:
+
+jobs:
+  # Run the MontiVerse pipeline (tests this change on a suite of projects)
+  # The MontiVerse is a suite of projects, which are not build & tested with the given changes on a branch
+  trigger-montiverse:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trigger script
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/workflows/scripts/trigger-gitlab-pipeline.sh
+          sparse-checkout-cone-mode: false
+      - name: Trigger MontiGem Pipeline
+        # Trigger the MontiVerseCI GitLab pipeline (via a plain curl script, see
+        # .github/workflows/scripts/trigger-gitlab-pipeline.sh) and wait for it to complete.
+        # umlp_ref is the PR source branch, as the GitLab pipeline clones it with `git clone --branch`
+        run: .github/workflows/scripts/trigger-gitlab-pipeline.sh
+        env:
+          GITLAB_HOST: 'git.rwth-aachen.de'
+          GITLAB_PROJECT_ID: '129999'  # MontiGem CI project id
+          GITLAB_REF: 'main'
+          GITLAB_TRIGGER_TOKEN: ${{ secrets.PIPELINE_TRIGGER_TOKEN }}
+          GITLAB_ACCESS_TOKEN: ${{ secrets.PIPELINE_ACCESS_TOKEN }}  # Access is required to show the status
+          GITLAB_INPUTS_JSON: '{"umlp_ref":"${{ github.head_ref }}"}'
