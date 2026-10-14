@@ -1,7 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import de.montigem.gradle.specific.CreateSymlinkTask
-import de.montigem.gradle.specific.GUI2Java2TSTask
+import de.montigem.gradle.specific.GUIJava2TSTask
 import de.montigem.gradle.specific.UMLPJava2TSTask
 
 plugins {
@@ -26,7 +26,7 @@ tasks.named("umlpJava2ts", UMLPJava2TSTask) {
   verbose = true
 }
 
-tasks.named("gui2java2ts", GUI2Java2TSTask) {
+tasks.named("guijava2ts", GUIJava2TSTask) {
   // Resolve the domain classes of the dashboard module (e.g., DashboardModuleConfig)
   symbolPath.from(configurations.montigemModuleUMLPSymbols)
 }
@@ -47,13 +47,6 @@ test {
   useJUnitPlatform() {
     excludeTags "SlowTest"
     excludeTags "Screenshot"
-  }
-}
-
-tasks.register("screenshot", Test) {
-  dependsOn buildApp
-  useJUnitPlatform() {
-    includeTags "Screenshot"
   }
 }
 
