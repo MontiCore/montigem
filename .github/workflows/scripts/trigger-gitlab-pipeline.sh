@@ -4,9 +4,12 @@
 #   https://github.com/digital-blueprint/gitlab-pipeline-trigger-action
 #
 # It only covers the core behaviour of that action (trigger a pipeline via a
-# trigger token, then poll it until it reaches a final status). Artifact /
-# job-log downloading is intentionally left out to keep this a plain,
-# dependency-free curl script.
+# trigger token, then poll it until it reaches a final status). While polling,
+# it also reports which jobs started running and which succeeded or failed,
+# and prints a per-job summary at the end. Artifact / job-log downloading is
+# intentionally left out to keep this a plain curl script; the only other
+# dependency is jq (preinstalled on GitHub-hosted runners), used to parse the
+# job list.
 #
 # Required environment variables:
 #   GITLAB_HOST            GitLab hostname, e.g. "gitlab.example.com" (default: gitlab.com)
@@ -49,6 +52,11 @@ json_field() {
         | sed -E 's/.*:[[:space:]]*"?([^"]*)"?$/\1/'
 }
 
+if ! command -v jq >/dev/null 2>&1; then
+    echo "jq is required to report the pipeline's jobs" >&2
+    exit 1
+fi
+
 echo "Triggering GitLab pipeline for ${project_id} (${ref}) on ${host}..."
 
 # GitLab's trigger API expects "inputs" as individual multipart form fields
@@ -87,6 +95,60 @@ echo "Pipeline triggered: ${web_url} (id ${pipeline_id})"
 status_url="${host}/api/v4/projects/${project_id}/pipelines/${pipeline_id}"
 status="pending"
 
+# Last seen status, "stage/name", allow_failure flag and web URL of each job, keyed by job id
+declare -A job_status=() job_label=() job_allow_failure=() job_url=()
+
+# Prints the pipeline's jobs (regular jobs and bridge/trigger jobs) as
+# tab-separated lines: id, status, stage, name, allow_failure, web_url.
+# A failed request only produces a warning, as the job list is informational.
+fetch_jobs() {
+    local kind response code body
+    for kind in jobs bridges; do
+        response=$(curl -sS -w '\n%{http_code}' \
+            -H "PRIVATE-TOKEN: ${access_token}" \
+            -H "Accept: application/json" \
+            "${status_url}/${kind}?per_page=100") || continue
+        code=$(printf '%s' "$response" | tail -n1)
+        body=$(printf '%s' "$response" | sed '$d')
+        if [[ "$code" -lt 200 || "$code" -ge 300 ]]; then
+            echo "Warning: could not fetch pipeline ${kind} (HTTP ${code})" >&2
+            continue
+        fi
+        printf '%s' "$body" \
+            | jq -r '.[] | [.id, .status, .stage, .name, .allow_failure, .web_url] | @tsv' \
+            || echo "Warning: could not parse pipeline ${kind}" >&2
+    done
+}
+
+# Prints a line for every job whose status changed since the last poll.
+report_job_changes() {
+    local id st stage name allow_failure url label
+    while IFS=$'\t' read -r id st stage name allow_failure url; do
+        [[ -z "$id" || "${job_status[$id]:-}" == "$st" ]] && continue
+        label="${stage}/${name}"
+        job_status[$id]="$st"
+        job_label[$id]="$label"
+        job_allow_failure[$id]="$allow_failure"
+        job_url[$id]="$url"
+
+        case "$st" in
+            running)  echo "  Job started:   ${label}" ;;
+            success)  echo "  Job succeeded: ${label}" ;;
+            failed)
+                if [[ "$allow_failure" == "true" ]]; then
+                    echo "  Job failed (allowed to fail): ${label} - ${url}"
+                else
+                    echo "  Job failed:    ${label} - ${url}"
+                fi
+                ;;
+            canceled) echo "  Job canceled:  ${label}" ;;
+            skipped)  echo "  Job skipped:   ${label}" ;;
+            manual)   echo "  Job manual:    ${label} (waiting to be started manually)" ;;
+            # created, pending, preparing, scheduled, waiting_for_resource: not worth reporting
+        esac
+    done < <(fetch_jobs)
+}
+
 echo "Polling pipeline status every ${poll_interval}s..."
 while true; do
     sleep "$poll_interval"
@@ -107,12 +169,27 @@ while true; do
     status=$(printf '%s' "$poll_body" | json_field status)
     echo "Pipeline status: ${status}"
 
+    # Fetched after the pipeline status, so the final poll also captures the jobs' final states
+    report_job_changes
+
     case "$status" in
         success|failed|canceled|skipped)
             break
             ;;
     esac
 done
+
+if [[ ${#job_status[@]} -gt 0 ]]; then
+    echo "Job summary:"
+    for id in $(printf '%s\n' "${!job_status[@]}" | sort -n); do
+        printf '  %-10s %s\n' "${job_status[$id]}" "${job_label[$id]}"
+        # Annotate failed jobs in the GitHub Actions UI
+        if [[ "${GITHUB_ACTIONS:-}" == "true" && "${job_status[$id]}" == "failed" \
+            && "${job_allow_failure[$id]}" != "true" ]]; then
+            echo "::error title=GitLab job failed::${job_label[$id]} failed: ${job_url[$id]}"
+        fi
+    done
+fi
 
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
     {
