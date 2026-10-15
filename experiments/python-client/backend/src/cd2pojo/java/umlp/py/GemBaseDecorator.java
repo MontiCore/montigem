@@ -169,7 +169,7 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
             decoratorData.getAsDecorated((ASTCDClass) decoratorData.getParent(originalNode).get()),
             inner.printFullName());
         decNode.setMCType(createGemListType(inner.printFullName() + "." + inner.print()));
-        decNode.setInitial(createInitialGemList());
+        decNode.setInitial(createInitialGemList(inner.printFullName() + "." + inner.print()));
 //        data.attrDataMap.computeIfAbsent(originalNode, x -> new AttrData(inner.printFullName()));
       } else if (info.getTypeClass() == UmlpAttrHelper.RealType.BUILD_IN) {
         var inner = info.getSymTypeExpression();
@@ -234,10 +234,10 @@ public class GemBaseDecorator extends AbstractDecorator<GemBaseDecorator.Data> i
         .setArguments(CD4CodeMill.argumentsBuilder().addExpression(stringLiteralExpr(classname)).build()).build();
   }
 
-  private ASTExpression createInitialGemList() {
+  private ASTExpression createInitialGemList(String classname) {
     return CD4CodeMill.callExpressionBuilder()
         .setExpression(CD4CodeMill.nameExpressionBuilder().setName("montigem_runtime.gembase.GemList").build())
-        .setArguments(CD4CodeMill.argumentsBuilder().build()).build();
+        .setArguments(CD4CodeMill.argumentsBuilder().addExpression(stringLiteralExpr(classname)).build()).build();
   }
 
   protected ASTMCType createGemType(String classname) {

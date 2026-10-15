@@ -35,7 +35,7 @@ public class PyExecTest extends AbstractPyTest {
     assertEquals(0, MyDomainManager.getBList().size());
     assertEquals("0", handler.sendCommand(
         "print(len((await my_domain_manager.list_filtered(MyDomain.B.B))['list']))").get());
-    assertEquals("gemId=0", handler.sendCommand(
+    assertEquals("gemId=0 bAttr='BAttr' c=Gem[MyDomain.C.C](gemId=-1)", handler.sendCommand(
             "new_b = await my_domain_manager.create(MyDomain.B.B(gemId=await my_domain_manager.get_free_gem_id() ))\nprint(new_b)")
         .get());
     assertEquals(1, MyDomainManager.getBList().size());
@@ -163,6 +163,7 @@ public class PyExecTest extends AbstractPyTest {
     assertEquals("0", handler.sendCommand("print(len(a1.listB))").get());
     a1.addListB(b1);
     assertWait(() -> assertEquals("1", handler.sendCommand("print(len(a1.listB))").get()));
+    assertWait(() -> assertEquals("[" + b1.getGemId() + "]", handler.sendCommand("print([b.gemId async for b in a1.listB])").get()));
 
     assertEquals("", handler.sendCommand("await a1.listB_add(1, " + b2.getGemId() + ")").get());
     assertWait(() -> assertEquals(2, a1.getListBList().size()));

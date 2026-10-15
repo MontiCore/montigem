@@ -62,7 +62,7 @@ def deserialize_gem_list(value: Any, type=None) -> 'GemList':
   if isinstance(value, GemList):
     return value
   elif isinstance(value, list):  # todo: is origin?
-    r = GemList[type]()
+    r = GemList[type](target=type)
     r.indexes = value
     return r
   elif value is None:
@@ -138,6 +138,12 @@ class Gem(BaseModel, typing.Generic[DataT]):
 
 class GemList(BaseModel, typing.Generic[DataT]):
   indexes: typing.List[int] = []
+  _target: typing.Optional[str] = PrivateAttr(default=None)
+
+  def __init__(self, /, target: typing.Optional[str] = None, indexes = None, **data: Any) -> None:
+    super().__init__(**data)
+    self.indexes = [] if indexes is None else indexes
+    self._target = target
 
   def add(self, index_in_list: int, gem_id: int):
     self.indexes.insert(index_in_list, gem_id)
@@ -157,6 +163,32 @@ class GemList(BaseModel, typing.Generic[DataT]):
   def gem_ids(self) -> Iterator[GEM_ID]:
     return map(self.get_gem_id, self.indexes)
 
+  def target_class(self) -> typing.Type[DataT]:
+    if self._target is None:
+      raise TypeError("GemList has no target type, unable to use implicit shortcuts such as the async iterator")
+    return resolve_gem_class(self._target)
+
+  def __aiter__(self):
+    return AsyncGemListIterator(self.indexes, self.target_class())
+
+class AsyncGemListIterator:
+  """
+  Iterator for the async list comprehension
+  async for b_elem in a.assocList:
+    # b_elem is now the domain object
+  """
+  def __init__(self, indexes, target_class):
+    self._iterator = iter(indexes)
+    self.target_class = target_class
+
+  async def __anext__(self):
+    try:
+      gem_id = next(self._iterator)
+    except StopIteration:
+      raise StopAsyncIteration
+
+    return await DomainManager.for_package(self.target_class.PACKAGE).get(self.target_class, gem_id)
+    return await self.api.get_object(index)
 
 class GlobalGemList(GemList):
   _cache: typing.MutableMapping[int, DataT] = {}
@@ -202,8 +234,13 @@ class DomainManager:
       raise LookupError(f"No DomainManager registered for domain {domain!r}") from None
 
   def get_global_list(self, domaintype: typing.Type[G]) -> GlobalGemList[G]:
+    """
+    Only contains the locally known elements, see list_filtered to retrieve all
+    :param domaintype: the type
+    :return: the local GemList of all elements of the given type.
+    """
     if domaintype not in self.global_state:
-      self.global_state[domaintype] = GlobalGemList()
+      self.global_state[domaintype] = GlobalGemList(str(domaintype))
     return self.global_state[domaintype]
 
   async def list_filtered(self, domaintype: typing.Type[G]):
