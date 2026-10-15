@@ -43,7 +43,8 @@ component MainCellOptions(
               Option("SPEED", "Speedometer"),
               Option("NETWORK", "Network Graph"),
               Option("BOX", "Box Plot"),
-              Option("PIE", "Pie Chart")
+              Option("PIE", "Pie Chart"),
+              Option("FILTERABLE_TABLE", "Filterable Table")
             ]
           )
       ]),

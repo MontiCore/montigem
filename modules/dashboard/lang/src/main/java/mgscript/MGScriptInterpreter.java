@@ -76,6 +76,10 @@ import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartData;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartDataBuilder;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartEntry;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartEntryBuilder;
+import mc.fenix.table.gemtabletypes.GemFilterableTableColumn;
+import mc.fenix.table.gemtabletypes.GemFilterableTableColumnBuilder;
+import mc.fenix.table.gemtabletypes.GemFilterableTableData;
+import mc.fenix.table.gemtabletypes.GemFilterableTableDataBuilder;
 import mgscript.interpreter.MGScriptInterpreterVisitor;
 
 import java.io.IOException;
@@ -195,6 +199,10 @@ public class MGScriptInterpreter {
     addClassPathEntry(GemScatterPlotPoint.class);
     addClassPathEntry(GemScatterPlotSet.class);
     addClassPathEntry(GemScatterPlotSetBuilder.class);
+    addClassPathEntry(GemFilterableTableData.class);
+    addClassPathEntry(GemFilterableTableDataBuilder.class);
+    addClassPathEntry(GemFilterableTableColumn.class);
+    addClassPathEntry(GemFilterableTableColumnBuilder.class);
   }
 
   public void addClassPathEntry(Class<?> clazz) {
@@ -230,6 +238,7 @@ public class MGScriptInterpreter {
     // default import
     scope.addImports(new ImportStatement("java.lang", true));
     scope.addImports(new ImportStatement("java.util", true));
+    scope.addImports(new ImportStatement("java.time", true));
     scope.addImports(new ImportStatement("mc.fenix.charts.gempiecharttypes", true));
     scope.addImports(new ImportStatement("mc.fenix.charts.gemlinecharttypes", true));
     scope.addImports(new ImportStatement("mc.fenix.networkgraph.networkgraphtypes", true));
@@ -237,6 +246,7 @@ public class MGScriptInterpreter {
     scope.addImports(new ImportStatement("mc.fenix.charts.gemboxplottypes", true));
     scope.addImports(new ImportStatement("mc.fenix.charts.gemgaugecharttypes", true));
     scope.addImports(new ImportStatement("mc.fenix.charts.gembarcharttypes", true));
+    scope.addImports(new ImportStatement("mc.fenix.table.gemtabletypes", true));
 
     defaultImportStatements.forEach(s -> scope.addImports(s));
     return scope;

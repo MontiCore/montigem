@@ -1,0 +1,74 @@
+// the table scrolls within the cell instead of overflowing it
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+// the headers are buttons for sorting, but look like the headers of the other tables
+:host ::ng-deep .sortButton .gem-button {
+  background: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  font: inherit;
+  font-weight: bold;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap;
+}
+
+// an unfiltered column offers a subtle filter button
+:host ::ng-deep .filterButton .gem-button {
+  background: none !important;
+  box-shadow: none !important;
+  color: var(--color-primary) !important;
+  margin: 0 !important;
+  opacity: 0.45;
+  padding: 2px !important;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// a filtered column is obvious: a filled filter button, its filter below the header, and an underlined header cell
+:host ::ng-deep .activeFilterButton .gem-button {
+  background-color: var(--color-primary) !important;
+  border-radius: 4px;
+  color: white !important;
+  margin: 0 !important;
+  padding: 2px !important;
+}
+
+:host ::ng-deep .filterText {
+  align-self: flex-start;
+  background-color: var(--color-primary);
+  border-radius: 4px;
+  color: white;
+  font-family: monospace;
+  font-weight: normal;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+:host ::ng-deep th.gem-table-cell:has(.activeFilterButton) {
+  box-shadow: inset 0 -3px 0 var(--color-primary);
+}
+
+:host ::ng-deep .filterInput input {
+  font-family: monospace;
+  min-width: 10em;
+  text-align: left;
+}
+
+:host ::ng-deep .applyFilterButton .gem-button,
+:host ::ng-deep .removeFilterButton .gem-button {
+  margin: 0 !important;
+  padding: 2px 4px !important;
+}
+
+:host ::ng-deep .errorText {
+  display: block;
+  margin-bottom: 4px;
+}

@@ -54,6 +54,10 @@ For MontiGem users:
 * `*.override.json` files can use Gradle properties, e.g. `"@umlp/editor": "g-${mg_version}"`
   in `package.override.json` (preferred way to add further `@umlp/*` or `@montigem/*` libraries)
 
+## 2026-10-26: 7.9.3-SNAPSHOT
+* New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`
+  for AI chats.
+
 ## 2026-10-23: 7.10.0-SNAPSHOT
 * MontiCore (and CD4A, GUIDSL, CD2GUI, MontiArc, MCLSG) updated to 7.10.0-SNAPSHOT
 

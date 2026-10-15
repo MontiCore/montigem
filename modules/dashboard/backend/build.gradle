@@ -8,6 +8,7 @@ plugins {
 }
 
 dependencies {
+  api 'dev.langchain4j:langchain4j-core:1.22.0'
   implementation project(':umlp-rte')
   // Java types of the chart data (e.g., GemBarChartData)
   api project(':umlp-rte:frontend')

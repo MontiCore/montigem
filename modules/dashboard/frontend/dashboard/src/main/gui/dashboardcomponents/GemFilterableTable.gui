@@ -1,0 +1,80 @@
+package dashboardcomponents;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
+import mc.fenix.input.GemTextInput;
+import mc.fenix.table.GemTable;
+import mc.fenix.table.GemTableHeader;
+import mc.fenix.table.GemTableHeaderCell;
+import mc.fenix.table.GemTableRow;
+import mc.fenix.table.GemTableRowCell;
+import mc.fenix.table.GemTableTypes.GemFilterableTableData;
+import mc.fenix.table.GemTableTypes.GemFilterableTableColumn;
+import mc.fenix.table.GemTableTypes.GemFilterableTableFilter;
+
+// Displays the rendered values of a FILTERABLE_TABLE cell, whose rows the filters of the columns already selected.
+// Clicking a header sorts the rows by the values of its column (instead of their texts), clicking it again reverses the order.
+// The filter button of a header edits the filter of its column; a filtered column shows its filter below the header.
+component GemFilterableTable(
+    GemFilterableTableData data,
+    // shown above the table, e.g., why a filter was rejected
+    String error = "",
+    // the new filter of a column, "" removes the filter
+    Event<GemFilterableTableFilter> changeFilter,
+    // "+" (ascending) or "-" (descending) followed by the header of the column the rows are sorted by,
+    // "" keeps the order of the data. One variable, such that a click changes the order only once.
+    String sorting = "",
+    // header of the column whose filter is edited, "" if none
+    String editedColumn = "",
+    String filterEntry = ""
+    ){
+
+      @guard(hasError(error)) {
+        errorText@GemText(color = "red", value = error);
+      };
+      // GemTableRow removes its host element, so Angular cannot move the rows of a table:
+      // every order of the rows is a new list, for which the table is created again
+      @iterate(List<Integer> rows : getRowOrders(data, sorting)) {
+        table@GemTable(width = "100%",
+          headers = [header@GemTableHeader(cells = [@iterate(GemFilterableTableColumn column : data.columns) {
+            headerCell@GemTableHeaderCell(content = headerColumn@GemColumn(rowGap = "4px", components = [
+              headerRow@GemRow(vAlign = "center", colGap = "4px", components = [
+                sortButton@GemButton(label = getHeaderLabel(column, sorting), leftClick = sortBy(column)),
+                @guard(isFiltered(column)) {
+                  activeFilterButton@GemButton(ariaLabel = "Edit filter", leftClick = editFilter(column), content = [
+                    activeFilterIcon@GemIcon(name = "filter_alt", size = "18px")
+                  ]);
+                } else {
+                  filterButton@GemButton(ariaLabel = "Filter", leftClick = editFilter(column), content = [
+                    filterIcon@GemIcon(name = "filter_alt", size = "18px")
+                  ]);
+                }
+              ]),
+              @guard(isFiltered(column)) {
+                filterText@GemText(value = getFilterText(column));
+              },
+              @guard(isEdited(column, editedColumn)) {
+                filterEditor@GemRow(vAlign = "center", colGap = "4px", components = [
+                  filterInput@GemTextInput(entry = filterEntry, placeholder = getFilterPlaceholder(column),
+                    keyPress = applyFilterOnEnter(column)),
+                  applyFilterButton@GemButton(ariaLabel = "Apply filter", leftClick = applyFilter(column), content = [
+                    @GemIcon(name = "check", size = "18px")
+                  ]),
+                  removeFilterButton@GemButton(ariaLabel = "Remove filter", leftClick = removeFilter(column), content = [
+                    @GemIcon(name = "close", size = "18px")
+                  ])
+                ]);
+              }
+            ]));
+          }])],
+          body = [@iterate(Integer row : rows) {
+            tableRow@GemTableRow(cells = [@iterate(GemFilterableTableColumn rowColumn : data.columns) {
+              tableCell@GemTableRowCell(content = cellText@GemText(value = getCellText(rowColumn, row)));
+            }]);
+          }]
+        );
+      }
+    }

@@ -9,15 +9,19 @@ import mc.fenix.charts.GemScatterPlot;
 import mc.fenix.charts.GemBoxPlot;
 import mc.fenix.charts.GemNetworkGraph;
 import mc.fenix.networkgraph.GemGraph;
+import dashboardcomponents.GemFilterableTable;
 import DashboardModule.CellConfig;
 import DashboardModule.VizType.LINE;
 import DashboardModule.VizType.BAR;
 import DashboardModule.VizType.PIE;
 import DashboardModule.VizType.SPEED;
 import DashboardModule.VizType.NETWORK;
+import DashboardModule.VizType.FILTERABLE_TABLE;
 
 component CellDisplay(
-    CellConfig cell
+    CellConfig cell,
+    // why the last filter set in a FILTERABLE_TABLE was rejected, "" if it was applied
+    String filterError = ""
     ){
 
       @guard(compareViz(VizType.LINE)) {
@@ -49,6 +53,10 @@ component CellDisplay(
       };
       @guard(compareViz(VizType.SCATTER)) {
          @GemScatterPlot(data = getScatterData(), xAxis = defaultAxisTranslate(cell.extra.scatterextra.xAxis), yAxis = defaultAxisTranslate(cell.extra.scatterextra.yAxis));
+      };
+      @guard(compareViz(VizType.FILTERABLE_TABLE)) {
+         filterableTableDisplay@GemFilterableTable(data = getFilterableTableData(), error = filterError,
+           changeFilter = changeFilter());
       };
       @guard(compareViz(VizType.BOX)) {
         @guard(checkOptionalDoubleExtra(cell.extra.boxextra.max)) {
