@@ -58,3 +58,7 @@ Welcome to the official documentation for MontiGem. This documentation is struct
 13. [Testing](reference/13_Testing.md)
     *   E2E Testing with Playwright
     *   Simulated GUI Tests
+
+14. [Python Client Generator](reference/14_PythonClient.md)
+    *   Gradle Setup for Python MontiGem Domain Clients
+    *   Usage Examples for Python MontiGem Domain Clients
