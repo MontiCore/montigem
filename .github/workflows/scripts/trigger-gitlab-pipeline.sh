@@ -49,7 +49,7 @@ json_field() {
     local field="$1"
     grep -o "\"${field}\"[[:space:]]*:[[:space:]]*\(\"[^\"]*\"\|[0-9]*\)" \
         | head -1 \
-        | sed -E 's/.*:[[:space:]]*"?([^"]*)"?$/\1/'
+        | sed -E 's/^"[^"]*"[[:space:]]*:[[:space:]]*"?([^"]*)"?$/\1/'
 }
 
 if ! command -v jq >/dev/null 2>&1; then
@@ -199,6 +199,6 @@ if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
 fi
 
 echo "status=${status}"
-echo "web_url=${web_url}"
+echo "web_url= ${web_url}"
 
 [[ "$status" == "success" ]]
