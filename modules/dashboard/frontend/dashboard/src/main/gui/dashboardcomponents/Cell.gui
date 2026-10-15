@@ -3,7 +3,6 @@ package dashboardcomponents;
 import DashboardModule.CellConfig;
 import dashboardcomponents.DeleteDialog;
 import dashboardcomponents.CellDisplay;
-import mc.fenix.basic.GemImage;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemCard;
@@ -54,9 +53,9 @@ component Cell(
                     moveButton@GemButton(leftClick = acceptEditCell(cell, editCell, changeTutorialStep), disabled = alwaysDisabledByTutorial(), content = [@GemIcon(name = "edit")]);
                   },
                   @guard(checkIfTutorialStep22()) {
-                    tutorialDownload@GemButton(leftClick = openDownloadDialog(), disabled = checkIfDialogOpen(), content = [downloadIcon@GemImage(source = "assets/images/download.png")]);
+                    tutorialDownload@GemButton(leftClick = openDownloadDialog(), disabled = checkIfDialogOpen(), content = [@GemIcon(color = "white", name = "download")]);
                   }else{
-                    @GemButton(leftClick = openDownloadDialog(), disabled = alwaysDisabledByTutorial(), content = [downloadIcon2@GemImage(source = "assets/images/download.png")]);
+                    @GemButton(leftClick = openDownloadDialog(), disabled = alwaysDisabledByTutorial(), content = [@GemIcon(color = "white", name = "download")]);
                   },
                   deleteButton@GemButton(leftClick = openDeleteDialog(), disabled = alwaysDisabledByTutorial(), content = [@GemIcon(color = "white", name = "delete")])
                 ]);

@@ -168,41 +168,6 @@ body.dark-theme :host ::ng-deep .tabButton2Active .gem-button {
   align-items: center;
 }
 
-:host ::ng-deep .saveIcon {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 2px;
-}
-
-:host ::ng-deep .saveIcon2 {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 2px;
-}
-
-:host ::ng-deep .squareIcon {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 2px;
-}
-
-:host ::ng-deep .squareIcon2 {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 2px;
-}
-
-:host ::ng-deep .leftIcon {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 4px;
-}
-
-:host ::ng-deep .rightIcon {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 4px;
-}
-
-:host ::ng-deep .rightIcon2 {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 4px;
-}
-
 :host ::ng-deep .tutorialSave .gem-button{
   margin-top: 17px !important;
   background-color: green  !important;

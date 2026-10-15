@@ -130,30 +130,6 @@
   min-height: 0;
 }
 
-:host ::ng-deep .listIcon {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 2px;
-  margin-right: 1px;
-}
-
-:host ::ng-deep .listIcon2 {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 2px;
-  margin-right: 1px;
-}
-
-:host ::ng-deep .downloadIcon {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 2px;
-  margin-right: 1px;
-}
-
-:host ::ng-deep .downloadIcon2 {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-bottom: 2px;
-  margin-right: 1px;
-}
-
 .deleteDialog{
    position: fixed;
    top: 300px;

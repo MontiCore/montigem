@@ -3,7 +3,7 @@ package dashboardcomponents;
 import DashboardModule.CellConfig;
 import DashboardModule.VewConfig;
 
-import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemIcon;
 import mc.fenix.basic.GemText;
 import mc.fenix.editor.MonacoEditor;
 import mc.fenix.arrange.GemRow;
@@ -22,7 +22,6 @@ import mc.fenix.input.GemDropdownInputTypes.Option;
 component MainCellOptions(
     CellConfig cell,
     int tutorialStep,
-    boolean night,
     Event<Integer> changeTutorialStep
   ) {
 
@@ -53,17 +52,17 @@ component MainCellOptions(
         @guard(checkIfTutorialStep1112()) {
           tutorialData@GemColumn(vAlign = "top", rowGap = "10px", components = [
               editorLabel2@GemText(size = "17px", weight = "bold", value = "Create and select data"),
-              editor2@MonacoEditor(entry = cell.data, showMinimap = false, theme = getColorScheme(), autoHeight = true, width = "100%")
+              editor2@MonacoEditor(entry = cell.data, showMinimap = false, autoHeight = true, width = "100%")
           ]);
         } else {
           @GemColumn(vAlign = "top", rowGap = "10px", components = [
               @GemRow(hAlign = "space-between", components = [
                 editorLabel@GemText(size = "17px", weight = "bold", value = "Create and select data"),
                 @GemButton(width = "50px", height = "35px", margin = "0px", leftClick = downloadClassDiagram(), content = [
-                  diagramIcon@GemImage(width = "22px", source = "assets/images/file-chart-line.svg")
+                  @GemIcon(color = "white", name = "insert_chart_outlined")
                 ])
               ]),
-              editor@MonacoEditor(entry = cell.data, showMinimap = false, theme = getColorScheme(), autoHeight = true, width = "100%")
+              editor@MonacoEditor(entry = cell.data, showMinimap = false, autoHeight = true, width = "100%")
           ]);
         }
       ])

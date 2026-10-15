@@ -7,11 +7,12 @@ import { OnDestroy, Input , OnChanges, OnInit} from '@angular/core';
 import { ApplicationRef, createComponent, ElementRef, EnvironmentInjector, inject } from '@angular/core';
 import { ComponentRef } from '@angular/core';
 import { GemListUtil } from '@umlp/commonj2ts';
+import { GemIcon } from '@umlp/basic';
 import {NgGridStackWidget, GridstackComponent, BaseWidget, NgCompInputs, NgGridStackOptions} from "gridstack/dist/angular"
 
 @Component({
   standalone: true,
-  imports: [...config.imports, GridstackComponent],
+  imports: [...config.imports, GridstackComponent, GemIcon],
   selector: config.selector,
   templateUrl: "./GridstackComp.html",
   styles: config.styles,

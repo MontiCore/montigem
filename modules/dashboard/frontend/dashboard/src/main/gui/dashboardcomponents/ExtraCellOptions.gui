@@ -80,11 +80,11 @@ component ExtraCellOptions(
               ]);
            },
            @guard(checkIfTutorialStep15()) {
-             tutorialDisplay@GemColumn(components = [
+             tutorialDisplay@GemColumn(width = "450px", height = "300px", components = [
                @CellDisplay(cell = cell)
              ]);
            } else {
-              @GemColumn(components = [
+              displayColumn@GemColumn(width = "450px", height = "300px", components = [
                  @CellDisplay(cell = cell)
               ]);
            }

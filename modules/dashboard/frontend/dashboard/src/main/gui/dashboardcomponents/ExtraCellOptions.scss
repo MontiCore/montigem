@@ -2,6 +2,20 @@
   margin-top: 10px;
 }
 
+// The charts of the preview fill their container and have no width of their own, so the preview
+// column gets a fixed size in the model; let the chart fill it (otherwise the column collapsed to
+// zero width in the auto-sized dialog and the chart overflowed the dialog)
+:host ::ng-deep :is(.displayColumn, .tutorialDisplay) > cell-display {
+  width: 100%;
+  height: 100%;
+}
+
+:host ::ng-deep :is(.displayColumn, .tutorialDisplay) > cell-display > * {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
 :host ::ng-deep .tutorialOptions {
   margin-top: 10px !important;
   border: 3px solid red;

@@ -5,7 +5,6 @@ import DashboardModule.VewConfig;
 import mc.fenix.basic.GemIcon;
 import component.MainCellOptions;
 import component.ExtraCellOptions;
-import mc.fenix.basic.GemImage;
 import mc.fenix.basic.GemButton;
 import mc.fenix.basic.GemText;
 import mc.fenix.arrange.GemColumn;
@@ -18,7 +17,6 @@ import mc.fenix.arrange.GemRow;
 //-------------------------------------------------------------------------
 component CellDialog(
   boolean edit,
-  boolean night,
   CellConfig cell,
   CellConfig cellForEdit,
   ViewConfig view,
@@ -97,7 +95,7 @@ component CellDialog(
       //content
       @GemRow(components = [
           @guard(first) {
-            @MainCellOptions(cell = cellForEdit, night = night, tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep);
+            @MainCellOptions(cell = cellForEdit, tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep);
           }else{
             @ExtraCellOptions(cell = cellForEdit, tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep);
           }
@@ -114,14 +112,14 @@ component CellDialog(
           @guard(checkIfTutorialStep26()) {
             tutorialSave@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = completeEdit(cell, cellForEdit, close, changeTutorialStep), content = [
              @GemRow(vAlign = "center", components = [
-                squareIcon2@GemImage(source = "assets/images/square-pen.png"),
+                @GemIcon(size = "15px", color = "white", name = "edit_square"),
                 @GemText(value = "Save")
                ])
             ]);
           } else {
              finishButton1@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = completeEdit(cell, cellForEdit, close, changeTutorialStep), content = [
               @GemRow(vAlign = "center", components = [
-                 squareIcon@GemImage(source = "assets/images/square-pen.png"),
+                 @GemIcon(size = "15px", color = "white", name = "edit_square"),
                  @GemText(value = "Save")
                 ])
              ]);
@@ -140,14 +138,14 @@ component CellDialog(
                tutorialNext@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = nextCreate(cellForEdit, changeTutorialStep), content = [
                   @GemRow(vAlign = "center", components = [
                    @GemText(value = "Next"),
-                   rightIcon2@GemImage(source = "assets/images/chevron-right.png")
+                   @GemIcon(size = "15px", color = "white", name = "chevron_right")
                   ])
                ]);
              } else {
                endButton1@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = nextCreate(cellForEdit, changeTutorialStep), content = [
                  @GemRow(vAlign = "center", components = [
                   @GemText(value = "Next"),
-                  rightIcon@GemImage(source = "assets/images/chevron-right.png")
+                  @GemIcon(size = "15px", color = "white", name = "chevron_right")
                  ])
                ]);
              }
@@ -162,21 +160,21 @@ component CellDialog(
             ]),
             endButton2@GemButton(height = "48px", width = "70px", disabled = disabledByTutorial(), leftClick = stepBack(), content = [
              @GemRow(vAlign = "center", components = [
-              leftIcon@GemImage(source = "assets/images/chevron-left.png"),
+              @GemIcon(size = "15px", color = "white", name = "chevron_left"),
               @GemText(value = "Back")
              ])
             ]),
             @guard(checkIfTutorialStep16()) {
               tutorialFinish@GemButton(height = "48px", width = "80px", disabled = disabledByTutorial(), leftClick = completeCreate(cellForEdit, close, changeTutorialStep), content = [
                @GemRow(vAlign = "center", components = [
-                saveIcon2@GemImage(height = "15px", source = "assets/images/save.png"),
+                @GemIcon(size = "15px", color = "white", name = "save"),
                 @GemText(value = "Create")
                ])
               ]);
             } else {
               finishButton2@GemButton(height = "48px", width = "80px", disabled = disabledByTutorial(), leftClick = completeCreate(cellForEdit, close, changeTutorialStep), content = [
                @GemRow(vAlign = "center", components = [
-                saveIcon@GemImage(height = "15px", source = "assets/images/save.png"),
+                @GemIcon(size = "15px", color = "white", name = "save"),
                 @GemText(value = "Create")
                ])
               ]);

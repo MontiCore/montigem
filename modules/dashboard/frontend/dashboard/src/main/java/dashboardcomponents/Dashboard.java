@@ -18,17 +18,8 @@ import static dashboardmodule.VizType.LINE;
 import static dashboardmodule.VizType.NETWORK;
 import static dashboardmodule.VizType.PIE;
 import static dashboardmodule.VizType.SCATTER;
-import static def.dom.Globals.document;
 
 public class Dashboard extends DashboardTOP {
-
-  @Override
-  public Consumer<Void> toggleColors() {
-    return $ -> {
-      this.setNight(!this.isNight());
-      document.body.classList.toggle("dark-theme");
-    };
-  }
 
   //------------------------------------
   //left side view tabs related
@@ -510,7 +501,7 @@ public class Dashboard extends DashboardTOP {
                 .instruction(
                     "In this dialog you can choose from one of the presets to get started\n" +
                         "already with some configuration of visualizations. Otherwise you can start\n" +
-                        "with a clean slate by choosing the empty preset. For this tutorial please" +
+                        "with a clean slate by choosing the empty preset. For this tutorial please\n" +
                         "select the empty preset."
                 )
                 .section("2. Views")
@@ -524,8 +515,8 @@ public class Dashboard extends DashboardTOP {
             DashboardModuleManager.tutorialStepBuilder()
                 .stepId(29)
                 .instruction(
-                    "To make the tutorial easier for you select the empty preset and press the now \n" +
-                        "highlighted \"Create\" button to continue\n"
+                    "To make the tutorial easier for you select the empty preset and press the now\n" +
+                        "highlighted \"Create\" button to continue"
                 )
                 .section("2. Views")
                 .hasButton(false)
@@ -774,7 +765,7 @@ public class Dashboard extends DashboardTOP {
                 .instruction(
                     "Reconfiguring: You can change all options of a cell set in creation or\n" +
                         "in a previous reconfiguration. To look at that now click on the\n" +
-                        "highlighted buttton on top of the cell."
+                        "highlighted button on top of the cell."
                 )
                 .section("4. Editing Cells")
                 .hasButton(false)
@@ -802,7 +793,7 @@ public class Dashboard extends DashboardTOP {
             DashboardModuleManager.tutorialStepBuilder()
                 .stepId(25)
                 .instruction(
-                    "Error messages will still pop up if you make mistakes when chaning\n" +
+                    "Error messages will still pop up if you make mistakes when changing\n" +
                         "fields. Also the abort button continues to be present if you want to\n" +
                         "discard all changes and close the window."
                 )

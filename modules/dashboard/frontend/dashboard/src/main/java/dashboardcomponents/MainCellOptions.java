@@ -23,18 +23,6 @@ public class MainCellOptions extends MainCellOptionsTOP{
     };
   }
 
-  //------------------------------------------------------------------------------------
-  //needed to change only the editor color scheme as in its current implementation it is
-  //impossible to do through just scss overriding like we do with the other components
-  //------------------------------------------------------------------------------------
-  @Override
-  public String getColorScheme() {
-    if (this.isNight()) {
-      return "vs-dark";
-    }
-    return "Light +";
-  }
-
   @Override
   public Boolean checkIfTutorialStep1112() { return this.getTutorialStep() == 11 || this.getTutorialStep() == 12; }
 

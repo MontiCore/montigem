@@ -31,21 +31,28 @@
   color: var(--blue-text);
 }
 
+// the text column takes the remaining width of the dialog, so short instructions are centred in it
+:host > gem-row > gem-column {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+// the lines are broken in the instruction texts; only wrap them where the dialog is too narrow
+// (with nowrap and overflow: hidden, too long lines were cut off)
 :host ::ng-deep .instruction {
   font-size: 14px;
-  overflow: hidden;
-  white-space: nowrap !important;
   width: 100%;
-  max-width: 500px;
   margin: 0 auto;
   text-align: center;
+}
+
+:host ::ng-deep .nextStep {
+  align-self: center;
 }
 
 :host ::ng-deep .nextStep .gem-button{
   max-width: 80px;
   border-radius: 5px;
-  margin: 0 auto;
-  margin-top: 20px;
-  margin-right: -260px;
+  margin: 20px auto 0;
   min-width: 80px;
 }

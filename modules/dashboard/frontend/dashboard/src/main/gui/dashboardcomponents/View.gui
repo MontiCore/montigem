@@ -19,7 +19,6 @@ import dashboardcomponents.DeleteDialog;
 component View(
     boolean edit,
     boolean create,
-    boolean night,
     //boolean flags used for dialogs/functions in lower/upper components but needed to be initialized here
     //so we can keep track for button disabling
     boolean delete,
@@ -45,7 +44,6 @@ component View(
      backdrop@GemText();
      editDialog@CellDialog(
       edit = true,
-      night = night,
       cell = getEditCell(editCellId),
       cellForEdit = getCellBuilder(editCellId),
       first = true,
@@ -60,7 +58,6 @@ component View(
      backdrop@GemText();
      createDialog@CellDialog(
       edit = false,
-      night = night,
       view = view,
       //tutorial
       tutorialStep = tutorialStep,

@@ -3,17 +3,6 @@
   background-color: var(--view-background);
 }
 
-// The MontiGem theme picks its colors with light-dark(), i.e., by the color scheme (by default the one of the OS).
-// Couple it to the dashboard's own dark mode toggle (body.dark-theme), so that, e.g., the card titles and
-// chart texts switch together with the dashboard colors
-:host {
-  color-scheme: light;
-}
-
-body.dark-theme :host {
-  color-scheme: dark;
-}
-
 body.dark-theme :host ::ng-deep .gem-button {
   border: 1px solid #e0e0e0;
 }
@@ -124,30 +113,9 @@ body.dark-theme :host ::ng-deep .gem-button {
   background-color: #294F85;
 }
 
-:host ::ng-deep .infoIcon {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-left: 7px;
-  margin-bottom: 1px;
-  min-height: 26px;
-}
-
 :host ::ng-deep .endTutorial .gem-button{
   background-color: red;
   z-index: 1000;
-}
-
-:host ::ng-deep .infoIcon2 {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-left: 7px;
-  margin-bottom: 1px;
-  min-height: 26px;
-}
-
-:host ::ng-deep .colorIcon {
-  filter: brightness(0) saturate(100%) invert(100%);
-  margin-left: 7px;
-  margin-bottom: 1px;
-  min-height: 26px;
 }
 
 body.dark-theme :host ::ng-deep .closeButton .gem-button{
@@ -168,8 +136,31 @@ body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
   margin-top: -1px !important;
 }
 
-:host ::ng-deep .colorButton .gem-button{
+// look like the other buttons of the top bar (GemButton) instead of the round icon button of the theme
+:host ::ng-deep .darkModeSwitch .gem-dark-mode-switch {
+  width: 100%;
+  height: 100%;
+  border-radius: 0.375rem;
+  background-color: #2F5F9F;
+  color: white;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, transform 0.1s ease;
+  // keep the switch usable above the backdrops of the dialogs and the tutorial
+  position: relative;
   z-index: 1001;
+
+  &:hover {
+    background-color: #294F85;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transform: none;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+body.dark-theme :host ::ng-deep .darkModeSwitch .gem-dark-mode-switch {
+  border: 1px solid #e0e0e0;
 }
 
 :host ::ng-deep .addView .gem-button{
@@ -180,17 +171,18 @@ body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
   border-radius: 0px !important;
 }
 
+// an outline instead of a border, a border would push the whole dashboard down while it is highlighted
 :host ::ng-deep .tutorialViews{
-  border: 4px solid red;
+  outline: 4px solid red;
   border-radius: 3px;
-  animation: flash-border 1s ease-in-out infinite;
+  animation: flash-outline 1s ease-in-out infinite;
 }
-@keyframes flash-border {
+@keyframes flash-outline {
   0%, 100% {
-    border-color:transparent;
+    outline-color: transparent;
   }
   50% {
-    border-color: #ff0000;
+    outline-color: #ff0000;
   }
 }
 
@@ -266,8 +258,10 @@ body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
     background-color: var(--background-color);
   }
 
+// wide enough for the longest instruction line, the lines still wrap on small screens
 .tutorialDialog{
-   width: 500px;
+   width: 540px;
+   max-width: calc(100vw - 32px);
    position: fixed;
    top: 150px;
    left: 50%;
@@ -281,14 +275,15 @@ body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
    background-color: var(--background-color);
  }
 
-// centred a bit below the middle of the window, independent of the screen height (was top: 700px,
-// which put it at or below the bottom edge on smaller screens)
+// at the bottom edge of the window, below the cell and view dialogs, so it does not cover their buttons
+// the steps ask to click (centred at 60% of the height it covered the footer of the cell dialog)
 .tutorialDialogBottom{
-   width: 500px;
+   width: 540px;
+   max-width: calc(100vw - 32px);
    position: fixed;
-   top: 60%;
+   bottom: 16px;
    left: 50%;
-   transform: translate(-50%, -50%);
+   transform: translateX(-50%);
    background: #fff;
    padding: 20px;
    border-radius: 8px;
@@ -297,6 +292,13 @@ body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
    color: var(--text-color);
    background-color: var(--background-color);
  }
+
+// while a tutorial step is shown at the bottom, move the cell dialogs (View.scss) up below the top bar,
+// so that the tutorial dialog does not cover their footer buttons on smaller screens
+:host:has(> .tutorialDialogBottom) ::ng-deep :is(.createDialog, .editDialog) {
+  top: 56px;
+  transform: translateX(-50%);
+}
 
 // The MontiGem default theme gives .gem-button min-width: 8rem, padding and margin, and the
 // text inputs/images inside it extra margins. Let the buttons of the top bar (direct gem-row child) fill the size set in the model again.
@@ -364,11 +366,13 @@ body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
   padding-top: 4px;
 }
 
-// the tutorial backdrop is an empty GemText without own styling; keep it from taking space in the
-// full-height flex layout, otherwise it pushes the top bar and the view down while the tutorial is open
+// the tutorial backdrop (an empty GemText) dims the dashboard behind the tutorial dialog, like the
+// backdrop of the cell dialogs (View.scss); fixed, so it takes no space in the full-height flex layout
 :host > .backdrop {
-  flex: 0 0 0;
-  height: 0 !important;
-  min-height: 0;
-  overflow: hidden;
+  position: fixed;
+  inset: 0;
+  width: auto !important;
+  height: auto !important;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 500;
 }

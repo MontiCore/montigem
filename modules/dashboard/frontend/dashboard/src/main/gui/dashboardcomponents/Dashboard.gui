@@ -10,9 +10,9 @@ import mc.fenix.arrange.GemGrid;
 import mc.fenix.arrange.GemGridCell;
 import mc.fenix.arrange.GemCard;
 import mc.fenix.basic.GemIcon;
-import mc.fenix.basic.GemImage;
 import mc.fenix.basic.GemText;
 import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemDarkModeSwitch;
 import mc.fenix.charts.GemLineChart;
 import mc.fenix.input.GemTextInput;
 
@@ -25,7 +25,6 @@ component Dashboard(
   int currentView = 0,
   boolean info = false,
   boolean createView = false,
-  boolean night = false,
   //
   //boolean flags used for dialogs/functions in lower components but needed to be initialized here
   //so we can keep track for button disabling
@@ -156,11 +155,11 @@ component Dashboard(
             createButton@GemButton(width = "50px", margin = "0px", height = "35px", leftClick = changeCreate(), disabled = checkIfDialogOpen(), content = [@GemIcon(name = "add")]);
           },
           @guard(checkTutorial()) {
-            endTutorial@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = switchTutorial(), content = [infoIcon@GemImage(source = "assets/images/info.png", width = "22px")]);
+            endTutorial@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = switchTutorial(), content = [@GemIcon(color = "white", name = "info_outline")]);
           } else {
-            @GemButton(width = "50px", margin = "0px", height = "35px", leftClick = switchTutorial(), disabled = checkIfDialogOpen(), content = [infoIcon2@GemImage(source = "assets/images/info.png", width = "22px")]);
+            @GemButton(width = "50px", margin = "0px", height = "35px", leftClick = switchTutorial(), disabled = checkIfDialogOpen(), content = [@GemIcon(color = "white", name = "info_outline")]);
           },
-          colorButton@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = toggleColors(), disabled = running, content = [colorIcon@GemImage(source = "assets/images/sun-moon.png", width = "22px")])
+          darkModeSwitch@GemDarkModeSwitch(width = "50px", height = "35px")
         ])
       ])
     ]);
@@ -172,7 +171,6 @@ component Dashboard(
           edit = edit,
           delete = delete,
           download = download,
-          night = night,
           editCellFlag = editCellFlag,
           closeEdit = closeEdit(),
           closeCreate = setCreateFalse(),
