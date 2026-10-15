@@ -1,6 +1,7 @@
 :host {
   display: block;
-  height: 100%;
+  // fill the browser window, the app shell (app-root, main) has no height of its own
+  height: 100vh;
 }
 
 .parent{

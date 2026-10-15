@@ -25,7 +25,7 @@ The module originates from a master thesis, which describes its design in more d
   ```java
   InterpreterWithErrorHandling.addDomain("mydomain", MyDomainManager.class);
   ```
-- The frontend requires the npm packages `gridstack` and `ngx-monaco-editor-v2`
+- The frontend requires the npm packages `gridstack` (its styles are included by the module) and `ngx-monaco-editor-v2`
   (`MonacoEditorModule.forRoot(...)` within the `AppGemModuleConfig.ts`),
   and the images used by the components in `assets/images`: `montigem-diamond.png`, `class-diagram.png`,
   `preset1.png`, and `empty-preset.png` (cf. `examples/dashboard/frontend/config`)

@@ -1,3 +1,20 @@
+// colors used by the components of the dashboard, switched by the dark mode of the app (GemDarkModeSwitch)
+:host {
+  --background-color: white;
+  --text-color: black;
+  --view-background: white;
+  --alt-color: #A3A3A3;
+  --blue-text: #2F5F9F;
+}
+
+body.dark-theme :host {
+  --background-color: #444444;
+  --text-color: white;
+  --view-background: #3A3A3A;
+  --alt-color: white;
+  --blue-text: white;
+}
+
 .container{
   padding-top: 2px;
   background-color: var(--view-background);
