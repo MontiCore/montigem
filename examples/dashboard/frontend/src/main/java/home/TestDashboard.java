@@ -5,7 +5,7 @@ import java.util.List;
 import dashboardmodule.DashboardModuleConfig;
 import dashboardmodule.DashboardModuleManager;
 
-public class Testing extends TestingTOP {
+public class TestDashboard extends TestDashboardTOP {
 
   /**
    * Loads the configs from the dashboard module.
