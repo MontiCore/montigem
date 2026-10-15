@@ -1,7 +1,7 @@
 <!-- (c) https://github.com/MontiCore/monticore -->
 # UMLPTool
 
-See more documentation [here](https://monticore.pages.rwth-aachen.de/umlp/).
+See more documentation [here](https://www.montigem.de).
 
 MontiGem is designed to assist developers in generating web applications
 from class diagrams,
