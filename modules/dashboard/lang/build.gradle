@@ -1,0 +1,107 @@
+import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_GUI_SYMBOLS_CONFIG
+import static de.montigem.gradle.MGBasePlugin.MONTIGEM_MODULE_IMPORT_MAP_CONFIG
+
+/* (c) https://github.com/MontiCore/monticore */
+plugins {
+  id "java-library" // Java plus providing specific knowledge about Java libraries
+  id "maven-publish"
+  id "de.monticore.generator" version "$mc_version" // MontiCore Plugin
+}
+
+def guava_version = '33.1.0-jre'
+def junit_version = '5.10.3'
+
+group = "de.monticore.lang"
+description = "Expression Wrapper Language"
+
+generateMCGrammars {}
+
+java {}
+
+dependencies {
+  // Depend on the MontiCore language library (which in term depends on the runtime)
+  grammar "de.monticore:monticore-grammar:$mc_version"
+  // Next, dependencies of the project itself
+  implementation group: 'com.google.guava', name: 'guava', version: guava_version
+  implementation group: 'de.monticore.lang', name: 'cd4analysis', version: mc_version
+  implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+  implementation group: 'de.monticore', name: 'class2mc', version: mc_version
+
+  implementation project(":umlp-rte:frontend")
+
+  // And dependencies for the test source set
+  testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
+  testImplementation "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+  // Provide MontiCore-specific tests, such as de.monticore.cocos.helper.Assert
+  testImplementation("de.monticore:monticore-runtime:$mc_version") {
+    capabilities {
+      requireCapability("de.monticore:monticore-runtime-tests")
+    }
+  }
+}
+
+// Where can we find the dependencies?
+repositories {
+  if (("true").equals(getProperty('useLocalRepo'))) {
+    mavenLocal()
+  }
+  maven {
+    credentials.username mavenUser
+    credentials.password mavenPassword
+    url repo
+  }
+}
+
+java {
+  withSourcesJar() // Also publish a variant consisting of the Java sources
+  withJavadocJar() // Also publish a variant consisting of the JavaDocs
+}
+
+sourcesJar.dependsOn project.collect { it.tasks.withType(MCGenTask) }
+
+// generated java doc contains errors, disable for now
+javadoc.failOnError(false)
+
+tasks.withType(JavaCompile) {
+  options.encoding = 'UTF-8'
+}
+
+test {
+  useJUnitPlatform()
+}
+
+task testReport(type: TestReport) {
+  destinationDir = file("$buildDir/reports/allTests")
+  // Include the results from the 'test' task
+  reportOn tasks.withType(Test)
+}
+
+
+task buildAll(type: GradleBuild) {
+  tasks = ['build']
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      artifactId = "dashboard-lang"
+      from components.java
+    }
+  }
+  // TODO: correct repo
+  repositories {
+    maven {
+      url "file://${project.layout.buildDirectory.get().asFile}/repo"
+    }
+    maven {
+      credentials.username mavenUser
+      credentials.password mavenPassword
+
+      def releasesRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-releases/"
+      def snapshotsRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-snapshots/"
+      url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+    }
+  }
+}
+
+defaultTasks 'build'

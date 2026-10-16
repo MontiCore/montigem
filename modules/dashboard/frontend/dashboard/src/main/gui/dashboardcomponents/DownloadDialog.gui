@@ -1,0 +1,34 @@
+package dashboardcomponents;
+
+import DashboardModule.CellConfig;
+import DashboardModule.VewConfig;
+import mc.fenix.basic.GemIcon;
+import component.MainCellOptions;
+import component.ExtraCellOptions;
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+
+//
+//The whole component probably unnecessary in the future when visualization components
+//are further developed and offer consistently their own in built downloading fucntionality
+//
+component DownloadDialog(
+  CellConfig cell,
+  Event<Void> close,
+  String errorMessage = "",
+  boolean error = false
+  ) {
+
+      @GemColumn(rowGap = "5px", hAlign = "center", components = [
+        @guard(error) {
+          downloadError@GemText(weight = "bold", color = "red", value = errorMessage);
+        },
+        downloadButton1@GemButton(leftClick = downloadCellJson(), label = "Download JSON"),
+        downloadButton2@GemButton(leftClick = downloadCellPng(), label = "Download PNG"),
+        downloadButton3@GemButton(leftClick = downloadCellSvg(), label = "Download SVG"),
+        closeDialog@GemButton(leftClick = closeDialog(), label = "Close")
+      ]);
+}

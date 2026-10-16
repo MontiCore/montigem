@@ -1,0 +1,8 @@
+package home;
+
+import dashboardcomponents.Dashboard;
+import DashboardModule.DashboardModuleConfig;
+
+page TestDashboard (List<DashboardModuleConfig> configs) {
+    parent@Dashboard(config = getBackendConfig(configs));
+}

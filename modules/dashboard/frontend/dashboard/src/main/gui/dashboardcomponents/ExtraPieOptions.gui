@@ -1,0 +1,26 @@
+package dashboardcomponents;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemCard;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemButton;
+import mc.fenix.input.GemTextInput;
+import mc.fenix.input.GemAutocompleteInput;
+import mc.fenix.input.GemDropdownInput;
+import mc.fenix.input.GemDropdownInputTypes.Option;
+import mc.fenix.input.GemCheckBoxInput;
+import mc.fenix.arrange.GemColumn;
+
+import DashboardModule.ExtraData;
+
+component ExtraPieOptions(
+  ExtraData extra
+  ){
+      @GemColumn(rowGap = "10px", components = [
+        @GemTextInput(
+          inputType = "number",
+          labelText = "Inner Radius:",
+          entry = extra.piextra.innerRadius
+        )
+      ]);
+}

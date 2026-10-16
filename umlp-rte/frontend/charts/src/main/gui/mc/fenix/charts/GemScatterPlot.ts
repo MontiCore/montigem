@@ -204,8 +204,8 @@ export class GemScatterPlot extends GemScatterPlotComponent implements OnInit, A
       }
 
       this.plotlyData = traces;
-      this.updatePlot();
-      this.cdr.detectChanges();
+      // axis bounds that are not set are derived from the data
+      this.updateAxisConfig();
     })();
   }
 
@@ -234,20 +234,16 @@ export class GemScatterPlot extends GemScatterPlotComponent implements OnInit, A
       zeroline: false
     };
 
-    if (xAxis && (xAxis.getMinValue() !== null || xAxis.getMaxValue() !== null)) {
+    const xRange = this.getAxisRange(xAxis, 'x');
+    if (xRange) {
       this._layout.xaxis.autorange = false;
-      this._layout.xaxis.range = [
-        xAxis.getMinValue() ?? 0,
-        xAxis.getMaxValue() ?? ((xAxis.getMinValue() ?? 0) + 1)
-      ];
+      this._layout.xaxis.range = xRange;
     }
 
-    if (yAxis && (yAxis.getMinValue() !== null || yAxis.getMaxValue() !== null)) {
+    const yRange = this.getAxisRange(yAxis, 'y');
+    if (yRange) {
       this._layout.yaxis.autorange = false;
-      this._layout.yaxis.range = [
-        yAxis.getMinValue() ?? 0,
-        yAxis.getMaxValue() ?? ((yAxis.getMinValue() ?? 0) + 1)
-      ];
+      this._layout.yaxis.range = yRange;
     }
 
     if (xAxis && xAxis.getStepWidth() !== null && xAxis.getStepWidth() !== undefined) {
@@ -260,6 +256,34 @@ export class GemScatterPlot extends GemScatterPlotComponent implements OnInit, A
 
     this.updatePlot();
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Fixed range of an axis, or undefined to let plotly autorange it.
+   * Empty optionals are undefined (not null). If only one bound is set, the other one is derived
+   * from the data (plus 5% padding), as plotly 2.18 cannot autorange only one end of an axis.
+   */
+  private getAxisRange(axis: GemScatterPlotAxis | undefined, key: 'x' | 'y'): number[] | undefined {
+    const min = axis?.getMinValue();
+    const max = axis?.getMaxValue();
+    if (min == null && max == null) {
+      return undefined;
+    }
+    if (min != null && max != null) {
+      return [min, max];
+    }
+    const values: number[] = this.plotlyData.flatMap(trace => trace[key] ?? []);
+    if (values.length === 0) {
+      return undefined;
+    }
+    const dataMin = Math.min(...values);
+    const dataMax = Math.max(...values);
+    if (min != null) {
+      const upper = Math.max(dataMax, min);
+      return [min, upper + ((upper - min) * 0.05 || 1)];
+    }
+    const lower = Math.min(dataMin, max);
+    return [lower - ((max - lower) * 0.05 || 1), max];
   }
 
   private handleResize(width: number, height: number) {

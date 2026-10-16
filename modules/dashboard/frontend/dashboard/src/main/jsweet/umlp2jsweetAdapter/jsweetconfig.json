@@ -1,0 +1,6 @@
+{
+  "adapters": [
+    "umlp.jsweet.extension.ModuleDomainCDAdapter",
+    "umlp.jsweet.extension.umlp.DashboardModuleImportAdapter"
+  ]
+}

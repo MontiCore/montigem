@@ -1,0 +1,23 @@
+package dashboardcomponents;
+
+import DashboardModule.ExtraData;
+import DashboardModule.CellConfig;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.input.GemTextInput;
+
+component ExtraLineOptions(
+  ExtraData extra
+  ){
+    @GemColumn(rowGap = "10px", components = [
+      maxVal@GemTextInput(
+        inputType = "number",
+        labelText = "Maximum Value:",
+        entry = extra.linextra.maxValue
+      ),
+      @GemTextInput(
+        inputType = "number",
+        labelText = "Minimum Value:",
+        entry = extra.linextra.minValue
+      )
+    ]);
+}

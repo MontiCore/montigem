@@ -1,0 +1,53 @@
+package dashboardcomponents;
+
+import DashboardModule.ExtraData;
+import mc.fenix.basic.GemText;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.input.GemTextInput;
+
+component ExtraScatterOptions(
+    ExtraData extra
+  ){
+      @GemColumn(rowGap = "10px", components = [
+        @GemText(color = "#2F5F9F", weight = "700", size = "18px", value = "X Axis"),
+        @GemTextInput(
+          labelText = "Label:",
+          entry = extra.scatterextra.xAxis.label
+        ),
+        xMaxVal@GemTextInput(
+          inputType = "number",
+          labelText = "Maximum Value:",
+          entry = extra.scatterextra.xAxis.maxValue
+        ),
+        @GemTextInput(
+          inputType = "number",
+          labelText = "Minimum Value:",
+          entry = extra.scatterextra.xAxis.minValue
+        ),
+        @GemTextInput(
+          inputType = "number",
+          labelText = "Width of Steps:",
+          entry = extra.scatterextra.xAxis.stepWidth
+        ),
+        secondSection@GemText(color = "#2F5F9F", weight = "700", size = "18px", value = "Y Axis"),
+        @GemTextInput(
+          labelText = "Label:",
+          entry = extra.scatterextra.yAxis.label
+        ),
+        yMaxVal@GemTextInput(
+          inputType = "number",
+          labelText = "Maximum Value:",
+          entry = extra.scatterextra.yAxis.maxValue
+        ),
+        @GemTextInput(
+          inputType = "number",
+          labelText = "Minimum Value:",
+          entry = extra.scatterextra.yAxis.minValue
+        ),
+        @GemTextInput(
+          inputType = "number",
+          labelText = "Width of Steps:",
+          entry = extra.scatterextra.yAxis.stepWidth
+        )
+      ]);
+}

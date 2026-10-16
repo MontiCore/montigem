@@ -1,0 +1,31 @@
+package dashboardcomponents;
+
+import DashboardModule.CellConfig;
+import DashboardModule.VewConfig;
+import component.MainCellOptions;
+import component.ExtraCellOptions;
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemButton;
+import DashboardModule.ViewConfig;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
+
+
+component DeleteDialog(
+  CellConfig cell,
+  long viewGemId,
+  String text,
+  Event<Void> delete,
+  Event<Void> close
+  ) {
+
+  @GemColumn(rowGap = "10px", components = [
+    @GemText(weight = "bold", value = text),
+    @GemRow(colGap = "10px", hAlign = "center", components = [
+      @GemButton(leftClick = closeDialog(), label = "Cancel"),
+      deleteConfirm@GemButton(leftClick = deleteAndClose(), label = "Delete")
+    ])
+  ]);
+}

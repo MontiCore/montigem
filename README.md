@@ -103,4 +103,3 @@ The tool can be called with the following options:
 | -use_shell |                            | If the backend is generated, generate additional spring shell classes
 | -use_spring |                           | If the backend is generated, generate additional spring classes
 | -v | --version                          | Prints version information 
-
