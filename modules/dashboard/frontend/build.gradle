@@ -2,7 +2,11 @@
 
 import de.montigem.gradle.MGBasePlugin
 import de.montigem.gradle.specific.GUI2JavaTask
+import de.montigem.gradle.specific.GUIJava2TSTask
 import de.montigem.gradle.specific.UMLP2TSTask
+import de.montigem.gradle.specific.UMLPJava2TSTask
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 
 plugins {
   id 'de.rwth.se.montigem-module-frontend'
@@ -22,6 +26,57 @@ afterEvaluate {
   lib.tasks.named("umlp2ts", UMLP2TSTask) {
     symbolPath.from(lib.configurations.named(MGBasePlugin.MONTIGEM_MODULE_GUI_SYMBOLS_CONFIG))
   }
+}
+
+// This prints a single file that contains all the async methods from the JSweet transpilation of the module,
+// as done for the RTE (umlp-rte/frontend/build.gradle). JSweet reads the jsweetasync.json of every jar on the
+// classpath, so applications using the module await its async methods, too. Otherwise, e.g., the not awaited
+// DashboardModuleManager.setInstance(...) raced with the initialization of the application's domain and the
+// deserializer of the gauge chart data got lost.
+// In contrast to the RTE, the module also has a domain, whose async methods come from umlpJava2ts.
+afterEvaluate {
+  def mergeJSweetAsync = tasks.register("mergeJSweetAsyncMethods") {
+    group = "build"
+
+    montigem.libs.each { subproject ->
+      def guiJava2tsTask = subproject.tasks.named("guiJava2ts", GUIJava2TSTask)
+      def umlpJava2tsTask = subproject.tasks.named("umlpJava2ts", UMLPJava2TSTask)
+      dependsOn(guiJava2tsTask, umlpJava2tsTask)
+      inputs.files(guiJava2tsTask.map { it.outputs.files })
+      inputs.files(umlpJava2tsTask.map { it.outputs.files })
+    }
+
+    def outputFile = layout.buildDirectory.file("generated-resources/jsweetasync.json")
+    outputs.file(outputFile)
+
+    doLast {
+      def slurper = new JsonSlurper()
+      def mergedList = []
+      def addExact = { Provider<Directory> adapterDir ->
+        if (adapterDir.isPresent()) {
+          def file = new File(adapterDir.get().asFile, "jsweet-async-methods.json")
+          if (file.exists()) {
+            def exact = slurper.parse(file)["@Async"]?.get("exact")
+            if (exact) mergedList.addAll(exact)
+          }
+        }
+      }
+      montigem.libs.each { subproject ->
+        def guiTask = subproject.tasks.named("guiJava2ts", GUIJava2TSTask).get()
+        addExact(guiTask.getJSweetAdapterDir())
+        addExact(guiTask.getCD2JavaJSweetAdapterDir())
+        addExact(subproject.tasks.named("umlpJava2ts", UMLPJava2TSTask).get().getJSweetAdapterDir())
+      }
+      def out = outputFile.get().asFile
+      out.parentFile.mkdirs()
+      // JSweet writes the methods in a different order in every build, the jar must not change because of that
+      out.text = JsonOutput.prettyPrint(JsonOutput.toJson(["@Async": ["exact": mergedList.unique().sort()]]))
+    }
+  }
+
+  sourceSets.main.resources.srcDir(layout.buildDirectory.dir("generated-resources"))
+  processResources.dependsOn(mergeJSweetAsync)
+  tasks.named("jar").configure { dependsOn(mergeJSweetAsync) }
 }
 
 // Publish the GUI symbols and the import map of the module (umlp.modules:dashboard depends on them)
