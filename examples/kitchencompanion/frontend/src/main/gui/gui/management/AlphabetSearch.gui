@@ -4,7 +4,7 @@ import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemButton;
 
 component AlphabetSearch(String selectedLetter, boolean userOrOffer, Event<String> onSelect){
-  @GemRow(hAlign = "center", wrap="wrap", components = [
+  letterRow@GemRow(hAlign = "center", wrap="wrap", components = [
     clear@GemButton(
       label = "Clear",
       leftClick = clearSelection(),

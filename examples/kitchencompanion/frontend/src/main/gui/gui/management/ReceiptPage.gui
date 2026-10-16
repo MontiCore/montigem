@@ -26,7 +26,8 @@ import gui.base.Header;
 page ReceiptPage(Receipt receipt,User user){
   @GemColumn(hAlign = "center", rowGap = "1rem", components = [
   @Header(headline = user.formattedName, timerNeeded = true, backBtnNeeded = true),
-      @GemTable(
+      table@GemTable(
+        width = "min(720px, calc(100vw - 1.5rem))",
         layout = "fixed",
         headers = [
           @GemTableHeader(cells = [

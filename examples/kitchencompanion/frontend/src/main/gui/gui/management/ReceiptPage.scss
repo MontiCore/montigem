@@ -1,6 +1,8 @@
+@import "variables";
+
 :host ::ng-deep{
   table {
-    width: auto !important;
+    width: 100% !important;
     display: table !important;
     margin: 0 auto !important;
 
@@ -35,18 +37,18 @@
     th:nth-child(1), td:nth-child(1) {
       text-align: left;
       font-weight: 500;
-      width: 450px !important;
+      width: 62.5% !important;
     }
 
     th:nth-child(2), td:nth-child(2) {
       text-align: right;
       font-variant-numeric: tabular-nums;
-      width: 150px !important;
+      width: 20.8% !important;
     }
 
     th:nth-child(3), td:nth-child(3) {
       text-align: center;
-      width: 120px !important;
+      width: 16.7% !important;
     }
 
     tbody tr:not(:nth-last-child(-n+5)):hover {
@@ -74,6 +76,27 @@
         color: #00549F !important;
         font-size: 1.05rem;
       }
+    }
+  }
+}
+
+@include phone {
+  :host ::ng-deep table {
+    font-size: 0.85rem;
+
+    th {
+      padding: 8px 10px !important;
+      font-size: 0.7rem;
+      letter-spacing: 0.02em;
+    }
+
+    td {
+      padding: 8px 10px !important;
+      overflow-wrap: anywhere;
+    }
+
+    tbody tr:last-child td {
+      font-size: 0.95rem;
     }
   }
 }

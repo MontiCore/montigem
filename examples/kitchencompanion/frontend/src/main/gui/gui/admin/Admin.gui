@@ -12,16 +12,16 @@ import gui.base.Footer;
 import gui.admin.create.CreateUser;
 
 page Admin() {
-  @GemColumn(hAlign = "center",width = "auto", components = [
+  adminColumn@GemColumn(hAlign = "center",width = "auto", components = [
     managementText@GemText(value = "Data Management"),
-    @GemRow(colGap="1rem", rowGap="1rem", wrap = "wrap", components = [
+    dataRow@GemRow(colGap="1rem", rowGap="1rem", wrap = "wrap", components = [
       @GemButton(label = "Receipts", leftClick = navigate(@PaymentStatus())),
       @GemButton(label = "Edit current Users", leftClick = navigate(@UserPage())),
       @GemButton(label = "Create new User", leftClick = navigate(@CreateUser())),
       @GemButton(label = "Offer Administration", leftClick = navigate(@OfferAdmin()))
     ]),
     endOfMonth@GemText(value = "End of Month"),
-    @GemRow(colGap="1rem", rowGap="1rem", wrap = "wrap", components = [
+    monthRow@GemRow(colGap="1rem", rowGap="1rem", wrap = "wrap", components = [
       @GemButton(label="SendMail",leftClick = sendMail()),
       @GemButton(label = "EndMonth", leftClick = endMonth())
     ])
