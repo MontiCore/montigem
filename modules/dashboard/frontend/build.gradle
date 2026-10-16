@@ -12,6 +12,10 @@ plugins {
   id 'de.rwth.se.montigem-module-frontend'
 }
 
+base {
+  archivesName = "dashboard-frontend"
+}
+
 montigem {
   libs.addAll([project(":modules:dashboard:frontend:dashboard")])
 }
