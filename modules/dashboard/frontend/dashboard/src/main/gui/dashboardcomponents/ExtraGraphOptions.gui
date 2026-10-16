@@ -11,6 +11,8 @@ import mc.fenix.input.GemDropdownInputTypes.Option;
 import mc.fenix.input.GemCheckBoxInput;
 import mc.fenix.arrange.GemColumn;
 
+import DashboardModule.ExtraData;
+
 component ExtraGraphOptions(
   ExtraData extra
   ){

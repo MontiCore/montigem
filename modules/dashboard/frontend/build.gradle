@@ -28,6 +28,7 @@ afterEvaluate {
   }
 }
 
+// TODO rework this inside the Gradle plugin
 // This prints a single file that contains all the async methods from the JSweet transpilation of the module,
 // as done for the RTE (umlp-rte/frontend/build.gradle). JSweet reads the jsweetasync.json of every jar on the
 // classpath, so applications using the module await its async methods, too. Otherwise, e.g., the not awaited
