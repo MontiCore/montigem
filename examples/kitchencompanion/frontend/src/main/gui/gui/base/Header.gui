@@ -45,7 +45,7 @@ component Header(String headline, float progress, boolean backBtnNeeded, boolean
               mainText@GemText(
                 value = headline,
                 width = "auto",
-                size = "3rem",
+                size = "clamp(1.5rem, 5vw, 3rem)",
                 weight = "bold"
               )
             ]),

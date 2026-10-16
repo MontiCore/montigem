@@ -13,7 +13,7 @@ import gui.management.AlphabetSearch;
 page PaymentStatus(List<User> users){
   @GemColumn( hAlign = "center", vAlign = "center", rowGap="1rem", components = [
     @guard(hasAny1Receipt()){
-      @GemRow( components = [
+      @GemRow(hAlign = "center", wrap = "wrap", colGap = "1rem", rowGap = "1rem", components = [
         @iterate(User u: users){
           @guard(hasReceipt(u)){
             @UserPaymentStatus(user = u, receipt = getReceipt(u));
