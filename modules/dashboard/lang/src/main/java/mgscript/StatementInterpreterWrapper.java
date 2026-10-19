@@ -1,4 +1,4 @@
-package expressionwrapper;
+package mgscript;
 
 import de.monticore.ast.ASTNode;
 import de.monticore.interpreter.calculations.MICalculation;
@@ -7,10 +7,10 @@ import de.monticore.statements.interpreter.StatementsInterpreter;
 import de.monticore.values.MCValue;
 import de.monticore.visitor.ITraverser;
 
-public class AnotherInterpreter extends StatementsInterpreter {
+public class StatementInterpreterWrapper extends StatementsInterpreter {
 
 
-  public AnotherInterpreter(ITraverser traverser, InterpreterDataForBasicSymbols iData) {
+  public StatementInterpreterWrapper(ITraverser traverser, InterpreterDataForBasicSymbols iData) {
     super(traverser, iData);
   }
 

@@ -1,10 +1,10 @@
-package expressionwrapper;
+package mgscript;
 
-public class InterpreterFailedException extends Exception {
+public class InterpretationFailedException extends Exception {
 
   public final Exception wrappedException;
 
-  public InterpreterFailedException(Exception e) {
+  public InterpretationFailedException(Exception e) {
     wrappedException = e;
   }
 

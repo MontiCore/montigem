@@ -5,8 +5,8 @@ import de.monticore.symboltable.ImportStatement;
 import de.monticore.values.MCValue;
 import de.se_rwth.commons.logging.Finding;
 import de.se_rwth.commons.logging.Log;
-import expressionwrapper.Interpreter;
-import expressionwrapper.InterpreterFailedException;
+import mgscript.Interpreter;
+import mgscript.InterpretationFailedException;
 import jsweet.lang.Erased;
 import umlp.backendrte.common.GemList;
 
@@ -54,7 +54,7 @@ public class InterpreterWithErrorHandling {
     Optional<MCValue> val = Optional.empty();
     try {
       val = Optional.of(interpreter.interpret(interpreterModel));
-    }catch (InterpreterFailedException e) {
+    }catch (InterpretationFailedException e) {
       Log.info("Interpretation failed with exception. "+e.getMessage(), InterpreterWithErrorHandling.class.getName());
       e.printStackTrace();
     }

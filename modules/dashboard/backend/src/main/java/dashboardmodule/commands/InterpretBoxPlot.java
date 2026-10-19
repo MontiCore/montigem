@@ -4,7 +4,7 @@ import dashboardmodule.DashboardModuleManager;
 import de.monticore.symboltable.ImportStatement;
 import de.monticore.values.MCValue;
 import de.se_rwth.commons.logging.Log;
-import expressionwrapper.Interpreter;
+import mgscript.Interpreter;
 import mc.fenix.charts.gembarcharttypes.GemBarChartData;
 import mc.fenix.charts.gemboxplottypes.GemBoxPlotData;
 import umlp.backendrte.command.SimpleResult;

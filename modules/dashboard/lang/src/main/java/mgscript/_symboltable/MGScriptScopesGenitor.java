@@ -1,21 +1,21 @@
 /* (c) https://github.com/MontiCore/monticore */
-package expressionwrapper._symboltable;
+package mgscript._symboltable;
 
 import de.monticore.symboltable.ImportStatement;
 import de.monticore.types.mcbasictypes._ast.ASTMCImportStatement;
-import expressionwrapper._ast.ASTInterpreterCompilationUnit;
+import mgscript._ast.ASTInterpreterCompilationUnit;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExpressionWrapperScopesGenitor
-    extends ExpressionWrapperScopesGenitorTOP {
+public class MGScriptScopesGenitor
+    extends MGScriptScopesGenitorTOP {
 
   @Override
-  public IExpressionWrapperArtifactScope createFromAST(
+  public IMGScriptArtifactScope createFromAST(
       ASTInterpreterCompilationUnit node
   ) {
-    IExpressionWrapperArtifactScope result = super.createFromAST(node);
+    IMGScriptArtifactScope result = super.createFromAST(node);
     result.setName("TestA");
     List<ImportStatement> imports = new ArrayList<>();
     for (ASTMCImportStatement importStmt : node.getMCImportStatementList()) {

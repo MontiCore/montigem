@@ -1,5 +1,5 @@
 /* (c) https://github.com/MontiCore/monticore */
-package expressionswrapper;
+package mgscript;
 
 import de.monticore.expressions.assignmentexpressions.types3.AssignmentExpressionsCTTIVisitor;
 import de.monticore.expressions.commonexpressions.types3.CommonExpressionsCTTIVisitor;
@@ -28,14 +28,13 @@ import de.monticore.types3.util.TypeContextCalculator;
 import de.monticore.types3.util.TypeVisitorOperatorCalculator;
 import de.monticore.visitor.ITraverser;
 import de.se_rwth.commons.logging.Log;
-import expressionwrapper.ExpressionWrapperMill;
-import expressionwrapper._visitor.ExpressionWrapperTraverser;
+import mgscript._visitor.MGScriptTraverser;
 
-public class TypeCheck extends MapBasedTypeCheck3 {
+public class MGScriptTypeCheck extends MapBasedTypeCheck3 {
 
   public static void init() {
     Log.trace(
-        "init " + TypeCheck.class.getSimpleName(),
+        "init " + MGScriptTypeCheck.class.getSimpleName(),
         "TypeCheck setup"
     );
 
@@ -49,8 +48,8 @@ public class TypeCheck extends MapBasedTypeCheck3 {
     TypeParameterRelations.init();
     FunctionRelations.init();
 
-    ExpressionWrapperTraverser traverser =
-        ExpressionWrapperMill.inheritanceTraverser();
+    MGScriptTraverser traverser =
+        MGScriptMill.inheritanceTraverser();
     Type4Ast type4Ast = new Type4Ast();
     InferenceContext4Ast ctx4Ast = new InferenceContext4Ast();
 
@@ -119,7 +118,7 @@ public class TypeCheck extends MapBasedTypeCheck3 {
     traverser.add4MCArrayTypes(array);
 
     // create delegate
-    TypeCheck oclTC3 = new TypeCheck(traverser, type4Ast, ctx4Ast);
+    MGScriptTypeCheck oclTC3 = new MGScriptTypeCheck(traverser, type4Ast, ctx4Ast);
     oclTC3.setThisAsDelegate();
   }
 
@@ -136,7 +135,7 @@ public class TypeCheck extends MapBasedTypeCheck3 {
     FunctionRelations.reset();
   }
 
-  protected TypeCheck(
+  protected MGScriptTypeCheck(
       ITraverser typeTraverser, Type4Ast type4Ast, InferenceContext4Ast ctx4Ast) {
     super(typeTraverser, type4Ast, ctx4Ast);
   }

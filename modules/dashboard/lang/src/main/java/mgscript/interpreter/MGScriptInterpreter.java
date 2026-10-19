@@ -1,22 +1,20 @@
 // (c) https://github.com/MontiCore/monticore
-package expressionwrapper.interpreter;
+package mgscript.interpreter;
 
 import com.google.common.base.Preconditions;
 import de.monticore.interpreter.calculations.MICalculation;
 import de.monticore.interpreter.calculations.MICalculationVoid;
 import de.monticore.interpreter.util.InterpreterDataForBasicSymbols;
-import de.monticore.statements.mcreturnstatements._ast.ASTMCReturnStatementsNode;
-import de.monticore.statements.mcreturnstatements._ast.ASTReturnStatement;
 import de.monticore.statements.mcstatementsbasis._ast.ASTMCBlockStatement;
-import expressionwrapper._ast.ASTInterpreterCompilationUnit;
-import expressionwrapper._visitor.ExpressionWrapperInheritanceHandler;
+import mgscript._ast.ASTInterpreterCompilationUnit;
+import mgscript._visitor.MGScriptInheritanceHandler;
 
-public class ExpressionsWrapperInterpreter
-    extends ExpressionWrapperInheritanceHandler {
+public class MGScriptInterpreter
+    extends MGScriptInheritanceHandler {
 
   protected InterpreterDataForBasicSymbols iData;
 
-  public ExpressionsWrapperInterpreter(InterpreterDataForBasicSymbols iData) {
+  public MGScriptInterpreter(InterpreterDataForBasicSymbols iData) {
     this.iData = Preconditions.checkNotNull(iData);
   }
 

@@ -1,4 +1,4 @@
-package expressionwrapper;
+package mgscript;
 
 import de.monticore.class2mc.OOClass2MCResolver;
 import de.monticore.expressions.assignmentexpressions._cocos.AssignmentExpressionsASTAssignmentExpressionCoCo;
@@ -37,11 +37,10 @@ import de.monticore.symboltable.ImportStatement;
 import de.monticore.types.mcbasictypes.cocos.QualifiedTypeHasNoTypeParameters;
 import de.monticore.values.MCValue;
 import de.se_rwth.commons.logging.Log;
-import expressionwrapper._ast.ASTInterpreterCompilationUnit;
-import expressionwrapper._cocos.ExpressionWrapperCoCoChecker;
-import expressionwrapper._symboltable.IExpressionWrapperArtifactScope;
-import expressionwrapper._visitor.ExpressionWrapperTraverser;
-import expressionwrapper.interpreter.ExpressionsWrapperInterpreter;
+import mgscript._ast.ASTInterpreterCompilationUnit;
+import mgscript._cocos.MGScriptCoCoChecker;
+import mgscript._symboltable.IMGScriptArtifactScope;
+import mgscript._visitor.MGScriptTraverser;
 import mc.fenix.charts.gempiecharttypes.GemPieChartData;
 import mc.fenix.charts.gempiecharttypes.GemPieChartDataBuilder;
 import mc.fenix.charts.gempiecharttypes.GemPieChartEntry;
@@ -77,6 +76,7 @@ import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartData;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartDataBuilder;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartEntry;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartEntryBuilder;
+import mgscript.interpreter.MGScriptInterpreter;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -90,11 +90,11 @@ import java.util.Optional;
 public class Interpreter {
 
   protected List<ImportStatement> defaultImportStatements = new ArrayList<>();
-  protected IExpressionWrapperArtifactScope artifactScope;
-  protected AnotherInterpreter interpreter;
+  protected IMGScriptArtifactScope artifactScope;
+  protected StatementInterpreterWrapper interpreter;
   public Interpreter() {}
 
-  public MCValue interpret(String modelStr) throws InterpreterFailedException {
+  public MCValue interpret(String modelStr) throws InterpretationFailedException {
     try {
       ASTInterpreterCompilationUnit ast = getPreparedAST(modelStr);
       // explicitly get the calculation to check if there are errors
@@ -110,7 +110,7 @@ public class Interpreter {
       return value;
     } catch (Exception e) {
       // Logging has to be captured somewhere else
-      throw new InterpreterFailedException(e);
+      throw new InterpretationFailedException(e);
     }
   }
 
@@ -132,16 +132,16 @@ public class Interpreter {
     Log.enableFailQuick(false);
     // setup, done once (simplified)
     InterpreterDataForBasicSymbols iData = new InterpreterDataForBasicSymbols();
-    ExpressionWrapperMill.init();
-    ExpressionWrapperMill.globalScope().clear();
+    MGScriptMill.init();
+    MGScriptMill.globalScope().clear();
     BasicSymbolsMill.initializePrimitives();
 
-    artifactScope = ExpressionWrapperMill.artifactScope();
+    artifactScope = MGScriptMill.artifactScope();
     artifactScope.setName("");
-    ExpressionWrapperMill.globalScope().addSubScope(artifactScope);
+    MGScriptMill.globalScope().addSubScope(artifactScope);
 
     // TypeCheck
-    expressionswrapper.TypeCheck.init();
+    mgscript.MGScriptTypeCheck.init();
     // Class2MC
     IOOSymbolsGlobalScope globalScope = OOSymbolsMill.globalScope();
     OOClass2MCResolver resolver = new OOClass2MCResolver();
@@ -149,7 +149,7 @@ public class Interpreter {
     globalScope.addAdaptedTypeSymbolResolver(resolver);
     addAvailableClassesToGlobalScope();
 
-    ExpressionWrapperTraverser traverser = ExpressionWrapperMill.inheritanceTraverser();
+    MGScriptTraverser traverser = MGScriptMill.inheritanceTraverser();
     traverser.setExpressionsBasisHandler(new ExpressionsBasisInterpreter(iData));
     traverser.setCommonExpressionsHandler(new CommonExpressionsInterpreter(iData));
     traverser.setAssignmentExpressionsHandler(new AssignmentExpressionsInterpreter(iData));
@@ -159,9 +159,9 @@ public class Interpreter {
     traverser.setMCCommonStatementsHandler(new MCCommonStatementsInterpreter(iData));
     traverser.setMCReturnStatementsHandler(new MCReturnStatementsInterpreter(iData));
     traverser.setMCVarDeclarationStatementsHandler(new MCVarDeclarationStatementsInterpreter(iData));
-    traverser.setExpressionWrapperHandler(new ExpressionsWrapperInterpreter(iData));
+    traverser.setMGScriptHandler(new MGScriptInterpreter(iData));
 
-    interpreter = new AnotherInterpreter(traverser, iData);
+    interpreter = new StatementInterpreterWrapper(traverser, iData);
   }
 
   protected void addAvailableClassesToGlobalScope() {
@@ -221,7 +221,7 @@ public class Interpreter {
   public ASTInterpreterCompilationUnit parse(String input) {
     Optional<ASTInterpreterCompilationUnit> astOpt = Optional.empty();
     try {
-      astOpt = ExpressionWrapperMill.parser().parse_String(input);
+      astOpt = MGScriptMill.parser().parse_String(input);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -229,9 +229,9 @@ public class Interpreter {
     return astOpt.get();
   }
 
-  protected IExpressionWrapperArtifactScope runSymTabGenitor(ASTInterpreterCompilationUnit ast) {
-    IExpressionWrapperArtifactScope scope =
-        ExpressionWrapperMill.scopesGenitorDelegator().createFromAST(ast);
+  protected IMGScriptArtifactScope runSymTabGenitor(ASTInterpreterCompilationUnit ast) {
+    IMGScriptArtifactScope scope =
+        MGScriptMill.scopesGenitorDelegator().createFromAST(ast);
     // default import
     scope.addImports(new ImportStatement("java.lang", true));
     scope.addImports(new ImportStatement("java.util", true));
@@ -252,7 +252,7 @@ public class Interpreter {
   }
 
   protected void runSymTabCompleter(ASTInterpreterCompilationUnit ast) {
-    ExpressionWrapperTraverser symTabCompleter = ExpressionWrapperMill.inheritanceTraverser();
+    MGScriptTraverser symTabCompleter = MGScriptMill.inheritanceTraverser();
 
     // Expressions
 
@@ -280,7 +280,7 @@ public class Interpreter {
   }
 
   protected void runContextConditionChecks(ASTInterpreterCompilationUnit ast) {
-    ExpressionWrapperCoCoChecker checker = new ExpressionWrapperCoCoChecker();
+    MGScriptCoCoChecker checker = new MGScriptCoCoChecker();
     checker.addCoCo(new DoWhileConditionHasBooleanType());
     checker.addCoCo(new ExpressionStatementIsValid());
     checker.addCoCo(new ForConditionHasBooleanType());
