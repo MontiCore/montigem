@@ -9,12 +9,12 @@ import de.monticore.statements.mcstatementsbasis._ast.ASTMCBlockStatement;
 import mgscript._ast.ASTInterpreterCompilationUnit;
 import mgscript._visitor.MGScriptInheritanceHandler;
 
-public class MGScriptInterpreter
+public class MGScriptInterpreterVisitor
     extends MGScriptInheritanceHandler {
 
   protected InterpreterDataForBasicSymbols iData;
 
-  public MGScriptInterpreter(InterpreterDataForBasicSymbols iData) {
+  public MGScriptInterpreterVisitor(InterpreterDataForBasicSymbols iData) {
     this.iData = Preconditions.checkNotNull(iData);
   }
 

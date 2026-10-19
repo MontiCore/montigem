@@ -5,7 +5,7 @@ import de.monticore.symboltable.ImportStatement;
 import de.monticore.values.MCValue;
 import de.se_rwth.commons.logging.Finding;
 import de.se_rwth.commons.logging.Log;
-import mgscript.Interpreter;
+import mgscript.MGScriptInterpreter;
 import mgscript.InterpretationFailedException;
 import jsweet.lang.Erased;
 import umlp.backendrte.common.GemList;
@@ -40,7 +40,7 @@ public class InterpreterWithErrorHandling {
   public static ValueOrError interpretString(String interpreterModel) {
     Log.info("Starting interpretation of model: "+interpreterModel, InterpreterWithErrorHandling.class.getName());
 
-    Interpreter interpreter = new Interpreter();
+    MGScriptInterpreter interpreter = new MGScriptInterpreter();
     interpreter.setup();
     interpreter.addDefaultImportStatement(new ImportStatement("dashboardmodule", true));
     interpreter.addDefaultImportStatement(new ImportStatement("umlp.backendrte.common.GemList", false));

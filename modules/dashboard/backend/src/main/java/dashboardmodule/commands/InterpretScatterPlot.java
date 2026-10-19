@@ -1,14 +1,9 @@
 package dashboardmodule.commands;
 
 import dashboardmodule.DashboardModuleManager;
-import de.monticore.symboltable.ImportStatement;
-import de.monticore.values.MCValue;
 import de.se_rwth.commons.logging.Log;
-import mgscript.Interpreter;
 import mc.fenix.charts.gemscatterplottypes.GemScatterPlotData;
-import mc.fenix.networkgraph.networkgraphtypes.Graph;
 import umlp.backendrte.command.SimpleResult;
-import umlp.backendrte.common.GemList;
 import umlp.backendrte.common.LoadingState;
 import umlp.jsweet.extension.annotation.BackendOnly;
 import umlp.jsweet.extension.annotation.BackendOnlyModes;

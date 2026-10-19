@@ -4,11 +4,8 @@ import de.monticore.values.MCValue;
 import de.se_rwth.commons.logging.Log;
 import de.se_rwth.commons.logging.LogStub;
 import mc.fenix.charts.gempiecharttypes.GemPieChartData;
-import mgscript.InterpretationFailedException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import java.util.*;
 
 
 public class SimpleInterpreterTest {
@@ -16,7 +13,7 @@ public class SimpleInterpreterTest {
   @Test
   public void testInterpreterPieChart() throws InterpretationFailedException {
     LogStub.initPlusLog();
-    Interpreter interpreter = new Interpreter();
+    MGScriptInterpreter interpreter = new MGScriptInterpreter();
     interpreter.setup();
     MCValue val = interpreter.interpret(
         """

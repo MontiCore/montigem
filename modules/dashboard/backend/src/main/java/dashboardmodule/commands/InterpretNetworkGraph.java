@@ -1,19 +1,9 @@
 package dashboardmodule.commands;
 
 import dashboardmodule.DashboardModuleManager;
-import de.monticore.symboltable.ImportStatement;
-import de.monticore.values.MCValue;
 import de.se_rwth.commons.logging.Log;
-import mgscript.Interpreter;
-import mc.fenix.charts.gemlinecharttypes.GemLineChartData;
 import mc.fenix.networkgraph.networkgraphtypes.Graph;
-import mc.fenix.networkgraph.networkgraphtypes.GraphBuilder;
-import mc.fenix.networkgraph.networkgraphtypes.GraphEdge;
-import mc.fenix.networkgraph.networkgraphtypes.GraphEdgeBuilder;
-import mc.fenix.networkgraph.networkgraphtypes.GraphNode;
-import mc.fenix.networkgraph.networkgraphtypes.GraphNodeBuilder;
 import umlp.backendrte.command.SimpleResult;
-import umlp.backendrte.common.GemList;
 import umlp.backendrte.common.LoadingState;
 import umlp.jsweet.extension.annotation.BackendOnly;
 import umlp.jsweet.extension.annotation.BackendOnlyModes;

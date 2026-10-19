@@ -76,7 +76,7 @@ import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartData;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartDataBuilder;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartEntry;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartEntryBuilder;
-import mgscript.interpreter.MGScriptInterpreter;
+import mgscript.interpreter.MGScriptInterpreterVisitor;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -87,20 +87,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class Interpreter {
+public class MGScriptInterpreter {
 
   protected List<ImportStatement> defaultImportStatements = new ArrayList<>();
   protected IMGScriptArtifactScope artifactScope;
   protected StatementInterpreterWrapper interpreter;
-  public Interpreter() {}
+  public MGScriptInterpreter() {}
 
   public MCValue interpret(String modelStr) throws InterpretationFailedException {
     try {
       ASTInterpreterCompilationUnit ast = getPreparedAST(modelStr);
-      // explicitly get the calculation to check if there are errors
-
-      MICalculation calculation = getCalculation(ast); // TODO this is probably not necessary
-      calculation.isCalculationVoid();
       MCValue value = interpreter.interpretNode(ast);
       if(value.asNativeObject() instanceof MCSignalReturn signalReturn) {
         if(signalReturn.getValue().isPresent()) {
@@ -113,7 +109,6 @@ public class Interpreter {
       throw new InterpretationFailedException(e);
     }
   }
-
 
   ASTInterpreterCompilationUnit getPreparedAST(String modelStr) {
     ASTInterpreterCompilationUnit ast = this.parse(modelStr);
@@ -159,7 +154,7 @@ public class Interpreter {
     traverser.setMCCommonStatementsHandler(new MCCommonStatementsInterpreter(iData));
     traverser.setMCReturnStatementsHandler(new MCReturnStatementsInterpreter(iData));
     traverser.setMCVarDeclarationStatementsHandler(new MCVarDeclarationStatementsInterpreter(iData));
-    traverser.setMGScriptHandler(new MGScriptInterpreter(iData));
+    traverser.setMGScriptHandler(new MGScriptInterpreterVisitor(iData));
 
     interpreter = new StatementInterpreterWrapper(traverser, iData);
   }
