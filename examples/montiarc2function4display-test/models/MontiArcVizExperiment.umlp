@@ -5,6 +5,7 @@ umlp MontiArcVizExperiment {
   class RenderData {
     String mainFunctionName;
     String src;
+    String errors = "";
     /boolean valid;
   }
 

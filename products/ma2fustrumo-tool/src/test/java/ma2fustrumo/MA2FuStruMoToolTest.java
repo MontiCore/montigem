@@ -123,6 +123,39 @@ class MA2FuStruMoToolTest {
     assertEquals(0, logger.failQuickChanges);
   }
 
+  @ParameterizedTest
+  @ValueSource(booleans = {false, true})
+  void converterCollectsLoggedErrorsAndClearsThemOnSuccessfulRetry(boolean failQuick) {
+    var converter = new SimpleMontiArc2Function4DisplayConverter(symbolDir.toString());
+    Log.enableFailQuick(failQuick);
+    logger.failQuickChanges = 0;
+
+    assertThrows(RuntimeException.class, () -> converter.convert("Missing", SOURCE));
+    assertTrue(converter.getErrors().stream()
+                   .anyMatch(error -> error.contains("Main component not found")));
+    assertEquals(0, logger.failQuickChanges);
+
+    assertNotNull(converter.convert("Root", SOURCE));
+    assertTrue(converter.getErrors().isEmpty());
+    assertEquals(0, logger.failQuickChanges);
+  }
+
+  @Test
+  void converterCollectsParserErrorsWithoutIncludingUnrelatedLogEntries() {
+    var converter = new SimpleMontiArc2Function4DisplayConverter(symbolDir.toString());
+    Log.enableFailQuick(false);
+    Log.error("Unrelated error before conversion");
+
+    assertThrows(IllegalArgumentException.class,
+                 () -> converter.convert("Root", "component Root {"));
+
+    assertFalse(converter.getErrors().isEmpty());
+    assertTrue(converter.getErrors().stream().noneMatch(error -> error.contains("Unrelated")));
+    var errors = converter.getErrors();
+    Log.error("Unrelated error after conversion");
+    assertEquals(errors, converter.getErrors());
+  }
+
   private static class TestLog extends LogStub {
     private int failQuickChanges;
     private Log previousLog;

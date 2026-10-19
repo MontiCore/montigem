@@ -136,4 +136,9 @@
     box-sizing: border-box;
     background-color: var(--color-bg, #fcfcfc);
   }
+
+  .errorsText {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
 }

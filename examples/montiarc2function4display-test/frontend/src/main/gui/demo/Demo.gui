@@ -46,6 +46,15 @@ page Demo(DemoApp app) {
           @GemText(value = "You can zoom and pan with your mouse in the resulting view.")
         ])
       ),
+      errorsSection@GemColumn(width = "100%", components = [
+        @guard(app.renderedFunction.errors != "") {
+          errorsCard@GemCard(
+            title = "MontiArc errors",
+            width = "100%",
+            component = errorsText@GemText(value = app.renderedFunction.errors, color = "#cc071e")
+          );
+        }
+      ]),
       diagramDisplay@FunctionDisplay(data = app.render(app.renderedFunction))
     ])
   ]);
