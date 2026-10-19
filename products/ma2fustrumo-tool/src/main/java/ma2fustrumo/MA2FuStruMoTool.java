@@ -13,6 +13,8 @@ import montiarc._ast.ASTMACompilationUnit;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
@@ -34,6 +36,45 @@ public class MA2FuStruMoTool extends MontiArcTool {
     TagsMill.reset();
     TagsMill.init();
     super.init();
+  }
+
+  /**
+   * Converts an in-memory MontiArc model. Call {@link #init()} before executing.
+   * Symbols and tags are loaded from {@code symbolDir}.
+   */
+  public void execute(String source, Path symbolDir, String mainFunctionFqn, boolean useClass2MC) {
+    Preconditions.checkNotNull(source);
+    Preconditions.checkNotNull(symbolDir);
+    Preconditions.checkNotNull(mainFunctionFqn);
+    result = null;
+    result4Display = Optional.empty();
+    MontiArcMill.globalScope().clear();
+    MontiArcMill.globalScope().init();
+    this.initBuildInSymbols(useClass2MC);
+    this.initGlobalScope(symbolDir);
+    try {
+      TagLoader.load(new String[]{symbolDir.toString()});
+      Set<ASTMACompilationUnit> compilationUnits;
+      try {
+        ASTMACompilationUnit compilationUnit = MontiArcMill.parser().parse_String(source)
+            .orElseThrow(() -> new IllegalArgumentException("Failed to parse MontiArc source."));
+        compilationUnits = Set.of(compilationUnit);
+      } catch (IOException e) {
+        throw new IllegalArgumentException("Failed to parse MontiArc source.", e);
+      }
+      this.runAfterParserCoCos(compilationUnits);
+      this.defaultImportTrafo(compilationUnits, useClass2MC);
+      this.runAfterParsingTrafos(compilationUnits);
+      this.createSymbolTable(compilationUnits);
+      this.runSymbolTablePhase2(compilationUnits);
+      this.runAfterSymbolTablePhase2Trafos(compilationUnits);
+      this.runSymbolTablePhase3(compilationUnits);
+      this.runDefaultCoCos(compilationUnits);
+      this.runAdditionalCoCos(compilationUnits, true);
+      this.generate(mainFunctionFqn);
+    } finally {
+      TagLoader.clear();
+    }
   }
 
   @Override

@@ -21,7 +21,8 @@ public class MontiArcVizExperimentServerApplication
     super.init();
 
     try {
-      Server webServer = Server.createWebServer("-web", "-webAllowOthers").start();
+      Server webServer = Server.createWebServer("-web", "-webAllowOthers", "-webPort",
+          System.getenv().getOrDefault("H2_WEB_PORT", "8082")).start();
       Log.info(String.format("H2 Web Server started at: http://localhost:%s", webServer.getPort()),
                MontiArcVizExperimentServerApplication.class.getName());
     } catch (SQLException e) {
