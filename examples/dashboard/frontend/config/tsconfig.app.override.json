@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "paths": {
-      "@montigem/*": ["libs/@montigem/*"],
-      "dashboardmodule/*": ["libs/@montigem/dashboard/build/umlpJava2ts/dashboardmodule/*"]
+      "@montigem/*": ["libs/@montigem/*"]
     }
   }
 }
