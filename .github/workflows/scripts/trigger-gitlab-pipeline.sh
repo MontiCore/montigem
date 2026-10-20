@@ -6,8 +6,11 @@
 # It only covers the core behaviour of that action (trigger a pipeline via a
 # trigger token, then poll it until it reaches a final status). While polling,
 # it also reports which jobs started running and which succeeded or failed,
-# and prints a per-job summary at the end. Artifact / job-log downloading is
-# intentionally left out to keep this a plain curl script; the only other
+# and prints a per-job summary at the end. For every failed job, it downloads
+# the job log and prints an excerpt (see job-log-excerpt.sh next to this
+# script) in a collapsible group, and lists the failed jobs with the most
+# relevant lines of their logs in the GitHub step summary. Artifact
+# downloading is left out to keep this a plain curl script; the only other
 # dependency is jq (preinstalled on GitHub-hosted runners), used to parse the
 # job list.
 #
@@ -22,10 +25,15 @@
 #                           (needs read_api scope; not needed for public projects)
 #   GITLAB_INPUTS_JSON     JSON object of pipeline inputs (spec:inputs), e.g. '{"umlp_ref":"dev"}' (default: {})
 #   GITLAB_POLL_INTERVAL   Seconds between status polls (default: 15, matches the original action)
+#   GITLAB_FAILED_JOB_LOGS "true" to print log excerpts of failed jobs, anything else
+#                           to report only their status (default: false)
+#   EXCERPT_MAX_LINES      Maximum length of a log excerpt in lines (default: 200),
+#                           see job-log-excerpt.sh for further options
 #
 # Outputs:
 #   Written as "status=..." / "web_url=..." to $GITHUB_OUTPUT if that
-#   variable is set, and always printed to stdout.
+#   variable is set, and always printed to stdout. Failed jobs are listed in
+#   $GITHUB_STEP_SUMMARY if that variable is set.
 #
 # Exit code is 0 only if the pipeline finished with status "success".
 
@@ -43,6 +51,8 @@ trigger_token="${GITLAB_TRIGGER_TOKEN:?GITLAB_TRIGGER_TOKEN is required}"
 access_token="${GITLAB_ACCESS_TOKEN:?GITLAB_ACCESS_TOKEN is required}"
 inputs_json="${GITLAB_INPUTS_JSON:-{}}"
 poll_interval="${GITLAB_POLL_INTERVAL:-15}"
+report_job_logs="${GITLAB_FAILED_JOB_LOGS:-false}"
+excerpt_script="$(dirname "${BASH_SOURCE[0]}")/job-log-excerpt.sh"
 
 # Extracts the string/number value of a top-level JSON field without a JSON parser.
 json_field() {
@@ -99,7 +109,8 @@ status="pending"
 declare -A job_status=() job_label=() job_allow_failure=() job_url=()
 
 # Prints the pipeline's jobs (regular jobs and bridge/trigger jobs) as
-# tab-separated lines: id, status, stage, name, allow_failure, web_url.
+# tab-separated lines: id, status, stage, name, allow_failure, web_url, kind
+# ("jobs" or "bridges").
 # A failed request only produces a warning, as the job list is informational.
 fetch_jobs() {
     local kind response code body
@@ -115,15 +126,75 @@ fetch_jobs() {
             continue
         fi
         printf '%s' "$body" \
-            | jq -r '.[] | [.id, .status, .stage, .name, .allow_failure, .web_url] | @tsv' \
+            | jq -r --arg kind "$kind" \
+                '.[] | [.id, .status, .stage, .name, .allow_failure, .web_url, $kind] | @tsv' \
             || echo "Warning: could not parse pipeline ${kind}" >&2
     done
 }
 
+# Markdown for $GITHUB_STEP_SUMMARY, one section per failed job
+failed_jobs_summary=""
+
+# Lines of a log excerpt that are also shown in the step summary
+summary_pattern='FAILED|AssertionFailedError|AssertionError|^[0-9]+: +Error:|Execution failed|^[0-9]+: > '
+summary_exclude_pattern='\[BROWSER|^[0-9]+: > (Run with|Get more help)'
+
+# Downloads the log of a failed job and prints an excerpt of it in a
+# collapsible group; adds the job and the excerpt's most relevant lines to
+# failed_jobs_summary. A failed download only produces a warning.
+report_failed_job_log() {
+    local id="$1" label="$2" url="$3" trace excerpt headlines token=""
+    trace=$(mktemp)
+    if ! curl -sS --fail --max-time 300 \
+        -H "PRIVATE-TOKEN: ${access_token}" \
+        -o "$trace" \
+        "${host}/api/v4/projects/${project_id}/jobs/${id}/trace" </dev/null; then
+        echo "Warning: could not fetch the log of job ${label} (${url})" >&2
+        rm -f "$trace"
+        failed_jobs_summary+=$'\n'"### ${label}"$'\n\n'"[Job log](${url}) (could not be fetched)"$'\n'
+        return 0
+    fi
+    if ! excerpt=$("$excerpt_script" "$trace"); then
+        echo "Warning: could not extract an excerpt from the log of job ${label}" >&2
+        excerpt=""
+    fi
+    rm -f "$trace"
+
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        echo "::group::Log excerpt of failed job ${label}"
+        # Lines of the log must not be interpreted as workflow commands (::add-mask::, ::endgroup::, ...)
+        token=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+        echo "::stop-commands::${token}"
+    else
+        echo "----- Log excerpt of failed job ${label} -----"
+    fi
+    echo "Full log: ${url}"
+    if [[ -n "$excerpt" ]]; then
+        printf '%s\n' "$excerpt"
+    else
+        echo "(no line of the log matched, see the full log)"
+    fi
+    if [[ -n "$token" ]]; then
+        echo "::${token}::"
+        echo "::endgroup::"
+    else
+        echo "----- End of log excerpt of failed job ${label} -----"
+    fi
+
+    # Breaks up ``` in the log, which would end the Markdown code block
+    # shellcheck disable=SC2016
+    headlines=$(printf '%s\n' "$excerpt" | grep -E "$summary_pattern" \
+        | grep -v -E "$summary_exclude_pattern" | head -n 20 | sed 's/```/` ` `/g' || true)
+    failed_jobs_summary+=$'\n'"### ${label}"$'\n\n'"[Job log](${url})"$'\n'
+    if [[ -n "$headlines" ]]; then
+        failed_jobs_summary+=$'\n```text\n'"${headlines}"$'\n```\n'
+    fi
+}
+
 # Prints a line for every job whose status changed since the last poll.
 report_job_changes() {
-    local id st stage name allow_failure url label
-    while IFS=$'\t' read -r id st stage name allow_failure url; do
+    local id st stage name allow_failure url kind label
+    while IFS=$'\t' read -r id st stage name allow_failure url kind; do
         [[ -z "$id" || "${job_status[$id]:-}" == "$st" ]] && continue
         label="${stage}/${name}"
         job_status[$id]="$st"
@@ -139,6 +210,10 @@ report_job_changes() {
                     echo "  Job failed (allowed to fail): ${label} - ${url}"
                 else
                     echo "  Job failed:    ${label} - ${url}"
+                fi
+                # Bridge (trigger) jobs have no log of their own
+                if [[ "$report_job_logs" == "true" && "$kind" == "jobs" ]]; then
+                    report_failed_job_log "$id" "$label" "$url"
                 fi
                 ;;
             canceled) echo "  Job canceled:  ${label}" ;;
@@ -189,6 +264,15 @@ if [[ ${#job_status[@]} -gt 0 ]]; then
             echo "::error title=GitLab job failed::${job_label[$id]} failed: ${job_url[$id]}"
         fi
     done
+fi
+
+if [[ -n "${GITHUB_STEP_SUMMARY:-}" && -n "$failed_jobs_summary" ]]; then
+    {
+        echo "## Failed GitLab jobs"
+        echo
+        echo "Pipeline: ${web_url} (status: ${status})"
+        printf '%s\n' "$failed_jobs_summary"
+    } >>"$GITHUB_STEP_SUMMARY"
 fi
 
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then

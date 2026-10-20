@@ -16,6 +16,7 @@ jobs:
         with:
           sparse-checkout: |
             .github/workflows/scripts/trigger-gitlab-pipeline.sh
+            .github/workflows/scripts/job-log-excerpt.sh
           sparse-checkout-cone-mode: false
       - name: Trigger MontiGem Pipeline
         # Trigger the MontiGem Downstream GitLab pipeline (via a plain curl script, see
@@ -29,3 +30,4 @@ jobs:
           GITLAB_TRIGGER_TOKEN: ${{ secrets.PIPELINE_TRIGGER_TOKEN }}
           GITLAB_ACCESS_TOKEN: ${{ secrets.PIPELINE_ACCESS_TOKEN }}  # Access is required to show the status
           GITLAB_INPUTS_JSON: '{"umlp_ref":"${{ github.ref_name }}"}'
+          GITLAB_FAILED_JOB_LOGS: 'false'  # 'true' prints log excerpts of failed jobs (logs of a private project in a public log)
