@@ -196,18 +196,35 @@ public class JavaBasicsAdapter extends AbstractAdapter {
             .print(")");
         return true;
       case "equals":
-        boolean isDate = false;
+        String dateType = null;
         for (ExtendedElement argument : invocation.getArguments()) {
           switch (argument.getType().toString()) {
             case "java.time.LocalDateTime":
             case "java.time.LocalDate":
             case "java.util.Date":
-              isDate = true;
+              dateType = argument.getType().toString();
           }
         }
-        if (isDate) {
+        if (dateType != null) {
+          // Same comparison as JavaTimeAdapter: LocalDate by its date fields, LocalDateTime by its
+          // wall-clock fields (both read with the local getters), java.util.Date by its instant.
+          String keyA;
+          String keyB;
+          switch (dateType) {
+            case "java.time.LocalDate":
+              keyA = "Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())";
+              break;
+            case "java.time.LocalDateTime":
+              keyA = "Date.UTC(a.getFullYear(), a.getMonth(), a.getDate(), a.getHours(),"
+                  + " a.getMinutes(), a.getSeconds(), a.getMilliseconds())";
+              break;
+            default:
+              keyA = "a.getTime()";
+          }
+          keyB = keyA.replace("a.", "b.");
           this.print("/* equals */")
-              .print("((a, b) => { return a.getTime() === b.getTime(); }) (")
+              .print("((a, b) => { return a == null || b == null ? a == b : "
+                  + keyA + " === " + keyB + "; }) (")
               .printArgList(invocation.getArguments())
               .print(")");
         }
