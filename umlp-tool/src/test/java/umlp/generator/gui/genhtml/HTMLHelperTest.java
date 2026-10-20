@@ -2,15 +2,12 @@
 package umlp.generator.gui.genhtml;
 
 import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
-import de.monticore.guidsl.GUIDSLMill;
-import de.monticore.guidsl._ast.ASTGUIBlock;
 import de.monticore.guidsl._ast.ASTGUIBlockContent;
 import de.monticore.guidsl._ast.ASTGUICompilationUnit;
 import de.monticore.guidsl._ast.ASTGUIComponent;
 import de.monticore.guidsl._ast.ASTGUIComponentDeclaration;
 import de.monticore.guidsl._ast.ASTGUIGuard;
 import de.monticore.guidsl._ast.ASTGUIIterate;
-import de.monticore.guidsl._util.GUIDSLTypeDispatcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import umlp.generator.gui.DomainGUITest;
@@ -19,12 +16,10 @@ import umlp.generator.gui.GUIComponentStat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("unused")
@@ -109,7 +104,7 @@ public class HTMLHelperTest extends DomainGUITest {
     result = finder.getNgTemplates(decl.getGUIBlock());
 
     for (ASTGUIBlockContent content : result) {
-      if (content.isPresentExpression() && GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(content.getExpression())) {
+      if (content.isPresentExpression() && content.getExpression() instanceof ASTGUIComponent) {
         comp1.add(content.getExpression());
       }
       if (content.isPresentGUIGuard()) {
@@ -118,7 +113,7 @@ public class HTMLHelperTest extends DomainGUITest {
       if (content.isPresentGUIIterate()) {
         iter1.add(content.getGUIIterate());
       }
-      if (content.isPresentExpression() && !GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(content.getExpression())) {
+      if (content.isPresentExpression() && !(content.getExpression() instanceof ASTGUIComponent)) {
         exp1.add(content.getExpression());
       }
     }
@@ -151,7 +146,7 @@ public class HTMLHelperTest extends DomainGUITest {
     result = finder.getNgTemplates(e.getGUIBlock());
 
     for (ASTGUIBlockContent content : result) {
-      if (content.isPresentExpression() && GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(content.getExpression())) {
+      if (content.isPresentExpression() && content.getExpression() instanceof ASTGUIComponent) {
         comp3.add(content.getExpression());
       }
       if (content.isPresentGUIGuard()) {
@@ -160,7 +155,7 @@ public class HTMLHelperTest extends DomainGUITest {
       if (content.isPresentGUIIterate()) {
         iter3.add(content.getGUIIterate());
       }
-      if (content.isPresentExpression() && !GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(content.getExpression())) {
+      if (content.isPresentExpression() && !(content.getExpression() instanceof ASTGUIComponent)) {
         exp3.add(content.getExpression());
       }
     }
@@ -200,7 +195,7 @@ public class HTMLHelperTest extends DomainGUITest {
     result = finder.getNgTemplates(ad.getGUIBlock());
 
     for (ASTGUIBlockContent content : result) {
-      if (content.isPresentExpression() && GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(content.getExpression())) {
+      if (content.isPresentExpression() && content.getExpression() instanceof ASTGUIComponent) {
         comp4.add(content.getExpression());
       }
       if (content.isPresentGUIGuard()) {

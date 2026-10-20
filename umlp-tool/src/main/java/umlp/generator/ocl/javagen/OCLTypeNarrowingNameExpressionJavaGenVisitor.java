@@ -5,7 +5,7 @@ import de.monticore.codegen.javagen.SymTypeExpression2JavaConverter;
 import de.monticore.expressions.expressionsbasis._ast.ASTNameExpression;
 import de.monticore.expressions.expressionsbasis.codegen.javagen.ExpressionsBasisJavaGenVisitor;
 import de.monticore.symbols.basicsymbols._symboltable.IBasicSymbolsScope;
-import de.monticore.symbols.oosymbols.OOSymbolsMill;
+import de.monticore.symbols.oosymbols._symboltable.FieldSymbol;
 import de.monticore.symbols.oosymbols._symboltable.MethodSymbol;
 import de.monticore.symboltable.IScopeSpanningSymbol;
 import de.monticore.symboltable.ISymbol;
@@ -33,11 +33,10 @@ public class OCLTypeNarrowingNameExpressionJavaGenVisitor extends ExpressionsBas
         exprType.flatMap(type -> type.getSourceInfo().getSourceSymbol());
 
     // static field
-    if (sourceSymbol.isPresent()
-        && OOSymbolsMill.typeDispatcher().isOOSymbolsField(sourceSymbol.get())
-        && OOSymbolsMill.typeDispatcher().asOOSymbolsField(sourceSymbol.get()).isIsStatic()) {
-      getPrinter().print(
-          OOSymbolsMill.typeDispatcher().asOOSymbolsField(sourceSymbol.get()).getFullName());
+    if (sourceSymbol.isPresent() &&
+        sourceSymbol.get() instanceof FieldSymbol fieldSymbol &&
+        fieldSymbol.isIsStatic()) {
+      getPrinter().print(fieldSymbol.getFullName());
     }
 
     // function references

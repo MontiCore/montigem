@@ -24,8 +24,8 @@ import de.monticore.guidsl._visitor.GUIDSLTraverser;
 import de.monticore.guidsl._visitor.GUIDSLVisitor2;
 import de.monticore.ocl.setexpressions._ast.ASTSetCollectionItem;
 import de.monticore.ocl.setexpressions._ast.ASTSetEnumeration;
+import de.monticore.ocl.setexpressions._ast.ASTSetValueItem;
 import de.monticore.ocl.setexpressions._visitor.SetExpressionsVisitor2;
-import de.monticore.symbols.basicsymbols._symboltable.IBasicSymbolsScope;
 import de.monticore.symbols.basicsymbols._symboltable.VariableSymbol;
 import de.monticore.symbols.oosymbols._symboltable.IOOSymbolsScope;
 import de.monticore.symbols.oosymbols._symboltable.OOTypeSymbol;
@@ -170,8 +170,8 @@ public class StaticObjectsCollector implements GUIDSLVisitor2, CommonExpressions
       if (GUIGeneratorUtil.getInstance().isViewElementsCollection(ste)) {
         return;
       }
-      if (GUIDSLMill.typeDispatcher().isSetExpressionsASTSetEnumeration(lastArg.get().getExpression())
-          && lastArg.get().getExpression().equals(node)) {
+      if (lastArg.get().getExpression() instanceof ASTSetEnumeration setEnumeration &&
+          setEnumeration.equals(node)) {
         recordTypes(node, ste);
       }
     }
@@ -390,14 +390,14 @@ public class StaticObjectsCollector implements GUIDSLVisitor2, CommonExpressions
       listTypes.put(node, ste);
     }
     for (ASTSetCollectionItem val : node.getSetCollectionItemList()) {
-      ASTExpression valueItem = GUIDSLMill.typeDispatcher().asSetExpressionsASTSetValueItem(val).getExpression();
-      if (GUIDSLMill.typeDispatcher().isSetExpressionsASTSetEnumeration(valueItem)) {
+      if (val instanceof ASTSetValueItem setValueItem &&
+      setValueItem.getExpression() instanceof ASTSetEnumeration setEnumeration) {
         if (!ste.isGenericType()
             || !ste.asGenericType().getTypeConstructorFullName().equals(BuiltInTypes.LIST.getQName())) {
           Log.error("0x00013 Unexpected non-generic type for a list '" + util.print(node) + "'.");
           return;
         }
-        recordTypes(GUIDSLMill.typeDispatcher().asSetExpressionsASTSetEnumeration(valueItem), ste.asGenericType().getArgument(0));
+        recordTypes(setEnumeration, ste.asGenericType().getArgument(0));
       }
     }
   }

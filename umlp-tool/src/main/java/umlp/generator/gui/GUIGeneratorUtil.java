@@ -20,6 +20,7 @@ import de.monticore.guidsl._ast.ASTGUIBlockContent;
 import de.monticore.guidsl._ast.ASTGUICompilationUnit;
 import de.monticore.guidsl._ast.ASTGUIComponent;
 import de.monticore.guidsl._ast.ASTGUIComponentDeclaration;
+import de.monticore.guidsl._ast.ASTGUIGuard;
 import de.monticore.guidsl._ast.ASTGUIIterate;
 import de.monticore.guidsl._ast.ASTGUINamedArg;
 import de.monticore.guidsl._ast.ASTGUIParam;
@@ -34,11 +35,12 @@ import de.monticore.guidsl._symboltable.IGUIDSLScope;
 import de.monticore.io.paths.MCPath;
 import de.monticore.literals.mccommonliterals._ast.ASTStringLiteral;
 import de.monticore.ocl.setexpressions._ast.ASTSetCollectionItem;
+import de.monticore.ocl.setexpressions._ast.ASTSetEnumeration;
+import de.monticore.ocl.setexpressions._ast.ASTSetValueItem;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.symbols.basicsymbols._symboltable.TypeSymbol;
 import de.monticore.symbols.basicsymbols._symboltable.TypeSymbolSurrogate;
 import de.monticore.symbols.basicsymbols._symboltable.VariableSymbol;
-import de.monticore.symbols.oosymbols.OOSymbolsMill;
 import de.monticore.symbols.oosymbols._symboltable.IOOSymbolsScope;
 import de.monticore.symbols.oosymbols._symboltable.OOTypeSymbol;
 import de.monticore.symboltable.IGlobalScope;
@@ -65,7 +67,6 @@ import umlp.generator.gui.gentypescript.printer.TSBackendMap;
 import umlp.generator.gui.gentypescript.printer.TSImportMap;
 import umlp.generator.gui.gentypescript.printer.TSUtilsPrinter;
 import umlp.generator.gui.gentypescript.printer.TypeScriptTypes;
-import umlp.generator.util.TagLookUp;
 
 import java.net.URL;
 import java.nio.file.Path;
@@ -290,8 +291,8 @@ public class GUIGeneratorUtil {
     }
     Optional<TypeSymbol> symb = type.getTypeInfo().getEnclosingScope().resolveType(type.getTypeInfo().getName());
     if (symb.isPresent()) {
-      if (OOSymbolsMill.typeDispatcher().isOOSymbolsOOType(symb.get())) {
-        return OOSymbolsMill.typeDispatcher().asOOSymbolsOOType(symb.get()).isIsEnum();
+      if (symb.get() instanceof OOTypeSymbol ooTypeSymbol) {
+        return ooTypeSymbol.isIsEnum();
       }
     }
     return false;
@@ -303,13 +304,11 @@ public class GUIGeneratorUtil {
     boolean res = false;
 
     if (ste.hasTypeInfo()
-        && ste.getTypeInfo() instanceof TypeSymbolSurrogate
-        && ((TypeSymbolSurrogate) ste.getTypeInfo()).lazyLoadDelegate() instanceof OOTypeSymbol) {
-      OOTypeSymbol sym = (OOTypeSymbol) ((TypeSymbolSurrogate) ste.getTypeInfo()).lazyLoadDelegate();
-      res = sym.isIsEnum();
+        && ste.getTypeInfo() instanceof TypeSymbolSurrogate stesurr
+        && stesurr.lazyLoadDelegate() instanceof OOTypeSymbol ooTypeSymbol) {
+      res = ooTypeSymbol.isIsEnum();
     }
-    if (node.getEnclosingScope() instanceof IOOSymbolsScope) {
-      IOOSymbolsScope scope = (IOOSymbolsScope) node.getEnclosingScope();
+    if (node.getEnclosingScope() instanceof IOOSymbolsScope scope) {
       res = res && util.isEnum(util.print(node.getExpression()), scope);
     }
     else {
@@ -325,11 +324,10 @@ public class GUIGeneratorUtil {
   public final boolean isDomainEnumType(SymTypeExpression type) {
     Optional<TypeSymbol> symb = type.getTypeInfo().getEnclosingScope().resolveType(type.getTypeInfo().getName());
     if (symb.isPresent()) {
-      if (symb.get().getEnclosingScope() instanceof IGUIDSLArtifactScope) {
-        IGUIDSLArtifactScope as = (IGUIDSLArtifactScope) symb.get().getEnclosingScope();
+      if (symb.get().getEnclosingScope() instanceof IGUIDSLArtifactScope as) {
         boolean isDomain = DOMAIN_AND_MODULE_MODELS.contains(as.getFullName());
-        if (isDomain && OOSymbolsMill.typeDispatcher().isOOSymbolsOOType(symb.get())) {
-          return OOSymbolsMill.typeDispatcher().asOOSymbolsOOType(symb.get()).isIsEnum();
+        if (isDomain && symb.get() instanceof OOTypeSymbol ooTypeSymbol) {
+          return ooTypeSymbol.isIsEnum();
         }
       }
     }
@@ -490,7 +488,7 @@ public class GUIGeneratorUtil {
   }
 
   public boolean isComponentArgument(ASTGUIComponent guiComponent, ASTExpression arg) {
-    return GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(arg);
+    return arg instanceof ASTGUIComponent;
   }
 
 /*  public  List<ASTGUINamedArg> getComponentArguments(ASTGUIComponent guiComponent) {
@@ -499,8 +497,9 @@ public class GUIGeneratorUtil {
   }*/
 
   public List<ASTGUIComponent> getComponentAsArguments(ASTGUIComponent guiComponent) {
-    return guiComponent.getGUINamedArgs().getGUINamedArgList().stream().map(a -> a.getExpression()).filter(a -> isComponentArgument(guiComponent, a))
-        .map(a -> GUIDSLMill.typeDispatcher().asGUIDSLASTGUIComponent(a)).collect(Collectors.toList());
+    return guiComponent.getGUINamedArgs().getGUINamedArgList().stream().map(
+        ASTGUINamedArg::getExpression).filter(a -> isComponentArgument(guiComponent, a))
+        .map(a -> (ASTGUIComponent) a).collect(Collectors.toList());
   }
 
   public List<ASTExpression> getComponentArguments(ASTGUIComponent guiComponent) {
@@ -508,23 +507,23 @@ public class GUIGeneratorUtil {
     values.addAll(guiComponent.getGUINamedArgs().getGUINamedArgList().stream().map(a -> a.getExpression())
         .filter(a -> isComponentArgument(guiComponent, a)).collect(Collectors.toList()));
     values.addAll(guiComponent.getGUINamedArgs().getGUINamedArgList().stream().map(a -> a.getExpression())
-        .filter(a -> GUIDSLMill.typeDispatcher().isSetExpressionsASTSetEnumeration(a))
-        .flatMap(a -> GUIDSLMill.typeDispatcher().asSetExpressionsASTSetEnumeration(a).getSetCollectionItemList().stream())
-        .map(v -> GUIDSLMill.typeDispatcher().asSetExpressionsASTSetValueItem(v))
+        .filter(a -> a instanceof ASTSetEnumeration)
+        .flatMap(a -> ((ASTSetEnumeration) a).getSetCollectionItemList().stream())
+        .map(v -> (ASTSetValueItem) v)
         .filter(v -> isComponentArgument(guiComponent, v.getExpression()))
-        .map(v -> v.getExpression()).collect(Collectors.toList()));
+        .map(ASTSetValueItem::getExpression).toList());
     return values;
   }
 
   public List<ASTExpression> getComponentListArguments(ASTGUIComponent guiComponent, ASTExpression arg) {
     List<ASTExpression> values = new ArrayList<>();
-    if (!GUIDSLMill.typeDispatcher().isSetExpressionsASTSetEnumeration(arg)) {
+    if (!(arg instanceof ASTSetEnumeration)) {
       return values;
     }
-    values.addAll(GUIDSLMill.typeDispatcher().asSetExpressionsASTSetEnumeration(arg)
+    values.addAll(((ASTSetEnumeration) arg)
         .getSetCollectionItemList().stream()
-        .filter(v -> GUIDSLMill.typeDispatcher().isSetExpressionsASTSetValueItem(v))
-        .map(v -> GUIDSLMill.typeDispatcher().asSetExpressionsASTSetValueItem(v).getExpression())
+        .filter(v -> v instanceof ASTSetValueItem)
+        .map(v -> ((ASTSetValueItem) v).getExpression())
         .filter(v -> isComponentArgument(guiComponent, v)).collect(Collectors.toList()));
     return values;
   }
@@ -692,11 +691,11 @@ public class GUIGeneratorUtil {
   }
 
   public boolean isComponentListArgument(ASTGUIComponent guiComponent, ASTExpression arg) {
-    return GUIDSLMill.typeDispatcher().isSetExpressionsASTSetEnumeration(arg) &&
-        GUIDSLMill.typeDispatcher().asSetExpressionsASTSetEnumeration(arg).getSetCollectionItemList().stream()
-            .filter(v -> GUIDSLMill.typeDispatcher().isSetExpressionsASTSetValueItem(v))
-            .map(v -> GUIDSLMill.typeDispatcher().asSetExpressionsASTSetValueItem(v))
-            .anyMatch(v -> GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(v.getExpression()));
+    return arg instanceof ASTSetEnumeration &&
+        ((ASTSetEnumeration) arg).getSetCollectionItemList().stream()
+            .filter(v -> v instanceof ASTSetValueItem)
+            .map(v -> (ASTSetValueItem) v)
+            .anyMatch(v -> v.getExpression() instanceof ASTGUIComponent);
   }
 
   public boolean isEventComponent(ASTGUIComponent guiComponent) {
@@ -996,25 +995,25 @@ public class GUIGeneratorUtil {
   }
 
   public String gui2htmlArgValue(ASTExpression node) {
-    if (GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(node)) {
-      return getNgTemplateName(GUIDSLMill.typeDispatcher().asGUIDSLASTGUIComponent(node).getId().getName());
+    if (node instanceof ASTGUIComponent guiComponent) {
+      return getNgTemplateName(guiComponent.getId().getName());
     }
-    if (GUIDSLMill.typeDispatcher().isGUIDSLASTGUIGuard(node)) {
-      return getNgTemplateName(GUIDSLMill.typeDispatcher().asGUIDSLASTGUIGuard(node).getId().getName());
+    if (node instanceof ASTGUIGuard guiGuard) {
+      return getNgTemplateName(guiGuard.getId().getName());
     }
-    if (GUIDSLMill.typeDispatcher().isGUIDSLASTGUIIterate(node)) {
-      return getNgTemplateName(GUIDSLMill.typeDispatcher().asGUIDSLASTGUIIterate(node).getId().getName());
+    if (node instanceof ASTGUIIterate guiIterate) {
+      return getNgTemplateName(guiIterate.getId().getName());
     }
-    if (GUIDSLMill.typeDispatcher().isSetExpressionsASTSetEnumeration(node)) {
+    if (node instanceof ASTSetEnumeration setEnumeration) {
       StringBuilder res = new StringBuilder("[");
-      for (ASTSetCollectionItem v : GUIDSLMill.typeDispatcher().asSetExpressionsASTSetEnumeration(node).getSetCollectionItemList()) {
-        res.append(gui2htmlArgValue(GUIDSLMill.typeDispatcher().asSetExpressionsASTSetValueItem(v).getExpression())).append(", ");
+      for (ASTSetCollectionItem v : setEnumeration.getSetCollectionItemList()) {
+        res.append(gui2htmlArgValue(((ASTSetValueItem) v).getExpression())).append(", ");
       }
       res.append("]");
       return res.toString();
     }
-    if (GUIDSLMill.typeDispatcher().isExpressionsBasisASTExpression(node)) {
-      return print(node);
+    if (node instanceof ASTExpression expression) {
+      return print(expression);
     }
 
     Log.error("0x00005 corrupt ASTGUIArgValue node " + node
@@ -1205,8 +1204,8 @@ public class GUIGeneratorUtil {
     else if (node.isPresentGUIIterate()) {
       name = node.getGUIIterate().getId().getName();
     }
-    else if (node.isPresentExpression() && GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(node.getExpression())) {
-      name = ((ASTGUIComponent) node.getExpression()).getId().getName();
+    else if (node.isPresentExpression() && node.getExpression() instanceof ASTGUIComponent guiComponent) {
+      name = guiComponent.getId().getName();
     }
     else {
       String received = "Unknown";
@@ -1447,16 +1446,16 @@ public class GUIGeneratorUtil {
     boolean isAbstract = false;
     if (isDomainType(typeSTE)) {
       TypeSymbol typeSymbol = typeSTE.asObjectType().getTypeInfo();
-      if (GUIDSLMill.typeDispatcher().isOOSymbolsOOType(typeSymbol)) {
-        isAbstract = GUIDSLMill.typeDispatcher().asOOSymbolsOOType(typeSymbol).isIsAbstract();
+      if (typeSymbol instanceof OOTypeSymbol ooTypeSymbol) {
+        isAbstract = ooTypeSymbol.isIsAbstract();
       }
     }
     return isAbstract;
   }
 
   public Optional<ASTGUIComponent> getAsGuiComponent(ASTExpression node) {
-    if (GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(node)) {
-      return Optional.of(GUIDSLMill.typeDispatcher().asGUIDSLASTGUIComponent(node));
+    if (node instanceof ASTGUIComponent guiComponent) {
+      return Optional.of(guiComponent);
     }
     return Optional.empty();
   }

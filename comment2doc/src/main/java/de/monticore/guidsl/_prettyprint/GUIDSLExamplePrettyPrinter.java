@@ -21,12 +21,12 @@ import de.monticore.guidsl._ast.ASTGUIRangeIterateControl;
 import de.monticore.guidsl._ast.ASTGUIRemove;
 import de.monticore.guidsl._ast.ASTGUIShortIterateControl;
 import de.monticore.guidsl._ast.ASTGUIVariableDeclaration;
-import de.monticore.guidsl._util.IGUIDSLTypeDispatcher;
 import de.monticore.literals.mccommonliterals._prettyprint.MCCommonLiteralsPrettyPrinter;
 import de.monticore.literals.mcliteralsbasis._prettyprint.MCLiteralsBasisPrettyPrinter;
 import de.monticore.mcbasics._prettyprint.MCBasicsPrettyPrinter;
 import de.monticore.ocl.setexpressions._ast.ASTSetCollectionItem;
 import de.monticore.ocl.setexpressions._ast.ASTSetEnumeration;
+import de.monticore.ocl.setexpressions._ast.ASTSetValueItem;
 import de.monticore.ocl.setexpressions._visitor.SetExpressionsHandler;
 import de.monticore.ocl.setexpressions._visitor.SetExpressionsTraverser;
 import de.monticore.prettyprint.CommentPrettyPrinter;
@@ -84,23 +84,21 @@ public class GUIDSLExamplePrettyPrinter extends GUIDSLPrettyPrinter implements S
     }
 
     List<ASTSetCollectionItem> values = node.getSetCollectionItemList();
-    IGUIDSLTypeDispatcher dispatcher = GUIDSLMill.typeDispatcher();
     boolean hasComponents = values.stream().anyMatch(v ->
-        dispatcher.isSetExpressionsASTSetValueItem(v)
-            && dispatcher.isGUIDSLASTGUIComponent(dispatcher.asSetExpressionsASTSetValueItem(v).getExpression())
+        v instanceof ASTSetValueItem valueItem &&
+            valueItem.getExpression() instanceof ASTGUIComponent
     );
     boolean hasLists = values.stream().anyMatch(v ->
-        dispatcher.isSetExpressionsASTSetValueItem(v)
-            && dispatcher.isSetExpressionsASTSetEnumeration(dispatcher.asSetExpressionsASTSetValueItem(v).getExpression())
+        v instanceof ASTSetValueItem valueItem &&
+            valueItem.getExpression() instanceof ASTSetEnumeration
     );
     boolean hasIterator = values.stream().anyMatch(v ->
-        dispatcher.isSetExpressionsASTSetValueItem(v)
-            && dispatcher.isGUIDSLASTGUIIterate(dispatcher.asSetExpressionsASTSetValueItem(v).getExpression())
-
+        v instanceof ASTSetValueItem valueItem &&
+            valueItem.getExpression() instanceof ASTGUIIterate
     );
     boolean hasGuards = values.stream().anyMatch(v ->
-        dispatcher.isSetExpressionsASTSetValueItem(v)
-            && dispatcher.isGUIDSLASTGUIGuard(dispatcher.asSetExpressionsASTSetValueItem(v).getExpression())
+        v instanceof ASTSetValueItem valueItem &&
+            valueItem.getExpression() instanceof ASTGUIGuard
     );
 
     this.getPrinter().print("[");
