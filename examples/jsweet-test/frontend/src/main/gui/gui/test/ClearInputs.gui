@@ -1,0 +1,15 @@
+/* (c) https://github.com/MontiCore/monticore */
+package gui.test;
+
+import mc.fenix.input.GemTextInput;
+
+import Jsweettest.ClearableInputs;
+
+page ClearInputs(List<ClearableInputs> inputs) {
+  @iterate(ClearableInputs c : inputs) {
+    birthday@GemTextInput(id = "birthday", entry = c.birthday, inputType = "date");
+    appointment@GemTextInput(id = "appointment", entry = c.appointment, inputType = "datetime-local");
+    amount@GemTextInput(id = "amount", entry = c.amount, inputType = "number");
+    letter@GemTextInput(id = "letter", entry = c.letter);
+  }
+}
