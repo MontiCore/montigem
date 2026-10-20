@@ -27,6 +27,7 @@ public class UMLPCoCos {
     // CoCos for generation
     checker.addCoCo(new RoleAndFieldNamesUnique());
     checker.addCoCo(new UMLPCheckDiagramName());
+    checker.addCoCo(new UMLPNoCyclicCDImports());
     checker.addCoCo(new UMLPAssociationQualifierByType());
     checker.addCoCo(new UMLPAssociationQualifierByAttributeName());
     checker.addCoCo(new UMLPAssociationCardinality());

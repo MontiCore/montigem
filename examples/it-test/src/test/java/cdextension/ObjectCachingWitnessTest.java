@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Witness tests for monticore#5062: when a MontiGem CD extends another CD
- * (CDExtension &lt;&lt;extends="CDBase"&gt;&gt;), loading an object of an
+ * (CDExtension imports CDBase.*), loading an object of an
  * extending class via the base path (CDBaseManager) used to materialize a
  * base-typed object in the wrong client-side manager cache.
  *

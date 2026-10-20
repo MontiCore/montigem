@@ -3,7 +3,6 @@ package umlp.generator.db.sql;
 
 import com.google.common.base.CaseFormat;
 import de.monticore.cd._symboltable.CDSymbolTables;
-import de.monticore.cd4analysis.CD4AnalysisMill;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDBasisNode;
@@ -16,13 +15,12 @@ import de.monticore.cdinterfaceandenum._ast.ASTCDInterface;
 import de.monticore.generating.GeneratorEngine;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.prettyprint.IndentPrinter;
-import de.monticore.symbols.basicsymbols._symboltable.DiagramSymbol;
 import de.monticore.symboltable.ISymbol;
 import de.monticore.types.check.SymTypeOfGenerics;
-import de.monticore.types.mcbasictypes._ast.ASTMCImportStatement;
 import de.se_rwth.commons.logging.Log;
 import umlp._prettyprint.UMLPFullPrettyPrinter;
 import umlp.generator.domain.decorator.GenService;
+import umlp.generator.util.UMLPSymbolTables;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
@@ -200,30 +198,15 @@ public class SQLSchemaGenerator {
   }
 
   protected void generateSQLSchemasForAllExtendedCDs(ASTCDCompilationUnit cd, IndentPrinter p) {
-    if (cd.getCDDefinition().getModifier().isPresentStereotype()) {
-      cd.getCDDefinition().getModifier().getStereotype().getValuesList().forEach(astStereoValue -> {
-        if (astStereoValue.getName().equals("extends")) {
-          Optional<String> extendedCD = cd.getMCImportStatementList().stream().filter(stmnt ->
-                  stmnt.getMCQualifiedName().getPartsList().get(stmnt.getMCQualifiedName().getPartsList().size() - 1).equals(astStereoValue.getValue()))
-              .findFirst().map(ASTMCImportStatement::getQName);
-          if (extendedCD.isPresent()) {
-            Optional<DiagramSymbol> symbOpt = CD4AnalysisMill.globalScope().resolveDiagram(extendedCD.get());
-            if (symbOpt.isPresent() && symbOpt.get().getAstNode() instanceof ASTCDDefinition) {
-              generateTypeSchemas((ASTCDDefinition) symbOpt.get().getAstNode(), p);
-              for (ASTCDAssociation association : ((ASTCDDefinition) symbOpt.get().getAstNode()).getCDAssociationsList()) {
-                if (!association.getModifier().isDerived()) {
-                  generateAssociationSchema(((ASTCDDefinition) symbOpt.get().getAstNode()), association, p);
-                }
-              }
-            } else {
-              Log.error("0xTODO Unable to resolve CD for " + extendedCD.get(), astStereoValue.get_SourcePositionStart());
-            }
-          } else {
-            Log.error("0xTODO Unable to find CD for " + astStereoValue.getValue() + " - did you import a class from it? e.g. import " + astStereoValue.getValue() + ".*; and added it to the symbolpath?", astStereoValue.get_SourcePositionStart());
-          }
+    UMLPSymbolTables.getExtendedCDs(cd).forEach(extendedCD -> {
+      ASTCDDefinition extendedDefinition = (ASTCDDefinition) extendedCD.getAstNode();
+      generateTypeSchemas(extendedDefinition, p);
+      for (ASTCDAssociation association : extendedDefinition.getCDAssociationsList()) {
+        if (!association.getModifier().isDerived()) {
+          generateAssociationSchema(extendedDefinition, association, p);
         }
-      });
-    }
+      }
+    });
   }
 
   protected void generateTypeSchemas(ASTCDDefinition cd, IndentPrinter p) {
