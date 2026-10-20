@@ -25,6 +25,7 @@ import {
   ObservableInput, merge, of
 } from "rxjs";
 import {Log} from "../../logging";
+import {PendingCommands} from "../../command/PendingCommands";
 
 export class ClientCommandWebsocketCommunication implements ClientCommandCommunication {
   public static MAX_TRIES: number = 10;
@@ -252,42 +253,52 @@ export class ClientCommandWebsocketCommunication implements ClientCommandCommuni
         this.participantId = null;
       }
     } else {
-      // Fall Antwort eines Requests, oder Erhalt eines weitergeleiteten Commands zur
-      // Datensynchronisierung.
-      // TODO AHe, MH: Wasteful way of distinguishing commands and results
-      // TODO AGe: what?
-      const payload = JSON.stringify(message);
-      let commandResultOptional: CommandResult<any> = null;
-      commandResultOptional = await CommandObjectMapper.deserializeResponse(payload);
+      // The client counts as busy until the message is processed (see PendingCommands)
+      PendingCommands.begin();
+      try {
+        // Fall Antwort eines Requests, oder Erhalt eines weitergeleiteten Commands zur
+        // Datensynchronisierung.
+        // TODO AHe, MH: Wasteful way of distinguishing commands and results
+        // TODO AGe: what?
+        const payload = JSON.stringify(message);
+        let commandResultOptional: CommandResult<any> = null;
+        commandResultOptional = await CommandObjectMapper.deserializeResponse(payload);
 
-      if (commandResultOptional != null) { // TODO MH: Need to check for participantId
-        // Fall Antwort eines Requests
-        let commandResult: CommandResult<any> = commandResultOptional;
-        if (this.messages.has(commandResult.getCommandId())) {
-          this.messages.get(commandResult.getCommandId()).next(commandResult);
+        if (commandResultOptional != null) { // TODO MH: Need to check for participantId
+          // Fall Antwort eines Requests
+          let commandResult: CommandResult<any> = commandResultOptional;
+          if (this.messages.has(commandResult.getCommandId())) {
+            this.messages.get(commandResult.getCommandId()).next(commandResult);
+          } else {
+            // TODO AGe: received some rogue command?
+          }
+          // this.messages.set(commandResult.getCommandId(), commandResult);
+          for (const observer of this.commandResultObserver) {
+            observer(commandResult);
+          }
         } else {
-          // TODO AGe: received some rogue command?
+          let commandOptional: Command<Object> = null;
+          commandOptional = await CommandObjectMapper.deserializeCommand(payload);
+          if (commandOptional != null) {
+            //Fall Antwort eines Erhalt eines weitergeleiteten Commands zur Datensynchronisierung
+            Log.trace("Received command "+commandOptional.getId(),"ClientCommandWebsocketCommunication")
+            let finalCommandOptional: Command<Object> = commandOptional;
+            // Mutex
+            this.commandObserverChain = this.commandObserverChain.then(() => {
+              return this.commandObserver.reduce((prevPromise, consumer) => {
+                return prevPromise.then(() => {
+                  return consumer(finalCommandOptional);
+                });
+              }, Promise.resolve());
+            });
+            // Busy until the observers have processed the command
+            PendingCommands.begin();
+            const processed = () => PendingCommands.end();
+            this.commandObserverChain.then(processed, processed);
+          }
         }
-        // this.messages.set(commandResult.getCommandId(), commandResult);
-        for (const observer of this.commandResultObserver) {
-          observer(commandResult);
-        }
-      } else {
-        let commandOptional: Command<Object> = null;
-        commandOptional = await CommandObjectMapper.deserializeCommand(payload);
-        if (commandOptional != null) {
-          //Fall Antwort eines Erhalt eines weitergeleiteten Commands zur Datensynchronisierung
-          Log.trace("Received command "+commandOptional.getId(),"ClientCommandWebsocketCommunication")
-          let finalCommandOptional: Command<Object> = commandOptional;
-          // Mutex
-          this.commandObserverChain = this.commandObserverChain.then(() => {
-            return this.commandObserver.reduce((prevPromise, consumer) => {
-              return prevPromise.then(() => {
-                return consumer(finalCommandOptional);
-              });
-            }, Promise.resolve());
-          });
-        }
+      } finally {
+        PendingCommands.end();
       }
     }
   }
