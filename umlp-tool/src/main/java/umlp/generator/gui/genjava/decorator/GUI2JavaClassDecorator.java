@@ -1542,7 +1542,13 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
 
     boolean leftIsOptional = util.isOptional(left);
     if (leftIsOptional) {
-      return x2OptionalConversion(getConversion(util.getOptionalTypeArgument(left), right));
+      SymTypeExpression leftArgument = util.getOptionalTypeArgument(left);
+      Function<String, String> conversion = getConversion(leftArgument, right);
+      if (rightIsString && isParsedFromString(leftArgument)) {
+        // inputs emit an empty string when they are cleared
+        return emptyString2OptionalConversion(conversion);
+      }
+      return x2OptionalConversion(conversion);
     }
 
     boolean leftIsDate = left.printFullName()
@@ -1661,6 +1667,26 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
 
   protected Function<String, String> x2OptionalConversion(Function<String, String> conv) {
     return s -> "Optional.of(" + conv.apply(s) + ")";
+  }
+
+  /**
+   * Converts a string to an optional value, where {@code null} and the empty string give an empty
+   * optional.
+   */
+  protected Function<String, String> emptyString2OptionalConversion(Function<String, String> conv) {
+    return s -> s + " == null || " + s + ".isEmpty() ? Optional.empty() : "
+        + x2OptionalConversion(conv).apply(s);
+  }
+
+  /**
+   * @return whether {@link #getConversion} converts a string to the type by parsing it, i.e.,
+   * whether the type is a date, a date-time, a number or an enum
+   */
+  protected boolean isParsedFromString(SymTypeExpression type) {
+    return type.printFullName().equals(TypeScriptTypes.LOCAL_DATE.getJavaQName().get())
+        || type.printFullName().equals(TypeScriptTypes.LOCAL_DATE_TIME.getJavaQName().get())
+        || TypeScriptTypes.isNumber(type)
+        || util.isEnumType(type);
   }
 
   protected String printType(ASTMCType type) {
