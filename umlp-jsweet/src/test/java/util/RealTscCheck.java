@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -174,6 +175,30 @@ public final class RealTscCheck {
 
   private static Result compileAndRun(String checkName, List<Path> fixtures, String runJs)
       throws IOException {
+    return compileAndRunInTimeZones(checkName, fixtures, runJs, Collections.singletonList(null))
+        .values().iterator().next();
+  }
+
+  /**
+   * Like {@link #compileAndRun(Class, String, Class[])}, but runs the compiled code once per time
+   * zone, with the {@code TZ} environment variable of the node process set to it. JS {@code Date}
+   * reads it, so this is how code that depends on the browser's time zone is tested.
+   *
+   * @param timeZones IANA time zone ids, e.g. "Europe/Berlin"; null keeps the inherited zone
+   * @return the result per time zone, in the given order
+   */
+  public static Map<String, Result> compileAndRunInTimeZones(Class<?> fixtureClass, String runJs,
+      List<String> timeZones, Class<?>... supportingClasses) throws IOException {
+    List<Path> sources = new ArrayList<>();
+    sources.add(RUNTIME_FIXTURES_DIR.resolve(fixtureClass.getSimpleName() + ".java"));
+    for (Class<?> supportingClass : supportingClasses) {
+      sources.add(RUNTIME_FIXTURES_DIR.resolve(supportingClass.getSimpleName() + ".java"));
+    }
+    return compileAndRunInTimeZones(fixtureClass.getSimpleName(), sources, runJs, timeZones);
+  }
+
+  private static Map<String, Result> compileAndRunInTimeZones(String checkName, List<Path> fixtures,
+      String runJs, List<String> timeZones) throws IOException {
     JSweetTranspiler transpiler = TranspilerSetupUtil.getGUITranspiler(
         Paths.get("build/transpile/" + checkName).toFile());
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
@@ -251,8 +276,23 @@ public final class RealTscCheck {
         tscCheckDir.resolve("out/commonj2ts-facade"));
 
     // Execute the compiled JS directly with node (not through npx).
-    ProcessResult nodeResult = runProcess(List.of(nodeExecutable, "out/run.js"), tscCheckDir, nodeDir);
-    return new Result(nodeResult.exitCode(), nodeResult.output());
+    Map<String, Result> results = new LinkedHashMap<>();
+    for (String timeZone : timeZones) {
+      Map<String, String> env = timeZone == null ? Map.of() : Map.of("TZ", timeZone);
+      if (timeZone != null) {
+        // node silently falls back to UTC for an unknown zone id; the run would then test
+        // another zone than requested.
+        ProcessResult zoneResult = runProcess(List.of(nodeExecutable, "-e",
+            "process.stdout.write(Intl.DateTimeFormat().resolvedOptions().timeZone)"),
+            tscCheckDir, nodeDir, env);
+        assertEquals(timeZone, zoneResult.output().trim(),
+            "node does not run in the requested time zone TZ=" + timeZone);
+      }
+      ProcessResult nodeResult = runProcess(List.of(nodeExecutable, "out/run.js"), tscCheckDir,
+          nodeDir, env);
+      results.put(timeZone, new Result(nodeResult.exitCode(), nodeResult.output()));
+    }
+    return results;
   }
 
   /** Same node download the rest of this build uses, resolved via the generated nodeDir.properties (see Util). */
@@ -280,7 +320,13 @@ public final class RealTscCheck {
    */
   private static ProcessResult runProcess(List<String> command, Path workingDir, String extraPathEntry)
       throws IOException {
+    return runProcess(command, workingDir, extraPathEntry, Map.of());
+  }
+
+  private static ProcessResult runProcess(List<String> command, Path workingDir, String extraPathEntry,
+      Map<String, String> extraEnv) throws IOException {
     ProcessBuilder pb = new ProcessBuilder(command);
+    pb.environment().putAll(extraEnv);
     pb.directory(workingDir.toFile());
     pb.redirectErrorStream(true);
     if (extraPathEntry != null) {

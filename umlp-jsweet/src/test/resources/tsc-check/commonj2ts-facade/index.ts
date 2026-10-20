@@ -21,3 +21,6 @@ export { GemListUtil } from "../commonj2ts-src/util/GemListUtil";
 export { GemList } from "../commonj2ts-src/common/GemList";
 export { IUMLPList } from "../commonj2ts-src/common/IUMLPList";
 export { LocalDateTimeHelper } from "../commonj2ts-src/types/LocalDateTimeHelper";
+export { LocalDateDeSer } from "../commonj2ts-src/deser/LocalDateDeSer";
+export { LocalDateTimeDeSer } from "../commonj2ts-src/deser/LocalDateTimeDeSer";
+export { Conversion } from "../commonj2ts-src/util/Conversion";
