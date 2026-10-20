@@ -17,6 +17,10 @@ import java.util.function.Function;
 
 /**
  * This adapter is responsible to enable the usage of java.time and Date classes.
+ *
+ * <p>LocalDate and LocalDateTime are mapped to a JS Date that carries the value in its local
+ * calendar fields, the convention of the runtime's (de)serializers. See the section
+ * "Representation of LocalDate and LocalDateTime in the browser" below.
  */
 public class JavaTimeAdapter extends AbstractAdapter {
 
@@ -108,78 +112,178 @@ public class JavaTimeAdapter extends AbstractAdapter {
     }
   }
 
+  // ==============================================================================================
+  // Representation of LocalDate and LocalDateTime in the browser
+  // ==============================================================================================
+  //
+  // LocalDate and LocalDateTime are zone-less. The runtime represents them as a JS Date whose
+  // *local* calendar fields carry the value: LocalDateDeSer creates `new Date(y, m - 1, d)`,
+  // LocalDateTimeDeSer parses "yyyy-MM-ddTHH:mm:ss" as local time, the serializers and
+  // Conversion.date2String read the local getters, and so do the input components. The code
+  // emitted here follows the same convention:
+  //
+  //  - it reads only local fields (getFullYear, getMonth, getDate, getHours, ...);
+  //  - it computes on calendar fields, i.e. wall-clock arithmetic as in java.time, and builds
+  //    every result with the local Date constructor, so results do not depend on DST changes and
+  //    are equal (getTime) to what the deserializer produces for the same value;
+  //  - it compares LocalDate by its date fields and LocalDateTime by its wall-clock fields.
+  //
+  // Known limit: a LocalDateTime inside the hour skipped at the start of DST (e.g. 02:30 on the
+  // last Sunday of March in Europe/Berlin) has no local Date. The Date constructor (and thus also
+  // the deserializer) moves it forward by the DST offset.
+
+  private static final String[] LOCAL_GETTERS = {"getFullYear()", "getMonth()", "getDate()",
+      "getHours()", "getMinutes()", "getSeconds()", "getMilliseconds()"};
+
+  private static final String[] UTC_GETTERS = {"getUTCFullYear()", "getUTCMonth()", "getUTCDate()",
+      "getUTCHours()", "getUTCMinutes()", "getUTCSeconds()", "getUTCMilliseconds()"};
+
+  private static final String DATE_TIME_PARSE_EXCEPTION_CLASSES =
+      "['java.time.format.DateTimeParseException', 'java.time.DateTimeException', "
+          + "'java.lang.RuntimeException', 'java.lang.Exception', 'java.lang.Throwable', "
+          + "'java.lang.Object']";
+
+  /**
+   * The fields of {@code v}, read with {@code getters}; {@code overrides[i]}, if present and not
+   * null, replaces field i (0 = year, 1 = month 0-11, 2 = day, 3 = hours, 4 = minutes,
+   * 5 = seconds, 6 = milliseconds).
+   */
+  private static String fields(String v, String[] getters, boolean dateOnly, String... overrides) {
+    int count = dateOnly ? 3 : 7;
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      if (i > 0) {
+        sb.append(", ");
+      }
+      if (i < overrides.length && overrides[i] != null) {
+        sb.append(overrides[i]);
+      } else {
+        sb.append(v).append('.').append(getters[i]);
+      }
+    }
+    return sb.toString();
+  }
+
+  /** A local Date built from the local fields of {@code v}, see {@link #fields}. */
+  private static String localDate(String v, boolean dateOnly, String... overrides) {
+    return "new Date(" + fields(v, LOCAL_GETTERS, dateOnly, overrides) + ")";
+  }
+
+  /**
+   * A number that orders and identifies values like their Java counterparts: the date fields for
+   * LocalDate, the wall-clock fields for LocalDateTime, and the instant for java.util.Date.
+   */
+  private static String comparisonKey(String v, boolean isLocalDate, boolean isUtilDate) {
+    if (isUtilDate) {
+      return v + ".getTime()";
+    }
+    return "Date.UTC(" + fields(v, LOCAL_GETTERS, isLocalDate) + ")";
+  }
+
+  /**
+   * Year and month arithmetic as in java.time: the day of month is clamped to the length of the
+   * resulting month. Expects the target in {@code d} and the new year and month (0-11, may be out
+   * of range) as {@code yearExpr} and {@code monthExpr}.
+   */
+  private static String withYearAndMonth(String yearExpr, String monthExpr, boolean isLocalDate) {
+    return "const t = (" + yearExpr + ") * 12 + (" + monthExpr + "); "
+        + "const y = Math.floor(t / 12); "
+        + "const m = t - y * 12; "
+        + "const day = Math.min(d.getDate(), new Date(y, m + 1, 0).getDate()); "
+        + "return " + localDate("d", isLocalDate, "y", "m", "day") + "; ";
+  }
+
   private boolean substituteMethodInvocation_Date(MethodInvocationElement invocation) {
     String methodName = invocation.getMethodName();
     String targetType = invocation.getTargetType().toString();
     boolean isLocalDateTime = targetType.contains("LocalDateTime");
     boolean isLocalDate = targetType.equals("java.time.LocalDate");
+    boolean isUtilDate = targetType.equals("java.util.Date");
+    List<ExtendedElement> args = invocation.getArguments();
 
     // ==========================================================================================
-    // FACTORY METHOD: LocalDateTime.of(...)
+    // FACTORY METHOD: LocalDate.of(y, m, d), LocalDateTime.of(y, m, d[, h, min[, s[, nanos]]])
     // ==========================================================================================
     if ("of".equals(methodName)) {
+      if (args.size() < 3) {
+        return false;
+      }
       printMacroName(methodName);
-
-      // Use UTC to create the date so browser timezone doesn't shift the values.
-      this.print("new Date(Date.UTC(").println();
-
-      List<ExtendedElement> args = invocation.getArguments();
-      if (args.size() >= 3) {
-        this.print(args.get(0)).print(", ").println();       // Year
-        this.print(args.get(1)).print(" - 1, ").println();   // Subtract 1 because Java months are 1-12, JS are 0-11.
-        this.print(args.get(2)).println();                   // Day
-
-        // Handle optional arguments for Hour, Minute, and Second, defaulting to 0.
-        this.print(", ").print(args.size() >= 4 ? args.get(3).toString() : "0").println();
-        this.print(", ").print(args.size() >= 5 ? args.get(4).toString() : "0").println();
-        this.print(", ").print(args.size() >= 6 ? args.get(5).toString() : "0").println();
-
-        // Convert nanoseconds (Java) to milliseconds (JS), losing precision.
-        if (args.size() >= 7) {
-          this.print(", Math.floor(").print(args.get(6)).print(" / 1000000)").println();
+      this.print("new Date(").print(args.get(0)).print(", (").print(args.get(1)).print(") - 1, ")
+          .print(args.get(2));
+      if (!isLocalDate) {
+        for (int i = 3; i < 6; i++) {
+          this.print(", ");
+          if (args.size() > i) {
+            this.print(args.get(i));
+          } else {
+            this.print("0");
+          }
+        }
+        // Java has nanoseconds, JS milliseconds.
+        this.print(", ");
+        if (args.size() > 6) {
+          this.print("Math.floor((").print(args.get(6)).print(") / 1000000)");
         } else {
-          this.print(", 0").println();
+          this.print("0");
         }
       }
-      this.print("))").println();
+      this.print(")");
       return true;
     }
 
     // ==========================================================================================
     // plus(Duration) / minus(Duration)
     // ==========================================================================================
-    if (invocation.getArguments().size() == 1 &&
+    if (args.size() == 1 &&
         ("plus".equals(methodName) || "minus".equals(methodName))) {
       String targetOp = "plus".equals(methodName) ? "addTo" : "subtractFrom";
       printMacroName(methodName);
-      this.print(invocation.getArguments().get(0)).print("." + targetOp + "(").println();
+      this.print(args.get(0)).print("." + targetOp + "(").println();
       printDateTarget(invocation, isLocalDateTime);
       this.print(")").println();
       return true;
     }
 
     // ==========================================================================================
-    // plusDays, minusHours, plusMonths, etc.
+    // plusDays, minusHours, plusMonths, etc.: calendar arithmetic on the local fields
     // ==========================================================================================
     boolean isPlus = methodName.startsWith("plus");
     boolean isMinus = methodName.startsWith("minus");
 
-    if (isPlus || isMinus) {
-      String baseName = methodName.replace("plus", "").replace("minus", "");
-
-      String jsGetter = null;
-      String jsSetter = null;
-      long factor = 1;
-
-      switch (baseName) {
-        case "Years":   jsGetter = "getUTCFullYear"; jsSetter = "setUTCFullYear"; break;
-        case "Months":  jsGetter = "getUTCMonth";    jsSetter = "setUTCMonth";    break;
-        case "Weeks":   jsGetter = "getUTCDate";     jsSetter = "setUTCDate"; factor = 7; break;
-        case "Days":    jsGetter = "getUTCDate";     jsSetter = "setUTCDate";     break;
-        case "Hours":   jsGetter = "getUTCHours";    jsSetter = "setUTCHours";    break;
-        case "Minutes": jsGetter = "getUTCMinutes";  jsSetter = "setUTCMinutes";  break;
-        case "Seconds": jsGetter = "getUTCSeconds";  jsSetter = "setUTCSeconds";  break;
-        case "Nanos":   jsGetter = "getUTCMilliseconds"; jsSetter = "setUTCMilliseconds"; break;
+    if ((isPlus || isMinus) && args.size() == 1) {
+      String unit = methodName.substring(isPlus ? "plus".length() : "minus".length());
+      String body;
+      switch (unit) {
+        case "Years":
+          body = withYearAndMonth("d.getFullYear() + k", "d.getMonth()", isLocalDate);
+          break;
+        case "Months":
+          body = withYearAndMonth("d.getFullYear()", "d.getMonth() + k", isLocalDate);
+          break;
+        case "Weeks":
+          body = "return " + localDate("d", isLocalDate, null, null, "d.getDate() + k * 7") + "; ";
+          break;
+        case "Days":
+          body = "return " + localDate("d", isLocalDate, null, null, "d.getDate() + k") + "; ";
+          break;
+        case "Hours":
+          body = "return " + localDate("d", false, null, null, null, "d.getHours() + k") + "; ";
+          break;
+        case "Minutes":
+          body = "return " + localDate("d", false, null, null, null, null, "d.getMinutes() + k")
+              + "; ";
+          break;
+        case "Seconds":
+          body = "return " + localDate("d", false, null, null, null, null, null,
+              "d.getSeconds() + k") + "; ";
+          break;
+        case "Nanos":
+          body = "return " + localDate("d", false, null, null, null, null, null, null,
+              "d.getMilliseconds() + Math.trunc(k / 1000000)") + "; ";
+          break;
+        default:
+          return false;
       }
 
       printMacroName(methodName);
@@ -187,29 +291,11 @@ public class JavaTimeAdapter extends AbstractAdapter {
       // The amount is passed in as parameter n instead of being printed into the arrow function:
       // it may contain an await (e.g. an association navigation), which is only allowed in the
       // enclosing async function, not in the synchronous arrow function.
-      this.print("((d, n) => { ").println();
-      this.print("let res = new Date(d.getTime()); ").println();
-
-      if ("Months".equals(baseName) || "Years".equals(baseName)) {
-        this.print("let checkDay = res.getUTCDate(); ").println();
-        this.print("res." + jsSetter + "(res." + jsGetter + "()").println();
-        this.print(isPlus ? " + n" : " - n").println();
-        this.print("); ").println();
-        this.print("if (res.getUTCDate() !== checkDay) { res.setUTCDate(0); } ").println();
-      } else if ("Nanos".equals(baseName)) {
-        this.print("res." + jsSetter + "(res." + jsGetter + "()").println();
-        this.print(isPlus ? " + Math.floor(n / 1000000)" : " - Math.floor(n / 1000000)").println();
-        this.print("); ").println();
-      } else {
-        this.print("res." + jsSetter + "(res." + jsGetter + "()").println();
-        this.print(isPlus ? " + (n" : " - (n").println();
-        if (factor > 1) this.print(" * " + factor).println();
-        this.print(")); ").println();
-      }
-
-      this.print("return res; })(").println();
+      this.print("((d, n) => { const k = " + (isPlus ? "(n)" : "-(n)") + "; ").println();
+      this.print(body).println();
+      this.print("})(").println();
       printDateTarget(invocation, isLocalDateTime);
-      this.print(", ").print(invocation.getArguments().get(0)).println();
+      this.print(", ").print(args.get(0)).println();
       this.print(")").println();
       return true;
     }
@@ -219,9 +305,10 @@ public class JavaTimeAdapter extends AbstractAdapter {
     // ==========================================================================================
     if ("equals".equals(methodName)) {
       printMacroName(methodName);
-      this.print("((a, b) => b instanceof Date && a.getTime() === b.getTime())(")
+      this.print("((a, b) => b instanceof Date && " + comparisonKey("a", isLocalDate, isUtilDate)
+              + " === " + comparisonKey("b", isLocalDate, isUtilDate) + ")(")
           .print(invocation.getTargetExpression()).print(", ")
-          .printArgList(invocation.getArguments()).print(")");
+          .printArgList(args).print(")");
       return true;
     }
 
@@ -229,19 +316,23 @@ public class JavaTimeAdapter extends AbstractAdapter {
     // isAfter, isBefore, isEqual
     // ==========================================================================================
     if ("isAfter".equals(methodName) || "isBefore".equals(methodName) || "isEqual".equals(methodName)) {
+      String operator;
+      if ("isAfter".equals(methodName)) {
+        operator = " > ";
+      } else if ("isBefore".equals(methodName)) {
+        operator = " < ";
+      } else {
+        operator = " === ";
+      }
       printMacroName(methodName);
-      this.print("(").println();
+      this.print("((a, b) => " + comparisonKey("a", isLocalDate, isUtilDate) + operator
+          + comparisonKey("b", isLocalDate, isUtilDate) + ")(").println();
       printDateTarget(invocation, isLocalDateTime);
-      this.print(".getTime()").println();
-
-      if ("isAfter".equals(methodName))       this.print(" > ").println();
-      else if ("isBefore".equals(methodName)) this.print(" < ").println();
-      else                                    this.print(" === ").println();
-
-      if (isLocalDateTime) this.print("new Date(").println();
-      this.print(invocation.getArguments().get(0)).println();
-      if (isLocalDateTime) this.print(")").println();
-      this.print(".getTime())").println();
+      this.print(", ");
+      if (isLocalDateTime) this.print("new Date(");
+      this.print(args.get(0));
+      if (isLocalDateTime) this.print(")");
+      this.print(")").println();
       return true;
     }
 
@@ -249,11 +340,11 @@ public class JavaTimeAdapter extends AbstractAdapter {
     // getHour, getMinute, etc.
     // ==========================================================================================
     String jsSimpleMethod = switch (methodName) {
-      case "getHour", "getHours" -> "getUTCHours";
-      case "getMinute", "getMinutes" -> "getUTCMinutes";
-      case "getSecond", "getSeconds" -> "getUTCSeconds";
-      case "getYear" -> "getUTCFullYear";
-      case "getDayOfMonth", "getDate" -> "getUTCDate";
+      case "getHour", "getHours" -> "getHours";
+      case "getMinute", "getMinutes" -> "getMinutes";
+      case "getSecond", "getSeconds" -> "getSeconds";
+      case "getYear" -> "getFullYear";
+      case "getDayOfMonth", "getDate" -> "getDate";
       default -> null;
     };
 
@@ -272,7 +363,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
         printMacroName(methodName);
         this.print("(").println();
         printDateTarget(invocation, isLocalDateTime);
-        this.print(".getUTCMonth() + 1)").println();
+        this.print(".getMonth() + 1)").println();
         return true;
 
       case "getMonth":
@@ -284,18 +375,17 @@ public class JavaTimeAdapter extends AbstractAdapter {
 
       case "getDayOfWeek":
         printMacroName(methodName);
-        print("LocalDateTimeHelper.getDayOfWeek(")
-            .print(invocation.getTargetExpression()).print(")");
+        print("LocalDateTimeHelper.DAYS_OF_WEEK[");
+        printDateTarget(invocation, isLocalDateTime);
+        print(".getDay()]");
         getPrinter().useModule(
             new ModuleImportDescriptor("LocalDateTimeHelper", "@umlp/commonj2ts"));
         return true;
 
       case "getDayOfYear":
         printMacroName(methodName);
-        this.print("((d) => { ").println();
-        this.print("let utcNow = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()); ").println();
-        this.print("let utcStart = Date.UTC(d.getUTCFullYear(), 0, 0); ").println();
-        this.print("return Math.floor((utcNow - utcStart) / 86400000); })(").println();
+        this.print("((d) => Math.round((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())"
+            + " - Date.UTC(d.getFullYear(), 0, 0)) / 86400000))(").println();
         printDateTarget(invocation, isLocalDateTime);
         this.print(")").println();
         return true;
@@ -304,7 +394,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
         printMacroName(methodName);
         this.print("(").println();
         printDateTarget(invocation, isLocalDateTime);
-        this.print(".getUTCMilliseconds() * 1000000)").println();
+        this.print(".getMilliseconds() * 1000000)").println();
         return true;
 
       case "toString":
@@ -314,19 +404,19 @@ public class JavaTimeAdapter extends AbstractAdapter {
         this.print("  return null;").println();
         this.print("}").println();
         this.print("  const pad = (n) => ('0' + n).slice(-2); ").println();
-        this.print("  let s = d.getUTCFullYear() + '-' + ").println();
-        this.print("         pad(d.getUTCMonth() + 1) + '-' + ").println();
-        this.print("         pad(d.getUTCDate()); ").println();
+        this.print("  let s = d.getFullYear() + '-' + ").println();
+        this.print("         pad(d.getMonth() + 1) + '-' + ").println();
+        this.print("         pad(d.getDate()); ").println();
 
-        if (!targetType.equals("java.time.LocalDate")) {
+        if (!isLocalDate) {
           this.print("  s += 'T' + ").println();
-          this.print("         pad(d.getUTCHours()) + ':' + ").println();
-          this.print("         pad(d.getUTCMinutes()); ").println();
-          this.print("  if (d.getUTCSeconds() > 0 || d.getUTCMilliseconds() > 0) { ").println();
-          this.print("    s += ':' + pad(d.getUTCSeconds()); ").println();
+          this.print("         pad(d.getHours()) + ':' + ").println();
+          this.print("         pad(d.getMinutes()); ").println();
+          this.print("  if (d.getSeconds() > 0 || d.getMilliseconds() > 0) { ").println();
+          this.print("    s += ':' + pad(d.getSeconds()); ").println();
           this.print("  } ").println();
-          this.print("  if (d.getUTCMilliseconds() > 0) { ").println();
-          this.print("    s += '.' + ('00' + d.getUTCMilliseconds()).slice(-3); ").println();
+          this.print("  if (d.getMilliseconds() > 0) { ").println();
+          this.print("    s += '.' + ('00' + d.getMilliseconds()).slice(-3); ").println();
           this.print("  } ").println();
         }
         this.print("  return s; ").println();
@@ -336,38 +426,81 @@ public class JavaTimeAdapter extends AbstractAdapter {
         return true;
 
       case "now":
-        this.print("((() => { ").println();
-        this.print("  const now = new Date(); ").println();
-        this.print("  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()");
-        if (!isLocalDate) {
-          this.print(", now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds()");
-        }
-        this.print(")); ").println();
-        this.print("})())").println();
+        // Rebuilt from the local fields, so the value is the same as one created by `of` or by
+        // the deserializer (relevant in the hour repeated at the end of DST).
+        this.print("((t) => ").print(localDate("t", isLocalDate)).print(")(new Date())");
         return true;
 
       case "parse":
+        if (args.size() != 1) {
+          return false;
+        }
         printMacroName(methodName);
-        this.print("new Date(");
-        this.print(invocation.getArguments().get(0));
-        this.print(" + 'Z')");
+        // Unlike java.time, LocalDate.parse also accepts a time part and ignores it, as the earlier
+        // translation `new Date(s + 'Z')` did: GemTextInput emits "yyyy-MM-ddTHH:mm:ss" for date
+        // inputs, and the generated GUI code passes that to LocalDate.parse.
+        String timePart = "T(\\d{2}):(\\d{2})(?::(\\d{2})(?:\\.(\\d{1,9}))?)?";
+        this.print("((s) => { const p = /^(\\d{4})-(\\d{2})-(\\d{2})"
+            + (isLocalDate ? "(?:" + timePart + ")?" : timePart) + "$/.exec(s); ");
+        // Field ranges as checked by java.time (ISO_LOCAL_DATE[_TIME] resolves strictly): the
+        // Date constructor would roll e.g. 2026-02-30 or 24:00 over into the next month or day.
+        String validFields = "+p[2] >= 1 && +p[2] <= 12 && +p[3] >= 1 && +p[3] <= [31, "
+            + "(+p[1] % 4 === 0 && +p[1] % 100 !== 0) || +p[1] % 400 === 0 ? 29 : 28, "
+            + "31, 30, 31, 30, 31, 31, 30, 31, 30, 31][+p[2] - 1] "
+            + "&& +(p[4] || 0) <= 23 && +(p[5] || 0) <= 59 && +(p[6] || 0) <= 59";
+        this.print("if (p === null || !(" + validFields + ")) { throw Object.defineProperty(new Error(\"Text '\" + s + \"' "
+            + "could not be parsed\"), '__classes', { configurable: true, value: "
+            + DATE_TIME_PARSE_EXCEPTION_CLASSES + " }); } ");
+        if (isLocalDate) {
+          this.print("return new Date(+p[1], +p[2] - 1, +p[3]); ");
+        } else {
+          this.print("return new Date(+p[1], +p[2] - 1, +p[3], +p[4], +p[5], +(p[6] || 0), "
+              + "p[7] === undefined ? 0 : +(p[7] + '00').substring(0, 3)); ");
+        }
+        this.print("})(").print(args.get(0)).print(")");
         return true;
 
       case "compareTo":
-        print("(").print(invocation.getTargetExpression()).print(".getTime() - ")
-            .printArgList(invocation.getArguments()).print(".getTime())");
+        if (isUtilDate) {
+          print("((a, b) => Math.sign(a.getTime() - b.getTime()))(");
+        } else {
+          // Like java.time: the first differing date field, then the sign of the time difference.
+          String dateDiff = "(a.getFullYear() - b.getFullYear()) || (a.getMonth() - b.getMonth())"
+              + " || (a.getDate() - b.getDate())";
+          if (isLocalDate) {
+            print("((a, b) => " + dateDiff + ")(");
+          } else {
+            String timeA = "(((a.getHours() * 60 + a.getMinutes()) * 60 + a.getSeconds()) * 1000"
+                + " + a.getMilliseconds())";
+            String timeB = timeA.replace("a.", "b.");
+            print("((a, b) => " + dateDiff + " || Math.sign(" + timeA + " - " + timeB + "))(");
+          }
+        }
+        print(invocation.getTargetExpression()).print(", ").printArgList(args).print(")");
         return true;
 
       case "toEpochSecond":
-        print(invocation.getTargetExpression()).print(".getTime() / 1000");
+        // The ZoneOffset argument is not available in the browser; UTC is assumed.
+        print("((d) => Math.floor(Date.UTC(" + fields("d", LOCAL_GETTERS, isLocalDate)
+            + ") / 1000))(").print(invocation.getTargetExpression()).print(")");
         return true;
 
       case "ofEpochSecond":
-        print("new Date((").print(invocation.getArguments().get(0)).print(") * 1000)");
+        // The ZoneOffset argument is not available in the browser; UTC is assumed.
+        print("((t) => new Date(" + fields("t", UTC_GETTERS, false) + "))(new Date((")
+            .print(args.get(0)).print(") * 1000");
+        if (args.size() > 1) {
+          print(" + Math.floor((").print(args.get(1)).print(") / 1000000)");
+        }
+        print("))");
         return true;
 
       case "toLocalDate":
-        print("((d) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())))(")
+      case "atStartOfDay":
+        if (!args.isEmpty()) {
+          return false;
+        }
+        print("((d) => " + localDate("d", true) + ")(")
             .print(invocation.getTargetExpression()).print(")");
         return true;
 
@@ -375,21 +508,6 @@ public class JavaTimeAdapter extends AbstractAdapter {
         print(invocation.getTargetExpression());
         return true;
 
-      case "plusYears":
-      case "plusMonths":
-      case "plusWeeks":
-      case "plusDays":
-      case "plusHours":
-      case "plusMinutes":
-      case "plusSeconds":
-      case "minusYears":
-      case "minusMonths":
-      case "minusWeeks":
-      case "minusDays":
-      case "minusHours":
-      case "minusMinutes":
-      case "minusSeconds":
-      case "atStartOfDay":
       case "withYear":
       case "withMonth":
       case "withDayOfMonth":
@@ -397,12 +515,27 @@ public class JavaTimeAdapter extends AbstractAdapter {
       case "withHour":
       case "withMinute":
       case "withSecond":
-        print("LocalDateTimeHelper." + invocation.getMethodName() + "(")
-            .print(invocation.getTargetExpression()).print(", ")
-            .printArgList(invocation.getArguments()).print(")");
-        getPrinter().useModule(
-            new ModuleImportDescriptor("LocalDateTimeHelper", "@umlp/commonj2ts"));
+      case "withNano": {
+        if (args.size() != 1) {
+          return false;
+        }
+        String body = switch (methodName) {
+          case "withYear" -> withYearAndMonth("n", "d.getMonth()", isLocalDate);
+          case "withMonth" -> withYearAndMonth("d.getFullYear()", "n - 1", isLocalDate);
+          case "withDayOfMonth" -> "return " + localDate("d", isLocalDate, null, null, "n") + "; ";
+          case "withDayOfYear" -> "return " + localDate("d", isLocalDate, null, "0", "n") + "; ";
+          case "withHour" -> "return " + localDate("d", false, null, null, null, "n") + "; ";
+          case "withMinute" -> "return " + localDate("d", false, null, null, null, null, "n")
+              + "; ";
+          case "withSecond" -> "return " + localDate("d", false, null, null, null, null, null,
+              "n") + "; ";
+          default -> "return " + localDate("d", false, null, null, null, null, null, null,
+              "Math.floor(n / 1000000)") + "; ";
+        };
+        print("((d, n) => { " + body + "})(").print(invocation.getTargetExpression()).print(", ")
+            .print(args.get(0)).print(")");
         return true;
+      }
     }
     return false;
   }

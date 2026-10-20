@@ -36,6 +36,32 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-10-19: 7.9.3-SNAPSHOT
+* `java.time.LocalDate`/`LocalDateTime` in transpiled frontend code (handwritten Java and generated
+  OCL checks) use the same representation as the runtime: a JS `Date` whose **local** calendar
+  fields carry the value, as created by `LocalDateDeSer`/`LocalDateTimeDeSer`. Before, the JSweet
+  translation read and computed with UTC getters, so in time zones east of UTC values from the
+  server were read one day (or a few hours) early, e.g. Sunday 2026-10-18 as Saturday and
+  2027-01-01 as year 2026, and `plusDays`/`plusHours` across DST changes differed from Java.
+    * getters, `getDayOfWeek`, `toString`, `of`, `now`, `parse`, `toLocalDate`, `atStartOfDay`
+      and `with*` read and build local dates
+    * `plus*`/`minus*` are calendar (wall-clock) arithmetic as in `java.time`, also on DST days
+    * `equals`, `isEqual`, `isBefore`, `isAfter`, `compareTo` and `Objects.equals` compare
+      `LocalDate` by date and `LocalDateTime` by wall-clock fields; `compareTo` returns the
+      `java.time` values instead of millisecond differences
+    * `parse` accepts only ISO-8601 text with valid fields and otherwise throws
+      `DateTimeParseException` (before: invalid `Date` or rolled-over values such as 2026-03-02
+      for 2026-02-30); as before, `LocalDate.parse` also accepts text with a time part
+      (`2024-05-07T00:00:00`, as emitted by `GemTextInput` for date inputs) and ignores the time
+    * values created in the frontend with `of`/`now`/`parse` are now serialized and displayed
+      without the UTC offset; handwritten workarounds that compensate the old shift (e.g. adding a
+      day or reading with `getUTC*`) must be removed
+    * known limit: a `LocalDateTime` in the hour skipped at the start of DST has no local `Date`
+      and is moved forward by the DST shift (one hour in most zones), as by the deserializer; on
+      days whose DST starts at midnight, `atStartOfDay()` gives 01:00
+* `@umlp/commonj2ts` 9.0.3: `LocalDateTimeHelper` uses local calendar arithmetic as well
+  (`getDayOfWeek`, `plus*`, `minus*`, `withMonth`, `withHour`/`withMinute`/`withSecond` fixed)
+
 ## 2026-10-14: 7.9.3-SNAPSHOT
 * Support for the `local` modifier of class diagrams 
  
