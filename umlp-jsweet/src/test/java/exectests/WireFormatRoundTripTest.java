@@ -25,8 +25,13 @@ import java.util.Objects;
  */
 public class WireFormatRoundTripTest {
 
-  static final List<String> TIME_ZONES =
-      List.of("Europe/Berlin", "America/New_York", "America/Santiago", "UTC");
+  /**
+   * Zones with DST changes at 02:00/03:00 (Europe/Berlin, America/New_York), at midnight
+   * (America/Santiago) and by 30 minutes (Australia/Lord_Howe), the largest offset east of UTC
+   * (Pacific/Kiritimati, UTC+14) and UTC.
+   */
+  static final List<String> TIME_ZONES = List.of("Europe/Berlin", "America/New_York",
+      "America/Santiago", "Australia/Lord_Howe", "Pacific/Kiritimati", "UTC");
 
   private static final List<String> DATES = List.of(
       "2026-03-28", "2026-03-29", "2026-10-18", "2026-10-24", "2026-10-25", "2026-07-01",

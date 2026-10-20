@@ -8,6 +8,7 @@ import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
 import resources.exectests.LocalDateParseTimePartRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
+import resources.exectests.LocalDateTimeJavaSemanticsRuntimeCheck;
 import resources.exectests.LocalDateTimeZoneRuntimeCheck;
 import resources.exectests.NestedFlatMapElement;
 import resources.exectests.NestedFlatMapElementSource;
@@ -77,6 +78,12 @@ public class ExecutionTests {
   @Test
   public void testLocalDateTimeZones() {
     ExecTestRunner.runExecutionTestInTimeZones(LocalDateTimeZoneRuntimeCheck.class,
+        WireFormatRoundTripTest.TIME_ZONES);
+  }
+
+  @Test
+  public void testLocalDateTimeJavaSemantics() {
+    ExecTestRunner.runExecutionTestInTimeZones(LocalDateTimeJavaSemanticsRuntimeCheck.class,
         WireFormatRoundTripTest.TIME_ZONES);
   }
 
