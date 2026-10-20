@@ -35,7 +35,7 @@ This functionality is available in both profiles.
 | `String.format(...)` | `StringHelper.format(...)` | `StringHelper` comes from the RTE library (`@umlp/commonj2ts` or `@umlp/common`). |
 | `String.isBlank()` | `str.trim().length === 0` | |
 | `java.util.Objects.requireNonNull(x[, msg])` | Lambda with null check and thrown Error instance | Prevents `null`/`undefined`. |
-| `Objects.equals(a, b)` | For Dates: time comparison; otherwise `===` | |
+| `Objects.equals(a, b)` | For dates: null-safe, same comparison as `equals` of the date type; otherwise `===` | |
 
 #### Date & Time (`java.time` / `java.util.Date`)
 
@@ -45,24 +45,35 @@ All following types are mapped to the native JavaScript **`Date`** object:
 * `java.time.LocalDate`
 * `java.util.Date`
 
+A `LocalDate` or `LocalDateTime` is a `Date` whose **local** calendar fields carry the value
+(`new Date(y, m - 1, d[, h, min, s, ms])`), the same representation that `LocalDateDeSer`,
+`LocalDateTimeDeSer` and `Conversion` (`@umlp/commonj2ts`) and `GemDateInput` use. Results
+therefore do not depend on the browser's time zone. Arithmetic is wall-clock arithmetic as in
+`java.time`. Limitation: a `LocalDateTime` inside a period skipped by a DST change (e.g.
+02:00-03:00 on the last Sunday of March in Europe/Berlin) cannot be represented and is moved
+forward by the DST shift; in zones whose DST starts at midnight, `atStartOfDay()` on that day
+gives 01:00.
+
 Important methods:
 
 | Java | TypeScript Mapping |
 | :--- | :----------------- |
-| `now()` | `new Date()` |
-| `parse(String)` | `Conversion.string2Date(str)` (`Conversion` from `@umlp/common`) |
-| `isEqual(other)` | `this >= other && this <= other` |
-| `isAfter(other)` | `this > other` |
-| `isBefore(other)` | `this < other` |
-| `compareTo(other)` | `this.getTime() - other.getTime()` |
-| `getYear()` | `.getFullYear()` |
-| `getMonthValue()` | `.getMonth()` |
-| `getDayOfMonth()` | `.getDate()` |
-| `toEpochSecond()` | `.getTime() / 1000` |
-| `ofEpochSecond(sec)` | `new Date(sec * 1000)` |
-| `toString()` (`LocalDateTime`) | `.toISOString().slice(0, 19).replace('T', ' ')` |
-| `toString()` (`LocalDate`/`Date`) | `.toISOString().slice(0, 10)` |
-| `plus*/minus*` / `atStartOfDay()` | Call to `LocalDateTimeHelper.*(...)` from `@umlp/commonj2ts` |
+| `now()` | `new Date()`, rebuilt from its local fields |
+| `of(...)` | `new Date(y, m - 1, d, ...)` (local time) |
+| `parse(String)` | strict ISO-8601 parse into local fields; throws `DateTimeParseException`. Unlike `java.time`, `LocalDate.parse` also accepts a time part (`2024-05-07T00:00:00`, as emitted by date inputs) and ignores it |
+| `isEqual(other)`, `equals(other)` | `LocalDate`: same date fields, `LocalDateTime`: same wall-clock fields |
+| `isAfter(other)`, `isBefore(other)` | comparison of the date / wall-clock fields |
+| `compareTo(other)` | as in `java.time` (field differences, then -1/0/1) |
+| `getYear()`, `getMonthValue()`, `getDayOfMonth()`, `getHour()`, ... | local getters (`.getFullYear()`, `.getMonth() + 1`, `.getDate()`, `.getHours()`, ...) |
+| `getDayOfWeek()` | `LocalDateTimeHelper.DAYS_OF_WEEK[.getDay()]` |
+| `toEpochSecond(offset)` | epoch seconds of the fields read as UTC (the offset argument is ignored) |
+| `ofEpochSecond(sec, nanos, offset)` | fields of the UTC instant (the offset argument is ignored) |
+| `toString()` | ISO-8601 text from the local fields, as `java.time` prints it |
+| `plus*/minus*`, `with*`, `atStartOfDay()`, `toLocalDate()` | inline calendar arithmetic on the local fields |
+
+Handwritten TypeScript can use `LocalDateTimeHelper` from `@umlp/commonj2ts`, which follows the
+same convention. Implicit string conversion (`"" + date`) is not translated and yields the JS
+`Date` text; call `toString()` explicitly.
 
 ---
 
