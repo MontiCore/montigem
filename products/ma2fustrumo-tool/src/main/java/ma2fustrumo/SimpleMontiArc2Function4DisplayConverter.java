@@ -48,7 +48,7 @@ public class SimpleMontiArc2Function4DisplayConverter {
         if (!errors.isEmpty()) {
           throw new IllegalArgumentException("The MontiArc model contains errors.");
         }
-        return tool.getResult4Display();
+        return new FuStruMo2FuStruMo4DisplayTransformer().transform(tool.getResult());
       } finally {
         Log.removeLogHook(log);
       }
