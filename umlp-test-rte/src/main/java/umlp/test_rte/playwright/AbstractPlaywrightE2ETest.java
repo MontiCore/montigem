@@ -1,9 +1,12 @@
 package umlp.test_rte.playwright;
 
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.test.annotation.DirtiesContext;
@@ -11,6 +14,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.List;
 
 /**
  * An abstract base for end-to-end tests which use playwright. When using this class it is
@@ -32,6 +36,11 @@ public abstract class AbstractPlaywrightE2ETest implements PlaywrightUtils {
   static final int backendServerPort = getFreePort();
 
   protected FrontendServer4Test frontendServer;
+
+  /**
+   * The browser of the current test, used by {@link #waitForBackend()}
+   */
+  private Browser currentBrowser;
 
   @Override
   public String getUrlBase() {
@@ -100,6 +109,29 @@ public abstract class AbstractPlaywrightE2ETest implements PlaywrightUtils {
       Log.info("Stopping the FrontEnd Server", this.getClass().getName());
       frontendServer.stop();
     }
+  }
+
+  /**
+   * Remembers the browser of the current test, so that {@link #waitForBackend()} can wait for
+   * all of its pages. This is the browser that also provides the {@link Page} parameters.
+   *
+   * @param browser The {@link Browser} of the current test
+   */
+  @BeforeEach
+  protected void rememberPlaywrightBrowser(Browser browser) {
+    this.currentBrowser = browser;
+  }
+
+  /**
+   * Waits until no page of the current test has a command in progress, i.e. until all commands
+   * have reached the backend, have been processed and their results have arrived.
+   * See {@link #waitForBackend(java.util.Collection)}.
+   */
+  protected void waitForBackend() {
+    List<Page> pages = currentBrowser == null ? List.of() : currentBrowser.contexts().stream()
+        .flatMap(context -> context.pages().stream())
+        .toList();
+    waitForBackend(pages);
   }
 
   // After Each is generated

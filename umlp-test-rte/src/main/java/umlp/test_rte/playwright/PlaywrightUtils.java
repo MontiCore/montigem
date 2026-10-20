@@ -3,8 +3,12 @@ package umlp.test_rte.playwright;
 import com.microsoft.playwright.Dialog;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.PlaywrightException;
 import com.microsoft.playwright.options.LoadState;
 import de.se_rwth.commons.logging.Log;
+
+import java.util.Collection;
+import java.util.List;
 
 public interface PlaywrightUtils {
   default void waitForAngular(Page page) {
@@ -92,6 +96,127 @@ public interface PlaywrightUtils {
     waitForAngular(page);
     waitForWebsocket(page);
     page.waitForLoadState(LoadState.NETWORKIDLE);
+  }
+
+  /**
+   * Name of the global variable in which the frontend ({@code @umlp/commonj2ts},
+   * {@code PendingCommands}) publishes the number of commands it is busy with: commands sent to
+   * the backend whose result has not arrived yet, and commands received from the backend whose
+   * processing has not finished.
+   */
+  String PENDING_COMMANDS_VARIABLE = "umlp_pending_commands";
+
+  /**
+   * Time {@link #waitForBackend(Collection)} sleeps for pages that do not publish
+   * {@link #PENDING_COMMANDS_VARIABLE} (frontends built with an older {@code @umlp/commonj2ts}).
+   */
+  long WAIT_FOR_BACKEND_FALLBACK_MILLIS = 200;
+
+  /**
+   * Waits until the frontend in the given page has no command in progress.
+   * See {@link #waitForBackend(Collection)}.
+   *
+   * @param page The {@link Page}
+   */
+  default void waitForBackend(Page page) {
+    waitForBackend(List.of(page));
+  }
+
+  /**
+   * Waits until the frontends in the given pages have no command in progress: every command they
+   * sent has been answered by the backend, and every command the backend pushed to them has been
+   * processed. The pages are polled every {@link #waitForBackendPollMillis()} ms and must be idle
+   * in two consecutive polls, so that a command sent right after the result of a previous one
+   * (e.g. {@code GetFreeGemIdRequest} followed by a create command) is waited for as well.
+   * <p>
+   * Pages that do not show the application (e.g. {@code about:blank}) and closed pages are
+   * ignored. If a page of the application does not publish {@link #PENDING_COMMANDS_VARIABLE}, or
+   * if no page of the application is open, the method (additionally) sleeps
+   * {@link #WAIT_FOR_BACKEND_FALLBACK_MILLIS} ms, as before.
+   * If the pages are still busy after {@link #waitForBackendTimeoutMillis()} ms, a warning is
+   * logged and the method returns.
+   *
+   * @param pages The {@link Page}s
+   */
+  default void waitForBackend(Collection<Page> pages) {
+    long start = System.currentTimeMillis();
+    long deadline = start + waitForBackendTimeoutMillis();
+    boolean fallback = false;
+    int idlePolls = 0;
+    while (true) {
+      boolean idle = true;
+      boolean signal = false;
+      String busy = null;
+      for (Page page : pages) {
+        if (page.isClosed() || !page.url().startsWith(getUrlBase())) {
+          continue;
+        }
+        Object pending;
+        try {
+          pending = page.evaluate("() => window." + PENDING_COMMANDS_VARIABLE);
+        } catch (PlaywrightException e) {
+          if (page.isClosed()) {
+            continue;
+          }
+          // e.g. the page is navigating
+          idle = false;
+          busy = page.url() + " (" + e.getMessage() + ")";
+          continue;
+        }
+        if (pending instanceof Number count) {
+          signal = true;
+          if (count.intValue() > 0) {
+            idle = false;
+            busy = page.url() + " (" + count.intValue() + " commands pending)";
+          }
+        } else {
+          fallback = true;
+        }
+      }
+      if (!signal && idle) {
+        // no page of the application publishes the count: only the fixed wait below
+        fallback = true;
+        break;
+      }
+      idlePolls = idle ? idlePolls + 1 : 0;
+      if (idlePolls >= 2) {
+        break;
+      }
+      if (System.currentTimeMillis() > deadline) {
+        Log.warn("Waiting for the backend timed out after " + (System.currentTimeMillis() - start)
+            + "ms, still busy: " + busy);
+        break;
+      }
+      sleepForBackend(waitForBackendPollMillis());
+    }
+    if (fallback) {
+      sleepForBackend(WAIT_FOR_BACKEND_FALLBACK_MILLIS);
+    }
+    Log.info("Waiting for the backend took " + (System.currentTimeMillis() - start) + "ms",
+        PlaywrightUtils.class.getName());
+  }
+
+  /**
+   * @return The maximum time in ms {@link #waitForBackend(Collection)} waits for busy pages
+   */
+  default long waitForBackendTimeoutMillis() {
+    return 10_000;
+  }
+
+  /**
+   * @return The time in ms between two polls of {@link #waitForBackend(Collection)}
+   */
+  default long waitForBackendPollMillis() {
+    return 50;
+  }
+
+  private static void sleepForBackend(long millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException("Failed to wait for backend", e);
+    }
   }
 
   /**

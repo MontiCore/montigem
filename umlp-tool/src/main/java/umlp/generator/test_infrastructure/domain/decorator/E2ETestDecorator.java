@@ -119,14 +119,7 @@ public class E2ETestDecorator extends AbstractDecorator {
                                          portConfigClassName,
                                          testConfigClassName));
 
-    var waitForBackendMethod = cd4C.addMethod(res, "umlp.test_infrastructure.e2e.WaitForBackend", cdName);
-    glex.replaceTemplate(JAVADOC, waitForBackendMethod, new StringHookPoint(
-        //@formatter:off
-        "/**\n" +
-        " * Waits until all commands have reached the backend and should have been processed.\n" +
-        " */"
-        //@formatter:on
-    ));
+    // waitForBackend() is inherited from AbstractPlaywrightE2ETest
 
     return res;
   }
