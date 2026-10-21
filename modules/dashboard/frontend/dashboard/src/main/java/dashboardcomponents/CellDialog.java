@@ -52,7 +52,7 @@ public class CellDialog extends CellDialogTOP {
             .position(defaultPosition)
             .size(defaultSize);
         this.setCellForEditInternal(cell);
-        this.setDefaultLineExtra(cell);
+        MainCellOptions.setDefaultLineExtra(cell);
       }
       super.initView();
     }
@@ -98,46 +98,10 @@ public class CellDialog extends CellDialogTOP {
         showError(checked);
       } else {
         cell.build().get();
-        if(!cell.isPresentExtra()) {
-          cell.setExtra(DashboardModuleManager.extraDataBuilder());
-        }
-
-        switch (cell.getViz()) {
-          case LINE:
-            if(cell.getExtra().isPresentLinextra()) {
-              cell.getExtra().setLinextra(DashboardModuleManager.lineExtraDataBuilder());
-            }
-            break;
-          case BAR:
-            if(cell.getExtra().isPresentBarextra()) {
-              cell.getExtra().setBarextra(DashboardModuleManager.barExtraDataBuilder());
-            }
-            break;
-          case SCATTER:
-            if(cell.getExtra().isPresentScatterextra()) {
-              cell.getExtra().setScatterextra(DashboardModuleManager.scatterExtraDataBuilder());
-            }
-            break;
-          case SPEED:
-            if(cell.getExtra().isPresentSpeedextra()) {
-              cell.getExtra().setSpeedextra(DashboardModuleManager.gaugeExtraDataBuilder());
-            }
-            break;
-          case BOX:
-            if(cell.getExtra().isPresentBoxextra()) {
-              cell.getExtra().setBoxextra(DashboardModuleManager.boxExtraDataBuilder());
-            }
-            break;
-          case PIE:
-            if(cell.getExtra().isPresentPiextra()) {
-              cell.getExtra().setPiextra(DashboardModuleManager.pieExtraDataBuilder());
-            }
-            break;
-          case NETWORK:
-            if(cell.getExtra().isPresentGraphextra()) {
-              cell.getExtra().setGraphextra(DashboardModuleManager.graphExtraDataBuilder());
-            }
-            break;
+        // the extra options get their defaults when the type of visualization is selected (MainCellOptions),
+        // only set them if they are missing; empty builders would lack e.g. the axes of the scatter plot
+        if (!hasExtraOptions(cell)) {
+          MainCellOptions.setDefaultExtra(cell);
         }
         unshowError();
         nextStep();
@@ -147,6 +111,30 @@ public class CellDialog extends CellDialogTOP {
         }
       }
     };
+  }
+
+  public boolean hasExtraOptions(CellConfig cell) {
+    if (!cell.isPresentExtra()) {
+      return false;
+    }
+    ExtraData extra = cell.getExtra();
+    switch (cell.getViz()) {
+      case LINE:
+        return extra.isPresentLinextra();
+      case BAR:
+        return extra.isPresentBarextra();
+      case SCATTER:
+        return extra.isPresentScatterextra();
+      case SPEED:
+        return extra.isPresentSpeedextra();
+      case BOX:
+        return extra.isPresentBoxextra();
+      case PIE:
+        return extra.isPresentPiextra();
+      case NETWORK:
+        return extra.isPresentGraphextra();
+    }
+    return true;
   }
 
   //
@@ -209,15 +197,6 @@ public class CellDialog extends CellDialogTOP {
         break;
     }
     return result;
-  }
-
-  public void setDefaultLineExtra(CellConfig cell) {
-    cell.setExtra(DashboardModuleManager.extraDataBuilder()
-        .linextra(DashboardModuleManager.lineExtraDataBuilder()
-            .minValue(0)
-            .maxValue(Optional.empty())
-        )
-    );
   }
 
   @Override
@@ -339,10 +318,10 @@ public class CellDialog extends CellDialogTOP {
     Double ymax = yAxis.getMaxValue().orElse(null);
     if(ymax != null) {
       if (ymax <= 0) {
-        return "Maximum value of the x axis is set to a non positive number";
+        return "Maximum value of the y axis is set to a non positive number";
       }
-      if(xAxis.getMinValue() >= ymax) {
-        return "Minimum value set equal or higher than the maximum value of x axis ";
+      if(yAxis.getMinValue() >= ymax) {
+        return "Minimum value set equal or higher than the maximum value of y axis ";
       }
     }
     if(yAxis.getMinValue() < 0) {
@@ -382,7 +361,7 @@ public class CellDialog extends CellDialogTOP {
 
   public String checkGraphExtra(CellConfig cell) {
     GraphExtraData extra = cell.getExtra().getGraphextra();
-    if (extra.getMinHeight().contains("-")) {
+    if (extra.getMinHeight() != null && extra.getMinHeight().contains("-")) {
       return "Minimal height set to a negative number";
     }
     return "positive";

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import dashboardmodule.CellConfig;
+import dashboardmodule.DashboardModuleConfig;
 import dashboardmodule.DashboardModuleManager;
 import dashboardmodule.ViewConfig;
 import dashboardmodule.TutorialStep;
@@ -30,6 +31,37 @@ public class Dashboard extends DashboardTOP {
     return (this.getCurrentView() == candidate.getVid());
   }
 
+  // initializes the @iterate over the views of the view container (the one that is always shown):
+  // the default currentView (0) is no vid of a view, select the first view on start up instead
+  @Override
+  protected void initViewContainersIterable() {
+    super.initViewContainersIterable();
+    selectFirstViewIfNoneSelected();
+  }
+
+  // pages usually load the config asynchronously, then it is still null while the iterates are initialized
+  @Override
+  public void setConfig(DashboardModuleConfig val) {
+    super.setConfig(val);
+    selectFirstViewIfNoneSelected();
+  }
+
+  protected void selectFirstViewIfNoneSelected() {
+    if (this.getConfig() == null) {
+      return;
+    }
+    List<ViewConfig> views = this.getConfig().getViewsList();
+    if (views.isEmpty()) {
+      return;
+    }
+    for (ViewConfig view : views) {
+      if (checkCurrentView(view)) {
+        return;
+      }
+    }
+    this.setCurrentView(views.get(0).getVid());
+  }
+
   public String getCurrentViewWidth(int current, ViewConfig candidate) {
     int baseW = candidate.getName().length() * 8 + 80;
     if (current == candidate.getVid()) {
@@ -47,7 +79,25 @@ public class Dashboard extends DashboardTOP {
     };
   }
 
-  public Boolean checkIfSingleView() { return this.getConfig().getViewsList().size() > 1; }
+  // the names of the views can only be changed in the edit mode (and in the tutorial step about it)
+  @Override
+  public Boolean checkIfViewNameLocked() {
+    if (this.getTutorialStep() == 30) {
+      return false;
+    }
+    return !this.isEdit() || checkIfDialogOpen();
+  }
+
+  @Override
+  public Boolean checkIfViewTabDisabled() {
+    return checkIfDialogOpen() && this.getTutorialStep() != 30;
+  }
+
+  // the last view cannot be deleted
+  @Override
+  public Boolean checkIfViewDeletable() {
+    return this.isEdit() && this.getConfig().getViewsList().size() > 1;
+  }
 
   @Override
   public Consumer<Void> openViewDialog() {
@@ -68,15 +118,40 @@ public class Dashboard extends DashboardTOP {
   }
 
   @Override
-  public Consumer<Void> deleteView(ViewConfig view) {
+  public Consumer<Void> openDeleteViewDialog() {
     return $ -> {
-      List<ViewConfig> list = DashboardModuleManager.getDashboardModuleConfigSure(this.getConfig().getGemId()).getViewsList();
-      //int getVid
-      int newIndex = list.get(list.indexOf(view)-1).getVid();
-      setCurrentView(newIndex);
-      this.getConfig().removeViews(view);
-      DashboardModuleManager.deleteViewConfig(view.getGemId());
+      this.setConfirmDeleteView(true);
     };
+  }
+
+  @Override
+  public Consumer<Void> closeDeleteViewDialog() {
+    return $ -> {
+      this.setConfirmDeleteView(false);
+    };
+  }
+
+  // only the selected view has a delete button
+  @Override
+  public Consumer<Void> deleteCurrentView() {
+    return $ -> {
+      for (ViewConfig view : this.getConfig().getViewsList()) {
+        if (checkCurrentView(view)) {
+          deleteView(view);
+          return;
+        }
+      }
+    };
+  }
+
+  protected void deleteView(ViewConfig view) {
+    List<ViewConfig> list = DashboardModuleManager.getDashboardModuleConfigSure(this.getConfig().getGemId()).getViewsList();
+    // select the view left of the deleted one, or the one right of it if the first view is deleted
+    int index = list.indexOf(view);
+    int newIndex = list.get(index > 0 ? index - 1 : 1).getVid();
+    setCurrentView(newIndex);
+    this.getConfig().removeViews(view);
+    DashboardModuleManager.deleteViewConfig(view.getGemId());
   }
 
   @Override
@@ -323,7 +398,7 @@ public class Dashboard extends DashboardTOP {
   //button disabling related
   //
   @Override
-  public Boolean checkIfDialogOpen() { return (this.isCreateCell() || this.isEditCellFlag() || this.getTutorialStep() != 0 || this.isRunning() || this.isDelete() || this.isDownload()); }
+  public Boolean checkIfDialogOpen() { return (this.isCreateCell() || this.isEditCellFlag() || this.getTutorialStep() != 0 || this.isRunning() || this.isDelete() || this.isDownload() || this.isConfirmDeleteView()); }
 
 
   //---------------------------------
@@ -361,15 +436,14 @@ public class Dashboard extends DashboardTOP {
   }
 
   @Override
-  public Boolean checkIfDialogOpenCurrentViewTutorialStep7() {
-    return checkIfDialogOpen() && this.getTutorialStep() != 7;
-  }
-
-  @Override
   public Boolean checkTutorial() { return this.getTutorialStep() > 0; }
 
+  // the steps about the views highlight the tabs of the views
   @Override
-  public Boolean checkIfTutorialStep45() { return (this.getTutorialStep() == 4 || this.getTutorialStep() == 5); }
+  public Boolean checkIfTutorialHighlightsViews() {
+    int step = this.getTutorialStep();
+    return step == 4 || step == 5 || step == 30 || step == 31;
+  }
 
   @Override
   public Boolean checkIfTutorialStep6() { return this.getTutorialStep() == 6; }
@@ -529,9 +603,9 @@ public class Dashboard extends DashboardTOP {
             DashboardModuleManager.tutorialStepBuilder()
                 .stepId(7)
                 .instruction(
-                    "You can change the name of your new view anytime by just clicking over\n" +
-                        "its tab and modifying the current name. If you do not want to, you can\n" +
-                        "just directly click next."
+                    "Your new view is now created and selected. Views can be renamed and\n" +
+                        "deleted in the edit mode of the dashboard, we will come back to that\n" +
+                        "at the end of this tutorial."
                 )
                 .section("2. Views")
                 .hasButton(true)
@@ -820,13 +894,43 @@ public class Dashboard extends DashboardTOP {
 
         tutorialSteps.add(
             DashboardModuleManager.tutorialStepBuilder()
+                .stepId(30)
+                .instruction(
+                    "The edit mode also lets you edit the views. To rename a view, click on\n" +
+                        "the name in its tab and type a new one. Try it with your new view and\n" +
+                        "click next when you are done."
+                )
+                .section("5. Editing Views")
+                .hasButton(true)
+                .hasBackdrop(false)
+                .bottom(true)
+                .build().get()
+        );
+
+        tutorialSteps.add(
+            DashboardModuleManager.tutorialStepBuilder()
+                .stepId(31)
+                .instruction(
+                    "To delete a view, select it and click on the X in its tab. As the view\n" +
+                        "and all of its cells are deleted, you have to confirm it first. The X is\n" +
+                        "only shown while there is more than one view."
+                )
+                .section("5. Editing Views")
+                .hasButton(true)
+                .hasBackdrop(false)
+                .bottom(true)
+                .build().get()
+        );
+
+        tutorialSteps.add(
+            DashboardModuleManager.tutorialStepBuilder()
                 .stepId(27)
                 .instruction(
                     "Congratulations! You have completed the tutorial.\n" +
                         "Click on the tutorial button to continue to explore and experiment with\n" +
                         "the component yourself :)."
                 )
-                .section("5. Outro")
+                .section("6. Outro")
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(false)

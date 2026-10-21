@@ -5,6 +5,8 @@
   --view-background: white;
   --alt-color: #A3A3A3;
   --blue-text: #2F5F9F;
+  // border of the selected view tab, the themes (theme-designs) have no accent colour yet
+  --tab-accent: var(--color-accent, var(--color-warning, #f6a800));
 }
 
 body.dark-theme :host {
@@ -45,89 +47,53 @@ body.dark-theme :host ::ng-deep .gem-button {
   background-color: var(--background-color);
 }
 
-:host ::ng-deep .input .gem-text-input {
- background-color: #2F5F9F;
- border: none !important;
- outline: none;
- color: white !important;
- transition: all 0.25s ease;
-}
-
-:host ::ng-deep .input .gem-text-input:hover{
-  background-color: #294F85;
-  color: white !important;
-}
-
-:host ::ng-deep .input2 .gem-text-input {
- background-color: #2F5F9F;
- border: none !important;
- outline: none;
- color: white !important;
- transition: all 0.25s ease;
-}
-
-:host ::ng-deep .input2 .gem-text-input:hover{
-  background-color: #294F85;
-  color: white !important;
-}
-
-:host ::ng-deep .inputSelected .gem-text-input {
- background-color: #5B8ACB;
- border: none !important;
- outline: none;
- color: white !important;
- transition: all 0.25s ease;
- margin-bottom: 3px  !important;
-}
-
-:host ::ng-deep .inputSelected .gem-text-input:hover{
-  background-color: #294F85;
-  color: white !important;
-}
-
-:host ::ng-deep .inputSelected2 .gem-text-input {
- background-color: #5B8ACB;
- border: none !important;
- outline: none;
- color: white !important;
- transition: all 0.25s ease;
- margin-bottom: 3px  !important;
-}
-
-:host ::ng-deep .inputSelected2 .gem-text-input:hover{
-  background-color: #294F85;
-  color: white !important;
-}
-
 :host ::ng-deep .gem-button {
  background-color: #2F5F9F;
 }
 
-
-:host ::ng-deep .buttonSelected .gem-button {
-  position: relative;
-  margin: 0px !important;
-  border-radius: 0px !important;
-  background-color:  #5B8ACB;
-}
-
-:host ::ng-deep .buttonSelected2 .gem-button {
-  position: relative;
-  margin: 0px !important;
-  border-radius: 0px !important;
-  background-color: #5B8ACB;
-}
-
-:host ::ng-deep .buttonUnselected2 .gem-button {
-  border-radius: 0px;
-}
-
-:host ::ng-deep .buttonUnselected .gem-button {
-  border-radius: 0px;
-}
-
 :host ::ng-deep .gem-button:hover {
   background-color: #294F85;
+}
+
+// the view name inputs are transparent, so that the whole tab (button and input) changes its colour on hover
+:host ::ng-deep :is(.input, .input2, .inputSelected, .inputSelected2) .gem-text-input {
+  background-color: transparent !important;
+  border: none !important;
+  outline: none;
+  box-shadow: none;
+  color: inherit !important;
+}
+
+// outside of the edit mode the view names are disabled, a click on them selects the view (the button around them)
+:host ::ng-deep :is(.input, .input2, .inputSelected, .inputSelected2) .gem-text-input:disabled {
+  pointer-events: none;
+  opacity: 1;
+}
+
+// the selected view is highlighted like the active tab of a browser: it keeps the colour of the
+// other tabs, but is outlined by a border in the accent colour of the theme (an inset shadow, so
+// that selecting a tab does not change its size)
+:host ::ng-deep :is(.buttonSelected, .buttonSelected2) > .gem-button {
+  box-shadow: inset 0 0 0 2px var(--tab-accent);
+}
+
+:host ::ng-deep :is(.buttonSelected, .buttonSelected2) > .gem-button:hover {
+  box-shadow: inset 0 0 0 2px var(--tab-accent), 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+body.dark-theme :host ::ng-deep :is(.buttonSelected, .buttonSelected2) > .gem-button {
+  border-color: var(--tab-accent);
+}
+
+:host ::ng-deep :is(.closeButton, .closeButton2) .gem-button {
+  background-color: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+
+:host ::ng-deep :is(.closeButton, .closeButton2) .gem-button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: none;
 }
 
 :host ::ng-deep .endTutorial .gem-button{
@@ -178,14 +144,6 @@ body.dark-theme :host ::ng-deep .closeButton2 .gem-button{
 
 body.dark-theme :host ::ng-deep .darkModeSwitch .gem-dark-mode-switch {
   border: 1px solid #e0e0e0;
-}
-
-:host ::ng-deep .addView .gem-button{
-  border-radius: 0px !important;
-}
-
-:host ::ng-deep .addView2 .gem-button{
-  border-radius: 0px !important;
 }
 
 // an outline instead of a border, a border would push the whole dashboard down while it is highlighted
@@ -253,6 +211,19 @@ body.dark-theme :host ::ng-deep .darkModeSwitch .gem-dark-mode-switch {
    left: 50%;
    transform: translate(-50%, -50%);
    background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1000;
+   color: var(--text-color);
+   background-color: var(--background-color);
+ }
+
+.deleteViewDialog{
+   position: fixed;
+   top: 300px;
+   left: 50%;
+   transform: translate(-50%, -50%);
    padding: 20px;
    border-radius: 8px;
    border: 1px solid #e0e0e0;

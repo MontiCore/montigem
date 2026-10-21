@@ -20,20 +20,19 @@ public class ExtraScatterOptions extends ExtraScatterOptionsTOP{
       return;
     }
     if(maxValEntry == null || maxValEntry.isEmpty()) {
-      this.getExtra().getScatterextra().getXAxis().setMaxValue(Optional.of(-1.0));
+      this.getExtra().getScatterextra().getXAxis().setMaxValue(Optional.empty());
       return;
     }
     super.setXMaxValEntry(maxValEntry);
   }
 
-  //@Override
-  public String getxMaxValEntry() {
+  @Override
+  public String getXMaxValEntry() {
 
     if (false || this.getExtra() == null || this.getExtra().getScatterextra() == null || this.getExtra().getScatterextra().getXAxis() == null) {
       return null;
     }
-    if (this.getExtra().getScatterextra().getXAxis().getMaxValue().isEmpty()
-        || this.getExtra().getScatterextra().getXAxis().getMaxValue().get() == -1.0) {
+    if (this.getExtra().getScatterextra().getXAxis().getMaxValue().isEmpty()) {
       return "";
     }
     return super.getXMaxValEntry();

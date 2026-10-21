@@ -19,6 +19,7 @@ import mc.fenix.input.GemTextInput;
 import dashboardcomponents.View;
 import dashboardcomponents.InfoDialog;
 import dashboardcomponents.ViewDialog;
+import dashboardcomponents.DeleteDialog;
 
 component Dashboard(
   DashboardModuleConfig config,
@@ -39,12 +40,18 @@ component Dashboard(
   boolean createCell = false,
   //
   boolean edit = false,
+  //confirmation dialog for deleting the current view
+  boolean confirmDeleteView = false,
   //tutorial
   int tutorialStep = 0
   ) {
 
     @guard(info) {
       infoDialog@InfoDialog(info = "You already have the maximum allowed number of views", close = closeInfo());
+    };
+    @guard(confirmDeleteView) {
+      backdrop@GemText();
+      deleteViewDialog@DeleteDialog(text = "Are you sure you want to delete this view and all of its cells?", delete = deleteCurrentView(), close = closeDeleteViewDialog());
     };
     @guard(createView) {
        viewDialog@ViewDialog(createView = createNewView(), close = closeViewDialog(), tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep());
@@ -60,23 +67,24 @@ component Dashboard(
        }
     };
     @GemRow(hAlign = "space-between", vAlign = "bottom", components = [
-      @guard(checkIfTutorialStep45()) {
+      //the view names can only be changed and the views only be deleted in the edit mode
+      @guard(checkIfTutorialHighlightsViews()) {
         @GemColumn(components = [
-          tutorialViews@GemRow(hAlign = "left", vAlign = "bottom", components = [
+          tutorialViews@GemRow(colGap = "5px", hAlign = "left", vAlign = "bottom", components = [
             @iterate(ViewConfig view: config.views) {
                 //currently selected view
                  @guard(checkCurrentView(view)) {
                      buttonSelected@GemButton(
                       leftClick = changeCurrentView(view),
                       width = getCurrentViewWidth(currentView, view),
-                      disabled = checkIfDialogOpen(),
+                      disabled = checkIfViewTabDisabled(),
                       margin = "0px",
                       height = "35px",
                       content = [
                         @GemRow(hAlign = "space-between", components = [
-                            inputSelected@GemTextInput(disabled = checkIfDialogOpen(), entry = view.name),
-                            @guard(checkIfSingleView()) {
-                              closeButton@GemButton(disabled = checkIfDialogOpen(), leftClick = deleteView(view), label = "X");
+                            inputSelected@GemTextInput(disabled = checkIfViewNameLocked(), entry = view.name),
+                            @guard(checkIfViewDeletable()) {
+                              closeButton@GemButton(disabled = checkIfDialogOpen(), leftClick = openDeleteViewDialog(), label = "X");
                             }
                         ])
                       ]);
@@ -84,12 +92,12 @@ component Dashboard(
                       buttonUnselected@GemButton(
                         leftClick = changeCurrentView(view),
                         width = getCurrentViewWidth(currentView, view),
-                        disabled = checkIfDialogOpen(),
+                        disabled = checkIfViewTabDisabled(),
                         margin = "0px",
                         height = "35px",
                         content = [
                           @GemRow(hAlign = "space-between", components = [
-                              input@GemTextInput(disabled = checkIfDialogOpen(), entry = view.name)
+                              input@GemTextInput(disabled = checkIfViewNameLocked(), entry = view.name)
                           ])
                         ]);
                  };
@@ -100,21 +108,21 @@ component Dashboard(
         ]);
       } else {
         @GemColumn(components = [
-          @GemRow(hAlign = "left", vAlign = "bottom", components = [
+          @GemRow(colGap = "5px", hAlign = "left", vAlign = "bottom", components = [
             @iterate(ViewConfig view: config.views) {
                 //currently selected view
                  @guard(checkCurrentView(view)) {
                      buttonSelected2@GemButton(
                       leftClick = changeCurrentView(view),
                       width = getCurrentViewWidth(currentView, view),
-                      disabled = checkIfDialogOpenCurrentViewTutorialStep7(),
+                      disabled = checkIfViewTabDisabled(),
                       margin = "0px",
                       height = "35px",
                       content = [
                         @GemRow(hAlign = "space-between", components = [
-                            inputSelected2@GemTextInput(disabled = checkIfDialogOpenCurrentViewTutorialStep7(), entry = view.name),
-                            @guard(checkIfSingleView()) {
-                              closeButton2@GemButton(disabled = checkIfDialogOpen(), leftClick = deleteView(view), label = "X");
+                            inputSelected2@GemTextInput(disabled = checkIfViewNameLocked(), entry = view.name),
+                            @guard(checkIfViewDeletable()) {
+                              closeButton2@GemButton(disabled = checkIfDialogOpen(), leftClick = openDeleteViewDialog(), label = "X");
                             }
                         ])
                       ]);
@@ -122,12 +130,12 @@ component Dashboard(
                       buttonUnselected2@GemButton(
                         leftClick = changeCurrentView(view),
                         width = getCurrentViewWidth(currentView, view),
-                        disabled = checkIfDialogOpen(),
+                        disabled = checkIfViewTabDisabled(),
                         height = "35px",
                         margin = "0px",
                         content = [
                           @GemRow(hAlign = "space-between", components = [
-                              input2@GemTextInput(disabled = checkIfDialogOpen(), entry = view.name)
+                              input2@GemTextInput(disabled = checkIfViewNameLocked(), entry = view.name)
                           ])
                         ]);
                  };
@@ -163,7 +171,8 @@ component Dashboard(
         ])
       ])
     ]);
-    @iterate(ViewConfig view: config.views) {
+    //named, so that the handwritten initViewContainersIterable() keeps working when other elements are added
+    viewContainers@iterate(ViewConfig view: config.views) {
       @guard(checkCurrentView(view)) {
         container@View(
           view = view,

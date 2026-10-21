@@ -5,6 +5,35 @@
 // The charts of the preview fill their container and have no width of their own, so the preview
 // column gets a fixed size in the model; let the chart fill it (otherwise the column collapsed to
 // zero width in the auto-sized dialog and the chart overflowed the dialog)
+// the network graph fills the preview like in the cells (Cell.scss): without the minimum height of its
+// extra options (50vH by default, larger than the preview) and with the control overlay on top of the canvas;
+// position: relative, so that the preview also clips the absolutely positioned canvases of the graph
+:host ::ng-deep :is(.displayColumn, .tutorialDisplay) {
+  position: relative;
+  overflow: hidden;
+}
+
+:host ::ng-deep :is(.displayColumn, .tutorialDisplay) gem-graph {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+:host ::ng-deep :is(.displayColumn, .tutorialDisplay) gem-graph .chart-container {
+  position: relative;
+  height: 100%;
+}
+
+:host ::ng-deep :is(.displayColumn, .tutorialDisplay) gem-graph .chart-wrapper {
+  min-height: 0 !important;
+  height: 100% !important;
+}
+
+:host ::ng-deep :is(.displayColumn, .tutorialDisplay) gem-graph .chart-container > .ui-overlay {
+  position: absolute;
+  inset: 0;
+}
+
 :host ::ng-deep :is(.displayColumn, .tutorialDisplay) > cell-display {
   width: 100%;
   height: 100%;

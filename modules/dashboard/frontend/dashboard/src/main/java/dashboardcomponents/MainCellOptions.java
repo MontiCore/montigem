@@ -34,31 +34,52 @@ public class MainCellOptions extends MainCellOptionsTOP{
     switch (this.getCell().getViz()) {
       case LINE:
         this.getCell().setData(defaultLineData);
-        this.setDefaultLineExtra(this.getCell());
         break;
       case BAR:
         this.getCell().setData(defaultBarData);
-        this.setDefaultBarExtra(this.getCell());
         break;
       case SCATTER:
         this.getCell().setData(defaultScatterData);
-        this.setDefaultScatterExtra(this.getCell());
         break;
       case SPEED:
         this.getCell().setData(defaultSpeedData);
-        this.setDefaultSpeedExtra(this.getCell());
         break;
       case BOX:
         this.getCell().setData(defaultBoxData);
-        this.setDefaultBoxExtra(this.getCell());
         break;
       case PIE:
         this.getCell().setData(defaultPieData);
-        this.setDefaultPieExtra(this.getCell());
         break;
       case NETWORK:
         this.getCell().setData(defaultNetworkData);
-        this.setDefaultGraphExtra(this.getCell());
+        break;
+    };
+    setDefaultExtra(this.getCell());
+  }
+
+  // sets the default extra options of the type of visualization of the cell (also used by the CellDialog)
+  public static void setDefaultExtra(CellConfig cell) {
+    switch (cell.getViz()) {
+      case LINE:
+        setDefaultLineExtra(cell);
+        break;
+      case BAR:
+        setDefaultBarExtra(cell);
+        break;
+      case SCATTER:
+        setDefaultScatterExtra(cell);
+        break;
+      case SPEED:
+        setDefaultSpeedExtra(cell);
+        break;
+      case BOX:
+        setDefaultBoxExtra(cell);
+        break;
+      case PIE:
+        setDefaultPieExtra(cell);
+        break;
+      case NETWORK:
+        setDefaultGraphExtra(cell);
         break;
     };
   }
@@ -153,7 +174,7 @@ public class MainCellOptions extends MainCellOptionsTOP{
   //default extra data setters
   //--------------------------
 
-  public void setDefaultLineExtra(CellConfig cell) {
+  public static void setDefaultLineExtra(CellConfig cell) {
     cell.setExtra(DashboardModuleManager.extraDataBuilder()
         .linextra(DashboardModuleManager.lineExtraDataBuilder()
             .minValue(0)
@@ -162,7 +183,7 @@ public class MainCellOptions extends MainCellOptionsTOP{
     );
   }
 
-  public void setDefaultBarExtra(CellConfig cell) {
+  public static void setDefaultBarExtra(CellConfig cell) {
     cell.setExtra(DashboardModuleManager.extraDataBuilder()
         .barextra(DashboardModuleManager.barExtraDataBuilder()
             .maxValue(Optional.empty())
@@ -173,7 +194,7 @@ public class MainCellOptions extends MainCellOptionsTOP{
     );
   }
 
-  public void setDefaultBoxExtra(CellConfig cell) {
+  public static void setDefaultBoxExtra(CellConfig cell) {
     cell.setExtra(DashboardModuleManager.extraDataBuilder()
         .boxextra(DashboardModuleManager.boxExtraDataBuilder()
             .min(0d)
@@ -182,7 +203,7 @@ public class MainCellOptions extends MainCellOptionsTOP{
     );
   }
 
-  public void setDefaultSpeedExtra(CellConfig cell) {
+  public static void setDefaultSpeedExtra(CellConfig cell) {
     cell.setExtra(DashboardModuleManager.extraDataBuilder()
         .speedextra(DashboardModuleManager.gaugeExtraDataBuilder()
             .max(Optional.empty())
@@ -194,7 +215,7 @@ public class MainCellOptions extends MainCellOptionsTOP{
     );
   }
 
-  public void setDefaultScatterExtra(CellConfig cell) {
+  public static void setDefaultScatterExtra(CellConfig cell) {
     cell.setExtra(DashboardModuleManager.extraDataBuilder()
         .scatterextra(DashboardModuleManager.scatterExtraDataBuilder()
             .xAxis(DashboardModuleManager.axisBuilder()
@@ -213,7 +234,7 @@ public class MainCellOptions extends MainCellOptionsTOP{
     );
   }
 
-  public void setDefaultPieExtra(CellConfig cell) {
+  public static void setDefaultPieExtra(CellConfig cell) {
     cell.setExtra(DashboardModuleManager.extraDataBuilder()
         .piextra(DashboardModuleManager.pieExtraDataBuilder()
             .innerRadius(10)
@@ -221,7 +242,7 @@ public class MainCellOptions extends MainCellOptionsTOP{
     );
   }
 
-  public void setDefaultGraphExtra(CellConfig cell) {
+  public static void setDefaultGraphExtra(CellConfig cell) {
     cell.setExtra(DashboardModuleManager.extraDataBuilder()
         .graphextra(DashboardModuleManager.graphExtraDataBuilder()
             .minHeight("50vH")

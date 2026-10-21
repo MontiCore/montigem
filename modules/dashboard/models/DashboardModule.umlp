@@ -40,29 +40,12 @@ umlp DashboardModule {
   }
 
   class CellConfig {
-    /* DashboardModuleData data; */
     String data;
-    //int cid;
     String name;
     VizType viz;
     Optional<ExtraData> extra;
     -> (size) DashboardModuleSize;
     -> (position) DashboardModulePosition;
-  }
-
-  class DashboardModuleData {
-    VizType viz;
-
-    /Optional<GemBarChartData> bardata;
-    /Optional<GemBoxPlotData> boxdata;
-    /Optional<GemGaugeChartData> gaugedata;
-    /Optional<GemLineChartData> linedata;
-    /Optional<Graph> netdata;
-    /Optional<GemPieChartData> piedata;
-    /Optional<GemScatterPlotData> scatterdata;
-
-    Optional<TableData> tabledata;
-    Optional<TileData> tiledata;
   }
 
   class ExtraData {
