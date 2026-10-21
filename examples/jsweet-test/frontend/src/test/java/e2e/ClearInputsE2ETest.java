@@ -94,17 +94,21 @@ public class ClearInputsE2ETest extends AbstractJsweettestE2ETest {
 
     page.fill("#" + id + "Input", "");
 
-    awaitBackend(() -> getter.apply(inputs).isEmpty());
+    // the backend object changes before the database row, so wait for both
+    awaitBackend(() -> getter.apply(inputs).isEmpty() && getter.apply(storedInputs()).isEmpty());
     // the frontend sends the attribute as an empty optional, i.e., without a value
     List<String> sent = sentCommands.stream().filter(c -> c.contains(setCommand)).toList();
     assertEquals(1, sent.size(), "sent set commands: " + sentCommands);
     assertFalse(sent.get(0).contains("\"" + id + "\""), sent.get(0));
     assertTrue(getter.apply(inputs).isEmpty(), "attribute of the backend object");
-    ClearableInputs stored = JsweettestDAOFactory.getClearableInputsDAO()
-        .selectClearableInputs(inputs.getGemId()).get();
-    assertTrue(getter.apply(stored).isEmpty(), "stored attribute");
+    assertTrue(getter.apply(storedInputs()).isEmpty(), "stored attribute");
     assertEquals(List.of(), failedResponses, "failed commands");
     assertEquals(List.of(), browserErrors, "errors in the browser");
+  }
+
+  protected ClearableInputs storedInputs() {
+    return JsweettestDAOFactory.getClearableInputsDAO()
+        .selectClearableInputs(inputs.getGemId()).get();
   }
 
   /**
