@@ -1,0 +1,18 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+package genjava.decorator;
+
+import mc.fenix.input.TestTextInput;
+import packaged.Inputs.ClearableInputs;
+
+page TextInputConversion(ClearableInputs c) {
+  day@TestTextInput(entry = c.day);
+  optDay@TestTextInput(entry = c.optDay);
+  time@TestTextInput(entry = c.time);
+  optTime@TestTextInput(entry = c.optTime);
+  num@TestTextInput(entry = c.num);
+  optNum@TestTextInput(entry = c.optNum);
+  letter@TestTextInput(entry = c.letter);
+  optLetter@TestTextInput(entry = c.optLetter);
+  optText@TestTextInput(entry = c.optText);
+}

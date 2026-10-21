@@ -36,6 +36,10 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-10-20: 7.9.3-SNAPSHOT
+* Clearing a text input bound to an `Optional` date, date-time, number or enum attribute sets it to
+  `Optional.empty()`. Before, an invalid value was sent to the server or the conversion threw.
+
 ## 2026-10-14: 7.9.3-SNAPSHOT
 * Support for the `local` modifier of class diagrams 
  

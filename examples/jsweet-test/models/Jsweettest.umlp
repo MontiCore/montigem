@@ -83,6 +83,14 @@ classdiagram Jsweettest {
     LocalDateTime timestamp;
   }
 
+  // optional values of text inputs, which are converted from the input string
+  class ClearableInputs {
+    Optional<java.time.LocalDate> birthday;
+    Optional<LocalDateTime> appointment;
+    Optional<Integer> amount;
+    Optional<EnumTestEnum> letter;
+  }
+
   // async propagation
   class AsyncSuper;
   /association AsyncSuper -> A [*];

@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package packaged;
+
+umlp Inputs {
+  class ClearableInputs {
+    java.time.LocalDate day;
+    Optional<java.time.LocalDate> optDay;
+    java.time.LocalDateTime time;
+    Optional<java.time.LocalDateTime> optTime;
+    Integer num;
+    Optional<Integer> optNum;
+    Letter letter;
+    Optional<Letter> optLetter;
+    Optional<String> optText;
+  }
+
+  enum Letter {
+    A,
+    B;
+  }
+}

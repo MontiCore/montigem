@@ -7,6 +7,7 @@ import de.monticore.cd4codebasis._ast.ASTCDMethod;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
+import de.monticore.generating.GeneratorEngine;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.guidsl._ast.ASTGUICompilationUnit;
@@ -42,9 +43,11 @@ public class GUI2JavaClassDecoratorTest extends DomainGUITest {
 
   GlobalExtensionManagement glex;
 
+  GeneratorSetup genSetup;
+
   @BeforeEach
   public void genSetup() {
-    GeneratorSetup genSetup = new GeneratorSetup();
+    genSetup = new GeneratorSetup();
     // set output directory
     String genFolder = BUILD_FOLDER + "/guigentests";
     genSetup.setOutputDirectory(new File(genFolder));
@@ -539,6 +542,63 @@ public class GUI2JavaClassDecoratorTest extends DomainGUITest {
     assertions.add(() -> assertTrue(rList.getInitMethod().isPresent()));
 
     assertAll(assertions);
+  }
+
+  @Test
+  public void testStringToTypeConversionOfTextInputs() {
+    ASTGUICompilationUnit gui = processGUIModel(
+        "gui/genjava/decorator/TextInputConversion.gui",
+        "src/test/resources/gui",
+        "packaged/Inputs.umlp"
+    );
+    ASTCDCompilationUnit cd = GUI2CDTrafo.createCDCompilationUnit(gui);
+
+    GUIGeneratorUtil.getInstance().init(
+        List.of("packaged.Inputs"), List.of("genjava.decorator.TextInputConversion"));
+
+    GUI2JavaClassDecorator decorator = new GUI2JavaClassDecorator(glex);
+    decorator.transform(gui, cd);
+
+    List<ASTCDMethod> methods = cd.getCDDefinition().getCDClassesList().get(0).getCDMethodList();
+    String in = "conv_val_$";
+    String emptyCheck = in + " == null || " + in + ".isEmpty() ? Optional.empty() : ";
+
+    assertAll(
+        () -> assertEquals(0, Log.getErrorCount()),
+        // a cleared input of an optional attribute empties it
+        () -> assertEquals("return " + emptyCheck + "Optional.of(LocalDate.parse(" + in + "));",
+            printBody(getMethod(methods, "convertOptDayEntry"))),
+        () -> assertEquals("return " + emptyCheck + "Optional.of(LocalDateTime.parse(" + in + "));",
+            printBody(getMethod(methods, "convertOptTimeEntry"))),
+        () -> assertEquals("return " + emptyCheck + "Optional.of(Integer.valueOf(" + in + "));",
+            printBody(getMethod(methods, "convertOptNumEntry"))),
+        () -> assertEquals("return " + emptyCheck + "Optional.of(Letter.valueOf(" + in + "));",
+            printBody(getMethod(methods, "convertOptLetterEntry"))),
+        // an empty string is a value of an optional string
+        () -> assertEquals("return Optional.of(" + in + ");",
+            printBody(getMethod(methods, "convertOptTextEntry"))),
+        // mandatory attributes are converted unchanged
+        () -> assertEquals("return LocalDate.parse(" + in + ");",
+            printBody(getMethod(methods, "convertDayEntry"))),
+        () -> assertEquals("return LocalDateTime.parse(" + in + ");",
+            printBody(getMethod(methods, "convertTimeEntry"))),
+        () -> assertEquals("return Integer.valueOf(" + in + ");",
+            printBody(getMethod(methods, "convertNumEntry"))),
+        () -> assertEquals("return Letter.valueOf(" + in + ");",
+            printBody(getMethod(methods, "convertLetterEntry")))
+    );
+  }
+
+  /**
+   * @return the generated body of the method, without comments and with whitespace sequences
+   * replaced by single spaces
+   */
+  protected String printBody(ASTCDMethod method) {
+    assertNotNull(method);
+    // CD4C attaches the body to the empty body template of the method
+    String body = new GeneratorEngine(genSetup)
+        .generate(CD4C.getInstance().getEmptyBodyTemplate(), method).toString();
+    return body.replaceAll("/\\*.*?\\*/", "").replaceAll("\\s+", " ").trim();
   }
 
   protected ASTCDAttribute getAttr(Collection<ASTCDAttribute> attrs, String name) {
