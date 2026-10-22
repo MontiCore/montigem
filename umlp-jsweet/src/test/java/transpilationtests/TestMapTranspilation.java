@@ -39,4 +39,29 @@ public class TestMapTranspilation {
     assertTrue(normalizedContent.contains("map:IUMLPMap<string,V>"), normalizedContent);
     assertTrue(normalizedContent.contains("returnawaitthis.gemMap.size()+awaitthis.map.size();"), normalizedContent);
   }
+
+  @Test
+  public void testGemMapHooksBecomeAsync() throws IOException {
+    File input = Paths.get("src/test/resources/java/map/GemMapSubclassTranspilation.java").toFile();
+
+    JSweetTranspiler transpiler = TranspilerSetupUtil.getDomainTranspiler();
+    ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
+        new ConsoleTranspilationHandler());
+    SourceFile[] sourceFiles = getSourceFiles(input);
+    transpiler.transpile(handler, sourceFiles);
+
+    assertEquals(0, handler.getErrorCount());
+    assertNotNull(sourceFiles[0].getTsFile());
+    String normalizedContent = Files.readString(Paths.get(sourceFiles[0].getTsFile().getPath()))
+        .replaceAll("/\\*.*?\\*/", "")
+        .replaceAll("\\s+", "");
+    // overrides of RTE methods that are async in TS (jsweetasync.json) are async, even with synchronous bodies
+    assertTrue(normalizedContent.contains("publicasyncderiveKey(value:V)"), normalizedContent);
+    assertTrue(normalizedContent.contains("asynconValueKeyed(value:V)"), normalizedContent);
+    // a hook that never loads stays synchronous, like in the RTE
+    assertTrue(normalizedContent.contains("publicisKeyDerived():boolean"), normalizedContent);
+    // calls of async RTE methods are awaited, also the async constructor of the RTE superclass
+    assertTrue(normalizedContent.contains("awaitthis._internal_removeValueID(gemID);returnawaitthis.size();"), normalizedContent);
+    assertTrue(normalizedContent.contains("awaitsuper.__GemValueMapBuilderConstructor(null)"), normalizedContent);
+  }
 }
