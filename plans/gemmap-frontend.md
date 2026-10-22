@@ -115,6 +115,10 @@ Generated TS samples for lists: `examples/it-ocl-test/frontend/build/app/umlpJav
 
 ## 4. Steps
 
+**Before step 1: settle the open questions in section 6 with the user** (the `IUMLPMap`
+method set and the `Map.Entry` representation). The user deliberately left them for the session
+doing the frontend work; they determine the interface of step 1 and the JSweet rules of step 2.
+
 ### Step 1: TS RTE `IUMLPMap` and `AsyncMap`
 - `common/IUMLPMap.ts` (or `javautil/`, next to `IUMLPList` placement conventions): async
   interface with the `java.util.Map` methods transpiled code may call: `get`, `put`, `remove`,
