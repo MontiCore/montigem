@@ -36,6 +36,11 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-10-20: 7.9.3-SNAPSHOT
+* E2E tests: `waitForBackend()` waits until the frontend has no command in progress (published by
+  `@umlp/commonj2ts` 9.0.4 as `window.umlp_pending_commands`) instead of sleeping 200 ms. It is
+  inherited from `AbstractPlaywrightE2ETest` and no longer generated.
+
 ## 2026-10-14: 7.9.3-SNAPSHOT
 * Support for the `local` modifier of class diagrams 
  

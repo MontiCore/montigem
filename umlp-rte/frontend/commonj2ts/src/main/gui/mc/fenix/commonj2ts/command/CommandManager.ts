@@ -6,6 +6,7 @@ import {Command} from './Command';
 import {CommandResult} from './CommandResult';
 import {Participant} from './Participant';
 import {DomainTypeFilter} from "./DomainTypeFilter";
+import {PendingCommands} from "./PendingCommands";
 
 export class CommandManager {
   protected static instance: CommandManager = null;
@@ -54,9 +55,11 @@ export class CommandManager {
   }
 
   public static async executeCommand<T>(command: Command<T>): Promise<CommandResult<T>> {
-    Log.trace("Exec command " + command.getId() + " " + command.getCommandType() + " from client " + command.getParticipantId(), LogUtil.getLoggerName());
-    Log.trace((await CommandObjectMapper.serializeCommand(command)), LogUtil.getLoggerName());
-    return await CommandManager.getInstance()._executeCommand<any>(command);
+    return PendingCommands.track(async () => {
+      Log.trace("Exec command " + command.getId() + " " + command.getCommandType() + " from client " + command.getParticipantId(), LogUtil.getLoggerName());
+      Log.trace((await CommandObjectMapper.serializeCommand(command)), LogUtil.getLoggerName());
+      return await CommandManager.getInstance()._executeCommand<any>(command);
+    });
   }
 
   public static sendCommandToSubscribers<T>(command: Command<T>) {

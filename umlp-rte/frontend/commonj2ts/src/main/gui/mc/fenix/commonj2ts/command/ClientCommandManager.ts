@@ -4,6 +4,7 @@ import {CommandManager} from "./CommandManager";
 import {ClientCommandCommunication} from "./ClientCommandCommunication";
 import {Command} from "./Command";
 import {CommandResult} from "./CommandResult";
+import {PendingCommands} from "./PendingCommands";
 
 export class ClientCommandManager extends CommandManager {
 
@@ -12,6 +13,8 @@ export class ClientCommandManager extends CommandManager {
 
   public constructor(commandCommunication: ClientCommandCommunication) {
     super();
+    // makes the count available to end-to-end tests before the first command is sent
+    PendingCommands.publish();
     this.commandCommunication = commandCommunication.onCommandReceived(cmd => cmd.doRun());
     this.initCommunication();
   }
