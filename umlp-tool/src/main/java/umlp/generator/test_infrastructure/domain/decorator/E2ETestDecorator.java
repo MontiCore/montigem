@@ -119,8 +119,6 @@ public class E2ETestDecorator extends AbstractDecorator {
                                          portConfigClassName,
                                          testConfigClassName));
 
-    // waitForBackend() is inherited from AbstractPlaywrightE2ETest
-
     return res;
   }
 
