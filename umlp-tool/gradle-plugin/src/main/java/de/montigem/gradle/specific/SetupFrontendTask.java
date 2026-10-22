@@ -48,8 +48,8 @@ import static de.montigem.gradle.FrontendBasePlugin.useLocalDependencies;
 public abstract class SetupFrontendTask extends DefaultTask {
 
   private static final List<String> EXPECTED_FILES = List.of(
-      "package.json", "angular.json",
-      "tsconfig.json", "tsconfig.app.json", "tsconfig.prod.json", "ts.config.spec.json");
+      ".npmrc", "package.json", "angular.json",
+      "tsconfig.json", "tsconfig.app.json", "tsconfig.prod.json", "tsconfig.spec.json");
   private static final List<String> EXPECTED_DIRS = List.of(
       "src", "configs");
 

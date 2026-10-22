@@ -35,6 +35,24 @@ class CreateNpmrcTaskTest {
   }
 
   @Test
+  void usesNexusForAllScopesByDefault() {
+    Project project = ProjectBuilder.builder().build();
+    project.getExtensions().getExtraProperties().set("mavenUser", "user");
+    project.getExtensions().getExtraProperties().set("mavenPassword", "password");
+
+    String npmrc = CreateNpmrcTask.getNpmrcContent(project, false, false);
+
+    assertEquals(
+        "@monticore:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n"
+            + "@umlp:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n"
+            + "@montigem:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n"
+            + "@monticore:_auth=\"dXNlcjpwYXNzd29yZA==\"\n"
+            + "@umlp:_auth=\"dXNlcjpwYXNzd29yZA==\"\n"
+            + "@montigem:_auth=\"dXNlcjpwYXNzd29yZA==\"",
+        npmrc);
+  }
+
+  @Test
   void usesLocalRepositoryOnlyForUmlpDownloads() {
     Project project = ProjectBuilder.builder().build();
     project.getExtensions().getExtraProperties().set("mavenUser", "user");

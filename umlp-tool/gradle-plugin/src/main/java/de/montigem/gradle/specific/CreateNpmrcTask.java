@@ -101,8 +101,10 @@ abstract public class CreateNpmrcTask extends DefaultTask {
 
       String data = "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
           "@umlp:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
-          "@monticore:_auth=\"" + encodedAuthData + "\"" +
-          "@umlp:_auth=\"" + encodedAuthData + "\"";
+          "@montigem:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
+          "@monticore:_auth=\"" + encodedAuthData + "\"\n" +
+          "@umlp:_auth=\"" + encodedAuthData + "\"\n" +
+          "@montigem:_auth=\"" + encodedAuthData + "\"";
       if (unscoped) {
         data = "registry=" + NEXUS_NPM_REPOSITORY + "\n" +
             "//nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/:_auth=\"" + encodedAuthData + "\"";
