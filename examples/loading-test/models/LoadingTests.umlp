@@ -127,4 +127,40 @@ classdiagram LoadingTests {
   class CounterService {
     int counter = 0;
   }
+
+  // Attribute qualified associations (GemMaps): new owners, Student stays unchanged as a target
+
+  class Faculty {
+    String name;
+  }
+
+  class Course {
+    String title;
+    int ects;
+  }
+
+  class Staff {
+    String staffId;
+  }
+
+  class Tutor extends Staff {
+    int weeklyHours;
+  }
+
+  class Enrollment {
+    Student student;
+    int grade;
+  }
+
+  // GemValueMap, int key declared in the target
+  association Course [[matNr]] (attendedCourse) -> (participantByMatNr) Student [*];
+
+  // GemValueMap, String key declared in the target
+  association Faculty [[title]] (faculty) -> (courseByTitle) Course [*];
+
+  // GemValueMap, key declared in the superclass of the target
+  association Course [[staffId]] (tutoredCourse) -> (tutorByStaffId) Tutor [*];
+
+  // GemEntryMap, keyed by the referenced Student
+  association Course [[student]] (enrollmentCourse) -> (enrollmentByStudent) Enrollment [*];
 }
