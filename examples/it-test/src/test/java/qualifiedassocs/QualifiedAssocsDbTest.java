@@ -8,6 +8,7 @@ import qualifiedassocs.test_infrastructure.QualifiedAssocsSQLDBTestSetup;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsTestSetup;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -198,6 +199,55 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     getBackend().activate();
     assertSame(eve, directory.getByDepartment(it).get());
     assertTrue(directory.getByDepartment(sales).isEmpty());
+  }
+
+  @Test
+  default void testMapIsLive() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder().build().get();
+    var map = directory.getByLoginMap();
+
+    directory.putByLogin(anna);
+    assertSame(anna, map.get("anna"));
+    anna.setLogin("annabelle");
+    assertTrue(map.containsKey("annabelle"));
+    assertFalse(map.containsKey("anna"));
+    directory.removeByLogin("annabelle");
+    assertTrue(map.isEmpty());
+  }
+
+  @Test
+  default void testModificationsThroughMapAreSynchronized() {
+    getBackend().activate();
+    var directory = QualifiedAssocsManager.directoryBuilder().build().get();
+    QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+
+    getClients(0).activate();
+    var clientMap = QualifiedAssocsManager.getDirectoryList().get(0).getByLoginMap();
+    var clientPersons = QualifiedAssocsManager.getPersonList();
+    clientMap.put("anna", clientPersons.get(0));
+    clientMap.put("bob", clientPersons.get(1));
+
+    getBackend().activate();
+    assertEquals(2, directory.sizeByLogins());
+    var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
+    assertEquals(2, clone.sizeByLogins());
+
+    getClients(0).activate();
+    clientMap.remove("anna");
+
+    getBackend().activate();
+    assertEquals(Set.of("bob"), directory.getByLoginMap().keySet());
+
+    getClients(0).activate();
+    clientMap.clear();
+
+    getBackend().activate();
+    assertTrue(directory.getByLoginMap().isEmpty());
+    clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
+    assertEquals(0, clone.sizeByLogins());
   }
 
   @Test

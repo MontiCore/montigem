@@ -112,6 +112,15 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     }
     getCD4C().addMethod(ast, "umlp.gemmap.DeriveKey", key.getKeyType(), targetName,
         key.getKeyExpression("value"), key.isEntryKey());
+    // modifications through the map itself are synchronized via the owner, like GemList
+    String managerName = origCD.getCDDefinition().getName() + ManagerDecorator.SUFFIX;
+    getCD4C().addMethod(ast, "umlp.gemlist.assocs.GetOwner", domainClass.getName(), managerName);
+    getCD4C().addMethod(ast, "umlp.gemmap.IsKeyDerived");
+    getCD4C().addMethod(ast, "umlp.gemmap.PutValueAndSync", targetName, assoc.getName());
+    getCD4C().addMethod(ast, "umlp.gemmap.RemoveValueIDAndSync", assoc.getName());
+    getCD4C().addMethod(ast, "umlp.gemmap.RemoveAndSync", key.getKeyType(), key.isEntryKey());
+    addDomainImports(ast, domainClass);
+
     getCD4C().addMethod(ast, "umlp.gemmap.OnValueKeyed", targetName,
         observedTypes.stream().map(CDTypeSymbol::getName).collect(Collectors.toList()));
     getCD4C().addMethod(ast, "umlp.gemmap.OnValueRemoved", targetName,

@@ -167,6 +167,18 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
 
   @Override
   public V put(K key, V value) {
+    if (isKeyDerived()) {
+      // the key of a value is derived from the value, it cannot be chosen
+      long derived = deriveKeyID(value);
+      if (key.getGemId() != derived) {
+        Log.error("0xA7315 Key with id " + key.getGemId() + " does not match the key with id " + derived
+            + " derived from the object with id " + value.getGemId());
+        return null;
+      }
+      final V oldElem = get(key);
+      _internal_putValueAndSync(value);
+      return oldElem;
+    }
     final V oldElem = get(key);
     _internal_putAndSync(key.getGemId(), value.getGemId());
     return oldElem;
@@ -230,6 +242,30 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
    */
   public long deriveKeyID(V value) {
     throw new UnsupportedOperationException("0xA7311 The keys of " + getClass().getName() + " are not derived from its values");
+  }
+
+  /**
+   * whether the key of a value is derived from the value (attribute qualified associations),
+   * see {@link #deriveKeyID}; then a value cannot be put under an arbitrary key
+   */
+  public boolean isKeyDerived() {
+    return false;
+  }
+
+  /**
+   * puts a value under its derived key;
+   * to be overridden by a subclass to add synchronization
+   */
+  protected void _internal_putValueAndSync(V value) {
+    _internal_putValue(value);
+  }
+
+  /**
+   * removes the entry holding the value with gemID;
+   * to be overridden by a subclass to add synchronization
+   */
+  protected void _internal_removeValueIDAndSync(long gemID) {
+    _internal_removeValueID(gemID);
   }
 
   /**
@@ -392,11 +428,14 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   }
 
 
+  /**
+   * removes all entries, like removing them one by one (including synchronization)
+   */
+  @Override
   public void clear(){
-    List<Long> removed = new ArrayList<>(idMap.values());
-    idMap.clear();
-    removed.forEach(id -> onValueRemoved(id, null));
-    unkeyedValueIDs.clear();
+    for (long gemID : getValueIDs()) {
+      _internal_removeValueIDAndSync(gemID);
+    }
   }
 
 }

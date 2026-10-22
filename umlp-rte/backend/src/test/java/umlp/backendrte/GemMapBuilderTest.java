@@ -195,6 +195,45 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
   }
 
   @Test
+  public void testDerivedKeyMapPutChecksKey() {
+    Node a = new Node().build().get();
+    a.name = "a";
+    NamedValueMap map = new NamedValueMap();
+    map.keyDerived = true;
+    map.build();
+
+    // the key is derived from the value, another key is an error
+    assertNull(map.put("b", a));
+    assertEquals(1, Log.getErrorCount());
+    assertTrue(map.isEmpty());
+
+    assertNull(map.put("a", a));
+    assertSame(a, map.get("a"));
+    assertEquals(List.of(a.getGemId()), map.putValueIDs);
+    assertTrue(map.containsValueID(a.getGemId()));
+  }
+
+  @Test
+  public void testClearRemovesEveryValueWithoutLoading() {
+    Node a = new Node().build().get();
+    a.name = "a";
+    Node b = new Node().build().get();
+    b.name = "b";
+    NamedValueMap map = new NamedValueMap();
+    map.build();
+    map._internal_putValue(a);
+    map._internal_addValueIDs(List.of(b.getGemId()));
+    int loads = loadCalls;
+
+    map.clear();
+    assertTrue(map.isEmpty());
+    assertEquals(List.of(a.getGemId(), b.getGemId()), map.removedValueIDs);
+    // b was removed by id, its key was not derived
+    assertEquals(loads, loadCalls);
+    assertNoErrors();
+  }
+
+  @Test
   public void testEntryMapDerivedKeysAreLazyAndRekeyed() {
     Node keyA = new Node().build().get();
     Node keyB = new Node().build().get();
@@ -316,6 +355,30 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
     protected void onValueRemoved(long valueGemID, Node value) {
       removedIDs.add(valueGemID);
       removedValues.add(value);
+    }
+
+    boolean keyDerived = false;
+
+    @Override
+    public boolean isKeyDerived() {
+      return keyDerived;
+    }
+
+    // records the synchronized modifications, like a generated GemMap delegating to its owner
+    List<Long> putValueIDs = new java.util.ArrayList<>();
+
+    List<Long> removedValueIDs = new java.util.ArrayList<>();
+
+    @Override
+    protected void _internal_putValueAndSync(Node value) {
+      putValueIDs.add(value.getGemId());
+      super._internal_putValueAndSync(value);
+    }
+
+    @Override
+    protected void _internal_removeValueIDAndSync(long gemID) {
+      removedValueIDs.add(gemID);
+      super._internal_removeValueIDAndSync(gemID);
     }
   }
 }

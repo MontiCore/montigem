@@ -74,7 +74,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
 
   @Override
   public V put(K key, V value) {
-    if(buildFinished) {
+    if(buildFinished || isKeyDerived()) {
       return super.put(key, value);
     } else {
       // Map might contain builders, which a normal GemMap will not
