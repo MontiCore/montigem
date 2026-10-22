@@ -21,9 +21,13 @@ import umlp.generator.AbstractDecorator;
 import umlp.generator.util.PathUtil;
 import umlp.generator.util.UMLPSymbolTables;
 
+import de.monticore.types.check.SymTypeExpression;
+
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static umlp.generator.domain.decorator.ManagerDecorator.SUFFIX;
@@ -81,11 +85,19 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     ASTCDAttribute attr = getCD4C().addAttribute(ast, "protected long ownerGemID");
     ast.addAllCDMembers(accessor.decorate(attr));
 
+    // one observer per type of values, as subclasses notify their own observers only
     String declaringType = key.getDeclaringType().getName();
-    ASTCDAttribute keyObserver = getCD4C().addAttribute(ast, "protected " + declaringType + "Observer keyObserver");
-    glex.replaceTemplate("cd2java.Annotations", keyObserver, new StringHookPoint("transient"));
-    glex.replaceTemplate("cd2java.Value", keyObserver, new TemplateHookPoint("umlp.gemmap.KeyObserver",
-        className, declaringType, key.getAttrName(), key.getNotifyType()));
+    List<CDTypeSymbol> observedTypes = getObservedTypes(origCD, targetSymbol);
+    for (CDTypeSymbol observedType : observedTypes) {
+      ASTCDAttribute keyObserver = getCD4C().addAttribute(ast,
+          "protected " + observedType.getName() + "Observer keyObserver" + observedType.getName());
+      glex.replaceTemplate("cd2java.Annotations", keyObserver, new StringHookPoint("transient"));
+      glex.replaceTemplate("cd2java.Value", keyObserver, new TemplateHookPoint("umlp.gemmap.KeyObserver",
+          className, observedType.getName(), declaringType, key.getAttrName(), key.getNotifyType()));
+      addDomainImports(ast, observedType.getAstNode());
+      getCD4C().addImport(ast, Joiners.DOT.join(getPackageName(UMLPSymbolTables.getDiagramFor(observedType.getAstNode()), DEFAULT_PACKAGE),
+          observedType.getName() + "Observer"));
+    }
 
     // constructor
     getCD4C().addConstructor(ast, "umlp.gemmap.Constructor", className);
@@ -100,9 +112,41 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     }
     getCD4C().addMethod(ast, "umlp.gemmap.DeriveKey", key.getKeyType(), targetName,
         key.getKeyExpression("value"), key.isEntryKey());
-    getCD4C().addMethod(ast, "umlp.gemmap.OnValueKeyed", targetName);
+    getCD4C().addMethod(ast, "umlp.gemmap.OnValueKeyed", targetName,
+        observedTypes.stream().map(CDTypeSymbol::getName).collect(Collectors.toList()));
 
     return ast;
+  }
+
+  /**
+   * @return the target and its subtypes known in the class diagram, most specific first
+   */
+  protected List<CDTypeSymbol> getObservedTypes(ASTCDCompilationUnit origCD, CDTypeSymbol targetSymbol) {
+    List<CDTypeSymbol> types = Lists.newArrayList(targetSymbol);
+    getNonDerivedDomainClasses(origCD).stream().map(ASTCDType::getSymbol)
+        .filter(t -> depthBelow(t, targetSymbol) > 0)
+        .forEach(types::add);
+    types.sort(Comparator.comparingInt((CDTypeSymbol t) -> depthBelow(t, targetSymbol)).reversed());
+    return types;
+  }
+
+  /**
+   * @return the number of inheritance steps from type up to superType, 0 if equal, -1 if not a subtype
+   */
+  protected int depthBelow(CDTypeSymbol type, CDTypeSymbol superType) {
+    if (type.getFullName().equals(superType.getFullName())) {
+      return 0;
+    }
+    int best = -1;
+    for (SymTypeExpression direct : type.getSuperTypesList()) {
+      if (direct.getTypeInfo() instanceof CDTypeSymbol) {
+        int depth = depthBelow((CDTypeSymbol) direct.getTypeInfo(), superType);
+        if (depth >= 0 && (best < 0 || depth + 1 < best)) {
+          best = depth + 1;
+        }
+      }
+    }
+    return best;
   }
 
   protected CDTypeSymbol getKeySymbol(CDTypeSymbol targetSymbol, QualifierKey key) {
@@ -114,8 +158,6 @@ public class GemMapAssocDecorator extends AbstractDecorator {
   protected void addImports(ASTCDCompilationUnit origCD, CDTypeSymbol targetSymbol, QualifierKey key, ASTCDClass ast) {
     addDomainImports(ast, targetSymbol.getAstNode());
     addDomainImports(ast, key.getDeclaringType().getAstNode());
-    getCD4C().addImport(ast, Joiners.DOT.join(getPackageName(UMLPSymbolTables.getDiagramFor(key.getDeclaringType().getAstNode()), DEFAULT_PACKAGE),
-        key.getDeclaringType().getName() + "Observer"));
     if (key.isEntryKey()) {
       addDomainImports(ast, getKeySymbol(targetSymbol, key).getAstNode());
     }

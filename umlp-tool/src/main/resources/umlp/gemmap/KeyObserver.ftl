@@ -1,8 +1,9 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-<#-- initial value of the keyObserver attribute: rekeys a value when its qualifying attribute changes,
-     locally and by changes of other participants (NotificationScope.LOCAL) -->
-${tc.signature("className", "declaringType", "attrName", "notifyType")}
- = new ${declaringType}Observer() {
+<#-- initial value of a keyObserver attribute: rekeys a value when its qualifying attribute changes,
+     locally and by changes of other participants (NotificationScope.LOCAL).
+     observedType: the (runtime) type of the values observed; subclasses notify their own observers only -->
+${tc.signature("className", "observedType", "declaringType", "attrName", "notifyType")}
+ = new ${observedType}Observer() {
   @Override
   public NotificationScope getScope() {
     return NotificationScope.LOCAL;
