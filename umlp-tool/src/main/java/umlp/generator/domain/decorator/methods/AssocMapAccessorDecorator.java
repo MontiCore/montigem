@@ -42,7 +42,7 @@ public class AssocMapAccessorDecorator extends MandatoryAccessorDecorator {
 
     methodList.add(createMethod("umlp.methods.gemmap.InternalGetGemMap", name, mapType));
     methodList.add(createMethod("umlp.methods.gemmap.GetByKey", name, keyType, targetName, isOne));
-    methodList.add(createMethod("umlp.methods.gemmap.GetMap", name, mapType));
+    methodList.add(createMethod("umlp.methods.gemmap.GetMap", name, keyType, targetName));
     methodList.add(createMethod("umlp.methods.gemmap.ContainsKey", name, keyType));
     methodList.add(createMethod("umlp.methods.gemmap.Contains", name, targetName));
     methodList.add(createMethod("umlp.methods.gemmap.Size", name));
