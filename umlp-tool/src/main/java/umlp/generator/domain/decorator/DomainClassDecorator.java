@@ -347,7 +347,7 @@ public class DomainClassDecorator extends DomainTypeDecorator implements OwnComm
 
   protected void createObserverMethods(ASTCDClass domainClass, ASTCDClass clazz) {
     getCD4C().addMethod(clazz, "umlp.domain.AddObserver", domainClass.getName(), clazz.isPresentCDExtendUsage());
-    getCD4C().addMethod(clazz, "umlp.domain.RemoveObserver", domainClass.getName());
+    getCD4C().addMethod(clazz, "umlp.domain.RemoveObserver", domainClass.getName(), clazz.isPresentCDExtendUsage());
     getCD4C().addMethod(clazz, "umlp.domain.ContainsObserver", domainClass.getName());
   }
 
