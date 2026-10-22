@@ -1,0 +1,19 @@
+/* (c) https://github.com/MontiCore/monticore */
+package packaged;
+
+umlp QualifiedDomain {
+  class Directory;
+
+  class Member {
+    String login;
+    int number;
+  }
+
+  class Office {
+    int room;
+  }
+
+  association Directory [[login]] (loginDirectory) -> (byLogin) Member [*];
+  association Directory [[number]] (numberDirectory) -> (byNumber) Member [0..1];
+  association Directory -> (office) Office [1];
+}

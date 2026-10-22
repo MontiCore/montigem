@@ -37,6 +37,7 @@ public class GUIDSLCoCosForUMLP extends GUIDSLCoCos {
     checker.addCoCo(new GUIParamNoUnderspecifiedGenericsCoCo());
     checker.addCoCo(new NameExpressionsSymbolBoundExceptCallsCoCo());
     checker.addCoCo(new RefGUIArgIncompatibleWithDerivedCoCo());
+    checker.addCoCo(new GuiNoAttributeQualifiedRoleCoCo());
     checker.addCoCo(new QualifiedTypeHasNoTypeParameters());
     return checker;
   }
