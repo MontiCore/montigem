@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -37,8 +37,56 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   // ids of values whose key is not known yet, keyed by ensureKeyed()
   protected List<Long> unkeyedValueIDs = new ArrayList<>();
 
+  // live views keySet, values, entrySet
+  protected transient GemMapViews<Long, K, V> views = new GemMapViews<Long, K, V>() {
+    @Override
+    protected Collection<Long> currentKeys() {
+      return getKeyIDs();
+    }
+
+    @Override
+    protected Long lookupID(Long storedKey) {
+      return GemEntryMap.this.lookupID(storedKey);
+    }
+
+    @Override
+    protected Long toStoredKey(Object key) {
+      return key instanceof GemIdentifiable ? ((GemIdentifiable) key).getGemId() : null;
+    }
+
+    @Override
+    protected Map<Long, K> keyObjects(List<Long> storedKeys) {
+      return loadKeysByID(storedKeys);
+    }
+
+    @Override
+    protected Map<Long, V> valueObjects(List<Long> gemIDs) {
+      return loadValuesByID(gemIDs);
+    }
+
+    @Override
+    protected boolean containsValueID(long gemID) {
+      return GemEntryMap.this.containsValueID(gemID);
+    }
+
+    @Override
+    protected void removeValueID(long gemID) {
+      _internal_removeValueIDAndSync(gemID);
+    }
+
+    @Override
+    protected int size() {
+      return GemEntryMap.this.size();
+    }
+
+    @Override
+    protected void clear() {
+      GemEntryMap.this.clear();
+    }
+  };
+
   public GemEntryMap(Map<Long, Long> idMap) {
-    this.idMap = new HashMap<>(idMap);
+    this.idMap = new LinkedHashMap<>(idMap);
   }
 
   public GemEntryMap() {
@@ -84,17 +132,64 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
     }
   }
 
-  /** DO NOT USE if avoidable
-   * Loads all Map elements from database,
-   * @return EntrySet<K,V> the Entry Set of the GemEntryMap
+  /**
+   * live view, see {@link GemMapViews}
+   */
+  @Override
+  public Set<K> keySet() {
+    return views.keySet();
+  }
+
+  /**
+   * live view, see {@link GemMapViews}
+   */
+  @Override
+  public Collection<V> values() {
+    return views.values();
+  }
+
+  /**
+   * live view, see {@link GemMapViews}
    */
   @Override
   public Set<Entry<K,V>> entrySet() {
-    ensureKeyed();
-    Set<Entry<K, V>> result = new HashSet<>();
-    for (Entry<Long, Long> e : idMap.entrySet()) {
-      Entry<K,V> entry = new SimpleEntry<>(getKey(e.getKey()), getValue(e.getValue()));
-      result.add(entry);
+    return views.entrySet();
+  }
+
+  /**
+   * @return the values with the gemIDs, loaded in one batch
+   */
+  protected Map<Long, V> loadValuesByID(List<Long> gemIDs) {
+    Map<Long, V> result = new HashMap<>();
+    if (gemIDs.isEmpty()) {
+      return result;
+    }
+    List<LoadResult<V>> loaded = loadValueObjects(gemIDs);
+    for (int i = 0; i < loaded.size(); i++) {
+      if (loaded.get(i).isPresent()) {
+        result.put(gemIDs.get(i), loaded.get(i).get());
+      } else {
+        Log.error("Can not load Object with id " + gemIDs.get(i));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * @return the keys with the gemIDs, loaded in one batch
+   */
+  protected Map<Long, K> loadKeysByID(List<Long> gemIDs) {
+    Map<Long, K> result = new HashMap<>();
+    if (gemIDs.isEmpty()) {
+      return result;
+    }
+    List<LoadResult<K>> loaded = loadKeyObjects(gemIDs);
+    for (int i = 0; i < loaded.size(); i++) {
+      if (loaded.get(i).isPresent()) {
+        result.put(gemIDs.get(i), loaded.get(i).get());
+      } else {
+        Log.error("Can not load Object with id " + gemIDs.get(i));
+      }
     }
     return result;
   }

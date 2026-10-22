@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,8 +36,59 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
   // ids of values whose key is not known yet, keyed by ensureKeyed()
   protected List<Long> unkeyedValueIDs = new ArrayList<>();
 
+  // live views keySet, values, entrySet
+  protected transient GemMapViews<K, K, V> views = new GemMapViews<K, K, V>() {
+    @Override
+    protected Collection<K> currentKeys() {
+      return getKeys();
+    }
+
+    @Override
+    protected Long lookupID(K storedKey) {
+      return GemValueMap.this.lookupID(storedKey);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    protected K toStoredKey(Object key) {
+      return (K) key;
+    }
+
+    @Override
+    protected Map<K, K> keyObjects(List<K> storedKeys) {
+      Map<K, K> result = new HashMap<>();
+      storedKeys.forEach(k -> result.put(k, k));
+      return result;
+    }
+
+    @Override
+    protected Map<Long, V> valueObjects(List<Long> gemIDs) {
+      return loadValuesByID(gemIDs);
+    }
+
+    @Override
+    protected boolean containsValueID(long gemID) {
+      return GemValueMap.this.containsValueID(gemID);
+    }
+
+    @Override
+    protected void removeValueID(long gemID) {
+      _internal_removeValueIDAndSync(gemID);
+    }
+
+    @Override
+    protected int size() {
+      return GemValueMap.this.size();
+    }
+
+    @Override
+    protected void clear() {
+      GemValueMap.this.clear();
+    }
+  };
+
   public GemValueMap(Map<K, Long> idMap) {
-    this.idMap = new HashMap<>(idMap);
+    this.idMap = new LinkedHashMap<>(idMap);
   }
 
   public GemValueMap() {
@@ -71,17 +122,45 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
     }
   }
 
-  /** DO NOT USE if avoidable
-   * Loads all Map elements from database,
-   * @return EntrySet<K,V> the Entry Set of the GemValueMap
+  /**
+   * live view, see {@link GemMapViews}
+   */
+  @Override
+  public Set<K> keySet() {
+    return views.keySet();
+  }
+
+  /**
+   * live view, see {@link GemMapViews}
+   */
+  @Override
+  public Collection<V> values() {
+    return views.values();
+  }
+
+  /**
+   * live view, see {@link GemMapViews}
    */
   @Override
   public Set<Entry<K,V>> entrySet() {
-    ensureKeyed();
-    Set<Entry<K, V>> result = new HashSet<>();
-    for (Entry<K, Long> e : idMap.entrySet()) {
-      Entry<K,V> entry = new SimpleEntry<>(e.getKey(), getValue(e.getValue()));
-      result.add(entry);
+    return views.entrySet();
+  }
+
+  /**
+   * @return the values with the gemIDs, loaded in one batch
+   */
+  protected Map<Long, V> loadValuesByID(List<Long> gemIDs) {
+    Map<Long, V> result = new HashMap<>();
+    if (gemIDs.isEmpty()) {
+      return result;
+    }
+    List<LoadResult<V>> loaded = loadValueObjects(gemIDs);
+    for (int i = 0; i < loaded.size(); i++) {
+      if (loaded.get(i).isPresent()) {
+        result.put(gemIDs.get(i), loaded.get(i).get());
+      } else {
+        Log.error("Can not load Object with id " + gemIDs.get(i));
+      }
     }
     return result;
   }

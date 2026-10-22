@@ -251,6 +251,49 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
   }
 
   @Test
+  default void testLiveViews() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder().byLoginPut(anna).byLoginPut(bob).build().get();
+
+    getClients(0).activate();
+    var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
+    var keys = clientDirectory.getByLoginMap().keySet();
+    var values = clientDirectory.getByLoginMap().values();
+    assertEquals(Set.of("anna", "bob"), keys);
+
+    // rekeying shows up in the view
+    QualifiedAssocsManager.getPersonSure(anna.getGemId()).setLogin("annabelle");
+    assertEquals(Set.of("annabelle", "bob"), keys);
+
+    // removing through the views is synchronized
+    keys.remove("bob");
+    assertEquals(1, values.size());
+    values.remove(QualifiedAssocsManager.getPersonSure(anna.getGemId()));
+
+    getBackend().activate();
+    assertTrue(directory.getByLoginMap().isEmpty());
+    var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
+    assertEquals(0, clone.sizeByLogins());
+  }
+
+  @Test
+  default void testEntryMapViews() {
+    getBackend().activate();
+    var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();
+    var it = QualifiedAssocsManager.departmentBuilder().name("it").build().get();
+    var eve = QualifiedAssocsManager.employeeBuilder().name("eve").department(sales).build().get();
+    var tom = QualifiedAssocsManager.employeeBuilder().name("tom").department(it).build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder().byDepartmentPut(eve).byDepartmentPut(tom).build().get();
+
+    assertEquals(Set.of(sales, it), directory.getByDepartmentMap().keySet());
+    for (var entry : directory.getByDepartmentMap().entrySet()) {
+      assertSame(entry.getKey(), entry.getValue().getDepartment());
+    }
+  }
+
+  @Test
   default void testDomainObjectKey() {
     getBackend().activate();
     var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();

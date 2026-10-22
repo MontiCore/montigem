@@ -11,16 +11,22 @@ import umlp.backendrte.common.GemValueMapBuilder;
 import umlp.backendrte.common.LoadResult;
 import umlp.backendrte.common.LoadingState;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -230,6 +236,127 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
     assertEquals(List.of(a.getGemId(), b.getGemId()), map.removedValueIDs);
     // b was removed by id, its key was not derived
     assertEquals(loads, loadCalls);
+    assertNoErrors();
+  }
+
+  protected Node named(String name) {
+    Node n = new Node().build().get();
+    n.name = name;
+    return n;
+  }
+
+  @Test
+  public void testViewsAreLive() {
+    Node a = named("a");
+    Node b = named("b");
+    NamedValueMap map = new NamedValueMap();
+    map.build();
+    Set<String> keys = map.keySet();
+    Collection<Node> values = map.values();
+    Set<Map.Entry<String, Node>> entries = map.entrySet();
+
+    map._internal_putValue(a);
+    assertEquals(Set.of("a"), keys);
+    map._internal_putValue(b);
+    assertTrue(keys.contains("b"));
+    assertEquals(2, values.size());
+    assertTrue(values.contains(b));
+    assertTrue(entries.contains(new SimpleEntry<>("b", b)));
+    assertFalse(entries.contains(new SimpleEntry<>("b", a)));
+
+    // rekeyed values appear under their new key
+    map._internal_rekey("a", "c", a.getGemId());
+    assertEquals(Set.of("b", "c"), keys);
+    assertNoErrors();
+  }
+
+  @Test
+  public void testRemoveThroughViewsIsSynchronized() {
+    Node a = named("a");
+    Node b = named("b");
+    Node c = named("c");
+    NamedValueMap map = new NamedValueMap();
+    map.build();
+    map._internal_putValue(a);
+    map._internal_putValue(b);
+    map._internal_putValue(c);
+
+    assertTrue(map.keySet().remove("a"));
+    assertFalse(map.keySet().remove("a"));
+    assertTrue(map.values().remove(b));
+    assertFalse(map.entrySet().remove(new SimpleEntry<>("c", a)));
+    assertTrue(map.entrySet().remove(new SimpleEntry<>("c", c)));
+    // every removal went through the synchronized hook
+    assertEquals(List.of(a.getGemId(), b.getGemId(), c.getGemId()), map.removedValueIDs);
+    assertTrue(map.isEmpty());
+
+    // keys are derived from the values: adding through views is not supported
+    map._internal_putValue(a);
+    assertThrows(UnsupportedOperationException.class, () -> map.keySet().add("x"));
+    assertThrows(UnsupportedOperationException.class, () -> map.values().add(b));
+    assertThrows(UnsupportedOperationException.class, () -> map.entrySet().iterator().next().setValue(b));
+    assertNoErrors();
+  }
+
+  @Test
+  public void testIteratorsAreWeaklyConsistentAndBatched() {
+    Node a = named("a");
+    Node b = named("b");
+    Node c = named("c");
+    NamedValueMap map = new NamedValueMap();
+    map.build();
+    map._internal_addValueIDs(List.of(a.getGemId(), b.getGemId(), c.getGemId()));
+
+    Iterator<Node> it = map.values().iterator();
+    // keys derived in one batch when the iterator was created, values in one batch on first next
+    assertSame(a, it.next());
+    assertEquals(2, loadCalls);
+
+    // b is removed during the iteration: skipped, no ConcurrentModificationException
+    map._internal_removeValueID(b.getGemId());
+    // added during the iteration: not visited
+    map._internal_putValue(named("d"));
+    assertSame(c, it.next());
+    assertFalse(it.hasNext());
+    assertEquals(2, loadCalls);
+
+    // removing through the iterator goes through the synchronized hook
+    it.remove();
+    assertThrows(IllegalStateException.class, it::remove);
+    assertEquals(List.of(c.getGemId()), map.removedValueIDs);
+    assertEquals(Set.of("a", "d"), map.keySet());
+    // insertion order
+    assertEquals(List.of("a", "d"), new ArrayList<>(map.keySet()));
+    assertNoErrors();
+  }
+
+  @Test
+  public void testBuilderViewsContainUnbuiltBuilders() {
+    Node a = new Node();
+    a.name = "a";
+    NamedValueMap map = new NamedValueMap();
+    map._internal_putValue(a);
+
+    assertEquals(Set.of("a"), map.keySet());
+    assertSame(a, map.values().iterator().next());
+    assertEquals(0, loadCalls);
+    assertNoErrors();
+  }
+
+  @Test
+  public void testEntryMapViewsLoadKeyObjects() {
+    Node keyA = new Node().build().get();
+    Node a = new Node().build().get();
+    a.ref = keyA;
+    NodeEntryMap map = new NodeEntryMap(null);
+    map.build();
+    map._internal_putValue(a);
+
+    Map.Entry<Node, Node> entry = map.entrySet().iterator().next();
+    assertSame(keyA, entry.getKey());
+    assertSame(a, entry.getValue());
+    assertTrue(map.keySet().contains(keyA));
+    assertSame(keyA, map.keySet().iterator().next());
     assertNoErrors();
   }
 

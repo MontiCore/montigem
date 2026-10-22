@@ -35,6 +35,11 @@ RTE (backend, `umlp-rte/backend/src/main/java/umlp/backendrte/common/`):
   `_internal_rekey` + `moveEntry` + `lookupID`, `_internal_removeValueID`,
   hooks `onValueKeyed` (start observing a value) and `onValueRemoved`
   (stop observing; called on every path a value leaves the map).
+- `GemMapViews`: live, weakly consistent `keySet()`/`values()`/`entrySet()` of both maps
+  (removal through views is synchronized via `_internal_removeValueIDAndSync`, adding
+  is unsupported, iterators load values/key objects in one batch). A multimap must keep
+  these semantics; `getRoleMap()` returns the live map, modifications through it are
+  synchronized via the owner (`isKeyDerived`, `_internal_putValueAndSync`).
 - Builders keep unbuilt builders in `builderElemStorage` (`IDOrBuilder`);
   builders have a unique gemId from construction (see `GemIdentifiable#getGemId`).
 - Tests: `umlp-rte/backend/src/test/java/umlp/backendrte/GemMapBuilderTest.java`.

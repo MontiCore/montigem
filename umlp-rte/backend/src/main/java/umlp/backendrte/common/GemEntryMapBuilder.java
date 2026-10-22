@@ -122,20 +122,6 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
   }
 
   @Override
-  public Set<Entry<K,V>> entrySet() {
-    if(buildFinished) {
-      return super.entrySet();
-    } else {
-      ensureKeyed();
-      Set<Entry<K, V>> result = new HashSet<>();
-      for (Entry<IDOrBuilder<K>, IDOrBuilder<V>> e : builderElemStorage.values()) {
-        result.add(new SimpleEntry<>(resolveKey(e.getKey()), resolveValue(e.getValue())));
-      }
-      return result;
-    }
-  }
-
-  @Override
   public boolean containsKeyID(long gemID) {
     if(buildFinished) {
       return super.containsKeyID(gemID);
@@ -295,6 +281,61 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     if (old != null && old.getGemId() != newValueGemID) {
       onValueRemoved(old.getGemId(), old.isPresentBuilder() ? old.getBuilder() : null);
     }
+  }
+
+  @Override
+  public Set<Long> getKeyIDs() {
+    if(buildFinished) {
+      return super.getKeyIDs();
+    } else {
+      ensureKeyed();
+      return builderElemStorage.keySet();
+    }
+  }
+
+  /**
+   * before build, the values may be unbuilt builders, which cannot be loaded
+   */
+  @Override
+  protected Map<Long, V> loadValuesByID(List<Long> gemIDs) {
+    if(buildFinished) {
+      return super.loadValuesByID(gemIDs);
+    }
+    Map<Long, V> result = new HashMap<>();
+    List<Long> toLoad = new ArrayList<>();
+    for (long gemID : gemIDs) {
+      IDOrBuilder<V> stored = builderElemStorage.values().stream().map(Entry::getValue)
+          .filter(v -> v.isPresentBuilder() && v.getGemId() == gemID).findFirst().orElse(null);
+      if (stored != null) {
+        result.put(gemID, stored.getBuilder());
+      } else {
+        toLoad.add(gemID);
+      }
+    }
+    result.putAll(super.loadValuesByID(toLoad));
+    return result;
+  }
+
+  /**
+   * before build, the keys may be unbuilt builders, which cannot be loaded
+   */
+  @Override
+  protected Map<Long, K> loadKeysByID(List<Long> gemIDs) {
+    if(buildFinished) {
+      return super.loadKeysByID(gemIDs);
+    }
+    Map<Long, K> result = new HashMap<>();
+    List<Long> toLoad = new ArrayList<>();
+    for (long gemID : gemIDs) {
+      Entry<IDOrBuilder<K>, IDOrBuilder<V>> stored = builderElemStorage.get(gemID);
+      if (stored != null && stored.getKey().isPresentBuilder()) {
+        result.put(gemID, stored.getKey().getBuilder());
+      } else {
+        toLoad.add(gemID);
+      }
+    }
+    result.putAll(super.loadKeysByID(toLoad));
+    return result;
   }
 
   protected V resolveValue(IDOrBuilder<V> value) {
