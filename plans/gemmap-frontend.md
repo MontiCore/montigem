@@ -24,7 +24,11 @@ wants that). Related plan: `plans/gemmap-list-keys.md` (has the backend backgrou
   values/key objects are loaded in one batch per iterator. `AsyncMap` views must be live too
   (today JSweet gives copies).
 - **Overloads were renamed** for JSweet: `containsValueID(long)`, `containsKeyID(long)`.
-- Not decided yet: GUI support, see step 6.
+- **GUI support for maps is deferred** (step 6). Until then GUI models reject attribute
+  qualified roles with a clear error (GUI CoCo `0x00032`, done, commit `2929197b4`); hand-written
+  page code can use `getRoleMap()`. Ordinary maps are not displayable in GUI models either
+  (domain attributes cannot be maps, CoCo `0x70876`; no `.gui` in the repo uses `Map`), so full
+  GUI support should cover map-typed GUI variables, too.
 
 ## 2. Backend state the frontend must mirror
 
@@ -152,6 +156,11 @@ Everything transpiled that uses maps becomes async; check and fix:
   internally (checked: no `Map` @Inputs in charts);
 - hand-written frontend Java: `examples/vis-lib/frontend/src/main/java/example_charts/*` and
   `manual/*` (6 files with `Map`/`HashMap`);
+- GUI TypeScript type mapping `umlp-tool/.../generator/gui/gentypescript/printer/TypeScriptTypes.java`:
+  `MAP("Map", "Map", "java.util.Map")` and `HASH_MAP(...)` map to the native TS `Map`; change to
+  `IUMLPMap`/`AsyncMap` (imported from `@umlp/commonj2ts`, like `GEM_LIST`), otherwise map-typed
+  GUI variables/parameters (Angular side) and the transpiled hand-written page code (`AsyncMap`)
+  disagree. No `.gui` in the repo uses maps today, but keep option A consistent;
 - build every example frontend (`examples/*/frontend`: it-ocl-test, it-sync-protocol-test,
   loading-test, jsweet-test, flensburg-test, vis-lib, ...) and the module libraries.
 
@@ -171,14 +180,34 @@ Check the TS output of `<Owner>_<Role>GemMap` (anonymous observer classes, insta
 `getOwner`, injected `isBuildFinished`), the owner (`getRole`/`putRole`/... async), builder,
 DeSer, client manager, command observers.
 
-### Step 6: GUI (decision pending - ask the user)
-The GUI imports roles via guidsl's `RoleSymbolDeSer` (external jar), which carries no qualifier:
-`[*]` map roles are seen as `List<T>`, `[0..1]`/`[1]` as plain objects, so generated GUI code would
-call `getRoleList()`/`setRole()` (`GUI2JavaClassDecorator#endVisit(ASTFieldAccessExpression)`,
-`ExpressionPrinterConfig.attr2Getter`, `addAssocListMethod`/`addAssocMethod`,
-`GUIGeneratorUtil.isDomainListType`). Options: a GUI CoCo rejecting access to attribute qualified
-roles for now, or full support (guidsl serializes the qualifier, GUI types roles as `Map<K,V>`,
-map access/observers in the GUI generator).
+### Step 6: GUI (deferred by the user; do it only when asked)
+Current state:
+- The GUI imports roles via guidsl's `RoleSymbolDeSer` (external jar, registered in
+  `UMLPTool`), which carries no qualifier: `[*]` map roles are seen as `List<T>`,
+  `[0..1]`/`[1]` as plain objects, so generated GUI code would call `getRoleList()`/
+  `getRoleGem().load()`/`addRole()` (`GUI2JavaClassDecorator#endVisit(ASTFieldAccessExpression)`,
+  `ExpressionPrinterConfig.attr2Getter`, `addAssocListMethod`/`addAssocMethod`,
+  `GUIGeneratorUtil.isDomainListType`).
+- Therefore GUI CoCo `0x00032` (`umlp/generator/gui/coco/GuiNoAttributeQualifiedRoleCoCo`,
+  registered in `GUIDSLCoCosForUMLP`, test `GuiNoAttributeQualifiedRoleCoCoTest`) rejects field
+  accesses to these roles. It knows them from the CD `.tags` file: `TagRelated.AttributeQualifiedRoleTagVisitor`
+  tags the target roles `attributeQualified`, `TagLookUp#isAttributeQualified` reads the tag.
+  Verified on the GUI generation of `jsweet-test`, `it-ocl-test`, `loading-test` and the RTE libs
+  (no false positives).
+- Workaround for users: hand-written page code reads `getRoleMap()`/`values()` into an ordinary
+  list variable and refreshes it via the owner observers (`notifyAdd<Role>`/`notifyRemove<Role>`;
+  rekeying does not notify the owner).
+
+Full support, when requested:
+1. Define the semantics with the user: how a GUI addresses a map (all values as a list, lookup by
+   key in expressions, key/value pairs for tables), `assoc_add` -> `putRole`, which notifications
+   refresh components (add/remove; rekeying?).
+2. Give the GUI the qualifier: possibly without a guidsl change by a custom `RoleSymbolDeSer`
+   subclass in `umlp-tool` (the tag mechanism above already transports the information), type
+   map roles as `Map<K,V>`.
+3. Map cases in the GUI generator (the classes listed above), also for ordinary map-typed GUI
+   variables.
+4. Remove CoCo `0x00032` (or restrict it to unsupported uses).
 
 ### Step 7: Tests
 - umlp-jsweet transpile/exec tests for `AsyncMap`, `IUMLPMap` calls and the async propagation.
@@ -200,6 +229,19 @@ map access/observers in the GUI generator).
 
 ## 6. Open questions for the user
 
-1. GUI: CoCo now, or full support including the guidsl change (step 6)?
-2. Which `java.util.Map` methods `IUMLPMap` supports (default methods like `compute`, `merge`)?
-3. `Map.Entry`: keep tuples `[K, V]` or introduce an entry type?
+Resolved: GUI support is deferred, CoCo `0x00032` built (step 6).
+
+Existing frontend Java only uses `get`/`put`/`remove`, `entrySet()` iteration (`for` and
+`.forEach`), `getKey`/`getValue`, `keySet().forEach` and `values()`; no `compute`, `merge`,
+`getOrDefault` or `Entry.setValue` anywhere (checked 2026-10-22).
+
+1. Which `java.util.Map` methods `IUMLPMap` supports. Recommendation given to the user (not yet
+   confirmed): core set `get`, `put`, `remove`, `containsKey`, `containsValue`, `size`, `isEmpty`,
+   `clear`, `putAll`, `keySet`, `values`, `entrySet`, `forEach`, `getOrDefault`, `putIfAbsent`;
+   unsupported methods rejected at transpile time via `JSweetCoCoChecker`
+   (`umlp-jsweet/.../extension/cocos/`). Function-based default methods (`compute`, `merge`, ...)
+   would have to await possibly async lambdas, and for GemMaps a value with a different derived
+   key is rejected anyway.
+2. `Map.Entry`: recommendation (not yet confirmed): keep tuples `[K, V]` (compatible with existing
+   code and native `Map.entries()`), reject `setValue` at transpile time; an own entry type with
+   write-through `setValue` only if needed later.
