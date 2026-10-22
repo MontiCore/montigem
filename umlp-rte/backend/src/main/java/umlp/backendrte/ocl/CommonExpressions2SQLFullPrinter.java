@@ -12,16 +12,16 @@ public class CommonExpressions2SQLFullPrinter extends OCLFullPrettyPrinter {
   }
 
   @Override
-  protected void initializeTraverser(boolean printComments) {
-    super.initializeTraverser(printComments);
+  protected void initializeTraverser(IndentPrinter printer, boolean printComments) {
+    super.initializeTraverser(printer, printComments);
 
     // replace pretty printer via custom one
-    CommonExpressionsPrettyPrinter commonExpressions = new CommonExpressions2SQLPrinter(getPrinter(), printComments);
+    CommonExpressionsPrettyPrinter commonExpressions = new CommonExpressions2SQLPrinter(printer, printComments);
     getTraverser().setCommonExpressionsHandler(commonExpressions);
     getTraverser().getCommonExpressionsVisitorList().clear();
     getTraverser().add4CommonExpressions(commonExpressions);
 
-    MCCommonLiteralsPrettyPrinter mCCommonLiterals = new CommonLiterals2SQLPrinter(getPrinter(), printComments);
+    MCCommonLiteralsPrettyPrinter mCCommonLiterals = new CommonLiterals2SQLPrinter(printer, printComments);
     getTraverser().setMCCommonLiteralsHandler(mCCommonLiterals);
     getTraverser().getMCCommonLiteralsVisitorList().clear();
     getTraverser().add4MCCommonLiterals(mCCommonLiterals);
