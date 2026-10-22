@@ -12,6 +12,7 @@ import common.ExamplePage;
 page GemStatusIconExample(?String trafficLight = "OK") {
   @ExamplePage(
     component = @GemColumn(rowGap = "15px", components = [
+      @GemText(value = "Default Statuses", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
       // Default traffic light mapping: OK -> green, WARNING -> yellow, ERROR -> red
       @GemRow(colGap = "15px", components = [
         @GemStatusIcon(currentStatus = "OK", showLabel = true),
@@ -19,12 +20,14 @@ page GemStatusIconExample(?String trafficLight = "OK") {
         @GemStatusIcon(currentStatus = "ERROR", showLabel = true)
       ]),
 
+      @GemText(value = "Changing Status", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
       // Status that changes at runtime
       @GemRow(colGap = "15px", vAlign = "center", components = [
         @GemStatusIcon(currentStatus = currentStatus(), size = "40px", showLabel = true),
         @GemButton(label = "Next status", leftClick = nextStatus())
       ]),
 
+      @GemText(value = "Custom Statuses", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
       // Custom statuses: GemStatus(value, color, icon)
       // - value: any name, e.g. the constants of an enum; compared case-insensitive with `currentStatus`
       // - color: any CSS color (hex, rgb, color name, ...)
@@ -62,6 +65,7 @@ page GemStatusIconExample(?String trafficLight = "OK") {
         )
       ]),
 
+      @GemText(value = "Use Cases", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
       // Free status names for different use cases
       @GemRow(colGap = "25px", wrap = "wrap", components = [
         // Presence of a user
@@ -122,6 +126,7 @@ page GemStatusIconExample(?String trafficLight = "OK") {
         )
       ]),
 
+      @GemText(value = "Unknown Status", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
       // Unknown status falls back to defaultColor
       @GemStatusIcon(currentStatus = "UNKNOWN", icon = "help", defaultColor = "gray", showLabel = true)
     ]),
