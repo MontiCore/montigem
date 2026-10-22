@@ -46,7 +46,8 @@ export interface IUMLPMap<K, V> {
 
   getOrDefault(key: any, defaultValue: V): Promise<V>;
 
-  forEach(action: (key: K, value: V) => void | Promise<void>): Promise<void>;
+  // the result of the action is ignored (and awaited), like the one of a java.util.function.BiConsumer
+  forEach(action: (key: K, value: V) => unknown): Promise<void>;
 
   replaceAll(fn: (key: K, value: V) => V | Promise<V>): Promise<void>;
 

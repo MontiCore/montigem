@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.time.LocalTime;
 import java.util.concurrent.Executors;
 
@@ -30,5 +31,9 @@ public class CoCoInvalid {
 
     public void testConcurrent() {
        Executors.newCachedThreadPool();
+    }
+
+    public void testSortedMap() {
+       TreeMap<String, Integer> sorted = new TreeMap<>();
     }
 }

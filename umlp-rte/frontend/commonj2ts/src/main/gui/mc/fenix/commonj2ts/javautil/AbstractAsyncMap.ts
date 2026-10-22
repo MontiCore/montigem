@@ -130,7 +130,7 @@ export abstract class AbstractAsyncMap<K, V> implements IUMLPMap<K, V> {
   }
 
   /** java.util.Map#forEach(BiConsumer<K, V>) → void */
-  async forEach(action: (key: K, value: V) => void | Promise<void>): Promise<void> {
+  async forEach(action: (key: K, value: V) => unknown): Promise<void> {
     for await (const [k, v] of await this.entrySet()) {
       await action(k, v);
     }
