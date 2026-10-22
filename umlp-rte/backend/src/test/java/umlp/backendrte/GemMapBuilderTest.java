@@ -165,6 +165,36 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
   }
 
   @Test
+  public void testValueMapNotifiesRemovedValues() {
+    Node a = new Node();
+    a.name = "a";
+    Node b = new Node();
+    b.name = "a";
+    Node c = new Node();
+    c.name = "c";
+    NamedValueMap map = new NamedValueMap();
+    // before build: the removed builders are at hand
+    map._internal_putValue(a);
+    map._internal_putValue(b);
+    assertEquals(List.of(a.getGemId()), map.removedIDs);
+    assertSame(a, map.removedValues.get(0));
+    map._internal_putValue(c);
+    map._internal_removeValueID(c.getGemId());
+    assertEquals(List.of(a.getGemId(), c.getGemId()), map.removedIDs);
+
+    // after build: only the ids are known
+    map.build();
+    // a replaces b, which holds key "a"
+    a.build();
+    map._internal_putValue(a);
+    map.remove("a");
+    assertEquals(List.of(a.getGemId(), c.getGemId(), b.getGemId(), a.getGemId()), map.removedIDs);
+    assertNull(map.removedValues.get(2));
+    assertNull(map.removedValues.get(3));
+    assertNoErrors();
+  }
+
+  @Test
   public void testEntryMapDerivedKeysAreLazyAndRekeyed() {
     Node keyA = new Node().build().get();
     Node keyB = new Node().build().get();
@@ -276,6 +306,16 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
     @Override
     public String deriveKey(Node value) {
       return value.name;
+    }
+
+    List<Long> removedIDs = new java.util.ArrayList<>();
+
+    List<Node> removedValues = new java.util.ArrayList<>();
+
+    @Override
+    protected void onValueRemoved(long valueGemID, Node value) {
+      removedIDs.add(valueGemID);
+      removedValues.add(value);
     }
   }
 }

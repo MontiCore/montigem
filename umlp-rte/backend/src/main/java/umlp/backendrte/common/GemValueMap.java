@@ -150,7 +150,10 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
   }
 
   public void _internal_put(K key, long valueGemID) {
-    idMap.put(key, valueGemID);
+    Long old = idMap.put(key, valueGemID);
+    if (old != null && old != valueGemID) {
+      onValueRemoved(old, null);
+    }
   }
 
 
@@ -172,7 +175,10 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
   }
 
   public void _internal_remove(K key) {
-    idMap.remove(key);
+    Long old = idMap.remove(key);
+    if (old != null) {
+      onValueRemoved(old, null);
+    }
   }
 
 
@@ -203,6 +209,7 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
     for (Entry<K, Long> e : idMap.entrySet()) {
       if (e.getValue() == gemID) {
         idMap.remove(e.getKey());
+        onValueRemoved(gemID, null);
         return true;
       }
     }
@@ -260,6 +267,15 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
    * used to observe the value to rekey it when the qualifying attribute changes
    */
   protected void onValueKeyed(V value) {
+  }
+
+  /**
+   * hook, called whenever a value leaves the map: removed, or replaced by another value for its key;
+   * used to stop observing it
+   *
+   * @param value the value, if it is at hand (e.g. an unbuilt builder), otherwise null
+   */
+  protected void onValueRemoved(long valueGemID, V value) {
   }
 
   /**
@@ -325,7 +341,9 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
 
 
   public void clear(){
+    List<Long> removed = new ArrayList<>(idMap.values());
     idMap.clear();
+    removed.forEach(id -> onValueRemoved(id, null));
     unkeyedValueIDs.clear();
   }
 

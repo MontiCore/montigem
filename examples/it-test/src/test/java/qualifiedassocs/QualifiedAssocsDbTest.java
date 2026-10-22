@@ -159,6 +159,48 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
   }
 
   @Test
+  default void testRekeyObserverIsRemovedWithValue() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var otherAnna = QualifiedAssocsManager.personBuilder().login("anna").number(2).build().get();
+    var admin = QualifiedAssocsManager.adminBuilder().login("root").number(0).build().get();
+    int observers = anna.personObservers.size();
+    int adminObservers = admin.personObservers.size() + admin.adminObservers.size();
+    var directory = QualifiedAssocsManager.directoryBuilder().byLoginPut(anna).byLoginPut(admin).build().get();
+    assertEquals(observers + 1, anna.personObservers.size());
+
+    // replaced by another value for its key
+    directory.putByLogin(otherAnna);
+    assertEquals(observers, anna.personObservers.size());
+
+    // removed; the subclass value is observed with its own observer, also registered with the superclass
+    directory.removeByLogin("root");
+    assertEquals(adminObservers, admin.personObservers.size() + admin.adminObservers.size());
+  }
+
+  @Test
+  default void testDomainObjectKeyRekeyIsSynchronized() {
+    getBackend().activate();
+    var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();
+    var it = QualifiedAssocsManager.departmentBuilder().name("it").build().get();
+    var eve = QualifiedAssocsManager.employeeBuilder().name("eve").department(sales).build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder().byDepartmentPut(eve).build().get();
+    assertSame(eve, directory.getByDepartment(sales).get());
+
+    getClients(0).activate();
+    var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
+    var clientEve = QualifiedAssocsManager.getEmployeeList().get(0);
+    var clientIt = QualifiedAssocsManager.getDepartmentSure(it.getGemId());
+    assertTrue(clientDirectory.containsKeyByDepartment(QualifiedAssocsManager.getDepartmentSure(sales.getGemId())));
+    clientEve.setDepartment(clientIt);
+    assertTrue(clientDirectory.containsKeyByDepartment(clientIt));
+
+    getBackend().activate();
+    assertSame(eve, directory.getByDepartment(it).get());
+    assertTrue(directory.getByDepartment(sales).isEmpty());
+  }
+
+  @Test
   default void testDomainObjectKey() {
     getBackend().activate();
     var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();

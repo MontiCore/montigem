@@ -116,6 +116,7 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
       }
       ensureKeyed();
       Entry<IDOrBuilder<K>, IDOrBuilder<V>> old = builderElemStorage.remove(((GemIdentifiable) key).getGemId());
+      valueLeft(old == null ? null : old.getValue(), -1);
       return old == null ? null : resolveValue(old.getValue());
     }
   }
@@ -194,7 +195,7 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     }
     for (Entry<Long, Entry<IDOrBuilder<K>, IDOrBuilder<V>>> e : builderElemStorage.entrySet()) {
       if (e.getValue().getValue().getGemId() == gemID) {
-        builderElemStorage.remove(e.getKey());
+        valueLeft(builderElemStorage.remove(e.getKey()).getValue(), -1);
         return true;
       }
     }
@@ -206,7 +207,8 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     if(buildFinished) {
       super._internal_remove(keyGemID);
     } else {
-      builderElemStorage.remove(keyGemID);
+      Entry<IDOrBuilder<K>, IDOrBuilder<V>> old = builderElemStorage.remove(keyGemID);
+      valueLeft(old == null ? null : old.getValue(), -1);
     }
   }
 
@@ -215,8 +217,10 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     if(buildFinished) {
       super.clear();
     } else {
+      List<Entry<IDOrBuilder<K>, IDOrBuilder<V>>> removed = new ArrayList<>(builderElemStorage.values());
       builderElemStorage.clear();
       unkeyedValueIDs.clear();
+      removed.forEach(old -> valueLeft(old.getValue(), -1));
     }
   }
 
@@ -275,11 +279,22 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
    * @return the entry previously stored for that key, or null
    */
   protected Entry<IDOrBuilder<K>, IDOrBuilder<V>> storeEntry(IDOrBuilder<K> key, IDOrBuilder<V> value) {
-    return builderElemStorage.put(key.getGemId(), new SimpleImmutableEntry<>(key, value));
+    Entry<IDOrBuilder<K>, IDOrBuilder<V>> old = builderElemStorage.put(key.getGemId(), new SimpleImmutableEntry<>(key, value));
+    valueLeft(old == null ? null : old.getValue(), value.getGemId());
+    return old;
   }
 
   protected K resolveKey(IDOrBuilder<K> key) {
     return key.isPresentBuilder() ? key.getBuilder() : getKey(key.getID());
+  }
+
+  /**
+   * calls {@link #onValueRemoved} if old left the map, i.e. was not replaced by itself
+   */
+  protected void valueLeft(IDOrBuilder<V> old, long newValueGemID) {
+    if (old != null && old.getGemId() != newValueGemID) {
+      onValueRemoved(old.getGemId(), old.isPresentBuilder() ? old.getBuilder() : null);
+    }
   }
 
   protected V resolveValue(IDOrBuilder<V> value) {

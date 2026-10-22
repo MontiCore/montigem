@@ -81,6 +81,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       // Thus, the elements themselves are stored, not only their ids
       ensureKeyed();
       IDOrBuilder<V> old = builderElemStorage.put(key, new IDOrBuilder<>(value));
+      valueLeft(old, value.getGemId());
       return old == null ? null : resolveValue(old);
     }
   }
@@ -103,6 +104,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     } else {
       ensureKeyed();
       IDOrBuilder<V> old = builderElemStorage.remove(key);
+      valueLeft(old, -1);
       return old == null ? null : resolveValue(old);
     }
   }
@@ -146,7 +148,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if(buildFinished) {
       super._internal_put(key, valueGemID);
     } else {
-      builderElemStorage.put(key, new IDOrBuilder<>(valueGemID));
+      valueLeft(builderElemStorage.put(key, new IDOrBuilder<>(valueGemID)), valueGemID);
     }
   }
 
@@ -156,7 +158,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       super._internal_putValue(value);
     } else {
       // keep the element itself, it may be an unbuilt builder
-      builderElemStorage.put(deriveKey(value), new IDOrBuilder<>(value));
+      valueLeft(builderElemStorage.put(deriveKey(value), new IDOrBuilder<>(value)), value.getGemId());
       onValueKeyed(value);
     }
   }
@@ -171,7 +173,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     }
     for (Entry<K, IDOrBuilder<V>> e : builderElemStorage.entrySet()) {
       if (e.getValue().getGemId() == gemID) {
-        builderElemStorage.remove(e.getKey());
+        valueLeft(builderElemStorage.remove(e.getKey()), -1);
         return true;
       }
     }
@@ -183,7 +185,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if(buildFinished) {
       super._internal_remove(key);
     } else {
-      builderElemStorage.remove(key);
+      valueLeft(builderElemStorage.remove(key), -1);
     }
   }
 
@@ -192,8 +194,10 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if(buildFinished) {
       super.clear();
     } else {
+      List<IDOrBuilder<V>> removed = new ArrayList<>(builderElemStorage.values());
       builderElemStorage.clear();
       unkeyedValueIDs.clear();
+      removed.forEach(old -> valueLeft(old, -1));
     }
   }
 
@@ -253,6 +257,15 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       super.moveEntry(oldKey, newKey);
     } else {
       builderElemStorage.put(newKey, builderElemStorage.remove(oldKey));
+    }
+  }
+
+  /**
+   * calls {@link #onValueRemoved} if old left the map, i.e. was not replaced by itself
+   */
+  protected void valueLeft(IDOrBuilder<V> old, long newValueGemID) {
+    if (old != null && old.getGemId() != newValueGemID) {
+      onValueRemoved(old.getGemId(), old.isPresentBuilder() ? old.getBuilder() : null);
     }
   }
 

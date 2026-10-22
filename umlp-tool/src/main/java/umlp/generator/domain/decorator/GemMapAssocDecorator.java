@@ -114,6 +114,9 @@ public class GemMapAssocDecorator extends AbstractDecorator {
         key.getKeyExpression("value"), key.isEntryKey());
     getCD4C().addMethod(ast, "umlp.gemmap.OnValueKeyed", targetName,
         observedTypes.stream().map(CDTypeSymbol::getName).collect(Collectors.toList()));
+    getCD4C().addMethod(ast, "umlp.gemmap.OnValueRemoved", targetName,
+        getCorrectManager(targetSymbol.getAstNode()),
+        observedTypes.stream().map(CDTypeSymbol::getName).collect(Collectors.toList()));
 
     return ast;
   }
