@@ -177,6 +177,8 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("NotificationScope"));
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("LoadResult"));
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("LoadingState"));
+    getCD4C().addImport(ast, "java.util.HashMap");
+    getCD4C().addImport(ast, "java.util.Map");
   }
 
   /**

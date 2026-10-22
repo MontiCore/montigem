@@ -40,6 +40,13 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
     return this;
   }
 
+  /** A live view of a native Map, created synchronously (e.g. for BaseClassObjectMapper#getBaseDeSers) */
+  static __viewOf<K, V>(data: Map<K, V>): AsyncMap<K, V> {
+    const view = new AsyncMap<K, V>();
+    view._data = data;
+    return view;
+  }
+
   public toString(): string {
     return "{" + Array.from(this._data.entries()).map(([k, v]) => String(k) + "=" + String(v)).join(", ") + "}";
   }
