@@ -14,6 +14,9 @@
  */
 export { AsyncSet } from "../commonj2ts-src/javautil/AsyncSet";
 export { AsyncList } from "../commonj2ts-src/javautil/AsyncList";
+export { AbstractAsyncMap } from "../commonj2ts-src/javautil/AbstractAsyncMap";
+export { AsyncMap } from "../commonj2ts-src/javautil/AsyncMap";
+export { MapEntryHelper } from "../commonj2ts-src/javautil/MapEntryHelper";
 export { AsyncStream, Collectors } from "../commonj2ts-src/javautil/AsyncStream";
 export { StringHelper } from "../commonj2ts-src/javautil/StringHelper";
 export { Arrays } from "../commonj2ts-src/javautil/Arrays";

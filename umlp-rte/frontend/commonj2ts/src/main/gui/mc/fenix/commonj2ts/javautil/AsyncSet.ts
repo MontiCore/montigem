@@ -47,6 +47,14 @@ export class AsyncSet<E> implements Collection<E> {
     return new AsyncSet<E>().__AsyncSetConstructor(iterable);
   }
 
+  /** A live view: all calls are delegated to the collection (e.g. AsyncMap#keySet, AsyncMap#entrySet) */
+  static __viewOf<E>(delegate: Collection<E>): AsyncSet<E> {
+    const view = new AsyncSet<E>();
+    view._data = [];
+    view._delegate = delegate;
+    return view;
+  }
+
   // ─── Static factory methods ───────────────────────────────────────────────
 
   static of<E>(...elements: E[]): Promise<AsyncSet<E>> {

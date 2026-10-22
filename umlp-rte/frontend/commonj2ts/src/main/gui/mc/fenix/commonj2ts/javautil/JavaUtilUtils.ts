@@ -10,6 +10,14 @@ export class JavaUtilUtils {
     return obj;
   }
 
+  /** @return a java.lang.UnsupportedOperationException to throw */
+  public static unsupportedOperation(message?: string): Error {
+    return Object.defineProperty(new Error(message), '__classes', {
+      configurable: true,
+      value: ['java.lang.Throwable', 'java.lang.Object', 'java.lang.RuntimeException', 'java.lang.UnsupportedOperationException', 'java.lang.Exception']
+    });
+  }
+
   public static async equals(a: any, b: any): Promise<boolean> {
     a = await a;
     b = await b;

@@ -27,6 +27,7 @@ export * from "./ByteDeSer";
 export * from "./AggregatedCommandDeSer";
 export * from "./LoadingState";
 export * from "./IUMLPList";
+export * from "./IUMLPMap";
 export * from "./NotificationScope";
 export * from "./IdStorage";
 export * from "./DomainValidationResult";
