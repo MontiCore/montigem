@@ -4,6 +4,7 @@ import util.JSweetTest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,6 +145,124 @@ public class MapRuntimeCheck {
     Object m = abc();
     Object list = new ArrayList<String>();
     return (m instanceof Map) + "," + (list instanceof Map);
+  }
+
+  @JSweetTest
+  public static String removingDefaultMethods() {
+    Map<String, Integer> m = abc();
+    Integer computed = m.compute("a", (k, v) -> null);
+    Integer computedAbsent = m.compute("x", (k, v) -> null);
+    Integer presentComputed = m.computeIfPresent("b", (k, v) -> null);
+    Integer absentComputed = m.computeIfAbsent("y", k -> null);
+    Integer merged = m.merge("c", 1, (x, y) -> null);
+    return computed + "," + computedAbsent + "," + presentComputed + "," + absentComputed + "," + merged + ","
+        + m.isEmpty() + "," + m.containsKey("x") + "," + m.containsKey("y");
+  }
+
+  @JSweetTest
+  public static String nullValuesAndArguments() {
+    Map<String, Integer> m = new LinkedHashMap<>();
+    m.put("a", 1);
+    m.put("n", null);
+    boolean nullKeyPresent = m.containsKey("n");
+    Integer orDefault = m.getOrDefault("n", 9);
+    boolean removedWrongValue = m.remove("a", null);
+    boolean removedNull = m.remove("n", null);
+    boolean replacedWrongOld = m.replace("a", null, 5);
+    boolean replacedToNull = m.replace("a", 1, null);
+    return nullKeyPresent + "," + orDefault + "," + removedWrongValue + "," + removedNull + "," + m.containsKey("n") + ","
+        + replacedWrongOld + "," + replacedToNull + "," + m.get("a") + "," + m.containsKey("a") + "," + m.size();
+  }
+
+  @JSweetTest
+  public static String viewContainsAndRemove() {
+    Map<String, Integer> m = abc();
+    Map<String, Integer> other = new LinkedHashMap<>();
+    other.put("b", 2);
+    other.put("c", 4);
+    boolean containsEntry = false;
+    boolean containsChangedEntry = true;
+    for (Map.Entry<String, Integer> e : other.entrySet()) {
+      if (e.getKey().equals("b")) {
+        containsEntry = m.entrySet().contains(e);
+      } else {
+        containsChangedEntry = m.entrySet().contains(e);
+      }
+    }
+    boolean removedEntry = false;
+    for (Map.Entry<String, Integer> e : other.entrySet()) {
+      if (e.getKey().equals("b")) {
+        removedEntry = m.entrySet().remove(e);
+      }
+    }
+    return containsEntry + "," + containsChangedEntry + "," + removedEntry + "," + m.containsKey("b");
+  }
+
+  @JSweetTest
+  public static String viewBulkOperations() {
+    Map<String, Integer> m = new LinkedHashMap<>();
+    m.put("a", 1);
+    m.put("b", 2);
+    m.put("c", 3);
+    m.put("d", 4);
+    Set<String> keys = m.keySet();
+    Set<String> bx = new HashSet<>();
+    bx.add("b");
+    bx.add("x");
+    Set<String> d = new HashSet<>();
+    d.add("d");
+    boolean removedAll = keys.removeAll(bx);
+    boolean containsD = keys.containsAll(d);
+    boolean retained = keys.retainAll(d);
+    return removedAll + "," + containsD + "," + retained + "," + m.size() + "," + m.containsKey("d");
+  }
+
+  /** an entry whose key was removed: setValue only changes the entry, like a detached java.util.LinkedHashMap entry */
+  @JSweetTest
+  public static String detachedEntrySetValue() {
+    Map<String, Integer> m = abc();
+    String result = "";
+    for (Map.Entry<String, Integer> e : m.entrySet()) {
+      if (e.getKey().equals("a")) {
+        m.remove("a");
+        Integer old = e.setValue(7);
+        result = old + "," + e.getValue();
+        // no further iteration: java.util.LinkedHashMap would throw a ConcurrentModificationException
+        break;
+      }
+    }
+    return result + "," + m.containsKey("a") + "," + m.size();
+  }
+
+  @JSweetTest
+  public static String unsupportedOperations() {
+    Map<String, Integer> m = abc();
+    String result = "";
+    try {
+      m.keySet().add("x");
+      result += "added";
+    } catch (UnsupportedOperationException e) {
+      result += "unsupported";
+    }
+    return result + "," + m.size();
+  }
+
+  @JSweetTest
+  public static String hashCodes() {
+    Map<String, Integer> m = abc();
+    Map<String, Integer> withNull = new LinkedHashMap<>();
+    withNull.put("a", 1);
+    withNull.put("n", null);
+    return m.hashCode() + "," + withNull.hashCode() + "," + new HashMap<String, Integer>().hashCode();
+  }
+
+  @JSweetTest
+  public static String putAllFromMap() {
+    Map<String, Integer> m = new LinkedHashMap<>();
+    m.put("a", 9);
+    m.put("z", 26);
+    m.putAll(abc());
+    return m.size() + "," + m.get("a") + "," + m.get("z") + "," + sumOfValues(m);
   }
 
   /** only order independent operations: TreeMap sorts its keys, AsyncMap keeps the insertion order */

@@ -184,33 +184,8 @@ public final class RealTscCheck {
     assertEquals(0, handler.getErrorCount(),
         "JSweet transpilation of " + fixtures + " reported errors");
 
-    List<Path> generatedTsFiles = new ArrayList<>();
-    for (SourceFile sourceFile : sourceFiles) {
-      assertNotNull(sourceFile.getTsFile());
-      generatedTsFiles.add(sourceFile.getTsFile().toPath());
-    }
-    return stageCompileAndRun(checkName, generatedTsFiles, runJs);
-  }
-
-  /**
-   * Like {@link #compileAndRun(String, Path, String)}, but for a hand-written TypeScript fixture
-   * that is compiled as is, without JSweet: for testing commonj2ts classes directly (e.g. before
-   * the JSweet adapters transpile Java to them).
-   *
-   * @param checkName unique name for this check; staged under build/tsc-check/&lt;checkName&gt;
-   * @param tsFixture path to the TypeScript fixture, it may import from '@umlp/commonj2ts'
-   * @param runJs     Node script content executed from the compiled output directory; require
-   *                  the compiled fixture as {@code "./<FixtureFileName>"}
-   */
-  public static Result compileAndRunTypeScript(String checkName, Path tsFixture, String runJs)
-      throws IOException {
-    return stageCompileAndRun(checkName, List.of(tsFixture), runJs);
-  }
-
-  private static Result stageCompileAndRun(String checkName, List<Path> tsFiles, String runJs)
-      throws IOException {
     // Stage a self-contained directory: the real commonj2ts source (via link), our facade, the
-    // fixture, the runner script and the shared tsconfig.
+    // generated fixture, the runner script and the shared tsconfig.
     Path tscCheckDir = Paths.get("build/tsc-check/" + checkName).toAbsolutePath();
     Files.createDirectories(tscCheckDir);
     Files.createDirectories(tscCheckDir.resolve("out"));
@@ -224,10 +199,12 @@ public final class RealTscCheck {
         facadeDir.resolve("index.ts"),
         StandardCopyOption.REPLACE_EXISTING);
 
-    for (Path tsFile : tsFiles) {
+    for (SourceFile sourceFile : sourceFiles) {
+      assertNotNull(sourceFile.getTsFile());
+      Path generatedTs = sourceFile.getTsFile().toPath();
       Files.copy(
-          tsFile,
-          tscCheckDir.resolve(tsFile.getFileName()),
+          generatedTs,
+          tscCheckDir.resolve(generatedTs.getFileName()),
           StandardCopyOption.REPLACE_EXISTING);
     }
 
