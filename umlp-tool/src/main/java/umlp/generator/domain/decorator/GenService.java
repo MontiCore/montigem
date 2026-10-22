@@ -243,6 +243,26 @@ public class GenService {
         + StringTransformations.capitalize(name);
   }
 
+  /**
+   * whether the attribute holds a GemMap, i.e. a GemValueMap or a GemEntryMap
+   */
+  public static boolean isGemMap(ASTCDAttribute attr) {
+    if (attr.getMCType() instanceof ASTMCBasicGenericType) {
+      List<String> nameList = ((ASTMCBasicGenericType) attr.getMCType()).getNameList();
+      String name = nameList.get(nameList.size() - 1);
+      return "GemValueMap".equals(name) || "GemEntryMap".equals(name);
+    }
+    return false;
+  }
+
+  public static boolean isGemEntryMap(ASTCDAttribute attr) {
+    if (attr.getMCType() instanceof ASTMCBasicGenericType) {
+      List<String> nameList = ((ASTMCBasicGenericType) attr.getMCType()).getNameList();
+      return "GemEntryMap".equals(nameList.get(nameList.size() - 1));
+    }
+    return false;
+  }
+
   public static boolean isGemList(ASTCDAttribute attr) {
     if (attr.getMCType() instanceof ASTMCBasicGenericType) {
       List<String> nameList = ((ASTMCBasicGenericType) attr.getMCType()).getNameList();
@@ -330,7 +350,42 @@ public class GenService {
 
   public static boolean isList(ASTCDAssocSide assoc) {
     return assoc.isPresentCDCardinality()
-        && (assoc.getCDCardinality().isMult() || assoc.getCDCardinality().isAtLeastOne());
+        && (assoc.getCDCardinality().isMult() || assoc.getCDCardinality().isAtLeastOne())
+        && !isMap(assoc);
+  }
+
+  /**
+   * The target side of an association qualified by an attribute of the target class
+   * ({@code Owner [[attr]] -> Target}) is a GemMap of the qualified side, keyed by attr.
+   * Type qualifiers ({@code [Type]}) are not supported yet and ignored.
+   *
+   * @param assoc the target side, as returned by e.g. CDSymbolTables.getAssociations(owner)
+   */
+  public static boolean isMap(ASTCDAssocSide assoc) {
+    return getQualifierAttributeName(assoc).isPresent();
+  }
+
+  /**
+   * @param assoc the target side of an association
+   * @return the name of the target attribute qualifying the association, if any
+   */
+  public static Optional<String> getQualifierAttributeName(ASTCDAssocSide assoc) {
+    if (!assoc.isPresentSymbol() || !assoc.getSymbol().getOtherSide().isPresentAssocSide()) {
+      return Optional.empty();
+    }
+    // the qualifier stands on the qualified (opposite) side, but names an attribute of the target
+    ASTCDAssocSide qualifiedSide = assoc.getSymbol().getOtherSide().getAssocSide();
+    if (qualifiedSide.isPresentCDQualifier() && qualifiedSide.getCDQualifier().isPresentByAttributeName()) {
+      return Optional.of(qualifiedSide.getCDQualifier().getByAttributeName());
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * whether the association side holds several target ids, i.e. is a GemList or a GemMap
+   */
+  public static boolean isMultiValued(ASTCDAssocSide assoc) {
+    return isList(assoc) || isMap(assoc);
   }
 
   public static boolean isList(ASTCDCardinality cardinality){
@@ -338,11 +393,11 @@ public class GenService {
   }
 
   public static boolean isAStLeastOne(ASTCDAssocSide assoc) {
-    return assoc.isPresentCDCardinality() && assoc.getCDCardinality().isAtLeastOne();
+    return assoc.isPresentCDCardinality() && assoc.getCDCardinality().isAtLeastOne() && !isMap(assoc);
   }
 
   public static boolean isOptional(ASTCDAssocSide assoc) {
-    return assoc.isPresentCDCardinality() && assoc.getCDCardinality().isOpt();
+    return assoc.isPresentCDCardinality() && assoc.getCDCardinality().isOpt() && !isMap(assoc);
   }
 
   public static boolean isBidirectional(ASTCDAssocSide assoc) {

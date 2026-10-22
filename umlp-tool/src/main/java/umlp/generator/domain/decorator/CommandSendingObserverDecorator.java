@@ -110,7 +110,7 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
           String assocName = a.getSymbol().getAssoc().getAssociation().getName();
           SymTypeExpression oneType = e.getKey().getSymbol().getType();
           SymTypeExpression otherType = e.getKey().getSymbol().getOtherSide().getType();
-          if (GenService.isList(a)) {
+          if (GenService.isMultiValued(a)) {
             ASTCDMethodSignature add = getCD4C().addMethod(ast, addAttributeTmplt(), oneType.print(),
                 a.getName(), "long", assocName, isBidirectional, isLeft, otherType.print());
             ASTCDMethodSignature remove = getCD4C().addMethod(ast, removeAttributeTmplt(), oneType.print(),

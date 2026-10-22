@@ -196,6 +196,10 @@ public class BEDecorator extends AbstractDecorator {
     gemListAssocDecorator.transform(cdAST, decoratedAST);
     Log.debug("After decorator: GemListAssocDecorator", BEDecorator.class.getName());
 
+    GemMapAssocDecorator gemMapAssocDecorator = new GemMapAssocDecorator(glex);
+    gemMapAssocDecorator.transform(cdAST, decoratedAST);
+    Log.debug("After decorator: GemMapAssocDecorator", BEDecorator.class.getName());
+
     GemListDomainDecorator gemListDomainDecorator = new GemListDomainDecorator(glex);
     gemListDomainDecorator.transform(cdAST, decoratedAST);
     Log.debug("After decorator: GemListDomainDecorator", BEDecorator.class.getName());

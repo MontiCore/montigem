@@ -78,11 +78,11 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (l,r) -> l, LinkedHashMap::new));
 
     Map<ASTCDAssocSide, ASTCDAssociation> gemAssocSideToAssoc =
-        nonDerivedAssocSideToAssoc.entrySet().stream().filter(e -> !GenService.isList(e.getKey()))
+        nonDerivedAssocSideToAssoc.entrySet().stream().filter(e -> !GenService.isMultiValued(e.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (l,r) -> l, LinkedHashMap::new));
 
     Map<ASTCDAssocSide, ASTCDAssociation> listAssocSideToAssoc =
-        nonDerivedAssocSideToAssoc.entrySet().stream().filter(e -> GenService.isList(e.getKey()))
+        nonDerivedAssocSideToAssoc.entrySet().stream().filter(e -> GenService.isMultiValued(e.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (l,r) -> l, LinkedHashMap::new));
 
     selectMethod(daoInterface, domainClass, listAssocSideToAssoc, gemAssocSideToAssoc);
@@ -198,7 +198,7 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
 
   protected void selectMethodForAssocDAO(ASTCDType daoInterface, ASTCDAssociation association,
                                          ASTCDAssocSide assocStart, ASTCDAssocSide assocEnd) {
-    if(GenService.isList(assocEnd)) {
+    if(GenService.isMultiValued(assocEnd)) {
       selectMethodForListAssocDAO(daoInterface, assocStart, assocEnd);
     } else {
       selectMethodForGemAssocDAO(daoInterface, assocStart, assocEnd);

@@ -19,6 +19,10 @@ import umlp.generator.test_infrastructure.domain.decorator.MonitorDecorator;
 import umlp.generator.util.PathUtil;
 import umlp.generator.util.TagLookUp;
 
+import com.google.common.collect.Iterables;
+import de.se_rwth.commons.Splitters;
+import de.se_rwth.commons.Joiners;
+import umlp.generator.util.UMLPSymbolTables;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -77,9 +81,12 @@ public class BuilderDecorator extends AbstractDecorator {
     List<ASTCDAssocSide> attrAssocLists = attrAssocs.stream()
         .filter(GenService::isList)
         .collect(Collectors.toList());
+    List<ASTCDAssocSide> attrAssocMaps = attrAssocs.stream()
+        .filter(GenService::isMap)
+        .collect(Collectors.toList());
 
     // Constructors
-    addConstructor(builderClass, domainClass, managerName, attrAssocLists,
+    addConstructor(builderClass, domainClass, managerName, attrAssocLists, attrAssocMaps,
         TagLookUp.isSingleton(domainClass) ? domainClass.getCDAttributeList().stream()
             .filter(ASTCDAttributeTOP::isPresentInitial)
             .map(a->new String[]{a.getName(), CD4CodeMill.prettyPrint(a.getInitial(), false)})
@@ -112,18 +119,32 @@ public class BuilderDecorator extends AbstractDecorator {
     // Imports
     addImports(domainClass, builderClass);
     attrAssocLists.forEach(assocSide -> addCorrectMangerImportForTargetType(origCD.getCDDefinition(), builderClass, assocSide.getSymbol().getType()));
+    attrAssocMaps.forEach(assocSide -> getCD4C().addImport(builderClass, getGemMapClass(assocSide)));
 
     return builderClass;
   }
 
   protected void addConstructor(
       ASTCDClass builderClass, ASTCDClass domainClass,
-      String managerName, List<ASTCDAssocSide> attrAssocLists,
+      String managerName, List<ASTCDAssocSide> attrAssocLists, List<ASTCDAssocSide> attrAssocMaps,
       List<String[]> initialAttributes) {
     Map<ASTCDAssocSide, String> correctManagerToAttrAssocSides = new LinkedHashMap<>();
     attrAssocLists.forEach(assocSide -> correctManagerToAttrAssocSides.put(assocSide,
         getCorrectManager(assocSide.getSymbol().getAssoc().getAssociation().getAstNode())));
-    getCD4C().addConstructor(builderClass, getConstructorTemplate(), domainClass.getName(), correctManagerToAttrAssocSides, initialAttributes);
+    Map<ASTCDAssocSide, String> gemMapClassToAttrAssocSides = new LinkedHashMap<>();
+    attrAssocMaps.forEach(assocSide -> gemMapClassToAttrAssocSides.put(assocSide,
+        Iterables.getLast(Splitters.DOT.split(getGemMapClass(assocSide)))));
+    getCD4C().addConstructor(builderClass, getConstructorTemplate(), domainClass.getName(), correctManagerToAttrAssocSides, initialAttributes,
+        gemMapClassToAttrAssocSides);
+  }
+
+  /**
+   * @return the qualified name of the GemMap class of the map association side, generated for the declaring class
+   */
+  protected String getGemMapClass(ASTCDAssocSide assocSide) {
+    ASTCDType declaringType = (ASTCDType) assocSide.getSymbol().getOtherSide().getType().getTypeInfo().getAstNode();
+    return Joiners.DOT.join(getPackageName(UMLPSymbolTables.getDiagramFor(declaringType), GEMMAP_PACKAGE),
+        GemMapAssocDecorator.getName(declaringType, assocSide));
   }
 
   protected String getConstructorTemplate() {
@@ -150,8 +171,17 @@ public class BuilderDecorator extends AbstractDecorator {
     for (ASTCDAssocSide assoc : assocList) {
       getCD4C().addMethod(builderClass, "umlp.builder.CheckAssoc",
           assoc.getName(), domainClass.getName(),
-          !(GenService.isOptional(assoc) || GenService.isList(assoc)), GenService.isList(assoc));
-      if (GenService.isList(assoc)) {
+          !(GenService.isOptional(assoc) || GenService.isMultiValued(assoc)), GenService.isMultiValued(assoc));
+      if (GenService.isMap(assoc)) {
+        for (String tmplt : List.of(
+            "umlp.builder.AssocMapPut",
+            "umlp.builder.AssocGemMapIds"
+        )) {
+          getCD4C().addMethod(builderClass, tmplt,
+              assoc.getName(), GenService.getType(assoc.getSymbol().getType()),
+              getClassName(domainClass.getName()));
+        }
+      } else if (GenService.isList(assoc)) {
         if (!GenService.isSymbolDerived(assoc)) {
           for(String tmplt : List.of(
               "umlp.builder.AssocAdd",

@@ -30,7 +30,7 @@ ${cd4c.method("public Optional<${typeName}> unpack${typeName}(org.neo4j.driver.R
     <#else>
         <#assign otherSide=assoc.getLeft().getName()>
     </#if>
-  builder.${assocSide.getName()}GemListIds(${assocToDAOFactoryDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().select${assocSide.getName()?cap_first}IdsFor${otherSide?cap_first}(gemId));
+  builder.${assocSide.getName()}${genService.isMap(assocSide)?then("GemMapIds","GemListIds")}(${assocToDAOFactoryDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().select${assocSide.getName()?cap_first}IdsFor${otherSide?cap_first}(gemId));
 </#list>
 <#list gemAssocs as assocSide, assoc><#assign assocType = assocSide.getSymbol().getType().print()>
   <#if assocSide.isLeft()>

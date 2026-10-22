@@ -66,8 +66,9 @@ public class DeSerDecorator extends DomainClassDecorator {
         cdName,
         originalClassName,
         attributes.stream().map(ASTCDAttributeTOP::getName).collect(Collectors.toList()),
-        assocs.stream().filter(Predicate.not(GenService::isList)).map(ASTCDAssocSide::getName).collect(Collectors.toList()),
-        assocs.stream().filter(GenService::isList).map(ASTCDAssocSide::getName).collect(Collectors.toList())
+        assocs.stream().filter(Predicate.not(GenService::isMultiValued)).map(ASTCDAssocSide::getName).collect(Collectors.toList()),
+        assocs.stream().filter(GenService::isList).map(ASTCDAssocSide::getName).collect(Collectors.toList()),
+        assocs.stream().filter(GenService::isMap).map(ASTCDAssocSide::getName).collect(Collectors.toList())
     );
     getCD4C().addMethod(deSer, getBuildJsonTemplate(),
         originalClassName,
@@ -154,7 +155,11 @@ public class DeSerDecorator extends DomainClassDecorator {
   }
 
   protected void addSerAndDeserMethod(String cdName, String originalClassName, ASTCDClass deSer, ASTCDAssocSide attr) {
-    if (GenService.isList(attr)) {
+    if (GenService.isMap(attr)) {
+      // the ids of the values, their keys are derived from them
+      getCD4C().addMethod(deSer, "umlp.deser.serializeGemMapField", originalClassName, attr.getName());
+      getCD4C().addMethod(deSer, getDeserializeGemListFieldTemplate(), cdName, originalClassName, attr.getName());
+    } else if (GenService.isList(attr)) {
       getCD4C().addMethod(deSer, getSerializeGemListFieldTemplate(), originalClassName, attr.getName());
       getCD4C().addMethod(deSer, getDeserializeGemListFieldTemplate(), cdName, originalClassName, attr.getName());
     } else {

@@ -121,10 +121,10 @@ public class ObserverDecorator extends AbstractDecorator {
         });
     addImport(observerInterface, attributes);
 
-    // Add Notify for list associations
+    // Add Notify for list and map associations
     CDSymbolTables.getAssociations(domainClass).stream()
         .filter(Predicate.not(GenService::isSymbolDerived))
-        .filter(GenService::isList)
+        .filter(GenService::isMultiValued)
         .forEach(a -> {
           generationSummary.addSignature(cd4C.addMethod(observerInterface,
                                                         NOTIFY_ADD_TEMPLATE,
@@ -146,6 +146,10 @@ public class ObserverDecorator extends AbstractDecorator {
                                                         a.getName(),
                                                         className,
                                                         "long"), MAYBE_NOTIFY_REMOVE_TEMPLATE);
+          if (GenService.isMap(a)) {
+            // maps have no positions: no set at index
+            return;
+          }
           generationSummary.addSignature(cd4C.addMethod(observerInterface,
                                                         NOTIFY_TEMPLATE,
                                                         a.getName(),
@@ -163,7 +167,7 @@ public class ObserverDecorator extends AbstractDecorator {
     // Add Notify for associations
     CDSymbolTables.getAssociations(domainClass).stream()
         .filter(Predicate.not(GenService::isSymbolDerived))
-        .filter(Predicate.not(GenService::isList))
+        .filter(Predicate.not(GenService::isMultiValued))
         .forEach(a -> {
           generationSummary.addSignature(cd4C.addMethod(observerInterface, NOTIFY_TEMPLATE, a.getName(), className, "long", false),
                                          NOTIFY_TEMPLATE);

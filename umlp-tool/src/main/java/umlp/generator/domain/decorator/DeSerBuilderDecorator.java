@@ -52,7 +52,14 @@ public class DeSerBuilderDecorator extends DomainClassDecorator {
 
     // Methods
     for (ASTCDAttribute a : attributes) {
-      if (GenService.isGemList(a)) {
+      if (GenService.isGemMap(a)) {
+        getCD4C().addMethod(
+            deserBuilderClass,
+            "umlp.deser_builder.setGemMapIds",
+            deserBuilderClass.getName(),
+            GenService.getNativeName(a.getName())
+        );
+      } else if (GenService.isGemList(a)) {
         getCD4C().addMethod(
             deserBuilderClass,
             getsetGemListIdsTemplate(),

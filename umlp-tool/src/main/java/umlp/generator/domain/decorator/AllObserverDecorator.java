@@ -101,11 +101,19 @@ public class AllObserverDecorator extends AbstractDecorator {
         ASTCDMethodSignature remove = null;
 
         String cdDefinitionOfAssoc = UMLPSymbolTables.getDiagramFor(e.getValue()).getCDDefinition().getName();
-        if (GenService.isList(e.getKey())) {
+        if (GenService.isMultiValued(e.getKey())) {
           add = getCD4C().addMethod(observerClass, "umlp.allobserver.assocs.AllObserverAddNotify",
               cdDefinitionOfAssoc , className, e.getValue().getName(), e.getKey(), otherTypeName);
           remove = getCD4C().addMethod(observerClass, "umlp.allobserver.assocs.AllObserverRemoveNotify",
               cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(), otherTypeName);
+        }
+        if (GenService.isMap(e.getKey())) {
+          // maps have no positions: no set at index
+          if (add != null && remove != null) {
+            glex.replaceTemplate("cd2java.Annotations", add, new StringHookPoint("@Override"));
+            glex.replaceTemplate("cd2java.Annotations", remove, new StringHookPoint("@Override"));
+          }
+          continue;
         }
         ASTCDMethodSignature set = getCD4C().addMethod(observerClass, "umlp.allobserver.assocs.AllObserverSetNotify",
             cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(), otherTypeName);

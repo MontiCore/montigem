@@ -143,7 +143,7 @@ public class DAODecorator extends DAOInterfaceDecorator {
   @Override
   protected void selectMethodForAssocDAO(ASTCDType daoClass, ASTCDAssociation assoc, ASTCDAssocSide assocStart, ASTCDAssocSide assocEnd) {
 
-    if(GenService.isList(assocEnd)) {
+    if(GenService.isMultiValued(assocEnd)) {
       selectInitMethodForListAssocDAO(daoClass, assoc.getName(), assocStart, assocEnd, "s");
       selectMethodForListAssocDAO(daoClass, assocStart, assocEnd);
     } else {
@@ -440,7 +440,7 @@ public class DAODecorator extends DAOInterfaceDecorator {
   }
 
   protected String getIDNumerusForAssociationSide(ASTCDAssocSide side) {
-    if (GenService.isList(side)) {
+    if (GenService.isMultiValued(side)) {
       return "s";
     }
     return "";
