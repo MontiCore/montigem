@@ -134,9 +134,9 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
   }
 
   @Override
-  public boolean containsValue(Long gemID) {
+  public boolean containsValueID(long gemID) {
     if(buildFinished) {
-      return super.containsValue(gemID);
+      return super.containsValueID(gemID);
     } else {
       return unkeyedValueIDs.contains(gemID)
           || builderElemStorage.values().stream().anyMatch(v -> v.getGemId() == gemID);

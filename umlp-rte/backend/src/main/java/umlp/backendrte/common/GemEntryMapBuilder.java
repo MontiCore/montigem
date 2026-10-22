@@ -136,9 +136,9 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
   }
 
   @Override
-  public boolean containsKey(Long gemID) {
+  public boolean containsKeyID(long gemID) {
     if(buildFinished) {
-      return super.containsKey(gemID);
+      return super.containsKeyID(gemID);
     } else {
       ensureKeyed();
       return builderElemStorage.containsKey(gemID);
@@ -146,9 +146,9 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
   }
 
   @Override
-  public boolean containsValue(Long gemID) {
+  public boolean containsValueID(long gemID) {
     if(buildFinished) {
-      return super.containsValue(gemID);
+      return super.containsValueID(gemID);
     } else {
       return unkeyedValueIDs.contains(gemID)
           || builderElemStorage.values().stream().anyMatch(e -> e.getValue().getGemId() == gemID);

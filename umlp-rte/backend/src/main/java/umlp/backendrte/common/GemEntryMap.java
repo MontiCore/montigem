@@ -102,7 +102,7 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   @Override
   public boolean containsKey(Object key) {
     if(key instanceof GemIdentifiable){
-      return containsKey(((GemIdentifiable) key).getGemId());
+      return containsKeyID(((GemIdentifiable) key).getGemId());
     }else{
       Log.error("Key is not GemIdentifiable");
     }
@@ -112,7 +112,7 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   @Override
   public boolean containsValue(Object value) {
     if(value instanceof GemIdentifiable){
-      return containsValue(((GemIdentifiable) value).getGemId());
+      return containsValueID(((GemIdentifiable) value).getGemId());
     }else{
       Log.error("Value is not GemIdentifiable");
     }
@@ -125,7 +125,7 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
    * @param gemID the id of the object that may be contained in this Map
    * @return whether the object corresponding to gemID is contained in this Map
    */
-  public boolean containsValue(Long gemID) {
+  public boolean containsValueID(long gemID) {
     return idMap.containsValue(gemID) || unkeyedValueIDs.contains(gemID);
   }
 
@@ -135,7 +135,7 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
    * @param gemID the id of the object that may be contained in this Map
    * @return whether the object corresponding to gemID is contained in this Map
    */
-  public boolean containsKey(Long gemID) {
+  public boolean containsKeyID(long gemID) {
     ensureKeyed();
     return idMap.containsKey(gemID);
   }

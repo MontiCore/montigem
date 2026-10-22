@@ -95,7 +95,7 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
   @Override
   public boolean containsValue(Object value) {
     if(value instanceof GemIdentifiable){
-      return containsValue(((GemIdentifiable) value).getGemId());
+      return containsValueID(((GemIdentifiable) value).getGemId());
     }else{
       Log.error("Value is not GemIdentifiable");
     }
@@ -108,7 +108,7 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
    * @param gemID the id of the object that may be contained in this Map
    * @return whether the object corresponding to gemID is contained in this Map
    */
-  public boolean containsValue(Long gemID) {
+  public boolean containsValueID(long gemID) {
     return idMap.containsValue(gemID) || unkeyedValueIDs.contains(gemID);
   }
 
