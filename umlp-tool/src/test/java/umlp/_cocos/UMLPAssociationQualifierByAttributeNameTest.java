@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp._cocos;
 
+import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import org.junit.jupiter.api.Test;
 
 public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTest<UMLPAssociationQualifierByAttributeName> {
@@ -13,9 +14,17 @@ public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTes
   public void testInvalidQAttrType() {
     parseInvalid("UMLPAssocQualifierComplexAttrType");
 
-    assertFindingAtLine(0, 13, "isTrue");
-    assertFindingAtLine(1, 14, "a");
+    assertFindingAtLine(0, 13, "names");
+    assertFindingAtLine(1, 14, "e");
     assertFindingsCount(2);
+  }
+
+  @Test
+  public void testValidKeys() {
+    ASTCDCompilationUnit ast = parse("cocovalid/UMLPAssocQualifierKeys.umlp");
+    createSymTab(ast);
+    checker.checkAll(ast);
+    assertNoErrors();
   }
 
   @Test

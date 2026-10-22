@@ -1,0 +1,18 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPAssocQualifierKeys {
+  class A {
+    String name;
+    int number;
+    boolean flag;
+    C c;
+  }
+
+  class B;
+
+  class C;
+
+  association B [[name]] (byName) -> A [*];
+  association B [[number]] (byNumber) -> A [0..1];
+  association B [[flag]] (byFlag) -> A [*];
+  association B [[c]] (byC) -> A [*];
+}

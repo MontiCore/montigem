@@ -10,6 +10,8 @@ import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types3.SymTypeRelations;
 import de.monticore.types3.util.WithinTypeBasicSymbolsResolver;
 
+import umlp.generator.domain.decorator.GenService;
+
 import java.util.Optional;
 
 
@@ -20,7 +22,7 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
   public static final String NO_ATTR_ERROR_CODE = "0xCDC69";
 
   public static final String TYPE_ERROR_MSG_FORMAT = " Qualified association with attribute %s " +
-      "has incompatible type, qualified associations only support numeric or string type qualifiers.";
+      "has incompatible type, qualified associations only support primitive, String or domain class attributes as qualifiers.";
   public static final String NO_ATTR_ERROR_MSG_FORMAT = " Attribute %s of qualified association " +
       "does not exist in class %s.";
 
@@ -50,7 +52,7 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
     Optional<SymTypeExpression> expr = this.resolver.resolveVariable(ste, attributeName,
         BasicAccessModifier.ALL_INCLUSION, x -> true);
     if (expr.isPresent()) {
-      if (!SymTypeRelations.isNumericType(expr.get()) && !SymTypeRelations.isString(expr.get())){
+      if (!isValueKey(expr.get()) && !isDomainKey(expr.get())){
         logError(qSide.getCDQualifier().get_SourcePositionStart(),
                  TYPE_ERROR_CODE,
                  TYPE_ERROR_MSG_FORMAT,
@@ -63,6 +65,21 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
                attributeName,
                attrSide.getMCQualifiedType().getMCQualifiedName());
     }
+  }
+
+  /**
+   * primitive (MontiCore typecheck, String included) qualifiers are keys of a GemValueMap
+   */
+  public static boolean isValueKey(SymTypeExpression type) {
+    return type.isPrimitive() || SymTypeRelations.isNumericType(type)
+        || SymTypeRelations.isBoolean(type) || SymTypeRelations.isString(type);
+  }
+
+  /**
+   * domain class qualifiers are keys of a GemEntryMap
+   */
+  public static boolean isDomainKey(SymTypeExpression type) {
+    return type.hasTypeInfo() && GenService.isDomainType(type.getTypeInfo()) && !GenService.isCDEnum(type);
   }
 
   @Override
