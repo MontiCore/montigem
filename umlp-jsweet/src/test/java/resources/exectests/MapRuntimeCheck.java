@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * java.util.Map in transpiled code: java.util.Map becomes IUMLPMap, the map classes become AsyncMap.
@@ -143,6 +144,15 @@ public class MapRuntimeCheck {
     Object m = abc();
     Object list = new ArrayList<String>();
     return (m instanceof Map) + "," + (list instanceof Map);
+  }
+
+  /** only order independent operations: TreeMap sorts its keys, AsyncMap keeps the insertion order */
+  @JSweetTest
+  public static String sortedMap() {
+    TreeMap<String, Integer> m = new TreeMap<>();
+    m.put("b", 2);
+    m.put("a", 1);
+    return m.size() + "," + m.get("a") + "," + m.containsKey("b") + "," + sumOfValues(m);
   }
 
   @JSweetTest

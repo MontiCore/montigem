@@ -33,15 +33,28 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import java.util.AbstractList;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.Vector;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -141,34 +154,20 @@ public class CollectionsAdapter extends AbstractAdapter {
     putToStaticLibrary(Collection.class.getName(), CustomCollectionInterfaceName);
 
     // maps work like lists: the interfaces become IUMLPMap, the classes AsyncMap
-    for (String mapInterface : MAP_INTERFACES) {
-      putToStaticLibrary(mapInterface, CustomUMLPMapInterfaceName);
-    }
-    for (String mapClass : MAP_CLASSES) {
-      putToStaticLibrary(mapClass, CustomAsyncMapImplementationName);
-    }
-  }
-
-  /** java.util.Map and its abstract supertypes, transpiled to IUMLPMap */
-  public static final List<String> MAP_INTERFACES = List.of(
-      "java.util.Map",
-      "java.util.AbstractMap",
-      "java.util.SortedMap",
-      "java.util.NavigableMap",
-      "java.util.concurrent.ConcurrentMap");
-
-  /** the map classes, transpiled to AsyncMap (insertion ordered, keys compared like ===) */
-  public static final List<String> MAP_CLASSES = List.of(
-      "java.util.HashMap",
-      "java.util.LinkedHashMap",
-      "java.util.TreeMap",
-      "java.util.Hashtable",
-      "java.util.WeakHashMap",
-      "java.util.IdentityHashMap",
-      "java.util.concurrent.ConcurrentHashMap");
-
-  private static boolean isMapType(String qualifiedName) {
-    return MAP_INTERFACES.contains(qualifiedName) || MAP_CLASSES.contains(qualifiedName);
+    // (insertion ordered, keys compared like ===)
+    putToStaticLibrary(Map.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(AbstractMap.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(SortedMap.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(NavigableMap.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(ConcurrentMap.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(HashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(LinkedHashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(TreeMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(Hashtable.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(WeakHashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(IdentityHashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(ConcurrentHashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(ConcurrentSkipListMap.class.getName(), CustomAsyncMapImplementationName);
   }
 
   @Override
@@ -243,15 +242,31 @@ public class CollectionsAdapter extends AbstractAdapter {
           if (substituteUMLPGuiArrayInvocations(invocation, targetMethodName))
             return true;
           break;
+        case "java.util.Map":
+        case "java.util.AbstractMap":
+        case "java.util.SortedMap":
+        case "java.util.NavigableMap":
+        case "java.util.concurrent.ConcurrentMap":
+        case "java.util.HashMap":
+        case "java.util.LinkedHashMap":
+        case "java.util.TreeMap":
+        case "java.util.Hashtable":
+        case "java.util.WeakHashMap":
+        case "java.util.IdentityHashMap":
+        case "java.util.concurrent.ConcurrentHashMap":
+        case "java.util.concurrent.ConcurrentSkipListMap":
+        case "umlp.backendrte.common.GemValueMap":
+        case "umlp.backendrte.common.GemEntryMap":
+          // Handle standard Map methods
+          if (substituteMapInvocations(invocation, targetMethodName)) {
+            return true;
+          }
+          break;
         case "java.util.Map.Entry":
           if (substituteMapEntryInvocations(invocation, targetMethodName)) {
             return true;
           }
           break;
-        default:
-          if (isMapType(targetClassName) && substituteMapInvocations(invocation, targetMethodName)) {
-            return true;
-          }
       }
     }
 
@@ -452,13 +467,19 @@ public class CollectionsAdapter extends AbstractAdapter {
           Log.warn("Did not implement new UMLPGuiArray with more than one parameters");
         }
         return true;
-    }
-    if (MAP_CLASSES.contains(newClass.getTypeAsElement().toString())) {
-      // no arguments, a capacity (+ load factor), a comparator (ignored) or a map to copy
-      print("(await new " + CustomAsyncMapImplementationConstructor + "(")
-          .printArgList(newClass.getArguments()).print("))");
-      getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncMapImplementationName, getLibraryLocation()));
-      return true;
+      case "java.util.HashMap":
+      case "java.util.LinkedHashMap":
+      case "java.util.TreeMap":
+      case "java.util.Hashtable":
+      case "java.util.WeakHashMap":
+      case "java.util.IdentityHashMap":
+      case "java.util.concurrent.ConcurrentHashMap":
+      case "java.util.concurrent.ConcurrentSkipListMap":
+        // no arguments, a capacity (+ load factor), a comparator (ignored) or a map to copy
+        print("(await new " + CustomAsyncMapImplementationConstructor + "(")
+            .printArgList(newClass.getArguments()).print("))");
+        getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncMapImplementationName, getLibraryLocation()));
+        return true;
     }
 
     return super.substituteNewClass(newClass);
@@ -528,7 +549,8 @@ public class CollectionsAdapter extends AbstractAdapter {
   @Override
   public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror type) {
     String typeString = types().erasure(type).toString();
-    if (isMapType(typeString)) {
+    String replacement = getStaticLibrary().get(typeString);
+    if (CustomUMLPMapInterfaceName.equals(replacement) || CustomAsyncMapImplementationName.equals(replacement)) {
       // AsyncMap and the GemMaps extend AbstractAsyncMap
       print("(");
       print(exprStr, expr);
