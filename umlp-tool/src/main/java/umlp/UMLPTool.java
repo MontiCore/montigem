@@ -341,6 +341,7 @@ public class UMLPTool extends UMLPToolTOP {
   @Override
   public IUMLPArtifactScope createSymbolTable(ASTCDCompilationUnit node) {
     IUMLPArtifactScope as = super.createSymbolTable(node);
+    UMLPTypeCheck3.resetTypeCache();
     node.accept(new CD4CodeSymbolTableCompleter(node).getTraverser()); // run symbol table completer
     return as;
   }
@@ -386,6 +387,7 @@ public class UMLPTool extends UMLPToolTOP {
     // rebuild symbol table
     CD4CodeMill.globalScope().removeSubScope(node.getEnclosingScope());
     IUMLPArtifactScope artifactScope = UMLPMill.scopesGenitorDelegator().createFromAST(node);
+    UMLPTypeCheck3.resetTypeCache();
     node.accept(new CD4CodeSymbolTableCompleter(node).getTraverser());
     logTrafoExec("rebuildCD4CodeSymTab", node);
     return artifactScope;

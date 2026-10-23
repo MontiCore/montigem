@@ -14,8 +14,8 @@ public  class UMLPFullPrettyPrinter extends UMLPFullPrettyPrinterTOP {
   }
 
   @Override
-  protected void initializeTraverser(boolean printComments) {
-    super.initializeTraverser(printComments);
+  protected void initializeTraverser(IndentPrinter printer, boolean printComments) {
+    super.initializeTraverser(printer, printComments);
     getTraverser().setCDBasisHandler(new CD2UMLPPrettyPrinter(getPrinter(), printComments));
   }
 

@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import de.monticore.cd._symboltable.CDSymbolTables;
 import de.monticore.cd.codegen.TopDecorator;
 import de.monticore.cd.codegen.methods.MethodDecorator;
-import de.monticore.cd4code.typescalculator.FullSynthesizeFromCD4Code;
+import de.monticore.types3.TypeCheck3;
 import de.monticore.cd4codebasis._ast.ASTCDMethod;
 import de.monticore.cd4codebasis._ast.ASTCDParameter;
 import de.monticore.cdassociation._ast.ASTCDAssocSide;
@@ -24,7 +24,6 @@ import de.monticore.io.paths.MCPath;
 import de.monticore.types.MCTypeFacade;
 import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.TypeCheck;
-import de.monticore.types.check.TypeCheckResult;
 import de.monticore.types.mcbasictypes.MCBasicTypesMill;
 import de.monticore.types.mcbasictypes._ast.ASTConstantsMCBasicTypes;
 import de.monticore.types.mcbasictypes._ast.ASTMCObjectType;
@@ -345,15 +344,12 @@ public class DomainClassDecorator extends DomainTypeDecorator implements OwnComm
     List<String> primitiveBooleans = new ArrayList<>();
     List<String> wrappedBooleans = new ArrayList<>();
     List<String> objects = new ArrayList<>();
-    FullSynthesizeFromCD4Code synthesize = new FullSynthesizeFromCD4Code();
-
     for (ASTCDAttribute attribute : CDSymbolTables.getAttributesInHierarchy(domainClass)) {
       if (attribute.getModifier().isDerived() || attribute.getModifier().isAbstract()) {
         continue;
       }
-      TypeCheckResult result = synthesize.synthesizeType(attribute.getMCType());
-      if (result.isPresentResult()) {
-        SymTypeExpression expression = result.getResult();
+      SymTypeExpression expression = TypeCheck3.symTypeFromAST(attribute.getMCType());
+      if (!expression.isObscureType()) {
         boolean isBool = TypeCheck.isBoolean(expression);
         if (expression.isPrimitive()) {
           if (isBool) {

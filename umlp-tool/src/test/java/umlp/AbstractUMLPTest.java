@@ -100,6 +100,7 @@ public abstract class AbstractUMLPTest {
 
   public IUMLPArtifactScope createSymTab(ASTCDCompilationUnit ast) {
     IUMLPArtifactScope as = UMLPMill.scopesGenitorDelegator().createFromAST(ast);
+    UMLPTypeCheck3.resetTypeCache();
     CD4CodeSymbolTableCompleter c = new CD4CodeSymbolTableCompleter(ast);
     ast.accept(c.getTraverser());
     return as;
@@ -179,6 +180,7 @@ public abstract class AbstractUMLPTest {
     // rebuild symbol table
     CD4CodeMill.globalScope().removeSubScope(node.getEnclosingScope());
     IUMLPArtifactScope as = UMLPMill.scopesGenitorDelegator().createFromAST(node);
+    UMLPTypeCheck3.resetTypeCache();
     node.accept(new CD4CodeSymbolTableCompleter(node).getTraverser());
     return as;
   }

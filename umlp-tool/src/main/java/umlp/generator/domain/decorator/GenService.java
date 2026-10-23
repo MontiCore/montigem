@@ -2,7 +2,7 @@
 package umlp.generator.domain.decorator;
 
 import com.google.common.base.Defaults;
-import de.monticore.cd4code.typescalculator.FullSynthesizeFromCD4Code;
+import de.monticore.types3.TypeCheck3;
 import de.monticore.cd4codebasis._ast.ASTCDMethodSignature;
 import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
@@ -20,7 +20,6 @@ import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.SymTypeExpressionFactory;
 import de.monticore.types.check.SymTypeOfGenerics;
 import de.monticore.types.check.TypeCheck;
-import de.monticore.types.check.TypeCheckResult;
 import de.monticore.types.check.TypeRelations;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedType;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
@@ -177,10 +176,9 @@ public class GenService {
   }
 
   public static ASTExpression createInitialValue(ASTMCType type) {
-    FullSynthesizeFromCD4Code synthesize = new FullSynthesizeFromCD4Code();
-    TypeCheckResult result = synthesize.synthesizeType(type);
-    if (result.isPresentResult()) {
-      return createInitialValue(result.getResult());
+    SymTypeExpression result = TypeCheck3.symTypeFromAST(type);
+    if (!result.isObscureType()) {
+      return createInitialValue(result);
     }
     Log.error("");
     return null;

@@ -138,8 +138,8 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
             Log.error("Unable to resolve Optional inner type " + paramType, meth.get_SourcePositionStart());
           }
           paramFQN = GenService.getCorrectJavaFQN(symbol.get().getFullName());
-        } else if (paramTypeSym.getDefiningSymbol().isPresent()) {
-          paramFQN = GenService.getCorrectJavaFQN(paramTypeSym.getDefiningSymbol().get().getFullName());
+        } else if (UMLPSymbolTables.getTypeSymbol(paramTypeSym).isPresent()) {
+          paramFQN = GenService.getCorrectJavaFQN(UMLPSymbolTables.getTypeSymbol(paramTypeSym).get().getFullName());
         } else {
           Log.error("Unable to detect type from command ", meth.get_SourcePositionStart());
           paramFQN = "Object";

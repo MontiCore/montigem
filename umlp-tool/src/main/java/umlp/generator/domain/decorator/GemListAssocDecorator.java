@@ -64,7 +64,7 @@ public class GemListAssocDecorator extends AbstractDecorator {
     String sourceName = domainClass.getName();
     String assocName = assoc.getName();
     String className = getName(domainClass, assoc);
-    CDTypeSymbol targetSymbol = (CDTypeSymbol) assoc.getMCQualifiedType().getDefiningSymbol().get();
+    CDTypeSymbol targetSymbol = (CDTypeSymbol) UMLPSymbolTables.getTypeSymbol(assoc.getMCQualifiedType()).get();
     String targetName = targetSymbol.getName();
     String managerName = origCD.getCDDefinition().getName() + ManagerDecorator.SUFFIX;
 

@@ -30,8 +30,8 @@ public abstract class ExpressionPrinter extends GUIDSLFullPrettyPrinter {
   }
 
   @Override
-  protected void initializeTraverser(boolean printComments) {
-    super.initializeTraverser(printComments);
+  protected void initializeTraverser(IndentPrinter printer, boolean printComments) {
+    super.initializeTraverser(printer, printComments);
     resetPrinter();
   }
 

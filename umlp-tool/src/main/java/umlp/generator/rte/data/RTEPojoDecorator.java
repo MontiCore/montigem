@@ -314,11 +314,11 @@ public class RTEPojoDecorator extends DomainTypeDecorator {
                   getTypeFromFQNString(assocSide.getSymbol().getType().printFullName()))));
     });
     domainType.getInterfaceList().forEach(cdInterface ->
-        cdInterface.getDefiningSymbol().ifPresent(definingSymbol ->
+        UMLPSymbolTables.getTypeSymbol(cdInterface).ifPresent(definingSymbol ->
             getCD4C().addImport(cdType, Joiners.DOT.join(definingSymbol.getPackageName().toLowerCase(),
                 definingSymbol.getName()))));
     domainType.getSuperclassList().forEach(cdExtension ->
-        cdExtension.getDefiningSymbol().ifPresent(definingSymbol ->
+        UMLPSymbolTables.getTypeSymbol(cdExtension).ifPresent(definingSymbol ->
             getCD4C().addImport(cdType, Joiners.DOT.join(definingSymbol.getPackageName().toLowerCase(),
                 definingSymbol.getName()))));
 
