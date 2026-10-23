@@ -36,6 +36,11 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-10-23: 7.9.3-SNAPSHOT
+* MontiCore, CD4A and GUIDSL updated to 7.10.0-SNAPSHOT
+* Handwritten CD decorators: `ASTMCQualifiedType.getDefiningSymbol()` is no longer set (TypeCheck3),
+  use the symbol's type instead (e.g. `assocSide.getSymbol().getType().getTypeInfo()`)
+
 ## 2026-10-20: 7.9.3-SNAPSHOT
 * **Breaking:** Reusing class diagrams no longer uses the `<<extends="...">>` stereotype.
   A class diagram now extends every UMLP class diagram it imports from, either via a star
