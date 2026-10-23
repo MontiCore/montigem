@@ -68,4 +68,37 @@ umlp Associations {
   // Not allowed: association uniSomeToOne [1..*] UniSomeToOneLhs -> UniSomeToOneRhs [1];
   association uniSomeToMany [1..*] UniSomeToManyLhs -> UniSomeToManyRhs [*];
   // Not allowed: association uniSomeToSome [1..*] UniSomeToSomeLhs -> UniSomeToSomeRhs [1..*];
+
+  // Attribute qualified associations (GemMaps), see GemMapSyncTest
+
+  class Student {
+    String name;
+    int matNr;
+  }
+
+  class Course {
+    String title;
+  }
+
+  class Staff {
+    String staffId;
+  }
+
+  class Tutor extends Staff {
+    int weeklyHours;
+  }
+
+  class Enrollment {
+    Student student;
+    int grade;
+  }
+
+  // GemValueMap, int key declared in the target
+  association Course [[matNr]] (attendedCourse) -> (participantByMatNr) Student [*];
+
+  // GemValueMap, key declared in the superclass of the target
+  association Course [[staffId]] (tutoredCourse) -> (tutorByStaffId) Tutor [*];
+
+  // GemEntryMap, keyed by the referenced Student
+  association Course [[student]] (enrollmentCourse) -> (enrollmentByStudent) Enrollment [*];
 }
