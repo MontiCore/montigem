@@ -221,14 +221,14 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
   default void testModificationsThroughMapAreSynchronized() {
     getBackend().activate();
     var directory = QualifiedAssocsManager.directoryBuilder().build().get();
-    QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
-    QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
 
     getClients(0).activate();
     var clientMap = QualifiedAssocsManager.getDirectoryList().get(0).getByLoginMap();
-    var clientPersons = QualifiedAssocsManager.getPersonList();
-    clientMap.put("anna", clientPersons.get(0));
-    clientMap.put("bob", clientPersons.get(1));
+    // by gemId: the order of getPersonList() is not defined
+    clientMap.put("anna", QualifiedAssocsManager.getPersonSure(anna.getGemId()));
+    clientMap.put("bob", QualifiedAssocsManager.getPersonSure(bob.getGemId()));
 
     getBackend().activate();
     assertEquals(2, directory.sizeByLogins());
