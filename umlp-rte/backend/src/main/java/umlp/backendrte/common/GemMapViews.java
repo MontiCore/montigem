@@ -98,12 +98,15 @@ abstract class GemMapViews<I, K, V extends GemIdentifiable> {
 
       @Override
       public boolean contains(Object o) {
+        // derive pending keys first, a loaded map knows its values by id only
+        currentKeys();
         I storedKey = toStoredKey(o);
         return storedKey != null && containsStoredKey(storedKey);
       }
 
       @Override
       public boolean remove(Object o) {
+        currentKeys();
         I storedKey = toStoredKey(o);
         Long gemID = storedKey == null ? null : lookupID(storedKey);
         if (gemID == null) {
@@ -205,6 +208,8 @@ abstract class GemMapViews<I, K, V extends GemIdentifiable> {
     if (!(o instanceof Entry) || !(((Entry<?, ?>) o).getValue() instanceof GemIdentifiable)) {
       return null;
     }
+    // derive pending keys first, a loaded map knows its values by id only
+    currentKeys();
     Entry<?, ?> entry = (Entry<?, ?>) o;
     I storedKey = toStoredKey(entry.getKey());
     Long gemID = storedKey == null ? null : lookupID(storedKey);

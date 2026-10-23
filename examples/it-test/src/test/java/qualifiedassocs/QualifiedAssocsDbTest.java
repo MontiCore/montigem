@@ -278,6 +278,33 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertEquals(0, clone.sizeByLogins());
   }
 
+  /** a loaded map knows its values by id only: contains/remove of the views derive the keys first */
+  @Test
+  default void testViewsOfMapWithPendingKeys() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();
+    var eve = QualifiedAssocsManager.employeeBuilder().name("eve").department(sales).build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder()
+        .byLoginPut(anna).byLoginPut(bob).byDepartmentPut(eve).build().get();
+
+    getClients(0).activate();
+    var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
+    // no access before: the first operations on the maps are the ones of the views
+    assertTrue(clientDirectory.getByLoginMap().keySet().contains("anna"));
+    assertTrue(clientDirectory.getByLoginMap().keySet().remove("bob"));
+    var clientEntry = Map.entry(QualifiedAssocsManager.getDepartmentSure(sales.getGemId()),
+        QualifiedAssocsManager.getEmployeeSure(eve.getGemId()));
+    assertTrue(clientDirectory.getByDepartmentMap().entrySet().contains(clientEntry));
+    assertTrue(clientDirectory.getByDepartmentMap().entrySet().remove(clientEntry));
+
+    getBackend().activate();
+    assertTrue(directory.containsKeyByLogin("anna"));
+    assertFalse(directory.containsKeyByLogin("bob"));
+    assertTrue(directory.getByDepartmentMap().isEmpty());
+  }
+
   @Test
   default void testEntryMapViews() {
     getBackend().activate();

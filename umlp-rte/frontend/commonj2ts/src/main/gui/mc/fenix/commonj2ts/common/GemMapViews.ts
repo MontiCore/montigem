@@ -60,10 +60,12 @@ export abstract class GemMapViews<I, K, V extends GemIdentifiable> {
   }
 
   /** the gemId of the value if o is an entry contained in the map, otherwise null */
-  gemIDOfEntry(o: any): number {
+  async gemIDOfEntry(o: any): Promise<number> {
     if (!Array.isArray(o) || o.length !== 2 || o[1] == null || typeof o[1].getGemId !== "function") {
       return null;
     }
+    // derive pending keys first, a loaded map knows its values by id only
+    await this.currentKeys();
     const storedKey: I = this.toStoredKey(o[0]);
     const gemID: number = storedKey == null ? null : this.lookupID(storedKey);
     return gemID != null && gemID === o[1].getGemId() ? gemID : null;
@@ -149,13 +151,15 @@ class GemMapView<I, K, V extends GemIdentifiable, E> implements Collection<E> {
   async contains(o: any): Promise<boolean> {
     switch (this._kind) {
       case "keys": {
+        // derive pending keys first, a loaded map knows its values by id only
+        await this._views.currentKeys();
         const storedKey: I = this._views.toStoredKey(o);
         return storedKey != null && this._views.containsStoredKey(storedKey);
       }
       case "values":
         return o != null && typeof o.getGemId === "function" && this._views.containsValueID(o.getGemId());
       case "entries":
-        return this._views.gemIDOfEntry(o) != null;
+        return (await this._views.gemIDOfEntry(o)) != null;
     }
   }
 
@@ -211,6 +215,7 @@ class GemMapView<I, K, V extends GemIdentifiable, E> implements Collection<E> {
     let gemID: number = null;
     switch (this._kind) {
       case "keys": {
+        await this._views.currentKeys();
         const storedKey: I = this._views.toStoredKey(o);
         gemID = storedKey == null ? null : this._views.lookupID(storedKey);
         break;
@@ -219,7 +224,7 @@ class GemMapView<I, K, V extends GemIdentifiable, E> implements Collection<E> {
         gemID = (await this.contains(o)) ? o.getGemId() : null;
         break;
       case "entries":
-        gemID = this._views.gemIDOfEntry(o);
+        gemID = await this._views.gemIDOfEntry(o);
         break;
     }
     if (gemID == null) {
