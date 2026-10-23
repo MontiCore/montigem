@@ -27,7 +27,7 @@ import {JavaUtilUtils} from "../javautil/JavaUtilUtils";
  */
 export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdentifiable> extends AbstractAsyncMap<K, V> implements GemBuildable {
 
-  // Lokaler speicher für die gemIds der enthaltenen Objekte. Enthält alle IDs der Qualifizierten Assoziation.
+  // local storage of the gemIds of the contained objects: all ids of the qualified association
   protected idMap: Map<number, number> = new Map();
 
   // ids of values whose key is not known yet, keyed by ensureKeyed()

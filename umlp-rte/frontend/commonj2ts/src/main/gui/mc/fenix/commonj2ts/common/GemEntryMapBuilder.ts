@@ -10,16 +10,15 @@ import {AsyncList} from "../javautil/AsyncList";
 import {AsyncMap} from "../javautil/AsyncMap";
 import {AsyncSet} from "../javautil/AsyncSet";
 
-// GemMap, welche bei der Erstellung von Objekten benutzt werden muss, da sie in diesem Zustand
-// noch nicht mit anderen Teilnehmen synchronisiert werden kann.
+// GemMap that has to be used while objects are created, as in this state it cannot be
+// synchronized with other participants yet.
 export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildable, V extends GemIdentifiable & GemBuildable> extends GemEntryMap<K, V> {
   protected buildFinished: boolean = false;
 
-  // Da einem in einem Builder andere Builder hinzugefügt werden können und der FlensburgManager diese
-  // nicht kennt, also auch nicht per id laden kann, muss hier eine lokale Verwaltung stattfinden.
-  // Nach build() wird diese geleert und nicht weiter verwendet.
-  // Schlüssel ist die gemId des Key-Elements: Builder haben ihre gemId bereits ab der Konstruktion.
-  // Map, damit die Reihenfolge der Einfügereihenfolge entspricht.
+  // Other builders can be added to a builder; the manager does not know them yet and cannot load them
+  // by id, so they are kept here locally. build() clears this storage, it is not used afterwards.
+  // The key is the gemId of the key element: builders have their gemId from construction on.
+  // a Map keeps the insertion order
   protected builderElemStorage: Map<number, [IDOrBuilder<K>, IDOrBuilder<V>]> = new Map();
 
   public constructor() {
@@ -52,7 +51,7 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
 
     this.buildFinished = true;
 
-    // Von hier an werden alle Element vom FlensburgManager geladen
+    // from now on, all elements are loaded by the manager
     this.builderElemStorage.clear();
 
     return this;

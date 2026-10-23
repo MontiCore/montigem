@@ -30,7 +30,7 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
     extends AbstractMap<K, V>
     implements GemBuildable {
 
-  // Lokaler speicher für die gemIds der enthaltenen Objekte. Enthält alle IDs der Qualifizierten Assoziation.
+  // local storage of the gemIds of the contained objects: all ids of the qualified association
   protected HashMap<K, Long> idMap;
 
   // ids of values whose key is not known yet, keyed by ensureKeyed()
