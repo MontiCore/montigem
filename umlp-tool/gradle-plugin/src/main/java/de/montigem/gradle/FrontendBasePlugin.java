@@ -296,11 +296,7 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
       project.getRepositories().mavenLocal();
     }
     project.getRepositories().maven(repo -> {
-      String mavenUser = requireProjectProperty(project, "mavenUser");
-      String mavenPassword = requireProjectProperty(project, "mavenPassword");
       String repoURL = requireProjectProperty(project, "repo");
-      repo.getCredentials().setUsername(mavenUser);
-      repo.getCredentials().setPassword(mavenPassword);
       repo.setUrl(repoURL);
     });
     project.getRepositories().mavenCentral();
