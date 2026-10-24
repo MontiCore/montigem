@@ -74,14 +74,34 @@ export class GemNumberInput extends GemNumberInputComponent implements OnInit, O
       : 1;
   }
 
+  private hasMin(): boolean {
+    return this.min !== undefined && this.min !== null && !isNaN(Number(this.min));
+  }
+
+  private getMinValue(): number {
+    return Number(this.min);
+  }
+
+  private clampToMin(val: number): number {
+    return this.hasMin() ? Math.max(val, this.getMinValue()) : val;
+  }
+
+  private getCurrentNumber(): number {
+    return this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : 0);
+  }
+
   onStepUp(): void {
-    const currentNum = this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : 0);
-    this.updateValue(currentNum + this.getStepValue());
+    this.updateValue(this.clampToMin(this.getCurrentNumber() + this.getStepValue()));
   }
 
   onStepDown(): void {
-    const currentNum = this.lastNumericValue ?? (this.entry !== null && this.entry !== undefined ? Number(this.entry) : 0);
-    this.updateValue(currentNum - this.getStepValue());
+    this.updateValue(this.clampToMin(this.getCurrentNumber() - this.getStepValue()));
+  }
+
+  onBlur(): void {
+    if (this.hasMin() && this.lastNumericValue !== null && this.lastNumericValue < this.getMinValue()) {
+      this.updateValue(this.getMinValue());
+    }
   }
 
   onKeyDown(event: KeyboardEvent): void {
@@ -122,7 +142,7 @@ export class GemNumberInput extends GemNumberInputComponent implements OnInit, O
     const selectionEnd = target?.selectionEnd ?? 0;
 
     if (event.key === '-' && !currentVal.includes('-')) {
-      if (selectionStart === 0) {
+      if (selectionStart === 0 && (!this.hasMin() || this.getMinValue() < 0)) {
         return;
       }
     }
@@ -153,6 +173,11 @@ export class GemNumberInput extends GemNumberInputComponent implements OnInit, O
       const sanitized = this.normalizeNumberString(futureValue);
       if (isNaN(Number(sanitized)) || /^\s*$/.test(sanitized)) {
         event.preventDefault();
+        return;
+      }
+      if (this.hasMin() && this.getMinValue() >= 0 && Number(sanitized) < 0) {
+        event.preventDefault();
+        return;
       }
     }
   }
