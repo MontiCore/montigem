@@ -1,0 +1,25 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.advanced;
+
+/**
+  Types used in a GemStatusIcon component.
+*/
+classdiagram GemStatusIconTypes {
+
+  /**
+    A possible status of a GemStatusIcon together with the way it is displayed.
+  */
+  public class GemStatus {
+    /** Status value, e.g. the name of an enum constant. Compared case-insensitive. */
+    String value;
+    /** Color of the icon for this status in `hex`, `rgb`, color names, etc. */
+    String color;
+    /**
+      Icon name for this status from https://fonts.google.com/icons.
+      If null, the `icon` of the GemStatusIcon is used.
+    */
+    String icon;
+    +GemStatus(String value, String color, String icon);
+  }
+
+}
