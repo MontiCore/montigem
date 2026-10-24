@@ -1,6 +1,7 @@
 export * from './src/main/gui/mc/fenix/arrange/GemCard';
 export * from './src/main/gui/mc/fenix/arrange/GemColumn';
 export * from './src/main/gui/mc/fenix/arrange/GemDialog';
+export * from './src/main/gui/mc/fenix/arrange/GemDivider';
 export * from './src/main/gui/mc/fenix/arrange/GemGrid';
 export * from './src/main/gui/mc/fenix/arrange/GemGridCell';
 export * from './src/main/gui/mc/fenix/arrange/GemOverlay';
