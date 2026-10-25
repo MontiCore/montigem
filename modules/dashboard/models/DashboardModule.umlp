@@ -1,0 +1,157 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import mc.fenix.charts.GemBarChartTypes.GemBarChartData;
+import mc.fenix.charts.GemPieChartTypes.GemPieChartData;
+import mc.fenix.charts.GemBoxPlotTypes.GemBoxPlotData;
+import mc.fenix.charts.GemLineChartTypes.GemLineChartData;
+import mc.fenix.networkgraph.NetworkGraphTypes.Graph;
+import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotData;
+import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotShape;
+import mc.fenix.charts.GemGaugeChartTypes.GemGaugeChartData;
+
+import java.util.List;
+import java.lang.Object;
+
+//<<module>>
+umlp DashboardModule {
+
+  // Interprets the data scripts of the cells
+  <<singleton>>
+  class DashboardModuleApp {
+    String error = "";
+    GemPieChartData interpretPieChart(String data);
+    GemLineChartData interpretLineChart(String data);
+    Graph interpretNetworkGraph(String data);
+    GemBarChartData interpretBarChart(String data);
+    GemBoxPlotData interpretBoxPlot(String data);
+    GemGaugeChartData interpretGaugeChart(String data);
+    GemScatterPlotData interpretScatterPlot(String data);
+  }
+
+  class DashboardModuleConfig {
+    List<ViewConfig> views;
+    String colormode;
+  }
+
+  class ViewConfig {
+    int vid;
+    String name;
+    List<CellConfig> cells;
+  }
+
+  class CellConfig {
+    String data;
+    String name;
+    VizType viz;
+    Optional<ExtraData> extra;
+    -> (size) DashboardModuleSize;
+    -> (position) DashboardModulePosition;
+  }
+
+  class ExtraData {
+    Optional<BarExtraData> barextra;
+    Optional<BoxExtraData> boxextra;
+    Optional<GaugeExtraData> speedextra;
+    Optional<LineExtraData> linextra;
+    Optional<GraphExtraData> graphextra;
+    Optional<PieExtraData> piextra;
+    Optional<ScatterExtraData> scatterextra;
+  }
+
+  class PieExtraData {
+    int innerRadius;
+  }
+
+  class GraphExtraData {
+    String minHeight;
+    boolean showFilterGroup;
+    boolean showSearchNode;
+    boolean showControlButtons;
+    boolean showInformation;
+  }
+
+  class BarExtraData {
+    boolean stacked;
+    boolean overlapping;
+    Optional<Integer> maxValue;
+    int minValue;
+  }
+
+  class BoxExtraData {
+    double min;
+    Optional<Double> max;
+  }
+
+  class GaugeExtraData {
+    int min;
+    Optional<Integer> max;
+    String unit;
+    String textValue;
+    String textPosition;
+  }
+
+  class LineExtraData {
+    Optional<Integer> maxValue;
+    int minValue;
+  }
+
+  class ScatterExtraData {
+    Axis xAxis;
+    Axis yAxis;
+    // GemScatterPlotShape shape;
+  }
+
+  class Axis {
+    String label;
+    double minValue;
+    Optional<Double> maxValue;
+    double stepWidth;
+  }
+
+  class TileData {
+    String value;
+    String lastUpdated;
+  }
+
+  class TableData{
+    List<String> body;
+    List<String> headers;
+  }
+
+  class DashboardModuleSize {
+    double height;
+    double width;
+  }
+
+  class DashboardModulePosition {
+    double x;
+    double y;
+  }
+
+  enum VizType {
+    TABLE,
+    TILE,
+    NETWORK,
+    LINE,
+    BAR,
+    PIE,
+    SPEED,
+    BOX,
+    SCATTER;
+  }
+
+  class Preset {
+    int index;
+    String source;
+  }
+
+  class TutorialStep {
+    int stepId;
+    String instruction;
+    String section;
+    boolean hasButton;
+    boolean hasBackdrop;
+    boolean bottom;
+  }
+
+}

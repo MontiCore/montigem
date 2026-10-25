@@ -1,0 +1,68 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import de.montigem.gradle.specific.CreateSymlinkTask
+import de.montigem.gradle.specific.GUI2JavaTask
+import de.montigem.gradle.specific.UMLPJava2TSTask
+
+plugins {
+  id "de.rwth.se.montigem-frontend"
+}
+
+dependencies {
+  testImplementation project(':umlp-test-rte')
+
+  // The dashboard module: its domain models, and the symbols and import map of its GUI components
+  montigemModuleUMLPModels project(':modules:dashboard')
+  montigemModuleUMLPSymbols project(':modules:dashboard')
+  montigemModuleGUISymbols project(':modules:dashboard:frontend')
+  montigemModuleImportMap project(':modules:dashboard:frontend')
+}
+
+configurations {
+  testRuntimeClasspath.exclude group: 'de.monticore.language-server', module: 'monticore-language-server-runtime'
+}
+
+tasks.named("umlpJava2ts", UMLPJava2TSTask) {
+  verbose = true
+}
+
+tasks.named("gui2java", GUI2JavaTask) {
+  // Resolve the domain classes of the dashboard module (e.g., DashboardModuleConfig)
+  symbolPath.from(configurations.montigemModuleUMLPSymbols)
+}
+
+// Link the sources of the npm library of the dashboard module (@montigem/dashboard) into the app.
+// The app is compiled together with the library sources (cf. config/tsconfig*.override.json),
+// such that the example uses the current module without publishing the library first
+def dashboardLib = project(':modules:dashboard:frontend:dashboard')
+tasks.named("createSymlink", CreateSymlinkTask) {
+  dependsOn dashboardLib.tasks.named("guiJava2ts")
+  links.put(layout.buildDirectory.dir("app/libs/@montigem/dashboard").get().asFile,
+      dashboardLib.layout.projectDirectory.asFile)
+}
+
+test {
+  dependsOn buildApp
+  useJUnitPlatform() {
+    excludeTags "SlowTest"
+    excludeTags "Screenshot"
+  }
+}
+
+tasks.register("slowtest", Test) {
+  group = "verification"
+  testLogging {
+    events "PASSED", "SKIPPED", "FAILED", "STANDARD_OUT", "STANDARD_ERROR"
+  }
+  useJUnitPlatform {
+    includeTags "SlowTest"
+  }
+  shouldRunAfter test
+  dependsOn npmInstall
+}
+
+tasks.register("runAppNoBuild", NpxTask) {
+  group = "application"
+  command = "ng"
+  args = ["serve"]
+}

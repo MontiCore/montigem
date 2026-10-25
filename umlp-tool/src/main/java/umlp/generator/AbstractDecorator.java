@@ -36,7 +36,6 @@ import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.TypeCheck;
 import de.monticore.types.mcbasictypes._ast.ASTMCObjectType;
 import de.monticore.types.mcbasictypes._ast.ASTMCQualifiedType;
-import de.monticore.umlstereotype._ast.ASTStereoValue;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.Names;
 import de.se_rwth.commons.Splitters;
@@ -649,39 +648,17 @@ public abstract class AbstractDecorator {
       return;
     }
     String potentialExtendedCDName = fullName[fullName.length - 2];
-    String packageName = Joiners.DOT.join(Arrays.copyOfRange(fullName, 0, fullName.length - 1)).toLowerCase();
-    // this checks if a cd import requires a manager
-    if (!origCD.getModifier().isPresentStereotype()) {
-      return;
-    }
-    List<ASTStereoValue> valueList = origCD.getModifier().getStereotype().getValuesList();
-    List<String> extendedCDs = valueList.stream().filter(value -> value.getName().equals("extends"))
-        .map(ASTStereoValue::getValue).collect(Collectors.toList());
-
+    String potentialExtendedCDFullName = Joiners.DOT.join(Arrays.copyOfRange(fullName, 0, fullName.length - 1));
     // This checks a CD 'extends' another one, i.e. a UMLP Project extends/ is composed of another one
-    if (extendedCDs.stream().anyMatch(cdName -> cdName.equals(potentialExtendedCDName))) {
-      getCD4C().addImport(ast, Joiners.DOT.join(packageName, potentialExtendedCDName) + suffix);
+    if (UMLPSymbolTables.getExtendedCDs(UMLPSymbolTables.getDiagramFor(origCD)).stream()
+        .anyMatch(cd -> cd.getFullName().equals(potentialExtendedCDFullName))) {
+      getCD4C().addImport(ast, Joiners.DOT.join(potentialExtendedCDFullName.toLowerCase(), potentialExtendedCDName) + suffix);
     }
   }
 
   protected List<ASTCDCompilationUnit> getExtendedDefinitions(ASTCDCompilationUnit origCD){
-    if(!origCD.getCDDefinition().getModifier().isPresentStereotype()){
-      return List.of();
-    }
-
-    List<ASTStereoValue> valuesList = origCD.getCDDefinition().getModifier().getStereotype().getValuesList();
-    List<String> extendedCDs = valuesList.stream().filter(value -> value.getName().equals("extends"))
-        .map(ASTStereoValue::getValue).collect(Collectors.toList());
-    List<ASTCDCompilationUnit> res = new ArrayList<>();
-
-    extendedCDs.forEach(ecd -> {
-      Optional<DiagramSymbol> diagramSymbol = origCD.getEnclosingScope().resolveDiagram(ecd);
-      if (diagramSymbol.isPresent()) {
-        ASTCDDefinition astNode = (ASTCDDefinition) diagramSymbol.get().getAstNode();
-        res.add(UMLPSymbolTables.getDiagramFor(astNode));
-      }
-    });
-
-    return res;
+    return UMLPSymbolTables.getExtendedCDs(origCD).stream()
+        .map(cd -> UMLPSymbolTables.getDiagramFor((ASTCDDefinition) cd.getAstNode()))
+        .collect(Collectors.toList());
   }
 }

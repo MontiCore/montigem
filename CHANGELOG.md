@@ -36,6 +36,13 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-10-20: 7.9.3-SNAPSHOT
+* **Breaking:** Reusing class diagrams no longer uses the `<<extends="...">>` stereotype.
+  A class diagram now extends every UMLP class diagram it imports from, either via a star
+  import (`import CDBase.*;`) or an import of a single class (`import CDBase.BaseClass;`).
+  Remove the stereotype and keep the import.
+* Cyclic imports between class diagrams are reported as an error (`0x70881`)
+
 ## 2026-10-14: 7.9.3-SNAPSHOT
 * Support for the `local` modifier of class diagrams 
  

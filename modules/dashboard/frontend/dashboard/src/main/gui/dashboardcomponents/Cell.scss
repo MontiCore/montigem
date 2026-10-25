@@ -1,0 +1,259 @@
+:host ::ng-deep gem-card {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+:host ::ng-deep .gem-card-body {
+  width: 100% !important;
+  height: 100% !important;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .cardBodyWrapper {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .gem-card-line {
+  height: 0px !important;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep gem-graph {
+  display: block;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+:host ::ng-deep .chart-wrapper {
+  position: relative;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex;
+}
+
+:host ::ng-deep .chart-wrapper canvas {
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex;
+}
+
+// covers the whole card; !important as GemRow sets an inline width/height: auto
+:host ::ng-deep .overlay{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 12px;
+  background-color: rgba(0, 0, 0, 0.5); // 50% opacity
+  z-index: 10;
+}
+
+:host ::ng-deep .gem-card-header {
+  background-color: var(--background-color);
+}
+
+:host ::ng-deep .gem-card-body {
+  background-color: var(--background-color);
+}
+
+
+:host ::ng-deep .card{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--text-color);
+}
+
+.title{
+  margin-bottom: 5px;
+  margin-top: 3px;
+}
+
+:host ::ng-deep .deleteButton .gem-button{
+  background-color: red;
+  color: red;
+}
+
+:host ::ng-deep .tutorialMove .gem-button{
+  border: 3px solid red;
+  border-radius: 3px;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}
+
+:host ::ng-deep .tutorialDownload .gem-button{
+  border: 3px solid red;
+  border-radius: 3px;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}
+
+:host ::ng-deep .display {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex;
+  position: relative;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+// the charts may shrink to the cell (flex items do not shrink below their content by default)
+:host ::ng-deep .display > * {
+  min-height: 0;
+}
+
+.deleteDialog{
+   position: fixed;
+   top: 300px;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1000;
+   color: var(--text-color);
+   background-color: var(--background-color);
+}
+
+.downloadDialog{
+   position: fixed;
+   top: 300px;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1000;
+   color: var(--text-color);
+   background-color: var(--background-color);
+}
+
+
+
+// Let the card fill the whole cell: drop GemCard's host padding, the theme's global .card border
+// and the border/shadow of the inner .gem-card (the cell itself already has border and shadow)
+:host ::ng-deep gem-card.card {
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+}
+
+:host ::ng-deep gem-card.card > .gem-card {
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: inherit;
+  // the inner gem-column gets an inline height: auto, so it would only be as high as its content
+  flex: 1 1 auto !important;
+  height: 100% !important;
+  min-height: 0;
+}
+
+// GemCard wraps the body in a (collapsible) grid wrapper: stretch it so that the body fills the card
+:host ::ng-deep gem-card.card .gem-card-collapse-wrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+:host ::ng-deep gem-card.card .gem-card-collapse-inner {
+  height: 100%;
+}
+
+// the gem-column's inline height: auto overrides the plain .cardBodyWrapper rule above
+:host ::ng-deep gem-card.card .cardBodyWrapper {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100% !important;
+}
+
+// compact card title: the theme's header uses padding: var(--card-padding) (1rem) and a 32px line height
+:host ::ng-deep gem-card.card .gem-card-header {
+  padding: 6px 12px;
+  line-height: 1.3;
+  // the global .grid-stack-item-content centers its text, which only showed for titles wrapping into two lines
+  text-align: left;
+}
+
+// compact card body as well: the theme's 1rem padding takes too much space from the charts in small cells
+:host ::ng-deep gem-card.card .gem-card-body {
+  padding: 4px 8px;
+}
+
+// network graph fills the whole card body: no body padding, no min-height from the cell's graph extra,
+// and the control overlay lies on top of the canvas (the theme does not include GemGraph.scss, which would
+// position .ui-overlay absolutely) instead of adding height below it
+:host ::ng-deep .gem-card-body:has(gem-graph) {
+  padding: 0 !important;
+}
+
+:host ::ng-deep gem-graph .chart-container {
+  position: relative;
+  height: 100%;
+}
+
+:host ::ng-deep gem-graph .chart-wrapper {
+  min-height: 0 !important;
+}
+
+:host ::ng-deep gem-graph .chart-container > .ui-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+// compact icon buttons in the edit-mode overlay (edit, download, delete): the theme gives .gem-button
+// min-width: 8rem, padding and margin, and the download image extra margins
+:host ::ng-deep .overlay gem-button {
+  margin: 0 !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+:host ::ng-deep .overlay gem-button .gem-button {
+  min-width: 0;
+  width: 44px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+}
+
+:host ::ng-deep .overlay gem-button .gem-button gem-image {
+  margin: 0 !important;
+  min-height: 0 !important;
+  display: flex;
+  align-items: center;
+}
+
+:host ::ng-deep .overlay gem-button .gem-button img {
+  width: 22px;
+  height: 22px;
+}

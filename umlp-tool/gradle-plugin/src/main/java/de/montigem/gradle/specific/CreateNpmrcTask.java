@@ -94,6 +94,8 @@ abstract public class CreateNpmrcTask extends DefaultTask {
       if (useLocalNpmRepo) {
         return "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
             "@umlp:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
+            // npm libraries of the MontiGem modules (e.g., @montigem/dashboard)
+            "@montigem:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
             "@monticore:_auth=\"" + encodedAuthData + "\"";
       }
 

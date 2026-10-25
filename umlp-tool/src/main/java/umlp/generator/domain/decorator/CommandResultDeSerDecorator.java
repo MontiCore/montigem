@@ -16,7 +16,13 @@ import umlp.generator.util.PathUtil;
 import umlp.generator.util.UMLPSymbolTables;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
 
 import static de.monticore.cd.facade.CDModifier.PUBLIC;
 
@@ -44,16 +50,30 @@ public class CommandResultDeSerDecorator extends AbstractDecorator {
 
     // add methods
     List<String> classNames = getClassNames(origCD);
+    Map<String,String> deSerTypes = getDeSerTypes(cmdResultDeSerClass, getPackageName(origCD, DEFAULT_PACKAGE), classNames);
     // TODO AHe: DeSer load state, error checks for empty etc
     getCD4C().addMethod(cmdResultDeSerClass, getBuildJsonTemplate(), classNames);
     getCD4C().addMethod(cmdResultDeSerClass, getFromJsonTemplate());
-    getCD4C().addMethod(cmdResultDeSerClass, getDeserSingleValueTemplate(), classNames);
-    getCD4C().addMethod(cmdResultDeSerClass, getSerSingleValueTemplate(), classNames);
+    getCD4C().addMethod(cmdResultDeSerClass, getDeserSingleValueTemplate(), deSerTypes);
+    getCD4C().addMethod(cmdResultDeSerClass, getSerSingleValueTemplate(), deSerTypes);
     getCD4C().addMethod(cmdResultDeSerClass, getCanDeserTemplate(), classNames);
 
     addImports(cmdResultDeSerClass);
 
     return cmdResultDeSerClass;
+  }
+
+  protected Map<String, String> getDeSerTypes(ASTCDClass clazz, String ownPackage, List<String> classNames) {
+    Map<String, String> deSerTypes = new LinkedHashMap<>();
+    for (String fqn : classNames) {
+      String simpleName = getTypeFromFQNString(fqn);
+      if (!getPackageFromFQNString(fqn).orElse("").equals(ownPackage)) {
+        getCD4C().addImport(clazz, fqn);
+        getCD4C().addImport(clazz, fqn + DeSerDecorator.SUFFIX);
+      }
+      deSerTypes.put(fqn, simpleName);
+    }
+    return deSerTypes;
   }
 
   protected List<String> getClassNames(ASTCDCompilationUnit origCD) {

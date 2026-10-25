@@ -1,0 +1,26 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declarationMap": false,
+    "paths": {
+      "@montigem/dashboard": [
+        "./build/dist/dashboard"
+      ],
+      "@umlp/arrange": ["../../../umlp-rte/frontend/build/dist/arrange"],
+      "@umlp/basic": ["../../../umlp-rte/frontend/build/dist/basic"],
+      "@umlp/charts": ["../../../umlp-rte/frontend/build/dist/charts"],
+      "@umlp/common": ["../../../umlp-rte/frontend/build/dist/common"],
+      "@umlp/commonj2ts": ["../../../umlp-rte/frontend/build/dist/commonj2ts"],
+      "@umlp/editor": ["../../../umlp-rte/frontend/build/dist/editor"],
+      "@umlp/input": ["../../../umlp-rte/frontend/build/dist/input"],
+      "@umlp/navigation": ["../../../umlp-rte/frontend/build/dist/navigation"],
+      "@umlp/table": ["../../../umlp-rte/frontend/build/dist/table"],
+      "@umlp/networkgraph": ["../../../umlp-rte/frontend/build/dist/networkgraph"]
+    },
+    "baseUrl": "./"
+  },
+  "angularCompilerOptions": {
+    "compilationMode": "partial"
+  }
+}

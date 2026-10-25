@@ -1,126 +1,600 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-gem-graph .search-node-panel,
-gem-graph .filer-group-panel {
-  // General "panel" settings
-  --max-node-input-width: min(400px, 80vw);
-  --min-node-panel-width: 200px;
-  --max-node-panel-width: 80vw;
-  --font-size: var(--step-1, 1rem);
-  --muted-color: var(--clr-font-primary-muted, #6d757d);
-  --gap: var(--default-padding, 0.25rem);
+// Styling for gem-graph and all of its overlay components (control buttons, speed-dial, search-node,
+// filter-group, metric-information) and the shared graph-select / graph-multi-select / graph-popover UI.
+// The components have no encapsulated styles, so everything lives here, scoped to gem-graph.
+@mixin gem-graph-theme() {
+  gem-graph {
+    // General settings
+    --graph-gap: var(--default-padding, 0.25rem);
+    --graph-font-size: var(--step-0, 0.875rem);
+    --graph-text-clr: var(--text-main, #111827);
+    --graph-muted-clr: var(--text-muted, #6d757d);
+    --graph-surface-clr: var(--color-surface, #fff);
+    --graph-hover-clr: var(--color-bg, #f0f0f0);
+    --graph-border-clr: var(--color-border, #ddd);
+    --graph-primary-clr: var(--color-primary, #2196f3);
+    --graph-primary-text-clr: var(--text-on-primary, #fff);
+    --graph-border-radius: var(--input-border-radius, 6px);
+    --graph-panel-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    --graph-button-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 
-  // Settings specific to the Filter-Group
-  --selected-bar-clr: var(--surface-600, #757575);
-  --unselected-bar-clr: var(--surface-300, #e0e0e0);
-  --bar-width-td-duration: var(--td-default, 0.3s);
-  --dot-size: 0.75rem;
-}
+    // Settings specific to the Search-Node / Filter-Group inputs and panels
+    --max-node-input-width: min(400px, 80vw);
+    --min-node-panel-width: 200px;
+    --max-node-panel-width: 80vw;
 
-gem-graph {
-  .search-node-input,
-  .search-node-panel,
-  .filter-group-input,
-  .filer-group-panel {
-    &,
-    input {
-      font-size: var(--font-size);
-    }
-  }
-}
+    // Settings specific to the Filter-Group
+    --selected-bar-clr: var(--graph-primary-clr);
+    --unselected-bar-clr: var(--graph-border-clr);
+    --bar-width-td-duration: var(--td-default, 0.3s);
+    --dot-size: 0.75rem;
 
-gem-graph {
-  .search-node-input.graph-select,
-  .filter-group-input {
-    max-width: var(--max-node-input-width);
-  }
-
-  .search-node-panel,
-  .filer-group-panel {
-    min-width: min(var(--min-node-panel-width), var(--max-node-panel-width));
-    max-width: var(--max-node-panel-width);
-
-    .footer {
-      width: 100%;
-      text-align: right;
-      color: var(--muted-color);
-    }
-  }
-}
-
-.ui-overlay {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-
-  &,
-  > * {
-    display: flex;
-    pointer-events: none;
-    position: absolute;
-    gap: var(--gap);
-  }
-
-  .filter-container {
-    top: 0;
-    right: 0;
-  }
-
-  .metric-information {
-    bottom: 0;
-    right: 0;
-    max-height: 50%;
-    max-width: 50%;
-    overflow: auto;
-    pointer-events: all;
     display: block;
-  }
-
-  .control-buttons-container {
     width: 100%;
     height: 100%;
+    color: var(--graph-text-clr);
+
+    .chart-container,
+    .chart-wrapper,
+    .information-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-container {
+      position: relative;
+    }
+
+    // Container to show informations / warnings
+    .information-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--graph-muted-clr);
+      // Don't infer with the mouse events
+      pointer-events: none;
+    }
+
+    // Style the Error Container when no WebGL is supported
+    .error-container {
+      margin: 10px 0;
+      padding: 15px;
+      text-align: center;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+      border-radius: var(--graph-border-radius);
+      background-color: #f8d7da;
+    }
+
+    /* ##### UI Overlay ##### */
+
+    .ui-overlay {
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+
+      &,
+      > * {
+        display: flex;
+        pointer-events: none;
+        position: absolute;
+        gap: var(--graph-gap);
+      }
+
+      .control-buttons-container {
+        top: var(--graph-gap);
+        left: var(--graph-gap);
+        right: var(--graph-gap);
+        bottom: var(--graph-gap);
+      }
+
+      .filter-container {
+        top: var(--graph-gap);
+        right: var(--graph-gap);
+        align-items: flex-end;
+        flex-direction: column;
+      }
+
+      .metric-information {
+        bottom: var(--graph-gap);
+        right: var(--graph-gap);
+        align-items: flex-end;
+        justify-content: flex-end;
+      }
+    }
+
+    /* ##### Icon Buttons ##### */
+
+    .graph-icon-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+      border: none;
+      background: var(--graph-primary-clr);
+      color: var(--graph-primary-text-clr);
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+
+      &:hover {
+        background: var(--color-primary-hover, var(--graph-primary-clr));
+      }
+
+      &--rounded {
+        border-radius: 50%;
+      }
+
+      &--raised {
+        box-shadow: var(--graph-button-shadow);
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+
+    .graph-icon-button-icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    /* ##### Control Buttons ##### */
+
+    graph-control-buttons {
+      flex: 1;
+    }
+
+    .control-buttons-wrapper {
+      position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      gap: var(--graph-gap);
+
+      > * {
+        pointer-events: auto;
+      }
+
+      &[layout="horizontal"] {
+        align-content: flex-end;
+        flex-direction: row;
+      }
+
+      &[layout="vertical"] {
+        align-content: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    /* ##### Speed Dial ##### */
+
+    graph-speed-dial {
+      display: contents;
+    }
+
+    .graph-speed-dial {
+      position: absolute;
+      pointer-events: auto;
+
+      &[data-type="quarter-circle"] {
+        &[data-direction="up-left"] {
+          right: 0;
+          bottom: 0;
+        }
+
+        &[data-direction="up-right"] {
+          left: 0;
+          bottom: 0;
+        }
+
+        &[data-direction="down-left"] {
+          right: 0;
+          top: 0;
+        }
+
+        &[data-direction="down-right"] {
+          left: 0;
+          top: 0;
+        }
+      }
+
+      &[data-type="semi-circle"],
+      &[data-type="linear"] {
+        &[data-direction="up"] {
+          bottom: 0;
+          left: 50%;
+          translate: -50% 0;
+        }
+
+        &[data-direction="down"] {
+          top: 0;
+          left: 50%;
+          translate: -50% 0;
+        }
+
+        &[data-direction="left"] {
+          top: 50%;
+          right: 0;
+          translate: 0 -50%;
+        }
+
+        &[data-direction="right"] {
+          top: 50%;
+          left: 0;
+          translate: 0 -50%;
+        }
+      }
+    }
+
+    .graph-speed-dial-button,
+    .graph-speed-dial-action {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: var(--graph-button-shadow);
+    }
+
+    .graph-speed-dial-button {
+      position: relative;
+      z-index: 2;
+      width: 3rem;
+      height: 3rem;
+      background: var(--graph-primary-clr);
+      color: var(--graph-primary-text-clr);
+    }
+
+    .graph-speed-dial-icon {
+      transition: transform 0.2s ease-in-out;
+
+      &--rotate {
+        transform: rotate(135deg);
+      }
+    }
+
+    .graph-speed-dial-action {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 1;
+      width: 2.5rem;
+      height: 2.5rem;
+      margin: -1.25rem;
+      background: var(--graph-surface-clr);
+      color: var(--graph-text-clr);
+      transition:
+        transform 0.2s ease-in-out,
+        opacity 0.2s ease-in-out;
+
+      &:hover {
+        background: var(--graph-hover-clr);
+      }
+    }
+
+    /* ##### Select / Multi-Select / Popover ##### */
+
+    graph-select,
+    graph-multi-select {
+      display: inline-block;
+      max-width: 100%;
+    }
+
+    .graph-select,
+    .graph-multi-select {
+      display: inline-flex;
+      max-width: 100%;
+    }
+
+    .graph-select-trigger,
+    .graph-multi-select-trigger {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      min-width: 0;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--graph-border-clr);
+      border-radius: var(--graph-border-radius);
+      background: var(--graph-surface-clr);
+      color: var(--graph-text-clr);
+      font: inherit;
+      font-size: var(--graph-font-size);
+      cursor: pointer;
+      box-shadow: var(--graph-panel-shadow);
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+    }
+
+    .graph-select--disabled .graph-select-trigger {
+      cursor: not-allowed;
+    }
+
+    .graph-select-value,
+    .graph-multi-select-value {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: left;
+    }
+
+    .graph-select-placeholder,
+    .graph-multi-select-placeholder,
+    .graph-select-caret,
+    .graph-multi-select-caret,
+    .graph-select-clear {
+      color: var(--graph-muted-clr);
+    }
+
+    .graph-select-caret,
+    .graph-multi-select-caret,
+    .graph-select-clear {
+      flex: none;
+      font-size: 0.75rem;
+    }
+
+    .graph-select-clear {
+      cursor: pointer;
+
+      &:hover {
+        color: var(--graph-text-clr);
+      }
+    }
+
+    .graph-select-panel,
+    .graph-multi-select-panel,
+    .graph-popover-panel {
+      z-index: 1000;
+      border: 1px solid var(--graph-border-clr);
+      border-radius: var(--graph-border-radius);
+      background: var(--graph-surface-clr);
+      color: var(--graph-text-clr);
+      font-size: var(--graph-font-size);
+      box-shadow: var(--graph-panel-shadow);
+      pointer-events: auto;
+    }
+
+    .graph-select-panel,
+    .graph-multi-select-panel {
+      display: flex;
+      flex-direction: column;
+      max-height: min(20rem, 60vh);
+      overflow: hidden;
+    }
+
+    .graph-popover-panel {
+      max-width: min(30rem, 80vw);
+      max-height: 60vh;
+      overflow: auto;
+    }
+
+    .graph-select-filter {
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--graph-border-clr);
+
+      input {
+        width: 100%;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid var(--graph-border-clr);
+        border-radius: var(--graph-border-radius);
+        background: var(--graph-surface-clr);
+        color: var(--graph-text-clr);
+        font: inherit;
+
+        &:focus {
+          outline: none;
+          border-color: var(--graph-primary-clr);
+          box-shadow: 0 0 0 3px var(--input-focus-shadow, rgba(0, 84, 159, 0.15));
+        }
+      }
+    }
+
+    .graph-select-items,
+    .graph-multi-select-items {
+      overflow-y: auto;
+    }
+
+    .graph-select-item,
+    .graph-multi-select-item {
+      padding: 0.5rem 0.75rem;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--graph-hover-clr);
+      }
+    }
+
+    .graph-multi-select-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .graph-multi-select-item-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .graph-multi-select-checkbox {
+      flex: none;
+      width: 1rem;
+      height: 1rem;
+      border: 1px solid var(--graph-border-clr);
+      border-radius: 3px;
+      background: var(--graph-surface-clr);
+
+      &--checked {
+        background: var(--graph-primary-clr);
+        border-color: var(--graph-primary-clr);
+      }
+    }
+
+    .graph-select-empty,
+    .graph-multi-select-empty {
+      padding: 0.5rem 0.75rem;
+      color: var(--graph-muted-clr);
+    }
+
+    /* ##### Search-Node / Filter-Group ##### */
+
+    graph-search-node,
+    graph-filter-group {
+      pointer-events: auto;
+    }
+
+    .search-node-input,
+    .filter-group-input {
+      max-width: var(--max-node-input-width);
+    }
+
+    .search-node-panel,
+    .filer-group-panel {
+      min-width: min(var(--min-node-panel-width), var(--max-node-panel-width));
+      max-width: var(--max-node-panel-width);
+
+      .footer {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-top: 1px solid var(--graph-border-clr);
+        text-align: right;
+        color: var(--graph-muted-clr);
+      }
+    }
+
+    .search-node-panel .wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--graph-gap);
+    }
+
+    .label-wrapper {
+      display: flex;
+      flex-direction: row;
+      gap: var(--graph-gap);
+
+      .node-key {
+        color: var(--graph-muted-clr);
+      }
+    }
+
+    .filer-group-panel {
+      .graph-multi-select-item--selected .selected-count-bar {
+        width: 100%;
+      }
+
+      .graph-multi-select-item:not(.graph-multi-select-item--selected) .selected-count-bar {
+        width: 0;
+      }
+
+      .color-dot {
+        flex: none;
+        width: var(--dot-size);
+        height: var(--dot-size);
+        border-radius: 50%;
+      }
+
+      .counter-bar-wrapper {
+        position: relative;
+        height: 2px;
+        border-radius: 100vh; // Pill-shape
+        overflow: hidden;
+
+        .selected-count-bar,
+        .base-count-bar {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+
+        .selected-count-bar {
+          transition: width var(--bar-width-td-duration) ease-in-out;
+          background: var(--selected-bar-clr);
+        }
+
+        .base-count-bar {
+          background: var(--unselected-bar-clr);
+        }
+      }
+
+      .group-item,
+      .main-wrapper,
+      .group-information-wrapper {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        flex-direction: row;
+        gap: var(--graph-gap);
+      }
+
+      .main-wrapper {
+        gap: calc(0.5 * var(--graph-gap));
+      }
+
+      .group-item .main-wrapper {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    /* ##### Metric Information ##### */
+
+    graph-metric-information {
+      pointer-events: auto;
+    }
+
+    .metricsOverlayPanel {
+      --padding: var(--item-spacing-default, 0.25rem 0.5rem);
+
+      .metrics-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--graph-surface-clr);
+
+        th,
+        td {
+          padding: var(--padding);
+          text-align: left;
+        }
+
+        th {
+          background-color: var(--graph-hover-clr);
+          border-bottom: 1px solid var(--graph-border-clr);
+          font-weight: 600;
+        }
+
+        tr {
+          &:not(:last-of-type) {
+            border-bottom: 1px solid var(--graph-border-clr);
+          }
+
+          th,
+          td {
+            &:first-of-type {
+              border-right: 1px solid var(--graph-border-clr);
+            }
+          }
+        }
+      }
+    }
   }
-}
-
-.metric-information {
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-
-.filter-container {
-  align-items: flex-end;
-  flex-direction: column;
-}
-
-.chart-container,
-.chart-wrapper,
-.information-container {
-  width: 100%;
-  height: 100%;
-}
-
-// Chart Container
-.chart-container {
-  position: relative;
-}
-
-// Container to show informations / warnings
-.information-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  // Don't infer with the mouse events
-  pointer-events: none;
-}
-
-// Style the Error Container when no WebGL is supported
-.error-container {
-  margin: 10px 0; /* Margin */
-  padding: 15px; /* Padding */
-  text-align: center; /* Centered text */
-  color: #721c24; /* Dark red text */
-  border: 1px solid #f5c6cb; /* Border */
-  border-radius: var(--border-radius); /* Rounded corners */
-  background-color: #f8d7da; /* Light red background */
 }

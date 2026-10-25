@@ -82,6 +82,8 @@ include ':examples:testing-with-sd:backend'
 
 include ':examples:loading-test:backend'
 include ':examples:loading-test:frontend'
+include ':examples:dashboard:backend'
+include ':examples:dashboard:frontend'
 
 include ':modules'
 include ':modules:login'
@@ -93,3 +95,10 @@ include ':modules:comment'
 include ':modules:comment:backend'
 include 'modules:comment:frontend'
 include 'modules:comment:frontend:comment'
+
+include ':modules:dashboard'
+include ':modules:dashboard:backend'
+include ':modules:dashboard:frontend'
+include ':modules:dashboard:frontend:dashboard'
+include ':modules:dashboard:lang'
+

@@ -63,3 +63,11 @@ jobs:
 
           # >(tee -a ...) starts tee background process, wait to ensure everything is written
           wait
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          if-no-files-found: ignore
