@@ -214,9 +214,10 @@ abstract class GemMapEntrySet<I, K, V extends GemIdentifiable> extends AbstractS
    * @return the gemId of the value if o is an entry contained in the map, otherwise null
    */
   protected Long gemIDOfEntry(Object o) {
-    if (o instanceof GemMapEntrySet.GemMapEntry && ((GemMapEntrySet<?, ?, ?>.GemMapEntry) o).entrySet() == this) {
+    if (o instanceof GemMapEntry && ((GemMapEntry<?, ?, ?>) o).entrySet == this) {
       // an entry of this set: compare by gemId, without loading
-      GemMapEntry entry = (GemMapEntry) o;
+      @SuppressWarnings("unchecked")
+      GemMapEntry<I, K, V> entry = (GemMapEntry<I, K, V>) o;
       currentKeys();
       return Objects.equals(lookupID(entry.storedKey), entry.gemID) ? entry.gemID : null;
     }
@@ -229,25 +230,27 @@ abstract class GemMapEntrySet<I, K, V extends GemIdentifiable> extends AbstractS
   }
 
   /**
-   * An entry of the map, holding the stored key and the gemId of the value; loads both on first access
+   * An entry of the map, holding the stored key and the gemId of the value; loads both on first access.
+   * Static with explicit references (like java.util.concurrent.ConcurrentHashMap.MapEntry), not an inner class.
    */
-  protected class GemMapEntry implements Entry<K, V> {
+  protected static class GemMapEntry<I, K, V extends GemIdentifiable> implements Entry<K, V> {
 
     protected final I storedKey;
 
     protected final long gemID;
 
-    // loads key objects and values in batches
-    protected final EntryIterator loader;
+    // the entry set the entry belongs to
+    protected final GemMapEntrySet<I, K, V> entrySet;
 
-    protected GemMapEntry(I storedKey, long gemID, EntryIterator loader) {
+    // loads key objects and values in batches
+    protected final GemMapEntrySet<I, K, V>.EntryIterator loader;
+
+    protected GemMapEntry(I storedKey, long gemID, GemMapEntrySet<I, K, V> entrySet,
+                          GemMapEntrySet<I, K, V>.EntryIterator loader) {
       this.storedKey = storedKey;
       this.gemID = gemID;
+      this.entrySet = entrySet;
       this.loader = loader;
-    }
-
-    protected GemMapEntrySet<I, K, V> entrySet() {
-      return GemMapEntrySet.this;
     }
 
     @Override
@@ -341,7 +344,7 @@ abstract class GemMapEntrySet<I, K, V extends GemIdentifiable> extends AbstractS
       hasLast = true;
       lastKey = pendingKey;
       lastID = pendingID;
-      return new GemMapEntry(lastKey, lastID, this);
+      return new GemMapEntry<>(lastKey, lastID, GemMapEntrySet.this, this);
     }
 
     @Override
