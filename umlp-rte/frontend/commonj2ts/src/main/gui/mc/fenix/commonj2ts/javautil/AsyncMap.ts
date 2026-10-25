@@ -102,7 +102,7 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
 }
 
 /**
- * Live view (keySet, values, entrySet) of an AsyncMap, like the backend GemMapViews:
+ * Live view (keySet, values, entrySet) of an AsyncMap, like the views of the GemMaps (see GemEntrySet):
  * - reading through the view always reflects the current content of the map
  * - removing through the view removes from the map, adding is not supported
  * - iteration is weakly consistent: it iterates the keys present when it started and skips the ones removed in the meantime

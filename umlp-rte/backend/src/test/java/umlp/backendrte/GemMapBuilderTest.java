@@ -361,6 +361,77 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
   }
 
   @Test
+  public void testEntriesAreLazy() {
+    Node a = named("a");
+    Node b = named("b");
+    NamedValueMap map = new NamedValueMap();
+    map.build();
+    map._internal_putValue(a);
+    map._internal_putValue(b);
+    int loads = loadCalls;
+
+    // keys only: no value is loaded
+    Iterator<Map.Entry<String, Node>> it = map.entrySet().iterator();
+    Map.Entry<String, Node> entryA = it.next();
+    assertEquals("a", entryA.getKey());
+    assertEquals(List.of("a", "b"), new ArrayList<>(map.keySet()));
+    assertEquals(loads, loadCalls);
+    // an entry of the map is found by gemId, without loading
+    assertTrue(map.entrySet().contains(entryA));
+    assertEquals(loads, loadCalls);
+
+    // the first value loads the values of the remaining entries in one batch
+    assertSame(a, entryA.getValue());
+    assertSame(b, it.next().getValue());
+    assertEquals(loads + 1, loadCalls);
+    // entries follow Map.Entry
+    assertEquals(new SimpleEntry<>("a", a), entryA);
+    assertEquals(new SimpleEntry<>("a", a).hashCode(), entryA.hashCode());
+
+    // a map loaded by ids is not keyed to tell whether it is empty
+    NamedValueMap loaded = new NamedValueMap();
+    loaded.build();
+    loaded._internal_addValueIDs(List.of(a.getGemId()));
+    loads = loadCalls;
+    assertFalse(loaded.entrySet().isEmpty());
+    assertFalse(loaded.keySet().isEmpty());
+    assertEquals(loads, loadCalls);
+    assertNoErrors();
+  }
+
+  @Test
+  public void testRemoveThroughProjectionsDoesNotLoad() {
+    Node keyA = new Node().build().get();
+    Node keyB = new Node().build().get();
+    Node keyC = new Node().build().get();
+    Node a = new Node().build().get();
+    a.ref = keyA;
+    Node b = new Node().build().get();
+    b.ref = keyB;
+    Node c = new Node().build().get();
+    c.ref = keyC;
+    NodeEntryMap map = new NodeEntryMap(null);
+    map.build();
+    map._internal_putValue(a);
+    map._internal_putValue(b);
+    map._internal_putValue(c);
+    int loads = loadCalls;
+
+    assertTrue(map.keySet().remove(keyA));
+    assertFalse(map.keySet().remove(keyA));
+    assertTrue(map.values().remove(b));
+    assertFalse(map.values().remove(b));
+    Iterator<Map.Entry<Node, Node>> it = map.entrySet().iterator();
+    Map.Entry<Node, Node> entryC = it.next();
+    assertTrue(map.entrySet().remove(entryC));
+    assertFalse(map.entrySet().remove(entryC));
+    assertTrue(map.isEmpty());
+    // neither key objects nor values were loaded
+    assertEquals(loads, loadCalls);
+    assertNoErrors();
+  }
+
+  @Test
   public void testEntryMapDerivedKeysAreLazyAndRekeyed() {
     Node keyA = new Node().build().get();
     Node keyB = new Node().build().get();

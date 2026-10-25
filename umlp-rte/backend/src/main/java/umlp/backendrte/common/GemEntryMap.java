@@ -37,8 +37,13 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   // ids of values whose key is not known yet, keyed by ensureKeyed()
   protected List<Long> unkeyedValueIDs = new ArrayList<>();
 
-  // live views keySet, values, entrySet
-  protected transient GemMapViews<Long, K, V> views = new GemMapViews<Long, K, V>() {
+  // live entry set; keySet and values are projections of it
+  protected transient GemEntrySet<Long, K, V> entries = new GemEntrySet<Long, K, V>() {
+    @Override
+    protected Map<K, V> map() {
+      return GemEntryMap.this;
+    }
+
     @Override
     protected Collection<Long> currentKeys() {
       return getKeyIDs();
@@ -72,16 +77,6 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
     @Override
     protected void removeValueID(long gemID) {
       _internal_removeValueIDAndSync(gemID);
-    }
-
-    @Override
-    protected int size() {
-      return GemEntryMap.this.size();
-    }
-
-    @Override
-    protected void clear() {
-      GemEntryMap.this.clear();
     }
   };
 
@@ -133,27 +128,27 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   }
 
   /**
-   * live view, see {@link GemMapViews}
+   * live view, a projection of {@link #entrySet()}, see {@link GemEntrySet}
    */
   @Override
   public Set<K> keySet() {
-    return views.keySet();
+    return entries.keySet();
   }
 
   /**
-   * live view, see {@link GemMapViews}
+   * live view, a projection of {@link #entrySet()}, see {@link GemEntrySet}
    */
   @Override
   public Collection<V> values() {
-    return views.values();
+    return entries.values();
   }
 
   /**
-   * live view, see {@link GemMapViews}
+   * live view, see {@link GemEntrySet}
    */
   @Override
   public Set<Entry<K,V>> entrySet() {
-    return views.entrySet();
+    return entries;
   }
 
   /**

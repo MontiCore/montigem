@@ -6,7 +6,7 @@ import {LoadResult} from "./LoadResult";
 import {LoadingState} from "./LoadingState";
 import {IUMLPList} from "./IUMLPList";
 import {IUMLPMap} from "./IUMLPMap";
-import {GemMapViews} from "./GemMapViews";
+import {GemEntrySet} from "./GemEntrySet";
 import {AbstractAsyncMap} from "../javautil/AbstractAsyncMap";
 import {AsyncList} from "../javautil/AsyncList";
 import {AsyncMap} from "../javautil/AsyncMap";
@@ -36,8 +36,8 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   // the running ensureKeyed(), so that concurrent calls wait for its keys
   protected keying: Promise<void> = null;
 
-  // live views keySet, values, entrySet
-  protected views: GemMapViews<K, K, V> = new GemValueMapViews<K, V>(this);
+  // live entry set; keySet and values are projections of it
+  protected entries: GemEntrySet<K, K, V> = new GemValueMapEntrySet<K, V>(this);
 
   public constructor() {
     super();
@@ -84,19 +84,19 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     }
   }
 
-  /** live view, see GemMapViews */
+  /** live view, a projection of entrySet(), see GemEntrySet */
   async keySet(): Promise<AsyncSet<K>> {
-    return this.views.keySet();
+    return this.entries.keySet();
   }
 
-  /** live view, see GemMapViews */
+  /** live view, a projection of entrySet(), see GemEntrySet */
   async values(): Promise<Collection<V>> {
-    return this.views.values();
+    return this.entries.values();
   }
 
-  /** live view, see GemMapViews */
+  /** live view, see GemEntrySet */
   async entrySet(): Promise<AsyncSet<[K, V]>> {
-    return this.views.entrySet();
+    return AsyncSet.__viewOf(this.entries);
   }
 
   /**
@@ -408,7 +408,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     return await new AsyncSet<K>().__AsyncSetConstructor(await this.currentKeys());
   }
 
-  /** the keys, after deriving pending keys (see GemMapViews#currentKeys) */
+  /** the keys, after deriving pending keys (see GemEntrySet#currentKeys) */
   async currentKeys(): Promise<Array<K>> {
     await this.ensureKeyed();
     return Array.from(this.idMap.keys());
@@ -440,11 +440,15 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   }
 }
 
-/** the views of a GemValueMap: the keys are stored as they are */
-class GemValueMapViews<K, V extends GemIdentifiable> extends GemMapViews<K, K, V> {
+/** the entry set of a GemValueMap: the keys are stored as they are */
+class GemValueMapEntrySet<K, V extends GemIdentifiable> extends GemEntrySet<K, K, V> {
 
   constructor(/*private readonly*/ readonly _map: GemValueMap<K, V>) {
     super();
+  }
+
+  map(): AbstractAsyncMap<K, V> {
+    return this._map;
   }
 
   currentKeys(): Promise<Array<K>> {
@@ -475,14 +479,6 @@ class GemValueMapViews<K, V extends GemIdentifiable> extends GemMapViews<K, K, V
 
   containsValueID(gemID: number): Promise<boolean> {
     return this._map.containsValueID(gemID);
-  }
-
-  size(): Promise<number> {
-    return this._map.size();
-  }
-
-  clear(): Promise<void> {
-    return this._map.clear();
   }
 }
 
