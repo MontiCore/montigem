@@ -38,7 +38,7 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   protected List<Long> unkeyedValueIDs = new ArrayList<>();
 
   // live entry set; keySet and values are projections of it
-  protected transient GemEntrySet<Long, K, V> entries = new GemEntrySet<Long, K, V>() {
+  protected transient GemMapEntrySet<Long, K, V> entries = new GemMapEntrySet<Long, K, V>() {
     @Override
     protected Map<K, V> map() {
       return GemEntryMap.this;
@@ -128,7 +128,7 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   }
 
   /**
-   * live view, a projection of {@link #entrySet()}, see {@link GemEntrySet}
+   * live view, a projection of {@link #entrySet()}, see {@link GemMapEntrySet}
    */
   @Override
   public Set<K> keySet() {
@@ -136,7 +136,7 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   }
 
   /**
-   * live view, a projection of {@link #entrySet()}, see {@link GemEntrySet}
+   * live view, a projection of {@link #entrySet()}, see {@link GemMapEntrySet}
    */
   @Override
   public Collection<V> values() {
@@ -144,7 +144,7 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   }
 
   /**
-   * live view, see {@link GemEntrySet}
+   * live view, see {@link GemMapEntrySet}
    */
   @Override
   public Set<Entry<K,V>> entrySet() {

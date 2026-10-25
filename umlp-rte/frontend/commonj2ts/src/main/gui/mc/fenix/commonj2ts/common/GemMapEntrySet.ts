@@ -166,7 +166,7 @@ abstract class GemMapCollection<E> implements Collection<E> {
 }
 
 /**
- * Live entry set of a GemValueMap or GemEntryMap, like the backend GemEntrySet. The keySet and values of the map
+ * Live entry set of a GemValueMap or GemEntryMap, like the backend GemMapEntrySet. The keySet and values of the map
  * are projections of it (see keySet(), values()):
  * - reading always reflects the current content of the map
  * - removing (also through the projections) removes from the map, including synchronization, by gemId;
@@ -179,7 +179,7 @@ abstract class GemMapCollection<E> implements Collection<E> {
  *
  * I: the type the map stores its keys as: the key itself (GemValueMap) or its gemId (GemEntryMap)
  */
-export abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends GemMapCollection<[K, V]> {
+export abstract class GemMapEntrySet<I, K, V extends GemIdentifiable> extends GemMapCollection<[K, V]> {
 
   /** the map this is the entry set of */
   abstract map(): AbstractAsyncMap<K, V>;
@@ -237,12 +237,12 @@ export abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends GemMa
 
   /** the keys of the map: a projection of the entries that loads no values */
   keySet(): AsyncSet<K> {
-    return AsyncSet.__viewOf(new GemEntrySetProjection<I, K, V, K>(this, "keys"));
+    return AsyncSet.__viewOf(new GemMapEntrySetProjection<I, K, V, K>(this, "keys"));
   }
 
   /** the values of the map: a projection of the entries; contains and remove work by gemId */
   values(): Collection<V> {
-    return new GemEntrySetProjection<I, K, V, V>(this, "values");
+    return new GemMapEntrySetProjection<I, K, V, V>(this, "values");
   }
 
   /** the gemId of the value stored for the key, or null */
@@ -312,11 +312,11 @@ export abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends GemMa
 }
 
 /**
- * keySet or values of a GemMap: a projection of its GemEntrySet
+ * keySet or values of a GemMap: a projection of its GemMapEntrySet
  */
-class GemEntrySetProjection<I, K, V extends GemIdentifiable, E> extends GemMapCollection<E> {
+class GemMapEntrySetProjection<I, K, V extends GemIdentifiable, E> extends GemMapCollection<E> {
 
-  constructor(/*private readonly*/ readonly _entries: GemEntrySet<I, K, V>,
+  constructor(/*private readonly*/ readonly _entries: GemMapEntrySet<I, K, V>,
               /*private readonly*/ readonly _kind: "keys" | "values") {
     super();
   }

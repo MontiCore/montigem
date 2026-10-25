@@ -6,7 +6,7 @@ import {LoadResult} from "./LoadResult";
 import {LoadingState} from "./LoadingState";
 import {IUMLPList} from "./IUMLPList";
 import {IUMLPMap} from "./IUMLPMap";
-import {GemEntrySet} from "./GemEntrySet";
+import {GemMapEntrySet} from "./GemMapEntrySet";
 import {AbstractAsyncMap} from "../javautil/AbstractAsyncMap";
 import {AsyncList} from "../javautil/AsyncList";
 import {AsyncMap} from "../javautil/AsyncMap";
@@ -37,7 +37,7 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   protected keying: Promise<void> = null;
 
   // live entry set; keySet and values are projections of it
-  protected entries: GemEntrySet<number, K, V> = new GemEntryMapEntrySet<K, V>(this);
+  protected entries: GemMapEntrySet<number, K, V> = new GemEntryMapEntrySet<K, V>(this);
 
   public constructor() {
     super();
@@ -94,17 +94,17 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
     }
   }
 
-  /** live view, a projection of entrySet(), see GemEntrySet */
+  /** live view, a projection of entrySet(), see GemMapEntrySet */
   async keySet(): Promise<AsyncSet<K>> {
     return this.entries.keySet();
   }
 
-  /** live view, a projection of entrySet(), see GemEntrySet */
+  /** live view, a projection of entrySet(), see GemMapEntrySet */
   async values(): Promise<Collection<V>> {
     return this.entries.values();
   }
 
-  /** live view, see GemEntrySet */
+  /** live view, see GemMapEntrySet */
   async entrySet(): Promise<AsyncSet<[K, V]>> {
     return AsyncSet.__viewOf(this.entries);
   }
@@ -468,7 +468,7 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
     return await new AsyncSet<number>().__AsyncSetConstructor(await this.currentKeyIDs());
   }
 
-  /** the gemIds of the keys, after deriving pending keys (see GemEntrySet#currentKeys) */
+  /** the gemIds of the keys, after deriving pending keys (see GemMapEntrySet#currentKeys) */
   async currentKeyIDs(): Promise<Array<number>> {
     await this.ensureKeyed();
     return Array.from(this.idMap.keys());
@@ -501,7 +501,7 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
 }
 
 /** the entry set of a GemEntryMap: the keys are stored as their gemIds */
-class GemEntryMapEntrySet<K extends GemIdentifiable, V extends GemIdentifiable> extends GemEntrySet<number, K, V> {
+class GemEntryMapEntrySet<K extends GemIdentifiable, V extends GemIdentifiable> extends GemMapEntrySet<number, K, V> {
 
   constructor(/*private readonly*/ readonly _map: GemEntryMap<K, V>) {
     super();

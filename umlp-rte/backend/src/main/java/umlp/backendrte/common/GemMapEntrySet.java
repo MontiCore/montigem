@@ -33,7 +33,7 @@ import java.util.Set;
  * @param <K> the key type
  * @param <V> the value type
  */
-abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends AbstractSet<Entry<K, V>> {
+abstract class GemMapEntrySet<I, K, V extends GemIdentifiable> extends AbstractSet<Entry<K, V>> {
 
   /**
    * @return the map this is the entry set of
@@ -214,9 +214,9 @@ abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends AbstractSet<
    * @return the gemId of the value if o is an entry contained in the map, otherwise null
    */
   protected Long gemIDOfEntry(Object o) {
-    if (o instanceof GemEntrySet.LazyEntry && ((GemEntrySet<?, ?, ?>.LazyEntry) o).entrySet() == this) {
+    if (o instanceof GemMapEntrySet.GemMapEntry && ((GemMapEntrySet<?, ?, ?>.GemMapEntry) o).entrySet() == this) {
       // an entry of this set: compare by gemId, without loading
-      LazyEntry entry = (LazyEntry) o;
+      GemMapEntry entry = (GemMapEntry) o;
       currentKeys();
       return Objects.equals(lookupID(entry.storedKey), entry.gemID) ? entry.gemID : null;
     }
@@ -231,7 +231,7 @@ abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends AbstractSet<
   /**
    * An entry of the map, holding the stored key and the gemId of the value; loads both on first access
    */
-  protected class LazyEntry implements Entry<K, V> {
+  protected class GemMapEntry implements Entry<K, V> {
 
     protected final I storedKey;
 
@@ -240,14 +240,14 @@ abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends AbstractSet<
     // loads key objects and values in batches
     protected final EntryIterator loader;
 
-    protected LazyEntry(I storedKey, long gemID, EntryIterator loader) {
+    protected GemMapEntry(I storedKey, long gemID, EntryIterator loader) {
       this.storedKey = storedKey;
       this.gemID = gemID;
       this.loader = loader;
     }
 
-    protected GemEntrySet<I, K, V> entrySet() {
-      return GemEntrySet.this;
+    protected GemMapEntrySet<I, K, V> entrySet() {
+      return GemMapEntrySet.this;
     }
 
     @Override
@@ -341,7 +341,7 @@ abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends AbstractSet<
       hasLast = true;
       lastKey = pendingKey;
       lastID = pendingID;
-      return new LazyEntry(lastKey, lastID, this);
+      return new GemMapEntry(lastKey, lastID, this);
     }
 
     @Override
@@ -377,10 +377,10 @@ abstract class GemEntrySet<I, K, V extends GemIdentifiable> extends AbstractSet<
 
     protected K keyOf(I storedKey) {
       if (keyObjects == null) {
-        keyObjects = new HashMap<>(GemEntrySet.this.keyObjects(keys.subList(Math.max(idx - 1, 0), keys.size())));
+        keyObjects = new HashMap<>(GemMapEntrySet.this.keyObjects(keys.subList(Math.max(idx - 1, 0), keys.size())));
       }
       if (!keyObjects.containsKey(storedKey)) {
-        keyObjects.putAll(GemEntrySet.this.keyObjects(List.of(storedKey)));
+        keyObjects.putAll(GemMapEntrySet.this.keyObjects(List.of(storedKey)));
       }
       return keyObjects.get(storedKey);
     }

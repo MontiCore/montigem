@@ -6,7 +6,7 @@ import {LoadResult} from "./LoadResult";
 import {LoadingState} from "./LoadingState";
 import {IUMLPList} from "./IUMLPList";
 import {IUMLPMap} from "./IUMLPMap";
-import {GemEntrySet} from "./GemEntrySet";
+import {GemMapEntrySet} from "./GemMapEntrySet";
 import {AbstractAsyncMap} from "../javautil/AbstractAsyncMap";
 import {AsyncList} from "../javautil/AsyncList";
 import {AsyncMap} from "../javautil/AsyncMap";
@@ -37,7 +37,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   protected keying: Promise<void> = null;
 
   // live entry set; keySet and values are projections of it
-  protected entries: GemEntrySet<K, K, V> = new GemValueMapEntrySet<K, V>(this);
+  protected entries: GemMapEntrySet<K, K, V> = new GemValueMapEntrySet<K, V>(this);
 
   public constructor() {
     super();
@@ -84,17 +84,17 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     }
   }
 
-  /** live view, a projection of entrySet(), see GemEntrySet */
+  /** live view, a projection of entrySet(), see GemMapEntrySet */
   async keySet(): Promise<AsyncSet<K>> {
     return this.entries.keySet();
   }
 
-  /** live view, a projection of entrySet(), see GemEntrySet */
+  /** live view, a projection of entrySet(), see GemMapEntrySet */
   async values(): Promise<Collection<V>> {
     return this.entries.values();
   }
 
-  /** live view, see GemEntrySet */
+  /** live view, see GemMapEntrySet */
   async entrySet(): Promise<AsyncSet<[K, V]>> {
     return AsyncSet.__viewOf(this.entries);
   }
@@ -408,7 +408,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     return await new AsyncSet<K>().__AsyncSetConstructor(await this.currentKeys());
   }
 
-  /** the keys, after deriving pending keys (see GemEntrySet#currentKeys) */
+  /** the keys, after deriving pending keys (see GemMapEntrySet#currentKeys) */
   async currentKeys(): Promise<Array<K>> {
     await this.ensureKeyed();
     return Array.from(this.idMap.keys());
@@ -441,7 +441,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
 }
 
 /** the entry set of a GemValueMap: the keys are stored as they are */
-class GemValueMapEntrySet<K, V extends GemIdentifiable> extends GemEntrySet<K, K, V> {
+class GemValueMapEntrySet<K, V extends GemIdentifiable> extends GemMapEntrySet<K, K, V> {
 
   constructor(/*private readonly*/ readonly _map: GemValueMap<K, V>) {
     super();
