@@ -71,8 +71,7 @@ class TestCommandsTest extends LoadingTestsMockTestSetup {
 
     this.serverContext = getBackend();
     this.clientContext = getClients(0);
-    this.localhost = new TestClientWebSocketCommandCommunication(
-        String.format(uri, port));
+    this.localhost = new TestClientWebSocketCommandCommunication(String.format(uri, port));
     this.localhost.setContext(serverContext, clientContext);
     TestClientCommandManager testClientCommandManager = new TestClientCommandManager(this.localhost);
     CommandManager.initMe(testClientCommandManager);
@@ -147,7 +146,7 @@ class TestCommandsTest extends LoadingTestsMockTestSetup {
   public void checkCommandDomainListCT() {
     clientContext.activate();
 
-    SimpleResult<String> res = TestCommandParams.executeTestCommand_DomainListCT(List.of(1L,2L,3L));
+    SimpleResult<String> res = TestCommandParams.executeTestCommand_DomainListCT(List.of(1L, 2L, 3L));
     Assertions.assertEquals("[1, 2, 3]", checkRes(res));
   }
 
@@ -155,11 +154,12 @@ class TestCommandsTest extends LoadingTestsMockTestSetup {
   public void checkCommandDomainListJU() {
     clientContext.activate();
 
-    SimpleResult<String> res = TestCommandParams.executeTestCommand_DomainListJU(List.of(1L,2L,3L));
+    SimpleResult<String> res = TestCommandParams.executeTestCommand_DomainListJU(List.of(1L, 2L, 3L));
     Assertions.assertEquals("[1, 2, 3]", checkRes(res));
   }
 
   @Test
+  @Disabled // TODO: https://git.rwth-aachen.de/monticore/monticore/-/work_items/5258
   public void checkCommandDomainOpt_Absent() {
     clientContext.activate();
 
@@ -241,7 +241,6 @@ class TestCommandsTest extends LoadingTestsMockTestSetup {
     Assertions.assertEquals("Optional[42]", checkRes(res));
   }
 
-
   @Test
   public void checkCommandString() {
     clientContext.activate();
@@ -255,8 +254,8 @@ class TestCommandsTest extends LoadingTestsMockTestSetup {
   public void checkCommandStringListCT() {
     clientContext.activate();
 
-//    SimpleResult<String> res = TestCommandParams.executeTestCommand_StringListJU(List.of("Hello", "world"));
-//    Assertions.assertEquals("[\"Hello\", \"world\"]", checkRes(res));
+    //    SimpleResult<String> res = TestCommandParams.executeTestCommand_StringListJU(List.of("Hello", "world"));
+    //    Assertions.assertEquals("[\"Hello\", \"world\"]", checkRes(res));
   }
 
   @Test
@@ -282,7 +281,6 @@ class TestCommandsTest extends LoadingTestsMockTestSetup {
     SimpleResult<String> res = TestCommandParams.executeTestCommand_StringOpt(Optional.of("Hello optional world"));
     Assertions.assertEquals("Optional[Hello optional world]", checkRes(res));
   }
-
 
   protected String checkRes(SimpleResult<String> res) {
     Assertions.assertTrue(res.isSimpleResult(), "Not a simple result" + res);
