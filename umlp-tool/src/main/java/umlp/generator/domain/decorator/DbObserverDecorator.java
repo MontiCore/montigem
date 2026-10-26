@@ -100,19 +100,23 @@ public class DbObserverDecorator extends AbstractDecorator {
         ASTCDMethodSignature remove = null;
 
         String cdDefinitionOfAssoc = UMLPSymbolTables.getDiagramFor(e.getValue()).getCDDefinition().getName();
+        if (GenService.isMap(e.getKey())) {
+          // maps: values are put under a key, there are no positions (no set at index);
+          // keys are not stored, they are derived when loading, so rekeying changes nothing
+          String keyType = QualifierKey.of(e.getKey()).getStoredKeyType();
+          glex.replaceTemplate("cd2java.Annotations", getCD4C().addMethod(observerClass,
+              "umlp.dbobserver.assocs.PutNotify", cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(),
+              otherTypeName, keyType), new StringHookPoint("@Override"));
+          glex.replaceTemplate("cd2java.Annotations", getCD4C().addMethod(observerClass,
+              "umlp.dbobserver.assocs.RemoveNotify", cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(),
+              otherTypeName), new StringHookPoint("@Override"));
+          continue;
+        }
         if (GenService.isMultiValued(e.getKey())) {
           add = getCD4C().addMethod(observerClass, "umlp.dbobserver.assocs.AddNotify",
               cdDefinitionOfAssoc , className, e.getValue().getName(), e.getKey(), otherTypeName);
           remove = getCD4C().addMethod(observerClass, "umlp.dbobserver.assocs.RemoveNotify",
               cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(), otherTypeName);
-        }
-        if (GenService.isMap(e.getKey())) {
-          // maps have no positions: no set at index
-          if (add != null && remove != null) {
-            glex.replaceTemplate("cd2java.Annotations", add, new StringHookPoint("@Override"));
-            glex.replaceTemplate("cd2java.Annotations", remove, new StringHookPoint("@Override"));
-          }
-          continue;
         }
         ASTCDMethodSignature set = getCD4C().addMethod(observerClass, "umlp.dbobserver.assocs.SetNotify",
             cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(), otherTypeName);

@@ -361,6 +361,41 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
   }
 
   @Test
+  public void testPutIDsStoresKeysWithoutLoading() {
+    Node a = named("a");
+    Node b = named("b");
+    Map<String, Long> ids = new java.util.LinkedHashMap<>();
+    ids.put("b", b.getGemId());
+    ids.put("a", a.getGemId());
+
+    // before build: kept by the builder
+    NamedValueMap map = new NamedValueMap();
+    map._internal_putIDs(ids);
+    map.build();
+    assertEquals(0, loadCalls);
+    // keys known without loading, in insertion order
+    assertEquals(2, map.size());
+    assertTrue(map.containsKey("a"));
+    assertEquals(List.of("b", "a"), new ArrayList<>(map.keySet()));
+    assertEquals(0, loadCalls);
+    assertSame(a, map.get("a"));
+    assertEquals(1, loadCalls);
+
+    // after build
+    NamedValueMap built = new NamedValueMap();
+    built.build();
+    built._internal_putIDs(ids);
+    assertEquals(ids, built.getIDMap());
+    assertEquals(1, loadCalls);
+
+    // rekeying reports whether the value was moved
+    assertTrue(built._internal_rekey("a", "c", a.getGemId()));
+    assertFalse(built._internal_rekey("a", "c", a.getGemId()));
+    assertEquals(a.getGemId(), built.getID("c"));
+    assertNoErrors();
+  }
+
+  @Test
   public void testEntriesAreLazy() {
     Node a = named("a");
     Node b = named("b");

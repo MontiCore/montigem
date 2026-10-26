@@ -43,10 +43,13 @@ public class QualifierKey {
 
   // the class declaring attr (Target or a supertype): its observer is notified when attr changes
   protected final CDTypeSymbol declaringType;
+  // reads a stored key from a JsonElement, see getStoredKeyJson
+  protected final String storedKeyJson;
 
   protected QualifierKey(String attrName, String targetName, boolean isEntryKey, String keyType,
-                         String notifyType, String getterName, CDTypeSymbol declaringType) {
+                         String notifyType, String getterName, CDTypeSymbol declaringType, String storedKeyJson) {
     this.declaringType = declaringType;
+    this.storedKeyJson = storedKeyJson;
     this.getterName = getterName;
     this.attrName = attrName;
     this.targetName = targetName;
@@ -71,7 +74,7 @@ public class QualifierKey {
       String keyType = type.isPrimitive() ? box(type.printFullName()) : print;
       CDTypeSymbol declaringType = (CDTypeSymbol) attr.get().getSymbol().getEnclosingScope().getSpanningSymbol();
       return new QualifierKey(attrName, targetSymbol.getName(), false, keyType, print,
-          GenService.getGetterName(attrName, type), declaringType);
+          GenService.getGetterName(attrName, type), declaringType, GenService.calculateJSon(type));
     }
 
     // domain typed attributes have become to-one associations of the target
@@ -81,12 +84,13 @@ public class QualifierKey {
       String keyType = role.get().getSymbol().getType().getTypeInfo().getName();
       CDTypeSymbol declaringType = (CDTypeSymbol) role.get().getSymbol().getOtherSide().getType().getTypeInfo();
       return new QualifierKey(attrName, targetSymbol.getName(), true, keyType, "long",
-          "get" + StringTransformations.capitalize(attrName) + "Gem", declaringType);
+          "get" + StringTransformations.capitalize(attrName) + "Gem", declaringType,
+          "getAsJsonNumber().getNumberAsLong()");
     }
 
     Log.error("0xA7320 The qualifier " + attrName + " of the association to " + targetSymbol.getName()
         + " is neither an attribute nor a to-one association of " + targetSymbol.getName(), assoc.get_SourcePositionStart());
-    return new QualifierKey(attrName, targetSymbol.getName(), false, "Object", "Object", "get" + attrName, targetSymbol);
+    return new QualifierKey(attrName, targetSymbol.getName(), false, "Object", "Object", "get" + attrName, targetSymbol, "");
   }
 
   public String getAttrName() {
@@ -117,6 +121,22 @@ public class QualifierKey {
 
   public String getNotifyType() {
     return notifyType;
+  }
+
+  /**
+   * @return the type a key is stored and synchronized as: the key itself (boxed) for GemValueMaps,
+   * the gemId of the key object for GemEntryMaps
+   */
+  public String getStoredKeyType() {
+    return isEntryKey ? "Long" : keyType;
+  }
+
+  /**
+   * @return the call reading a stored key (see {@link #getStoredKeyType}) from a JsonElement,
+   * e.g. getAsJsonString().getValue(); empty if the key type has no JSON representation
+   */
+  public String getStoredKeyJson() {
+    return storedKeyJson;
   }
 
   /**

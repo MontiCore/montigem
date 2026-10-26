@@ -124,6 +124,7 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     getCD4C().addMethod(ast, "umlp.gemmap.PutValueAndSync", targetName, assoc.getName());
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveValueIDAndSync", assoc.getName());
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveAndSync", key.getKeyType(), key.isEntryKey());
+    getCD4C().addMethod(ast, "umlp.gemmap.RekeyAndSync", assoc.getName(), key.isEntryKey() ? "long" : key.getKeyType());
     addDomainImports(ast, domainClass);
 
     getCD4C().addMethod(ast, "umlp.gemmap.OnValueKeyed", targetName,

@@ -335,6 +335,16 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
   }
 
   /**
+   * stores values under their keys by id, without loading them, e.g. as received from another participant
+   * (keys in insertion order)
+   */
+  public void _internal_putIDs(Map<K, Long> ids) {
+    for (Entry<K, Long> e : ids.entrySet()) {
+      _internal_put(e.getKey(), e.getValue());
+    }
+  }
+
+  /**
    * derives the keys of all values added by id only, loading them in one batch
    */
   protected void ensureKeyed() {
@@ -389,20 +399,31 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
   }
 
   /**
-   * moves a value from oldKey to newKey, e.g. after its qualifying attribute changed.
-   * Keys are derived locally, so this is neither synchronized nor persisted.
+   * moves a value from oldKey to newKey, e.g. after its qualifying attribute changed,
+   * without synchronization (see {@link #_internal_rekeyAndSync})
+   *
+   * @return whether the value was moved; false if it is not (or no longer) stored under oldKey
    */
-  public void _internal_rekey(K oldKey, K newKey, long valueGemID) {
+  public boolean _internal_rekey(K oldKey, K newKey, long valueGemID) {
     if (!Objects.equals(lookupID(oldKey), valueGemID) || Objects.equals(oldKey, newKey)) {
       // not (or no longer) contained under oldKey
-      return;
+      return false;
     }
     if (lookupID(newKey) != null) {
       Log.error("0xA7304 Key " + newKey + " is not unique: it is derived from the objects with ids "
           + lookupID(newKey) + " and " + valueGemID);
-      return;
+      return false;
     }
     moveEntry(oldKey, newKey);
+    return true;
+  }
+
+  /**
+   * moves a value from oldKey to newKey after its qualifying attribute changed (see {@link #_internal_rekey});
+   * to be overridden by a subclass to add synchronization
+   */
+  public void _internal_rekeyAndSync(K oldKey, K newKey, long valueGemID) {
+    _internal_rekey(oldKey, newKey, valueGemID);
   }
 
   protected void moveEntry(K oldKey, K newKey) {

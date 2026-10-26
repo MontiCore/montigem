@@ -68,10 +68,12 @@ public class AddDecorator extends AbstractDeSerDecorator {
           .filter(Predicate.not(GenService::isSymbolDerived))
           .filter(Predicate.not(GenService::isBidirectional))
           .filter(GenService::isMultiValued)
+          // maps have no positions: their values are put, see PutDecorator
+          .filter(Predicate.not(GenService::isMap))
           .forEach(a -> {
             ASTCDClass clazz = createClass(
                 origCD, a.getName(), a.getSymbol().getType(),
-                c, getCorrectManagerOfTargetType(a), true, GenService.isMap(a)
+                c, getCorrectManagerOfTargetType(a), true
             );
             astcdPackage.addCDElement(withOrigin(clazz));
             addManagerImportForAssoc(origCD, clazz, a);
@@ -96,8 +98,10 @@ public class AddDecorator extends AbstractDeSerDecorator {
           .filter(Predicate.not(GenService::isSymbolDerived))
           .filter(Predicate.not(GenService::isBidirectional))
           .filter(GenService::isMultiValued)
+          // maps have no positions: their values are put, see PutDecorator
+          .filter(Predicate.not(GenService::isMap))
           .forEach(a -> {
-            ASTCDClass clazz = createClass(origCD, a.getName(), a.getSymbol().getType(), c, getCorrectManagerOfTargetType(a), true, GenService.isMap(a));
+            ASTCDClass clazz = createClass(origCD, a.getName(), a.getSymbol().getType(), c, getCorrectManagerOfTargetType(a), true);
             astcdPackage.addCDElement(withOrigin(clazz));
             addManagerImportForAssoc(origCD, clazz, a);
             astcdPackage.addCDElement(withOrigin(createDeSer(origCD, a.getName(), getSymType("long"), c, true)));
@@ -108,15 +112,6 @@ public class AddDecorator extends AbstractDeSerDecorator {
 
   protected ASTCDClass createClass(ASTCDCompilationUnit origCD, String name, SymTypeExpression type, ASTCDType domainClass,
       String targetTypeManager, boolean isGem) {
-    return createClass(origCD, name, type, domainClass, targetTypeManager, isGem, false);
-  }
-
-  /**
-   * @param isMap the command adds to the GemMap of an attribute qualified association: there is no index,
-   *              the key is derived from the added object
-   */
-  protected ASTCDClass createClass(ASTCDCompilationUnit origCD, String name, SymTypeExpression type, ASTCDType domainClass,
-      String targetTypeManager, boolean isGem, boolean isMap) {
     String classname = domainClass.getName() + SUFFIX
         + StringTransformations.capitalize(name);
     String attrName = isGem ? name + "GemId" : name;
@@ -134,7 +129,7 @@ public class AddDecorator extends AbstractDeSerDecorator {
     addConstructor(ast, classname, getPackageName(origCD, COMMAND_PACKAGE),
         attrName, isGem ? "long" : type.print());
 
-    getCD4C().addMethod(ast, getDoRunTemplate(), name, domainClass.getName(), getCorrectManager(domainClass), isGem, name, type.print(), targetTypeManager, hasOCL, isMap);
+    getCD4C().addMethod(ast, getDoRunTemplate(), name, domainClass.getName(), getCorrectManager(domainClass), isGem, name, type.print(), targetTypeManager, hasOCL);
     getCD4C().addMethod(ast, getGeneralCheckAccessPolicyTemplate(), domainClass.getName(), "Create");
     if (isGem) {
       getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("gemId", name + "GemId"));

@@ -156,9 +156,14 @@ public class DeSerDecorator extends DomainClassDecorator {
 
   protected void addSerAndDeserMethod(String cdName, String originalClassName, ASTCDClass deSer, ASTCDAssocSide attr) {
     if (GenService.isMap(attr)) {
-      // the ids of the values, their keys are derived from them
-      getCD4C().addMethod(deSer, "umlp.deser.serializeGemMapField", originalClassName, attr.getName());
-      getCD4C().addMethod(deSer, getDeserializeGemListFieldTemplate(), cdName, originalClassName, attr.getName());
+      // pairs of key and gemId of the value
+      QualifierKey key = QualifierKey.of(attr);
+      getCD4C().addMethod(deSer, "umlp.deser.serializeGemMapField", originalClassName, attr.getName(),
+          key.getStoredKeyType());
+      getCD4C().addMethod(deSer, "umlp.deser.deserializeGemMapField", originalClassName, attr.getName(),
+          key.getStoredKeyType(), key.getStoredKeyJson());
+      getCD4C().addImport(deSer, "java.util.Map");
+      getCD4C().addImport(deSer, "java.util.LinkedHashMap");
     } else if (GenService.isList(attr)) {
       getCD4C().addMethod(deSer, getSerializeGemListFieldTemplate(), originalClassName, attr.getName());
       getCD4C().addMethod(deSer, getDeserializeGemListFieldTemplate(), cdName, originalClassName, attr.getName());

@@ -298,6 +298,22 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   }
 
   /**
+   * stores values under their keys by id, without loading them, e.g. as received from another participant
+   * (keys in insertion order)
+   */
+  public async _internal_putIDs(ids: IUMLPMap<K, number> | Map<K, number>): Promise<void> {
+    if (ids instanceof Map) {
+      for (const [key, id] of Array.from(ids.entries())) {
+        await this._internal_put(key, id);
+      }
+    } else {
+      for await (const [key, id] of await ids.entrySet()) {
+        await this._internal_put(key, id);
+      }
+    }
+  }
+
+  /**
    * derives the keys of all values added by id only, loading them in one batch
    */
   async ensureKeyed(): Promise<void> {
@@ -364,20 +380,31 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   }
 
   /**
-   * moves a value from oldKey to newKey, e.g. after its qualifying attribute changed.
-   * Keys are derived locally, so this is neither synchronized nor persisted.
+   * moves a value from oldKey to newKey, e.g. after its qualifying attribute changed,
+   * without synchronization (see _internal_rekeyAndSync)
+   *
+   * @return whether the value was moved; false if it is not (or no longer) stored under oldKey
    */
-  public async _internal_rekey(oldKey: K, newKey: K, valueGemID: number): Promise<void> {
+  public async _internal_rekey(oldKey: K, newKey: K, valueGemID: number): Promise<boolean> {
     if (this.lookupID(oldKey) !== valueGemID || oldKey === newKey) {
       // not (or no longer) contained under oldKey
-      return;
+      return false;
     }
     if (this.lookupID(newKey) != null) {
       Log.error("0xA7304 Key " + newKey + " is not unique: it is derived from the objects with ids "
         + this.lookupID(newKey) + " and " + valueGemID);
-      return;
+      return false;
     }
     this.moveEntry(oldKey, newKey);
+    return true;
+  }
+
+  /**
+   * moves a value from oldKey to newKey after its qualifying attribute changed (see _internal_rekey);
+   * to be overridden by a subclass to add synchronization
+   */
+  public async _internal_rekeyAndSync(oldKey: K, newKey: K, valueGemID: number): Promise<void> {
+    await this._internal_rekey(oldKey, newKey, valueGemID);
   }
 
   moveEntry(oldKey: K, newKey: K): void {

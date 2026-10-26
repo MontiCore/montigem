@@ -19,6 +19,8 @@ import umlp.generator.AbstractDecorator;
 import umlp.generator.util.PathUtil;
 import umlp.generator.util.UMLPSymbolTables;
 
+import java.util.Optional;
+
 import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static umlp.generator.domain.decorator.commands.AssocCommandDecorator.COMMAND_ASSOC_PACKAGE;
 
@@ -110,7 +112,21 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
           String assocName = a.getSymbol().getAssoc().getAssociation().getName();
           SymTypeExpression oneType = e.getKey().getSymbol().getType();
           SymTypeExpression otherType = e.getKey().getSymbol().getOtherSide().getType();
-          if (GenService.isMultiValued(a)) {
+          if (GenService.isMap(a)) {
+            // maps (always unidirectional): values are put under a key and rekeyed, there are no positions
+            String keyType = QualifierKey.of(a).getStoredKeyType();
+            String role = StringTransformations.capitalize(a.getName());
+            setOverrideAnnotation(getCD4C().addMethod(ast, putAttributeTmplt(), a.getName(), keyType, otherType.print()));
+            getCD4C().addImport(ast, getPackageName(cd, COMMAND_PACKAGE) + "." + otherType.print() + "_put" + role);
+            if (rekeyAttributeTmplt().isPresent()) {
+              setOverrideAnnotation(getCD4C().addMethod(ast, rekeyAttributeTmplt().get(), a.getName(), keyType,
+                  otherType.print()));
+              getCD4C().addImport(ast, getPackageName(cd, COMMAND_PACKAGE) + "." + otherType.print() + "_rekey" + role);
+            }
+            setOverrideAnnotation(getCD4C().addMethod(ast, removeAttributeTmplt(), oneType.print(),
+                a.getName(), "long", assocName, false, isLeft, otherType.print()));
+            getCD4C().addImport(ast, getPackageName(cd, COMMAND_PACKAGE) + "." + otherType.print() + "_remove" + role);
+          } else if (GenService.isMultiValued(a)) {
             ASTCDMethodSignature add = getCD4C().addMethod(ast, addAttributeTmplt(), oneType.print(),
                 a.getName(), "long", assocName, isBidirectional, isLeft, otherType.print());
             ASTCDMethodSignature remove = getCD4C().addMethod(ast, removeAttributeTmplt(), oneType.print(),
@@ -176,6 +192,18 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
 
   protected String addAttributeTmplt() {
     return "umlp.commandsendingobserver.NotifyAddAttribute";
+  }
+
+  protected String putAttributeTmplt() {
+    return "umlp.commandsendingobserver.NotifyPutAttribute";
+  }
+
+  /**
+   * sending the rekeying of a GemMap value: only the server does, it derives the keys and tells the
+   * participants that loaded the owner (see the client variant CommandObserverDecorator)
+   */
+  protected Optional<String> rekeyAttributeTmplt() {
+    return Optional.of("umlp.commandsendingobserver.NotifyRekeyAttribute");
   }
 
   protected String scopeTmplt() {

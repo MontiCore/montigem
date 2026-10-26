@@ -215,7 +215,8 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
       return super.getIDMap();
     } else {
       ensureKeyed();
-      Map<Long,Long> ids = new HashMap<>();
+      // insertion order, like the map
+      Map<Long,Long> ids = new LinkedHashMap<>();
       for(Entry<IDOrBuilder<K>, IDOrBuilder<V>> e : builderElemStorage.values()) {
         if(e.getKey().isPresentID() && e.getValue().isPresentID()) {
           ids.put(e.getKey().getID(), e.getValue().getID());

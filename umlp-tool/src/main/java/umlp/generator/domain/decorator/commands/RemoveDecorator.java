@@ -72,7 +72,8 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
                                                                        a.getName(),
                                                                        a.getSymbol().getType(),
                                                                        c,
-                                                                       true)));
+                                                                       true,
+                                                                       GenService.isMap(a))));
                       astcdPackage.addCDElement(withOrigin(createDeSer(origCD, a.getName(), getSymType("long"), c, true)));
                     });
     });
@@ -92,7 +93,8 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
               .filter(Predicate.not(GenService::isBidirectional))
               .filter(GenService::isMultiValued)
               .forEach(a -> {
-                astcdPackage.addCDElement(withOrigin(createClass(origCD, a.getName(), a.getSymbol().getType(), c, true)));
+                astcdPackage.addCDElement(withOrigin(createClass(origCD, a.getName(), a.getSymbol().getType(), c, true,
+                    GenService.isMap(a))));
                 astcdPackage.addCDElement(withOrigin(createDeSer(origCD, a.getName(), getSymType("long"), c, true)));
               });
         });
@@ -100,6 +102,17 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
 
 
   protected ASTCDClass createClass(ASTCDCompilationUnit origCD, String name, SymTypeExpression type, ASTCDType domainClass, boolean isGem) {
+    return createClass(origCD, name, type, domainClass, isGem, false);
+  }
+
+  /**
+   * @param isMap the command removes from the GemMap of an attribute qualified association: it effects the owner only.
+   *              Maps are unidirectional, only the participants that loaded the owner have the map; with the value,
+   *              sending the command would subscribe the receivers to it, so they would receive (and load) the value
+   *              with its next setter command.
+   */
+  protected ASTCDClass createClass(ASTCDCompilationUnit origCD, String name, SymTypeExpression type, ASTCDType domainClass,
+                                   boolean isGem, boolean isMap) {
     String classname = domainClass.getName() + SUFFIX
         + StringTransformations.capitalize(name);
     String attrName = isGem ? name + "GemId" : name;
@@ -119,7 +132,7 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
 
     getCD4C().addMethod(ast, getDoRunTemplate(), name, domainClass.getName(), getCorrectManager(domainClass), isGem, name, hasOCL);
     getCD4C().addMethod(ast, getCheckAccessPolicyTemplate(), domainClass.getName(), "Delete");
-    if (isGem) {
+    if (isGem && !isMap) {
       getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("getGemId()", name + "GemId"));
     } else {
       getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("getGemId()"));

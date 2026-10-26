@@ -33,13 +33,17 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     String targetName = AssocMapAccessorDecorator.getTypeArgument(ast, 1);
     String sourceName = this.ast.getName();
     boolean isEntry = GenService.isGemEntryMap(ast);
+    String storedKeyType = GenService.getGemMapStoredKeyType(ast);
 
-    methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry));
+    methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType));
     methodList.add(createMethod("umlp.methods.gemmap.Remove", name, keyType, isEntry));
     // put/remove without scope
     methodList.addAll(createNotifyMethods(methodList, ast.getModifier().isLocal()));
 
     methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName));
+    // synchronization of keys: put as sent by the server without loading the value (command _put), rekeying
+    methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType));
+    methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
     methodList.add(createMethod("umlp.methods.gemmap.RemoveByIdSure", name));
     methodList.add(createMethod("umlp.methods.assocs.RemoveByIdSureNoScope", name, ast.getModifier().isLocal() ? "LOCAL" : "ALL"));
     return methodList;

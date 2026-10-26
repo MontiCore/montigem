@@ -28,6 +28,8 @@ import de.monticore.types.mccollectiontypes._ast.ASTMCListType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCOptionalType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCSetType;
 import de.monticore.types.mcsimplegenerictypes._ast.ASTMCBasicGenericType;
+import de.monticore.types.mccollectiontypes._ast.ASTMCGenericType;
+import de.monticore.cd.codegen.CdUtilsPrinter;
 import de.monticore.umlmodifier._ast.ASTModifier;
 import de.se_rwth.commons.StringTransformations;
 import de.se_rwth.commons.logging.Log;
@@ -261,6 +263,18 @@ public class GenService {
       return "GemEntryMap".equals(nameList.get(nameList.size() - 1));
     }
     return false;
+  }
+
+  /**
+   * @param attr an attribute holding a GemMap, see {@link #isGemMap}
+   * @return the type its keys are stored and synchronized as: the key type of a GemValueMap,
+   * the gemId of the key object (Long) for a GemEntryMap
+   */
+  public static String getGemMapStoredKeyType(ASTCDAttribute attr) {
+    if (isGemEntryMap(attr)) {
+      return "Long";
+    }
+    return new CdUtilsPrinter().printType(((ASTMCGenericType) attr.getMCType()).getMCTypeArgument(0).getMCTypeOpt().get());
   }
 
   public static boolean isGemList(ASTCDAttribute attr) {

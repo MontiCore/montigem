@@ -1,8 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
 package associations;
 
+import associations.commands.Course_putParticipantByMatNr;
+import associations.commands.Course_rekeyParticipantByMatNr;
 import associations.test_infrastructure.AssociationsMockTestSetup;
 import org.junit.jupiter.api.BeforeEach;
+import umlp.backendrte.command.CommandManager;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -11,8 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Synchronization of attribute qualified associations (GemMaps) between the backend and two clients.
- * A change carries the value id only: every participant derives the key itself, and rekeys locally
- * when the key attribute changes.
+ * Maps and changes carry key/id pairs, so a client knows the keys without loading the values. The server
+ * derives the keys and sends rekeying (command _rekey) to the participants that loaded the owner.
  */
 public class GemMapSyncTest extends AssociationsMockTestSetup {
 
@@ -59,9 +62,9 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     assertEquals(annaId, course().getParticipantByMatNr(1001).get().getGemId());
   }
 
-  /** the change carries the value id only: client 1, which never loaded the value, derives its key itself */
+  /** the change carries the key: client 1 knows it without loading the value */
   @Test
-  public void testRemotePutDerivesKeyOnOtherClient() {
+  public void testRemotePutCarriesKeyToOtherClient() {
     getClients(1).activate();
     Course client1Course = course();
 
@@ -70,7 +73,24 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
 
     getClients(1).activate();
     assertTrue(client1Course.containsKeyParticipantByMatNr(1002));
+    assertFalse(AssociationsManager.isLoadedStudent(benId));
     assertEquals("Ben", client1Course.getParticipantByMatNr(1002).get().getName());
+  }
+
+  /** a loaded map carries its keys: size, keys and ids are known without loading any value */
+  @Test
+  public void testLoadedMapKnowsKeysWithoutLoadingValues() {
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(benId));
+
+    getClients(1).activate();
+    assertEquals(2, course().sizeParticipantByMatNrs());
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+    assertTrue(course().containsKeyParticipantByMatNr(1002));
+    assertEquals(annaId, course()._internal_getParticipantByMatNrGemMap().getID(1001));
+    assertFalse(AssociationsManager.isLoadedStudent(annaId));
+    assertFalse(AssociationsManager.isLoadedStudent(benId));
   }
 
   /** client 1 keyed its map, so it observes the value and rekeys it when client 0 changes the key */
@@ -94,14 +114,18 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     assertTrue(course().containsKeyParticipantByMatNr(2001));
   }
 
-  /** client 1 has the value ids only, so it derives the key from the changed value on first access */
+  /**
+   * client 1 never loaded the value, so it does not receive its setter command: the server sends the rekeying
+   * through the owner (command _rekey)
+   */
   @Test
-  public void testRekeyOnOtherClientWithUnkeyedMap() {
+  public void testRekeyOnOtherClientWithoutTheValue() {
     getBackend().activate();
     course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
 
     getClients(1).activate();
     Course client1Course = course();
+    assertTrue(client1Course.containsKeyParticipantByMatNr(1001));
 
     getClients(0).activate();
     AssociationsManager.getStudentSure(annaId).setMatNr(2001);
@@ -109,6 +133,64 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     getClients(1).activate();
     assertFalse(client1Course.containsKeyParticipantByMatNr(1001));
     assertTrue(client1Course.containsKeyParticipantByMatNr(2001));
+    assertFalse(AssociationsManager.isLoadedStudent(annaId));
+  }
+
+  /** a change on the backend itself is rekeyed on the clients through the owner, too */
+  @Test
+  public void testRekeyByBackend() {
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+
+    getClients(1).activate();
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+
+    getBackend().activate();
+    AssociationsManager.getStudentSure(annaId).setMatNr(3001);
+
+    getClients(1).activate();
+    assertFalse(course().containsKeyParticipantByMatNr(1001));
+    assertTrue(course().containsKeyParticipantByMatNr(3001));
+  }
+
+  /** a key that does not match the value (stale on the client) is replaced by the server's derived key */
+  @Test
+  public void testPutWithWrongKeyIsCorrectedByServer() {
+    getClients(1).activate();
+    assertEquals(0, course().sizeParticipantByMatNrs());
+
+    getClients(0).activate();
+    CommandManager.executeCommand(new Course_putParticipantByMatNr(courseId, annaId, 9999));
+
+    getBackend().activate();
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+    assertFalse(course().containsKeyParticipantByMatNr(9999));
+
+    getClients(1).activate();
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+    assertFalse(course().containsKeyParticipantByMatNr(9999));
+  }
+
+  /** only the server sends rekeying: it rejects a rekeying sent by a client and does not send it on */
+  @Test
+  public void testRekeyFromClientIsRejected() {
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+
+    getClients(1).activate();
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+
+    getClients(0).activate();
+    assertFalse(CommandManager.executeCommand(new Course_rekeyParticipantByMatNr(courseId, annaId, 1001, 7777))
+        .isSuccessful());
+
+    getBackend().activate();
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+    assertFalse(course().containsKeyParticipantByMatNr(7777));
+
+    getClients(1).activate();
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+    assertFalse(course().containsKeyParticipantByMatNr(7777));
   }
 
   @Test
@@ -130,6 +212,28 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     getClients(1).activate();
     assertEquals(1, course().sizeParticipantByMatNrs());
     assertFalse(course().containsKeyParticipantByMatNr(1002));
+  }
+
+  /**
+   * a removal does not subscribe client 1 to the removed value: it does not receive (and load) the value with its
+   * next change
+   */
+  @Test
+  public void testRemoveDoesNotLoadValueOnOtherClient() {
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+
+    getClients(1).activate();
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+
+    getClients(0).activate();
+    course().removeParticipantByMatNr(1001);
+    AssociationsManager.getStudentSure(annaId).setMatNr(4001);
+
+    getClients(1).activate();
+    assertFalse(course().containsKeyParticipantByMatNr(1001));
+    assertFalse(course().containsKeyParticipantByMatNr(4001));
+    assertFalse(AssociationsManager.isLoadedStudent(annaId));
   }
 
   /** a builder on client 0 keeps the value until it is built */

@@ -350,6 +350,22 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   }
 
   /**
+   * stores values under the gemIds of their keys, without loading them, e.g. as received from another
+   * participant (keys in insertion order)
+   */
+  public async _internal_putIDs(ids: IUMLPMap<number, number> | Map<number, number>): Promise<void> {
+    if (ids instanceof Map) {
+      for (const [keyGemID, id] of Array.from(ids.entries())) {
+        await this._internal_put(keyGemID, id);
+      }
+    } else {
+      for await (const [keyGemID, id] of await ids.entrySet()) {
+        await this._internal_put(keyGemID, id);
+      }
+    }
+  }
+
+  /**
    * derives the keys of all values added by id only, loading them in one batch
    */
   async ensureKeyed(): Promise<void> {
@@ -416,20 +432,31 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   }
 
   /**
-   * moves a value from oldKeyGemID to newKeyGemID, e.g. after its qualifying attribute changed.
-   * Keys are derived locally, so this is neither synchronized nor persisted.
+   * moves a value from oldKeyGemID to newKeyGemID, e.g. after its qualifying attribute changed,
+   * without synchronization (see _internal_rekeyAndSync)
+   *
+   * @return whether the value was moved; false if it is not (or no longer) stored under oldKeyGemID
    */
-  public async _internal_rekey(oldKeyGemID: number, newKeyGemID: number, valueGemID: number): Promise<void> {
+  public async _internal_rekey(oldKeyGemID: number, newKeyGemID: number, valueGemID: number): Promise<boolean> {
     if (this.lookupID(oldKeyGemID) !== valueGemID || oldKeyGemID === newKeyGemID) {
       // not (or no longer) contained under oldKeyGemID
-      return;
+      return false;
     }
     if (this.lookupID(newKeyGemID) != null) {
       Log.error("0xA7314 Key " + newKeyGemID + " is not unique: it is derived from the objects with ids "
         + this.lookupID(newKeyGemID) + " and " + valueGemID);
-      return;
+      return false;
     }
     this.moveEntry(oldKeyGemID, newKeyGemID);
+    return true;
+  }
+
+  /**
+   * moves a value from oldKeyGemID to newKeyGemID after its qualifying attribute changed
+   * (see _internal_rekey); to be overridden by a subclass to add synchronization
+   */
+  public async _internal_rekeyAndSync(oldKeyGemID: number, newKeyGemID: number, valueGemID: number): Promise<void> {
+    await this._internal_rekey(oldKeyGemID, newKeyGemID, valueGemID);
   }
 
   moveEntry(oldKeyGemID: number, newKeyGemID: number): void {
