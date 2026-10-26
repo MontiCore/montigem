@@ -12,7 +12,7 @@ umlp MontiArcVizExperiment {
   <<singleton>>
   class DemoApp {
     String mainFunctionNameInput = "demo.Main";
-    String srcInput = "package demo;\n\ncomponent Main {\n}";
+    String srcInput = "package demo;\n\ncomponent Main {\n    port in int i1;\n    component Inner {\n        port in int i2;\n    }\n\n    Inner inner;\n\n    i1 -> inner.i2;\n}";
 
     Function4Display render(RenderData data);
   }
