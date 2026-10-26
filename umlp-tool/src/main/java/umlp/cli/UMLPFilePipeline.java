@@ -272,9 +272,10 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
         // execute generator
         UMLPGenerator generator = new UMLPGenerator(data.genSetup, config);
         String configTemplate = data.data.cmd.getOptionValue("ct", UMLPTool.DEFAULT_CONFIGTEMPLATE);
+        boolean qfBefore = Log.isFailQuickEnabled();
         Log.enableFailQuick(false); // Collect Errors
         generator.generate(data.ast, configTemplate, data.oclCompilationUnits);
-        Log.enableFailQuick(true);
+        Log.enableFailQuick(qfBefore);
       }
     });
 
