@@ -2,8 +2,8 @@
 
 package umlp._lsp.language_access;
 
-import umlp.UMLPTypeCheck3;
 import de.monticore.cd4code._symboltable.CD4CodeSymbolTableCompleter;
+import de.monticore.cd4code.types3.CD4CodeTypeCheck3;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.io.paths.MCPath;
 import de.se_rwth.commons.logging.Log;
@@ -28,7 +28,8 @@ public class UMLPScopeManager extends UMLPScopeManagerTOP {
     UMLPArtifactScopeWithFindings res = super.createArtifactScope(ast, oldArtifactScope);
     try{
       Log.getFindings().clear();
-      UMLPTypeCheck3.resetTypeCache();
+      CD4CodeTypeCheck3.reset();
+      CD4CodeTypeCheck3.init();
       res.originalAst.accept(new CD4CodeSymbolTableCompleter(ast).getTraverser());
       res.findings.addAll(Log.getFindings());
     } catch (Throwable e){
@@ -57,7 +58,8 @@ public class UMLPScopeManager extends UMLPScopeManagerTOP {
         for(ASTCDCompilationUnit ast : astNodes){
           try {
             Log.getFindings().clear();
-            UMLPTypeCheck3.resetTypeCache();
+            CD4CodeTypeCheck3.reset();
+            CD4CodeTypeCheck3.init();
             ast.accept(new CD4CodeSymbolTableCompleter(ast).getTraverser());
             res.get(ast).findings.addAll(Log.getFindings());
           } catch (Throwable e){

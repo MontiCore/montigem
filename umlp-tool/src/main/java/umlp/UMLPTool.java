@@ -8,6 +8,7 @@ import de.monticore.cd.methodtemplates.CD4C;
 import de.monticore.cd4code.CD4CodeMill;
 import de.monticore.cd4code._symboltable.CD4CodeSymbolTableCompleter;
 import de.monticore.cd4code.trafo.CD4CodeAfterParseTrafo;
+import de.monticore.cd4code.types3.CD4CodeTypeCheck3;
 import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._visitor.CDBasisVisitor2;
@@ -15,7 +16,6 @@ import de.monticore.class2mc.OOClass2MCResolver;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.generating.templateengine.TemplateController;
-import de.monticore.generating.templateengine.freemarker.FreeMarkerTemplateEngine;
 import de.monticore.generating.templateengine.reporting.Reporting;
 import de.monticore.gradle.common.GradleLog;
 import de.monticore.guidsl.GUIDSLMill;
@@ -32,7 +32,6 @@ import de.monticore.io.FileReaderWriter;
 import de.monticore.io.paths.MCPath;
 import de.monticore.ocl.ocl._ast.ASTOCLCompilationUnit;
 import de.monticore.ocl.ocl._parser.OCLParser;
-import de.monticore.symbols.basicsymbols.BasicSymbolsMill;
 import de.monticore.symbols.oosymbols._symboltable.FieldSymbolDeSer;
 import de.monticore.symbols.oosymbols._symboltable.OOTypeSymbolDeSer;
 import de.monticore.symboltable.serialization.json.JsonBoolean;
@@ -40,7 +39,6 @@ import de.monticore.symboltable.serialization.json.JsonElement;
 import de.monticore.symboltable.serialization.json.JsonObject;
 import de.monticore.symboltable.serialization.json.UserJsonString;
 import de.se_rwth.commons.logging.Log;
-import freemarker.template.SimpleHash;
 import oclwitherrormessages.OCLWithErrorMessagesMill;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -341,7 +339,8 @@ public class UMLPTool extends UMLPToolTOP {
   @Override
   public IUMLPArtifactScope createSymbolTable(ASTCDCompilationUnit node) {
     IUMLPArtifactScope as = super.createSymbolTable(node);
-    UMLPTypeCheck3.resetTypeCache();
+    CD4CodeTypeCheck3.reset();
+    CD4CodeTypeCheck3.init();
     node.accept(new CD4CodeSymbolTableCompleter(node).getTraverser()); // run symbol table completer
     return as;
   }
@@ -387,7 +386,8 @@ public class UMLPTool extends UMLPToolTOP {
     // rebuild symbol table
     CD4CodeMill.globalScope().removeSubScope(node.getEnclosingScope());
     IUMLPArtifactScope artifactScope = UMLPMill.scopesGenitorDelegator().createFromAST(node);
-    UMLPTypeCheck3.resetTypeCache();
+    CD4CodeTypeCheck3.reset();
+    CD4CodeTypeCheck3.init();
     node.accept(new CD4CodeSymbolTableCompleter(node).getTraverser());
     logTrafoExec("rebuildCD4CodeSymTab", node);
     return artifactScope;

@@ -14,4 +14,9 @@ public class UMLPMill extends UMLPMillTOP {
     CD4CodeTypeCheck3.init();
   }
 
+  public static void reset() {
+    UMLPMillTOP.reset();
+    CD4CodeTypeCheck3.reset();
+  }
+
 }
