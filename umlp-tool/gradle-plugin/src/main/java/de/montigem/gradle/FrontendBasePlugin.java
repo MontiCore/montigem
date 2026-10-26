@@ -297,7 +297,19 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
     }
     project.getRepositories().maven(repo -> {
       String repoURL = requireProjectProperty(project, "repo");
+      Optional<String> mavenUser = getProjectProperty(project, "mavenUser");
+      Optional<String> mavenPassword = getProjectProperty(project, "mavenPassword");
       repo.setUrl(repoURL);
+      if (mavenUser.isPresent() && mavenPassword.isPresent()) {
+        repo.getCredentials().setUsername(mavenUser.get());
+        repo.getCredentials().setPassword(mavenPassword.get());
+      }
+      else {
+        Log.info("0x00133 Properties `mavenUser` and `mavenPassword` are not both set, accessing `"
+            + repoURL + "` anonymously.\nTo publish built artifacts (e.g., npm libraries), specify both via,"
+            + " e.g., command line (`-PmavenUser=<value> -PmavenPassword=<value>`) or in a"
+            + " gradle.properties file.", FrontendBasePlugin.class.getName());
+      }
     });
     project.getRepositories().mavenCentral();
   }

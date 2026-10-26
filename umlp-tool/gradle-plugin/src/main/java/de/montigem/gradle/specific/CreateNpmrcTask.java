@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
 
 /**
  * Create ".npmrc" file with authentication data for Nexus.
@@ -79,40 +80,44 @@ abstract public class CreateNpmrcTask extends DefaultTask {
     return getNpmrcContent(project, unscoped, false);
   }
 
+  /**
+   * Without <mavenUser> / <mavenPassword>, the registries are still configured,
+   * but accessed anonymously (sufficient for downloads from Nexus).
+   */
   public static String getNpmrcContent(
       Project project, boolean unscoped, boolean useLocalNpmRepo) {
     if (useLocalNpmRepo && unscoped) {
       return "registry=" + LOCAL_NPM_REPOSITORY + "\n";
     }
 
+    Optional<String> encodedAuthData = Optional.empty();
     if (project.getProperties().containsKey("mavenUser") && project.getProperties().containsKey("mavenPassword")) {
       String username = project.getProperties().get("mavenUser").toString();
       String password = project.getProperties().get("mavenPassword").toString();
 
-      String encodedAuthData = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-
-      if (useLocalNpmRepo) {
-        return "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
-            "@umlp:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
-            // npm libraries of the MontiGem modules (e.g., @montigem/dashboard)
-            "@montigem:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
-            "@monticore:_auth=\"" + encodedAuthData + "\"";
-      }
-
-      String data = "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
-          "@umlp:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
-          "@montigem:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
-          "@monticore:_auth=\"" + encodedAuthData + "\"\n" +
-          "@umlp:_auth=\"" + encodedAuthData + "\"\n" +
-          "@montigem:_auth=\"" + encodedAuthData + "\"";
-      if (unscoped) {
-        data = "registry=" + NEXUS_NPM_REPOSITORY + "\n" +
-            "//nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/:_auth=\"" + encodedAuthData + "\"";
-      }
-      return data;
-    } else {
-      throw new RuntimeException("<mavenUser> / <mavenPassword> not found in properties!");
+      encodedAuthData = Optional.of(Base64.getEncoder().encodeToString((username + ":" + password).getBytes()));
     }
+
+    if (useLocalNpmRepo) {
+      return "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
+          "@umlp:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
+          // npm libraries of the MontiGem modules (e.g., @montigem/dashboard)
+          "@montigem:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
+          encodedAuthData.map(auth -> "@monticore:_auth=\"" + auth + "\"").orElse("");
+    }
+
+    if (unscoped) {
+      return "registry=" + NEXUS_NPM_REPOSITORY + "\n" +
+          encodedAuthData.map(auth ->
+              "//nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/:_auth=\"" + auth + "\"").orElse("");
+    }
+
+    return "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
+        "@umlp:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
+        "@montigem:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
+        encodedAuthData.map(auth -> "@monticore:_auth=\"" + auth + "\"\n" +
+            "@umlp:_auth=\"" + auth + "\"\n" +
+            "@montigem:_auth=\"" + auth + "\"").orElse("");
   }
 
 }

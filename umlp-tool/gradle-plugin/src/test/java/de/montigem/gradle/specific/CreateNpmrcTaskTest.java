@@ -63,7 +63,45 @@ class CreateNpmrcTaskTest {
     assertEquals(
         "@monticore:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n"
             + "@umlp:registry=http://127.0.0.1:4873/\n"
+            + "@montigem:registry=http://127.0.0.1:4873/\n"
             + "@monticore:_auth=\"dXNlcjpwYXNzd29yZA==\"",
+        npmrc);
+  }
+
+  @Test
+  void usesNexusAnonymouslyWithoutCredentials() {
+    Project project = ProjectBuilder.builder().build();
+
+    String npmrc = CreateNpmrcTask.getNpmrcContent(project, false, false);
+
+    assertEquals(
+        "@monticore:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n"
+            + "@umlp:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n"
+            + "@montigem:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n",
+        npmrc);
+  }
+
+  @Test
+  void usesLocalRepositoryAnonymouslyWithoutCredentials() {
+    Project project = ProjectBuilder.builder().build();
+
+    String npmrc = CreateNpmrcTask.getNpmrcContent(project, false, true);
+
+    assertEquals(
+        "@monticore:registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n"
+            + "@umlp:registry=http://127.0.0.1:4873/\n"
+            + "@montigem:registry=http://127.0.0.1:4873/\n",
+        npmrc);
+  }
+
+  @Test
+  void keepsNexusAsPublishRepositoryWithoutCredentials() {
+    Project project = ProjectBuilder.builder().build();
+
+    String npmrc = CreateNpmrcTask.getNpmrcContent(project, true, false);
+
+    assertEquals(
+        "registry=https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/\n",
         npmrc);
   }
 }

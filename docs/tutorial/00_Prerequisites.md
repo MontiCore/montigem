@@ -1,7 +1,7 @@
 # Prerequisites
 
 !!! abstract "In this chapter"
-    - install Java and set up access to the MontiGem artifacts
+    - install Java
     - get the example project
     - build the app, start backend and frontend, and open it in the browser
     - learn which command you need after which kind of change
@@ -60,23 +60,11 @@ Open a new console and run `java -version` to check that Java works.
     installs a JDK and sets `JAVA_HOME` for you. `sdk list java` shows the
     available versions.
 
-### Set up access to the MontiGem artifacts
+### Access to the MontiGem artifacts
 
 The MontiGem generator and its runtime are published in the Nexus repository of
-the Software Engineering chair. You need an account there. If you do not have
-one, ask the MontiGem team at SE RWTH Aachen for access.
-
-Create a `gradle.properties` file in the `%userprofile%/.gradle` folder
-(`~/.gradle` on Linux and macOS) with this content:
-
-```properties title="%userprofile%/.gradle/gradle.properties"
-mavenUser=my_user
-mavenPassword=my_password
-```
-
-Replace `my_user` and `my_password` with your Nexus account name and password.
-Without this file the build fails with an authentication error while resolving
-dependencies.
+the Software Engineering chair. Gradle downloads them anonymously, so you need
+neither an account nor any configuration for this tutorial.
 
 ### (Optional) Install a plugin for language support
 
@@ -273,7 +261,7 @@ and shows your text.
 | The console of `generate` prints `Failed to open non-existing directory: ...\cd2java` or `...\ocl2java` | Normal. MontiGem creates these folders only when the project uses the matching generator, `ocl2java` for example from chapter 12 on. |
 | Compile errors in files under `build/` | Those files are generated. The cause is in your model or in your hand-written code. Fix that and generate again. |
 | A JSweet error mentioning `getLineMap()` | Your frontend Java code does not compile. Fix the Java error first. The JSweet message is only a consequence of it. |
-| Authentication error while downloading dependencies | Check `mavenUser` and `mavenPassword` in `%userprofile%/.gradle/gradle.properties`. |
+| Authentication error (`401`) while downloading dependencies | Outdated `mavenUser` and `mavenPassword` entries in `%userprofile%/.gradle/gradle.properties` are sent to Nexus and rejected. Correct or remove them, the tutorial does not need them. |
 
 ## Checkpoint
 
