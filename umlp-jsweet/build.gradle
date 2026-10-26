@@ -37,7 +37,8 @@ dependencies {
   implementation group: 'org.slf4j', name: 'slf4j-simple', version: slf4j_version
   implementation group: 'de.se_rwth.commons', name: 'se-commons-logging', version: se_commons_version
 
-  testRuntimeOnly project(":umlp-rte:backend")
+  testImplementation project(":umlp-rte:backend")
+  testImplementation project(":umlp-rte:frontend")
 }
 
 sourceSets {

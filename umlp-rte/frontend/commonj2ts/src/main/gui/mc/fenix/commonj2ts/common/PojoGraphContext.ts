@@ -74,6 +74,9 @@ export class PojoGraphContext {
   }
 
   public async deserializeObject<T>(json: any, deser: PojoJsonDeSer<T>): Promise<T> {
+    if (typeof json === 'string') {
+      json = JSON.parse(json);
+    }
     this.readDepth++;
     try {
       if (Object.prototype.hasOwnProperty.call(json, '$ref')) {
