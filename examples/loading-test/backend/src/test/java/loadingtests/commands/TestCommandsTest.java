@@ -1,3 +1,4 @@
+/* (c) https://github.com/MontiCore/monticore */
 package loadingtests.commands;
 
 import loadingtests.Animal;
