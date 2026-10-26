@@ -1,7 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 package loadingtests.commands;
 
-import loadingtests.Animal;
 import loadingtests.LoadingTestsManager;
 import loadingtests.LoadingTestsServerApplication;
 import loadingtests.LoadingTestsTestContext;
@@ -9,47 +8,36 @@ import loadingtests.MyEnum;
 import loadingtests.TestCommandParams;
 import loadingtests.service.TestClientWebSocketCommandCommunication;
 import loadingtests.test_infrastructure.LoadingTestsMockTestSetup;
-import loadingtests.util.PerformanceTestUtil;
-import loadingtests.util.PerformanceTestUtil.TestResult;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.MethodOrderer;
-import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import umlp.backendrte.command.CommandManager;
 import umlp.backendrte.command.SimpleResult;
 import umlp.backendrte.command.TestClientCommandManager;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests the various commands
+ * Tests the various commands parameter types
  */
 @SpringBootTest(classes = LoadingTestsServerApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Execution(ExecutionMode.SAME_THREAD)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class TestCommandsTest extends LoadingTestsMockTestSetup {
+class TestCommandsParameterTest extends LoadingTestsMockTestSetup {
 
   @LocalServerPort
   private int port;
@@ -62,7 +50,7 @@ class TestCommandsTest extends LoadingTestsMockTestSetup {
 
   private TestClientWebSocketCommandCommunication localhost;
 
-  public TestCommandsTest() {
+  public TestCommandsParameterTest() {
     super(1);
   }
 
@@ -251,12 +239,11 @@ class TestCommandsTest extends LoadingTestsMockTestSetup {
   }
 
   @Test
-  @Disabled
   public void checkCommandStringListCT() {
     clientContext.activate();
 
-    //    SimpleResult<String> res = TestCommandParams.executeTestCommand_StringListJU(List.of("Hello", "world"));
-    //    Assertions.assertEquals("[\"Hello\", \"world\"]", checkRes(res));
+    SimpleResult<String> res = TestCommandParams.executeTestCommand_StringListCT(List.of("Hello", "world"));
+    Assertions.assertEquals("[Hello, world]", checkRes(res));
   }
 
   @Test

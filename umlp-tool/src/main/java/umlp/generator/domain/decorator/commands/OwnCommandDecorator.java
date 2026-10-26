@@ -16,8 +16,10 @@ import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.SymTypeOfGenerics;
 import de.monticore.types.mcbasictypes._ast.ASTMCObjectType;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
+import de.monticore.types.mccollectiontypes._ast.ASTMCCollectionTypesNode;
 import de.monticore.types.mccollectiontypes._ast.ASTMCListType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCOptionalType;
+import de.monticore.types.mcsimplegenerictypes._ast.ASTMCSimpleGenericTypesNode;
 import de.monticore.umlstereotype._ast.ASTStereotypeBuilder;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.Names;
@@ -319,6 +321,7 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
 
     List<String> paramNameList = new ArrayList<>();
     List<SymTypeExpression> typeList = new ArrayList<>();
+    List<Boolean> isCollectionTypes = new ArrayList<>(); // workaround for https://git.rwth-aachen.de/monticore/monticore/-/work_items/5257
     List<Boolean> userDeserList = new ArrayList<>();
     List<Boolean> optionals = new ArrayList<>();
 
@@ -335,6 +338,8 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
         Gem identifiable
       */
       boolean originalGemList = isListOfGemIdentifiable(type);
+      // Workaround for https://git.rwth-aachen.de/monticore/monticore/-/work_items/5257 (CTs behave different than java.util/SimpleGenericTypes)
+      isCollectionTypes.add(p.getMCType() instanceof ASTMCCollectionTypesNode && !(p.getMCType() instanceof ASTMCSimpleGenericTypesNode));
       if (GenService.isCDOrInnerCDEnum(type)) {
         optionals.add(false);
       } else if (isOptionalGem(type) ) {
@@ -384,7 +389,7 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
     getCD4C().addMethod(ast, getOwnCommand_FromJsonObjectTemplate(), cmdName, paramNameList, typeList,
         userDeserList, baseClassDecorator, makeAbstract, optionals);
     getCD4C().addMethod(ast, getOwnCommand_BuildJsonTemplate(), cmdName, paramNameList, typeList,
-        userDeserList, baseClassDecorator, makeAbstract);
+        userDeserList, baseClassDecorator, makeAbstract, isCollectionTypes);
 
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandDeSer"));
 

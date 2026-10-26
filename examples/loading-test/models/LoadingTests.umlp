@@ -141,7 +141,7 @@ classdiagram LoadingTests {
     String TestCommand_Primitive2_i(int i, int i2);
     String TestCommand_Primitive_f(float f);
     String TestCommand_String(String s);
-    //String TestCommand_StringListCT(List<String> s); // TODO: Collection Types broken, as they construct different methods as java.util types (https://git.rwth-aachen.de/monticore/monticore/-/work_items/5257)
+    String TestCommand_StringListCT(List<String> s); // TODO: Collection Types broken, as they construct different methods as java.util types (https://git.rwth-aachen.de/monticore/monticore/-/work_items/5257)
     String TestCommand_StringListJU(java.util.List<String> s);
     String TestCommand_StringOpt(Optional<String> s);
   }

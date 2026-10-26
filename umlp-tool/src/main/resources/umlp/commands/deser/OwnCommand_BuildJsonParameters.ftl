@@ -1,5 +1,5 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("attrName", "type", "typeName", "isCDEnum", "json", "useDeSer", "objectMapperName")}
+${tc.signature("attrName", "type", "typeName", "isCDEnum", "json", "useDeSer", "objectMapperName", "isCollectionType")}
 <#if useDeSer>
   jsonPrinter.memberJson("${attrName}", ${objectMapperName}.serialize(command.${genService.getGetterName(attrName, type)}(), "${typeName}").orElseThrow());
 <#else>
@@ -11,7 +11,7 @@ ${tc.signature("attrName", "type", "typeName", "isCDEnum", "json", "useDeSer", "
     jsonPrinter.endArray();
   <#elseif genService.isList(type)>
     jsonPrinter.beginArray("${attrName}");
-    for(var val : command.${genService.getGetterName(attrName, type)}<#if isCDEnum>List</#if>()) { <#-- Do I/ALu even want to know why getGetterName is not returning the List (only required for CollectionTypes"List", not java.util.List? - and why are enums always with List?-->
+    for(var val : command.${genService.getGetterName(attrName, type)}<#if isCDEnum || isCollectionType>List</#if>()) { <#-- Do I/ALu even want to know why getGetterName is not returning the List (only required for CollectionTypes"List", not java.util.List? - and why are enums always with List?-->
       jsonPrinter.value(val<#if isCDEnum>.name()</#if>);
     }
     jsonPrinter.endArray();
