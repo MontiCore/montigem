@@ -5,7 +5,16 @@ It is helpful to resolve npm resolution problems or test updates to the npm pack
 The local npm repository Verdaccio is run at `http://127.0.0.1:4873/`. The registry stores
 `@umlp/*` packages locally and proxies other public packages to npmjs.
 
-## Start and stop
+## Without docker: started by Gradle
+
+With `useLocalNpmRepo=true` or `publishToLocalNpmRepo=true`, the plugin starts Verdaccio itself
+(task `startLocalNpmRegistry`, a dependency of `npmInstall` and `localNpmAdduser`) and stops it when the build ends.
+It uses the node of the node-gradle plugin and installs Verdaccio once next to the downloaded node versions, to `<project>/.gradle/nodejs/localNpmRepo/tool`.
+Packages are stored in the directory given by `-PlocalNpmRepoDir=<dir>`, which is required to start a registry
+(the CI pipeline uses it to hand the packages to downstream jobs).
+Without `localNpmRepoDir`, only a registry that already runs can be used. If one already answers at `http://127.0.0.1:4873/` (e.g. the docker one below), it is used and left running.
+
+## Start and stop with docker
 
 From this directory:
 

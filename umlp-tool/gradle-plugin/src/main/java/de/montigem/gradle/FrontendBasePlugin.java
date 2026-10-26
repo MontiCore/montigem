@@ -10,6 +10,7 @@ import de.montigem.gradle.specific.FrontendCIImageTask;
 import de.montigem.gradle.specific.FrontendLocalImageTask;
 import de.montigem.gradle.specific.Java2TSTask;
 import de.montigem.gradle.specific.SetupFrontendTask;
+import de.montigem.gradle.specific.StartLocalNpmRegistryTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
 import de.se_rwth.commons.logging.Log;
 import org.gradle.api.Plugin;
@@ -113,6 +114,9 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
         ? java.util.Map.of("npm_config_userconfig", project.getLayout().getBuildDirectory()
             .file("app/.npmrc").get().getAsFile().getAbsolutePath())
         : java.util.Map.of())));
+    if (useLocalNpmRepo.get()) {
+      StartLocalNpmRegistryTask.requiredBy(project, npmInstall);
+    }
     TaskProvider<Task> npmUpdate = project.getTasks().named("npm_update", task -> {
       task.dependsOn(npmInstall);
       task.getOutputs().dir("node_modules");

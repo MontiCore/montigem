@@ -42,15 +42,28 @@ tasks.register("syncToolOptions", Sync.class) {
   include ('umlp/UMLPToolOptions.java') // only copy UMLPToolOptions.java
   into(project.layout.buildDirectory.dir("syncUMLPToolOptions"))
 }
+// the config of the local npm registry is shared with devScripts/localNpmRepo (docker)
+tasks.register("syncLocalNpmConfig", Sync.class) {
+  from('../../devScripts/localNpmRepo/config')
+  include ('config.yaml')
+  into(project.layout.buildDirectory.dir("syncLocalNpmConfig/localNpmRepo"))
+}
 ["compileJava", "processResources"].forEach {
   tasks.named(it) {
     dependsOn(tasks.named("syncToolOptions"))
   }
 }
+tasks.named("processResources") {
+  dependsOn(tasks.named("syncLocalNpmConfig"))
+}
 
 sourceSets {
   main.compileClasspath += configurations.umlpTool
   test.compileClasspath += configurations.umlpTool
+  main.resources {
+    // include the synced registry config as localNpmRepo/config.yaml
+    srcDir(project.layout.buildDirectory.dir("syncLocalNpmConfig"))
+  }
   main.java {
     // include the synced ToolOptions class
     srcDir(tasks.named("syncToolOptions"))

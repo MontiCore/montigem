@@ -14,6 +14,7 @@ import de.montigem.gradle.specific.GUIJava2TSTask;
 import de.montigem.gradle.specific.GUI2JavaTask;
 import de.montigem.gradle.specific.GUI2SymTask;
 import de.montigem.gradle.specific.LocalNpmAdduserTask;
+import de.montigem.gradle.specific.StartLocalNpmRegistryTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
 import de.montigem.gradle.specific.UMLP2TSTask;
 import de.montigem.gradle.specific.UMLPJava2TSTask;
@@ -154,6 +155,9 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       task.dependsOn(npmrc4download);
       task.getEnvironment().putAll(isolatedNpmEnvironment);
     });
+    if (useLocalNpmRepo.get() || publishToLocalNpmRepo.get()) {
+      StartLocalNpmRegistryTask.requiredBy(project, npmInstall);
+    }
 
     // browser-based lib tests need the browser revision of the installed playwright,
     // the install is a no-op if that revision is present already
@@ -180,6 +184,9 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.getNpmrcFile().set(localNpmrc);
           task.onlyIf("local npm publishing is enabled", t -> publishToLocalNpmRepo.get());
         });
+    if (publishToLocalNpmRepo.get()) {
+      StartLocalNpmRegistryTask.requiredBy(project, localNpmAdduser);
+    }
 
     // default models folder
     Directory models = getModels(project);
