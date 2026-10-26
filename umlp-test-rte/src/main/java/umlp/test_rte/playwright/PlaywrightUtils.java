@@ -107,6 +107,14 @@ public interface PlaywrightUtils {
   String PENDING_COMMANDS_VARIABLE = "umlp_pending_commands";
 
   /**
+   * Time {@link #waitForBackend(Collection)} sleeps for pages that do not publish
+   * {@link #PENDING_COMMANDS_VARIABLE}: frontends with {@code @umlp/commonj2ts} before 9.0.4.
+   * umlp-test-rte (Maven) and {@code @umlp/commonj2ts} (npm) are versioned independently, so
+   * applications can run the tests of this version against such a frontend.
+   */
+  long WAIT_FOR_BACKEND_FALLBACK_MILLIS = 200;
+
+  /**
    * Waits until the frontend in the given page has no command in progress.
    * See {@link #waitForBackend(Collection)}.
    *
@@ -124,18 +132,23 @@ public interface PlaywrightUtils {
    * (e.g. {@code GetFreeGemIdRequest} followed by a create command) is waited for as well.
    * <p>
    * Pages that do not show the application (e.g. {@code about:blank}) and closed pages are
-   * ignored. A page that does not publish {@link #PENDING_COMMANDS_VARIABLE} yet has no command
-   * manager and counts as idle. If the pages are still busy after
-   * {@link #waitForBackendTimeoutMillis()} ms, a warning is logged and the method returns.
+   * ignored. If a page of the application does not publish {@link #PENDING_COMMANDS_VARIABLE}, or
+   * if no page of the application is open, the method (additionally) sleeps
+   * {@link #WAIT_FOR_BACKEND_FALLBACK_MILLIS} ms, as before.
+   * HTTP requests of the frontend (e.g. file uploads of {@code GemFileInput}) are not counted.
+   * If the pages are still busy after {@link #waitForBackendTimeoutMillis()} ms, a warning is
+   * logged and the method returns.
    *
    * @param pages The {@link Page}s
    */
   default void waitForBackend(Collection<Page> pages) {
     long start = System.currentTimeMillis();
     long deadline = start + waitForBackendTimeoutMillis();
+    boolean fallback = false;
     int idlePolls = 0;
     while (true) {
       boolean idle = true;
+      boolean signal = false;
       String busy = null;
       for (Page page : pages) {
         if (page.isClosed() || !page.url().startsWith(getUrlBase())) {
@@ -153,10 +166,20 @@ public interface PlaywrightUtils {
           busy = page.url() + " (" + e.getMessage() + ")";
           continue;
         }
-        if (pending instanceof Number count && count.intValue() > 0) {
-          idle = false;
-          busy = page.url() + " (" + count.intValue() + " commands pending)";
+        if (pending instanceof Number count) {
+          signal = true;
+          if (count.intValue() > 0) {
+            idle = false;
+            busy = page.url() + " (" + count.intValue() + " commands pending)";
+          }
+        } else {
+          fallback = true;
         }
+      }
+      if (!signal && idle) {
+        // no page of the application publishes the count: only the fixed wait below
+        fallback = true;
+        break;
       }
       idlePolls = idle ? idlePolls + 1 : 0;
       if (idlePolls >= 2) {
@@ -168,6 +191,9 @@ public interface PlaywrightUtils {
         break;
       }
       sleepForBackend(waitForBackendPollMillis());
+    }
+    if (fallback) {
+      sleepForBackend(WAIT_FOR_BACKEND_FALLBACK_MILLIS);
     }
     Log.info("Waiting for the backend took " + (System.currentTimeMillis() - start) + "ms",
         PlaywrightUtils.class.getName());
