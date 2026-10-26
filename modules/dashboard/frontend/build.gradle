@@ -88,6 +88,8 @@ afterEvaluate {
 publishing {
   publications {
     mavenJava(MavenPublication) {
+      // A unique artifactId, otherwise the jar clashes with umlp.umlp-rte:frontend in using app
+      artifactId = "dashboard-frontend"
       from components.java
     }
   }

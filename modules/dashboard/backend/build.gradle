@@ -27,6 +27,8 @@ umlp2java {
 publishing {
   publications {
     mavenJava(MavenPublication) {
+      // A unique artifactId, otherwise the jar clashes with other backend-<version>.jar in using project
+      artifactId = "dashboard-backend"
       from components.java
     }
   }
