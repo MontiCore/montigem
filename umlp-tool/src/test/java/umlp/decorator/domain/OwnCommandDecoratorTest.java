@@ -41,9 +41,10 @@ public class OwnCommandDecoratorTest extends DecoratorTest {
   public void checkAttributes() {
     ASTCDClass clazz = getClassByName("Baz");
     assertAll(
-        // domain type params should generate a ...gemId attribute
+        // gem-identifiable domain type params should generate a ...gemId attribute
         () -> existsAttribute(clazz, "domainParamGemId"),
-        () -> existsAttribute(clazz, "enumParamGemId"),
+        // enum domain type params should generate an attribute
+        () -> existsAttribute(clazz, "enumParam"),
 
         // java type param
         () -> existsAttribute(clazz, "javaParam")
