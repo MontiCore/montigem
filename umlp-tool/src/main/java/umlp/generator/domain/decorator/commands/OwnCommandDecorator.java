@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import de.monticore.cd.codegen.TopDecorator;
 import de.monticore.cd.codegen.methods.AccessorDecorator;
 import de.monticore.cd4codebasis._ast.ASTCDMethod;
+import de.monticore.cd4codebasis._ast.ASTCDMethodSignature;
 import de.monticore.cd4codebasis._ast.ASTCDParameter;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDClass;
@@ -12,6 +13,7 @@ import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._ast.ASTCDPackage;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
+import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.SymTypeOfGenerics;
 import de.monticore.types.mcbasictypes._ast.ASTMCObjectType;
@@ -386,8 +388,11 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
       ast.setModifier(PUBLIC_ABSTRACT.build());
     }
 
-    getCD4C().addMethod(ast, getOwnCommand_FromJsonObjectTemplate(), cmdName, paramNameList, typeList,
+    ASTCDMethodSignature fromJsonObjectMethod = getCD4C().addMethod(ast, getOwnCommand_FromJsonObjectTemplate(), cmdName, paramNameList, typeList,
         userDeserList, baseClassDecorator, makeAbstract, optionals);
+    // JSweet does not support the stream operator
+    glex.replaceTemplate("cd2java.Annotations", fromJsonObjectMethod,
+        new StringHookPoint("@umlp.jsweet.extension.annotation.BackendOnly(umlp.jsweet.extension.annotation.BackendOnlyModes.THROW_ERROR) "));
     getCD4C().addMethod(ast, getOwnCommand_BuildJsonTemplate(), cmdName, paramNameList, typeList,
         userDeserList, baseClassDecorator, makeAbstract, isCollectionTypes);
 
