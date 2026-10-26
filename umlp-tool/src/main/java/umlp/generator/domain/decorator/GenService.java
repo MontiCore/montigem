@@ -452,6 +452,7 @@ public class GenService {
     return false;
   }
 
+  // Note: Includes all domain types, not just gem identifiable types! (such as enums)
   public static boolean isDomainType(SymTypeExpression type) {
     // TODO: Bessere Lösung?
     if(!type.hasTypeInfo()) {
@@ -649,6 +650,7 @@ public class GenService {
   }
 
   public static boolean isListOfGemIdentifiable(SymTypeExpression type) {
-    return GenService.isList(type) && GenService.isDomainType(((SymTypeOfGenerics) type).getArgument(0));
+    return GenService.isList(type) && GenService.isDomainType(((SymTypeOfGenerics) type).getArgument(0))
+        && !isInnerCDEnum(type);
   }
 }

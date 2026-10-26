@@ -124,6 +124,29 @@ classdiagram LoadingTests {
   }
 
   <<singleton>>
+  class TestCommandParams {
+    String TestCommand_Domain(Animal a);
+    String TestCommand_DomainOpt(Optional<Animal> a);
+    String TestCommand_DomainListCT(List<Animal> a);
+    String TestCommand_DomainListJU(java.util.List<Animal> a);
+    String TestCommand_DomainEnum(MyEnum e); // see also https://git.rwth-aachen.de/monticore/monticore/-/work_items/4832
+    String TestCommand_DomainEnumListCT(List<MyEnum> e);
+    String TestCommand_DomainEnumListJU(java.util.List<MyEnum> e);
+    String TestCommand_DomainEnumOpt(Optional<MyEnum> e);
+    String TestCommand_Primitive_i(int i);
+    String TestCommand_PrimitiveW_i(Integer i);
+    //String TestCommand_PrimitiveWList_iCT(List<Integer> i);  // TODO: Only String is supported as a primitive type! (https://git.rwth-aachen.de/monticore/monticore/-/work_items/5256)
+    //String TestCommand_PrimitiveWList_iJU(java.util.List<Integer> i); // TODO: Only String is supported as a primitive type! (https://git.rwth-aachen.de/monticore/monticore/-/work_items/5256)
+    String TestCommand_PrimitiveWOptional_i(Optional<Integer> i);
+    String TestCommand_Primitive2_i(int i, int i2);
+    String TestCommand_Primitive_f(float f);
+    String TestCommand_String(String s);
+    //String TestCommand_StringListCT(List<String> s); // TODO: Collection Types broken, as they construct different methods as java.util types (https://git.rwth-aachen.de/monticore/monticore/-/work_items/5257)
+    String TestCommand_StringListJU(java.util.List<String> s);
+    String TestCommand_StringOpt(Optional<String> s);
+  }
+
+  <<singleton>>
   class CounterService {
     int counter = 0;
   }

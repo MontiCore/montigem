@@ -7,7 +7,16 @@ ${tc.signature("attrName", "type", "isOptional", "isCDEnum", "isList", "json", "
   <#if isOptional>)</#if>
 <#else>
     <#if isCDEnum>
-    ${type?keep_after_last(".")}.valueOf(jsonObject.getMember("${attrName}").${json})
+      <#if isList>
+        jsonObject.getMember("${attrName}").getAsJsonArray().getValues().stream().map(JsonElement::getAsJsonString)
+        .map(v->${type?keep_after_last(".")}.valueOf(v.getValue())).collect(java.util.stream.Collectors.toList())
+      <#elseif isOptional>
+        jsonObject.hasMember("${attrName}") ?
+          Optional.of(${type?keep_after_last(".")}.valueOf(jsonObject.getMember("${attrName}").${json}))
+          : Optional.empty()
+      <#else>
+        ${type?keep_after_last(".")}.valueOf(jsonObject.getMember("${attrName}").${json})
+      </#if>
     <#elseif isList>
     ${json}
     <#else>

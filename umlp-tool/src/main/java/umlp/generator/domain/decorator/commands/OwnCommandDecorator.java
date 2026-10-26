@@ -166,7 +166,7 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
     List<SymTypeExpression> accessPolicyParameters = new ArrayList<>();
     meth.getCDParameterList().forEach(p -> {
       SymTypeExpression type = p.getSymbol().getType();
-      if (GenService.isDomainType(type) && !GenService.isCDEnum(type)) {
+      if (GenService.isDomainType(type) && !GenService.isCDOrInnerCDEnum(type)) {
         accessPolicyParameters.add(type);
       }
       addImport(type, ast);
@@ -178,6 +178,23 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
   }
 
   protected String getAttributeForMethodParameter(ASTCDParameter param) {
+    if (GenService.isCDEnum(param.getSymbol().getType())) {
+      return "protected " + param.getSymbol().getType().getTypeInfo().getName() + " " + StringTransformations.uncapitalize(param.getName());
+    }
+    if (GenService.isInnerCDEnum(param.getSymbol().getType())) {
+      if (GenService.isList(param.getSymbol().getType())) {
+        return "protected List<" + param.getSymbol().getType().asGenericType().getArgument(0).getTypeInfo().getName() + "> " + StringTransformations.uncapitalize(param.getName());
+      }
+      else if (GenService.isSet(param.getSymbol().getType())) {
+        return "protected Set<" + param.getSymbol().getType().asGenericType().getArgument(0).getTypeInfo().getName() + "> " + StringTransformations.uncapitalize(param.getName());
+      }
+      else if (GenService.isOptional(param.getSymbol().getType())) {
+        return "protected Optional<" + param.getSymbol().getType().asGenericType().getArgument(0).getTypeInfo().getName() + "> " + StringTransformations.uncapitalize(param.getName());
+      }
+      else {
+        Log.error("Unhandled inner Enum type " + param.getSymbol().getType(), param.get_SourcePositionStart());
+      }
+    }
     if (isOptionalGem(param.getSymbol().getType())) {
       return "protected Optional<Long> " + param.getName() + "GemId";
     }
@@ -318,7 +335,9 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
         Gem identifiable
       */
       boolean originalGemList = isListOfGemIdentifiable(type);
-      if (isOptionalGem(type)) {
+      if (GenService.isCDOrInnerCDEnum(type)) {
+        optionals.add(false);
+      } else if (isOptionalGem(type) ) {
         type = GenService.getSymType("long");
         paramName += "GemId";
         optionals.add(true);

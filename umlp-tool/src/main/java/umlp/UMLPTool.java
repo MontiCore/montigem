@@ -335,7 +335,9 @@ public class UMLPTool extends UMLPToolTOP {
 
   @Override
   public void runDefaultCoCos(ASTCDCompilationUnit ast) {
+    Log.enableFailQuick(false); // Aggregate errors
     UMLPCoCos.checkAll(ast);
+    Log.enableFailQuick(true); // Fail if an error was found
   }
 
   @Override

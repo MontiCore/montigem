@@ -6,6 +6,7 @@ classdiagram Sehub {
      and application specific part that are merged.
   */
   class User {
+      local String myLocalString = "22";
     <<dbColumn = "unique=true", key_attribute>>
     String username;
     <<hidden_in_overview>>
@@ -21,6 +22,7 @@ classdiagram Sehub {
     String validityPassword();
     String validityRole();
     String validityEmail();
+
   }
 
   enum SehubRole {
@@ -40,7 +42,7 @@ classdiagram Sehub {
     String fullName;
   }
 
-  association app [1] Project -> (users) User [*];
+  local association app [1] Project -> (users) User [*]; // TODO: Local not copied? 222
   association tickets [1] Project -> (issues) Issue [*];
 
   class Issue {
