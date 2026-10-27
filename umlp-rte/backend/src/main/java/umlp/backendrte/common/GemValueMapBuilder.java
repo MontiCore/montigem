@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -142,8 +143,12 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if(buildFinished) {
       super._internal_putValue(value);
     } else {
+      K key = deriveKey(value);
+      // stored under one key only, see _internal_putValueID
+      builderElemStorage.entrySet().removeIf(e -> e.getValue().getGemId() == value.getGemId()
+          && !Objects.equals(e.getKey(), key));
       // keep the element itself, it may be an unbuilt builder
-      valueLeft(builderElemStorage.put(deriveKey(value), new IDOrBuilder<>(value)), value.getGemId());
+      valueLeft(builderElemStorage.put(key, new IDOrBuilder<>(value)), value.getGemId());
       onValueKeyed(value);
     }
   }

@@ -291,6 +291,34 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
   }
 
   /**
+   * whether the value with valueGemID derives the key with keyGemID, loading it; tells a value that really has that
+   * key from a stale entry, whose value derives another key by now (only for maps of attribute qualified associations)
+   */
+  public async derivesKeyID(valueGemID: number, keyGemID: number): Promise<boolean> {
+    const value: LoadResult<V> = await this.loadSingleValueObject(valueGemID);
+    return value.isPresent() && (await this.deriveKeyID(value.get())) === keyGemID;
+  }
+
+  /**
+   * stores the value with valueGemID under the key with keyGemID, without synchronization, replacing the value stored
+   * for that key; unlike {@link #_internal_put}, a value is stored under one key only: an entry it still has under
+   * another key (a stale key, e.g. after its rekeying was refused) is moved to keyGemID
+   */
+  public async _internal_putValueID(keyGemID: number, valueGemID: number): Promise<void> {
+    for (const otherKeyGemID of await this.currentKeyIDs()) {
+      if (otherKeyGemID !== keyGemID && this.lookupID(otherKeyGemID) === valueGemID) {
+        const present: number = this.lookupID(keyGemID);
+        if (present != null && present !== valueGemID) {
+          await this._internal_remove(keyGemID);
+        }
+        await this.moveEntry(otherKeyGemID, keyGemID);
+        return;
+      }
+    }
+    await this._internal_put(keyGemID, valueGemID);
+  }
+
+  /**
    * puts a value under its derived key;
    * to be overridden by a subclass to add synchronization
    */
@@ -311,7 +339,7 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
    * (only for maps of attribute qualified associations)
    */
   public async _internal_putValue(value: V): Promise<void> {
-    await this._internal_put(await this.deriveKeyID(value), value.getGemId());
+    await this._internal_putValueID(await this.deriveKeyID(value), value.getGemId());
     await this.onValueKeyed(value);
   }
 

@@ -239,6 +239,15 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   }
 
   /**
+   * whether the value with valueGemID derives key, loading it; tells a value that really has key from a stale entry,
+   * whose value derives another key by now (only for maps of attribute qualified associations)
+   */
+  public async derivesKey(valueGemID: number, key: K): Promise<boolean> {
+    const value: LoadResult<V> = await this.loadSingleValueObject(valueGemID);
+    return value.isPresent() && (await this.deriveKey(value.get())) === key;
+  }
+
+  /**
    * puts a value under its derived key;
    * to be overridden by a subclass to add synchronization
    */
@@ -259,8 +268,27 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
    * (only for maps of attribute qualified associations)
    */
   public async _internal_putValue(value: V): Promise<void> {
-    await this._internal_put(await this.deriveKey(value), value.getGemId());
+    await this._internal_putValueID(await this.deriveKey(value), value.getGemId());
     await this.onValueKeyed(value);
+  }
+
+  /**
+   * stores the value with valueGemID under key, without synchronization, replacing the value stored for key;
+   * unlike {@link #_internal_put}, a value is stored under one key only: an entry it still has under another key
+   * (a stale key, e.g. after its rekeying was refused) is moved to key
+   */
+  public async _internal_putValueID(key: K, valueGemID: number): Promise<void> {
+    for (const otherKey of await this.currentKeys()) {
+      if (otherKey !== key && this.lookupID(otherKey) === valueGemID) {
+        const present: number = this.lookupID(key);
+        if (present != null && present !== valueGemID) {
+          await this._internal_remove(key);
+        }
+        await this.moveEntry(otherKey, key);
+        return;
+      }
+    }
+    await this._internal_put(key, valueGemID);
   }
 
   /**

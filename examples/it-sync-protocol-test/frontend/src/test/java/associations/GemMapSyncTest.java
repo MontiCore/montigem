@@ -4,6 +4,8 @@ package associations;
 import associations.commands.Course_putParticipantByMatNr;
 import associations.commands.Course_rekeyParticipantByMatNr;
 import associations.test_infrastructure.AssociationsMockTestSetup;
+import de.se_rwth.commons.logging.Log;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import umlp.backendrte.command.CommandManager;
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,21 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
 
   Course course() {
     return AssociationsManager.getCourseSure(courseId);
+  }
+
+  /** for the tests that provoke errors: collect them instead of failing */
+  void collectFindings() {
+    Log.init();
+    Log.enableFailQuick(false);
+  }
+
+  boolean logged(String code) {
+    return Log.getFindings().stream().anyMatch(f -> f.getMsg().startsWith(code));
+  }
+
+  @AfterEach
+  public void resetLog() {
+    Log.init();
   }
 
   @Test
@@ -273,6 +290,101 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
 
     getBackend().activate();
     assertTrue(course().containsKeyTutorByStaffId("T2"));
+  }
+
+  /**
+   * a value is stored under one key only: after its rekeying was refused it keeps its old key; putting it again moves
+   * it to the key it derives, on every participant, instead of storing it twice
+   */
+  @Test
+  public void testPutMovesValueFromStaleKey() {
+    collectFindings();
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(benId));
+
+    getClients(1).activate();
+    assertEquals(2, course().sizeParticipantByMatNrs());
+
+    getBackend().activate();
+    // Ben takes Anna's matNr: his rekeying is refused, he stays under 1002
+    AssociationsManager.getStudentSure(benId).setMatNr(1001);
+    assertTrue(logged("0xA7304"));
+    assertEquals(benId, course().getParticipantByMatNr(1002).get().getGemId());
+
+    // Anna leaves, Ben is put again: moved from 1002 to 1001
+    course().removeParticipantByMatNr(1001);
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(benId));
+    assertEquals(1, course().sizeParticipantByMatNrs());
+    assertEquals(benId, course().getParticipantByMatNr(1001).get().getGemId());
+    assertFalse(course().containsKeyParticipantByMatNr(1002));
+
+    getClients(1).activate();
+    assertEquals(1, course().sizeParticipantByMatNrs());
+    assertTrue(course().containsKeyParticipantByMatNr(1001));
+    assertFalse(course().containsKeyParticipantByMatNr(1002));
+    assertFalse(logged("0xA7307"));
+  }
+
+  /**
+   * a put replacing a value that derives the same key (the qualifying attribute is not unique) is reported by the
+   * server; the value is replaced nonetheless, like Map#put, as the client that put it has replaced it already
+   */
+  @Test
+  public void testPutReplacingValueWithSameKeyIsReported() {
+    collectFindings();
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+
+    getClients(1).activate();
+    assertEquals(1, course().sizeParticipantByMatNrs());
+
+    getClients(0).activate();
+    Student ben = AssociationsManager.getStudentSure(benId);
+    ben.setMatNr(1001);
+    course().putParticipantByMatNr(ben);
+
+    getBackend().activate();
+    assertTrue(logged("0xA7307"));
+    assertEquals(1, course().sizeParticipantByMatNrs());
+    assertEquals(benId, course().getParticipantByMatNr(1001).get().getGemId());
+
+    getClients(1).activate();
+    assertEquals(1, course().sizeParticipantByMatNrs());
+    assertEquals(benId, course().getParticipantByMatNr(1001).get().getGemId());
+  }
+
+  /** replacing a stale entry (its value derives another key by now) is a repair, not an error */
+  @Test
+  public void testPutReplacingStaleEntryIsNotReported() {
+    collectFindings();
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(benId));
+    // Anna takes Ben's matNr: her rekeying is refused, she stays under 1001
+    AssociationsManager.getStudentSure(annaId).setMatNr(1002);
+    assertTrue(logged("0xA7304"));
+
+    long carlId = AssociationsManager.studentBuilder().name("Carl").matNr(1001).build().get().getGemId();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(carlId));
+    assertFalse(logged("0xA7307"));
+    assertEquals(2, course().sizeParticipantByMatNrs());
+    assertEquals(carlId, course().getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(benId, course().getParticipantByMatNr(1002).get().getGemId());
+  }
+
+  @Test
+  public void testEntryMapPutReplacingValueWithSameKeyIsReported() {
+    collectFindings();
+    getBackend().activate();
+    Student anna = AssociationsManager.getStudentSure(annaId);
+    course().putEnrollmentByStudent(AssociationsManager.getEnrollmentSure(enrollmentId));
+    long secondId = AssociationsManager.enrollmentBuilder().student(anna).grade(1).build().get().getGemId();
+    course().putEnrollmentByStudent(AssociationsManager.getEnrollmentSure(secondId));
+
+    assertTrue(logged("0xA7317"));
+    assertEquals(1, course().sizeEnrollmentByStudents());
+    assertEquals(secondId, course().getEnrollmentByStudent(anna).get().getGemId());
   }
 
   /** GemEntryMap: the key is the Student the Enrollment references, identified by its gemId */

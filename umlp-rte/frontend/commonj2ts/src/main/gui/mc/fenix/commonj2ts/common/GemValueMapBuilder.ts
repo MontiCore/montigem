@@ -144,6 +144,12 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     } else {
       // keep the element itself, it may be an unbuilt builder
       const key: K = await this.deriveKey(value);
+      // stored under one key only, see _internal_putValueID
+      for (const [otherKey, other] of Array.from(this.builderElemStorage.entries())) {
+        if (otherKey !== key && other.getGemId() === value.getGemId()) {
+          this.builderElemStorage.delete(otherKey);
+        }
+      }
       const old: IDOrBuilder<V> = this.storageGet(key);
       this.builderElemStorage.set(key, new IDOrBuilder<V>(value));
       await this.valueLeft(old, value.getGemId());

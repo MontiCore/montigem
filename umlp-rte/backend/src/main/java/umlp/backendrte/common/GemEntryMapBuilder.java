@@ -164,8 +164,12 @@ public abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     if(buildFinished) {
       super._internal_putValue(value);
     } else {
+      long keyGemID = deriveKeyID(value);
+      // stored under one key only, see _internal_putValueID
+      builderElemStorage.entrySet().removeIf(e -> e.getValue().getValue().getGemId() == value.getGemId()
+          && e.getKey() != keyGemID);
       // keep the element itself, it may be an unbuilt builder; the key is referenced by id
-      storeEntry(new IDOrBuilder<>(deriveKeyID(value)), new IDOrBuilder<>(value));
+      storeEntry(new IDOrBuilder<>(keyGemID), new IDOrBuilder<>(value));
       onValueKeyed(value);
     }
   }

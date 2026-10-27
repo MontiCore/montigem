@@ -485,6 +485,73 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
     assertNoErrors();
   }
 
+  /** a value is stored under one key only: putting it again drops an entry it has under a stale key */
+  @Test
+  public void testValueMapStoresValueUnderOneKeyOnly() {
+    Node a = named("a");
+    NamedValueMap map = new NamedValueMap();
+    // before build: e.g. the rekeying of a was refused, it is still stored under its old key
+    map._internal_put("old", a.getGemId());
+    map._internal_putValue(a);
+    assertEquals(List.of("a"), new ArrayList<>(map.keySet()));
+
+    // after build, also when put by id (as sent by the server)
+    map.build();
+    map._internal_putValueID("b", a.getGemId());
+    assertEquals(Map.of("b", a.getGemId()), map.getIDMap());
+    // a did not leave the map
+    assertTrue(map.removedIDs.isEmpty());
+
+    // moved onto a key held by another value: that value is replaced
+    Node c = named("c");
+    map._internal_putValue(c);
+    map._internal_putValueID("c", a.getGemId());
+    assertEquals(Map.of("c", a.getGemId()), map.getIDMap());
+    assertEquals(List.of(c.getGemId()), map.removedIDs);
+    assertNoErrors();
+  }
+
+  @Test
+  public void testEntryMapStoresValueUnderOneKeyOnly() {
+    Node keyA = new Node().build().get();
+    Node keyB = new Node().build().get();
+    Node a = new Node().build().get();
+    a.ref = keyA;
+    NodeEntryMap map = new NodeEntryMap(null);
+    map._internal_put(keyB.getGemId(), a.getGemId());
+    map._internal_putValue(a);
+    assertEquals(Map.of(keyA.getGemId(), a.getGemId()), map.getIDMap());
+
+    map.build();
+    map._internal_putValueID(keyB.getGemId(), a.getGemId());
+    assertEquals(Map.of(keyB.getGemId(), a.getGemId()), map.getIDMap());
+    assertNoErrors();
+  }
+
+  /** derivesKey tells a value that really has a key from a stale entry, whose value derives another key by now */
+  @Test
+  public void testDerivesKeyTellsStaleEntries() {
+    Node a = named("a");
+    NamedValueMap map = new NamedValueMap();
+    map.build();
+    map._internal_putValue(a);
+    assertTrue(map.derivesKey(a.getGemId(), "a"));
+    a.name = "b";
+    assertFalse(map.derivesKey(a.getGemId(), "a"));
+
+    Node keyA = new Node().build().get();
+    Node keyB = new Node().build().get();
+    Node e = new Node().build().get();
+    e.ref = keyA;
+    NodeEntryMap entryMap = new NodeEntryMap(null);
+    entryMap.build();
+    entryMap._internal_putValue(e);
+    assertTrue(entryMap.derivesKeyID(e.getGemId(), keyA.getGemId()));
+    e.ref = keyB;
+    assertFalse(entryMap.derivesKeyID(e.getGemId(), keyA.getGemId()));
+    assertNoErrors();
+  }
+
   protected List<LoadResult<Node>> load(List<Long> gemIDs) {
     loadCalls++;
     return gemIDs.stream()

@@ -159,8 +159,15 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     if (this.buildFinished) {
       await super._internal_putValue(value);
     } else {
+      const keyGemID: number = await this.deriveKeyID(value);
+      // stored under one key only, see _internal_putValueID
+      for (const [otherKeyGemID, entry] of Array.from(this.builderElemStorage.entries())) {
+        if (otherKeyGemID !== keyGemID && entry[1].getGemId() === value.getGemId()) {
+          this.builderElemStorage.delete(otherKeyGemID);
+        }
+      }
       // keep the element itself, it may be an unbuilt builder; the key is referenced by id
-      await this.storeEntry(new IDOrBuilder<K>(await this.deriveKeyID(value)), new IDOrBuilder<V>(value));
+      await this.storeEntry(new IDOrBuilder<K>(keyGemID), new IDOrBuilder<V>(value));
       await this.onValueKeyed(value);
     }
   }

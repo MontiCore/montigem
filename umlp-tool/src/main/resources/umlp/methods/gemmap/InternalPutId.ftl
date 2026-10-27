@@ -8,7 +8,7 @@ Long oldID = this._${name}.getID(key);
 if (oldID != null && oldID == gemID) {
   return;
 }
-this._${name}._internal_put(key, gemID);
+this._${name}._internal_putValueID(key, gemID);
 check${name?cap_first}();
 for (${sourceName}Observer obs : ${sourceName?uncap_first}Observers) {
   if (oldID != null) {

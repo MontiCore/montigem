@@ -8,6 +8,7 @@ import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import umlp.generator.domain.decorator.GenService;
+import umlp.generator.util.PathUtil;
 
 import java.util.List;
 
@@ -35,7 +36,10 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     boolean isEntry = GenService.isGemEntryMap(ast);
     String storedKeyType = GenService.getGemMapStoredKeyType(ast);
 
-    methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType));
+    // the server reports a put that replaces a value deriving the same key
+    methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
+        isEntry ? "0xA7317" : "0xA7307"));
+    cd4c.addImport(this.ast, PathUtil.getBackendRTECommandPath("CommandManager"));
     methodList.add(createMethod("umlp.methods.gemmap.Remove", name, keyType, isEntry));
     // put/remove without scope
     methodList.addAll(createNotifyMethods(methodList, ast.getModifier().isLocal()));

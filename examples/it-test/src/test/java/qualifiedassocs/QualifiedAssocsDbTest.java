@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package qualifiedassocs;
 
+import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsNeo4JDBTestSetup;
@@ -34,6 +35,22 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     }
   }
 
+  /**
+   * runs a put that replaces a value deriving the same key: the server reports it (0xA7307, the qualifying attribute
+   * is not unique) and replaces the value nonetheless
+   */
+  default void assertReportsSameKey(Runnable put) {
+    boolean failQuick = Log.isFailQuickEnabled();
+    Log.enableFailQuick(false);
+    try {
+      put.run();
+      // removed before fail quick is enabled again: enabling it terminates if errors were logged
+      assertTrue(Log.getFindings().removeIf(f -> f.getMsg().startsWith("0xA7307")));
+    } finally {
+      Log.enableFailQuick(failQuick);
+    }
+  }
+
   @Test
   default void testPutGetRemove() {
     getBackend().activate();
@@ -49,7 +66,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertTrue(directory.getByLogin("bob").isEmpty());
 
     // the key is unique: putting another target with the same key replaces the first
-    directory.putByLogin(otherAnna);
+    assertReportsSameKey(() -> directory.putByLogin(otherAnna));
     assertSame(otherAnna, directory.getByLogin("anna").get());
     assertFalse(directory.containsByLogin(anna));
     assertEquals(1, directory.sizeByLogins());
@@ -171,7 +188,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertEquals(observers + 1, anna.personObservers.size());
 
     // replaced by another value for its key
-    directory.putByLogin(otherAnna);
+    assertReportsSameKey(() -> directory.putByLogin(otherAnna));
     assertEquals(observers, anna.personObservers.size());
 
     // removed; the subclass value is observed with its own observer, also registered with the superclass
