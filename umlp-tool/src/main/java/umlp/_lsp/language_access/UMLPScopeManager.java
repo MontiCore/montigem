@@ -28,7 +28,6 @@ public class UMLPScopeManager extends UMLPScopeManagerTOP {
     UMLPArtifactScopeWithFindings res = super.createArtifactScope(ast, oldArtifactScope);
     try{
       Log.getFindings().clear();
-      CD4CodeTypeCheck3.reset();
       CD4CodeTypeCheck3.init();
       res.originalAst.accept(new CD4CodeSymbolTableCompleter(ast).getTraverser());
       res.findings.addAll(Log.getFindings());
@@ -58,7 +57,6 @@ public class UMLPScopeManager extends UMLPScopeManagerTOP {
         for(ASTCDCompilationUnit ast : astNodes){
           try {
             Log.getFindings().clear();
-            CD4CodeTypeCheck3.reset();
             CD4CodeTypeCheck3.init();
             ast.accept(new CD4CodeSymbolTableCompleter(ast).getTraverser());
             res.get(ast).findings.addAll(Log.getFindings());
