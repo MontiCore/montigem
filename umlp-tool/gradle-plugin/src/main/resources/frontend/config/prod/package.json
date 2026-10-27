@@ -26,7 +26,7 @@
     "@umlp/basic": "^10.0.0",
     "@umlp/cad": "^9.0.0",
     "@umlp/charts": "^10.0.0",
-    "@umlp/commonj2ts": "^9.0.0",
+    "@umlp/commonj2ts": "^9.0.3",
     "@umlp/input": "^10.0.0",
     "@umlp/navigation": "^9.0.0",
     "@umlp/networkgraph": "^9.0.0",
