@@ -30,4 +30,8 @@ umlp QualifiedAssocs {
 
   /* GemEntryMap: keyed by the domain object the target references */
   association Directory [[department]] (employeeDirectory) -> (byDepartment) Employee [*];
+
+  /* GemValueMap with the qualifier on the right side: navigable from right to left, so the owner Directory is the
+     right side of the association (and of its table) */
+  association [*] Person (byLoginFromRight) <- (rightDirectory) [[login]] Directory;
 }

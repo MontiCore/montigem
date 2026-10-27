@@ -15,4 +15,7 @@ umlp UMLPAssocQualifierKeys {
   association B [[number]] (byNumber) -> A [0..1];
   association B [[flag]] (byFlag) -> A [*];
   association B [[c]] (byC) -> A [*];
+
+  // the qualifier on the right side, navigable from right to left
+  association [*] A (byNameFromRight) <- [[name]] B;
 }

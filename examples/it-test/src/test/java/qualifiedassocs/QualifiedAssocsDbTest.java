@@ -355,4 +355,29 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
     assertEquals(eve.getGemId(), clone.getByDepartment(it).get().getGemId());
   }
+
+  /** qualifier on the right side: the owner is the right side of the association and of its table */
+  @Test
+  default void testRightSideQualifier() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder().byLoginFromRightPut(anna).build().get();
+    directory.putByLoginFromRight(bob);
+    assertSame(anna, directory.getByLoginFromRight("anna").get());
+    assertSame(bob, directory.getByLoginFromRight("bob").get());
+
+    // saved and loaded: the keys are derived from the loaded targets
+    var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
+    assertEquals(Map.of("anna", anna.getGemId(), "bob", bob.getGemId()),
+        clone._internal_getByLoginFromRightGemMap().getIDMap());
+
+    anna.setLogin("annabelle");
+    assertSame(anna, directory.getByLoginFromRight("annabelle").get());
+    assertTrue(directory.getByLoginFromRight("anna").isEmpty());
+    assertTrue(directory.removeByLoginFromRight("bob"));
+
+    clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
+    assertEquals(Map.of("annabelle", anna.getGemId()), clone._internal_getByLoginFromRightGemMap().getIDMap());
+  }
 }
