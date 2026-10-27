@@ -44,5 +44,19 @@ public class MyEndpoint {
 }
 ```
 
+## 7.4 Executable JAR Library Names
+
+The backend Gradle plugin prefixes dependency JAR filenames in `BOOT-INF/lib/` with
+their Maven group by default. This keeps distinct libraries with the same artifact
+name and version from colliding when `bootJar` packages them.
+
+To retain the original filenames, set this in `gradle.properties`:
+
+```properties
+bootJarIncludeGroup=false
+```
+
+You can also disable it for a single build with `-PbootJarIncludeGroup=false`.
+
 ---
 [< Previous: Styling](06_Styling.md) | [Back to Index](../MontiGem_Documentation.md) | [Next: TOP Mechanism >](08_TOPMechanism.md)
