@@ -1,0 +1,19 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPAssocQualifierKeyCardinality {
+  class A {
+    java.util.Optional<String> optName;
+    java.util.List<String> names;
+  }
+  class B;
+  class C;
+  association A -> (optC) C [0..1];
+  association A -> (manyC) C [*];
+  association A -> (someC) C [1..*];
+
+  association B [[optName]] -> A [*];
+  association B [[names]] -> A [*];
+  association B [[optC]] -> A [*];
+  association B [[manyC]] -> A [*];
+  association B [[someC]] -> A [*];
+  association [*] A <- [[manyC]] B;
+}

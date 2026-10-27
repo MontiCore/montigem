@@ -1,0 +1,17 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp QualifierKeyForms {
+  class Student;
+
+  class Course;
+
+  class Enrollment {
+    // a key as a domain typed attribute (becomes a to-one association by UMLAttrToAssocTrafo)
+    Student student;
+  }
+
+  // a key as the role of a to-one association
+  association Enrollment -> (tutor) Student [1];
+
+  association Course [[student]] (studentCourse) -> (byStudent) Enrollment [*];
+  association Course [[tutor]] (tutorCourse) -> (byTutor) Enrollment [*];
+}

@@ -14,9 +14,9 @@ public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTes
   public void testInvalidQAttrType() {
     parseInvalid("UMLPAssocQualifierComplexAttrType");
 
-    assertFindingAtLine(0, 13, "names");
-    assertFindingAtLine(1, 14, "e");
-    assertFindingsCount(2);
+    // the List names (line 13) is multi-valued, see UMLPAssociationQualifierKeyCardinalityTest
+    assertFindingAtLine(0, 14, "e");
+    assertFindingsCount(1);
   }
 
   @Test

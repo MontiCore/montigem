@@ -11,6 +11,12 @@ umlp UMLPAssocQualifierKeys {
 
   class C;
 
+  class D;
+
+  // a key via an association role instead of an attribute
+  association A -> (d) D [1];
+  association B [[d]] (byD) -> A [*];
+
   association B [[name]] (byName) -> A [*];
   association B [[number]] (byNumber) -> A [0..1];
   association B [[flag]] (byFlag) -> A [*];
