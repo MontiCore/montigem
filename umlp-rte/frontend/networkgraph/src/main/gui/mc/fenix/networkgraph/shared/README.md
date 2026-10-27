@@ -46,10 +46,8 @@ Tested with [Angular](https://angular.io/) (`v16.2.7`) and the following depende
 
 ```text
 "dependencies": {
-  // Clone arbitrary objects
-  "lodash.clonedeepwith": "^4.5.0",
-  // Check whether two variables are equal by value (rather than by value, which is JavaScripts default)
-  "lodash.isequal": "^4.5.0",
+  // Clone arbitrary objects (cloneDeepWith) and compare by value (isEqual)
+  "lodash-es": "^4.17.0",
   // Convert HTML elements to images
   "dom-to-image": "^2.6.0",
 }

@@ -53,8 +53,7 @@ dependencies:
   // Utility dependencies that might be necessary when using the entire "shared" folder
   "xlsx": "^1.2.0",
   "dom-to-image": "^2.6.0",
-  "lodash.clonedeepwith": "^4.5.0",
-  "lodash.isequal": "^4.5.0",
+  "lodash-es": "^4.17.0",
 }
 ```
 

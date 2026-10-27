@@ -30,19 +30,5 @@
     "@sigma/node-image": "3.0.0",
     "tslib": "^2.3.0",
     "xlsx": "^0.18.5"
-  },
-  "devDependencies": {
-    "@angular/build": "~22.1.0",
-    "@angular/cli": "~22.1.0",
-    "@angular/compiler-cli": "~22.1.0",
-    "@types/dom-to-image": "^2.6.7",
-    "@types/lodash.clonedeepwith": "^4.5.9",
-    "@types/lodash.isequal": "^4.5.8",
-    "@vitest/browser-playwright": "4.1.11",
-    "vitest-webgl-canvas-mock": "~1.1.0",
-    "jsdom": "^26.x",
-    "@types/node": "^24.x",
-    "vitest": "4.1.11",
-    "typescript": "~6.0.0"
   }
 }

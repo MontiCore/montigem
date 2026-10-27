@@ -20,16 +20,5 @@
   "dependencies": {
     "tslib": "^2.3.0",
     "monaco-editor": "^0.56.0"
-  },
-  "devDependencies": {
-    "css-loader": "^7.1.2",
-    "monaco-editor-webpack-plugin": "^7.1.0",
-    "style-loader": "^4.0.0",
-    "@angular/cli": "~22.1.0",
-    "@angular/compiler-cli": "~22.1.0",
-    "@types/dom-to-image": "^2.6.7",
-    "@types/lodash.clonedeepwith": "^4.5.9",
-    "@types/lodash.isequal": "^4.5.8",
-    "typescript": "~6.0.0"
   }
 }

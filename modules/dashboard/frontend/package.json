@@ -36,10 +36,9 @@
     "@angular/cli": "~22.1.0",
     "@angular/compiler-cli": "~22.1.0",
     "ng-packagr": "~22.1.0",
-    "@types/three": "^0.160.0",
-    "@types/node": "^22.x",
+    "@types/node": "^24.x",
     "jsdom": "^26.x",
-    "vitest": "4.0.8",
+    "vitest": "4.1.11",
     "typescript": "~6.0.0"
   }
 }

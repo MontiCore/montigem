@@ -13,8 +13,5 @@
   "dependencies": {
     "tslib": "^2.3.0",
     "three": "^0.160.0"
-  },
-  "devDependencies": {
-    "@types/three": "^0.160.0"
   }
 }

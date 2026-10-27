@@ -21,14 +21,9 @@
     "@angular/platform-browser-dynamic": "~22.1.0",
     "@angular/router": "~22.1.0",
     "@sigma/node-image": "3.0.0",
-    "@swimlane/ngx-charts": "25.0.0",
-    "@swimlane/ngx-datatable": "25.0.0",
-    "@upe/logger": "^2.0.3",
     "angular-plotly.js": "^5.2.2",
     "plotly.js-dist-min": "2.18.1",
-    "angular2-text-mask": "9.0.0",
     "apexcharts": "6.0.0",
-    "chart.js": "^3.0.0",
     "d3": "7.8.2",
     "dom-to-image": "^2.6.0",
     "elkjs": "^0.9.3",
@@ -38,10 +33,7 @@
     "graphology-layout-forceatlas2": "^0.10.1",
     "graphology-layout-noverlap": "^0.4.2",
     "graphology-metrics": "^2.2.0",
-    "lodash.clonedeepwith": "^4.5.0",
-    "lodash.isequal": "^4.5.0",
     "many-keys-map": "2.0.1",
-    "ng2-charts": "3.1.2",
     "ngx-monaco-editor-v2": "^22.0.0",
     "markdown-it": "^14.0.0",
     "markdown-it-texmath": "^1.0.0",
@@ -55,7 +47,8 @@
     "vis-network": "^9.1.2",
     "xlsx": "^0.18.5",
     "zone.js": "~0.16.0",
-    "flatpickr": "^4.6.13"
+    "flatpickr": "^4.6.13",
+    "lodash-es": "^4.17.0"
   },
   "devDependencies": {
     "@angular/build": "~22.1.0",
@@ -63,15 +56,10 @@
     "@angular/compiler-cli": "~22.1.0",
     "ng-packagr": "~22.1.0",
     "@types/dom-to-image": "^2.6.7",
-    "@types/lodash.clonedeepwith": "^4.5.9",
-    "@types/lodash.isequal": "^4.5.8",
     "@types/three": "^0.160.0",
     "@types/node": "^24.x",
     "@vitest/browser-playwright": "4.1.11",
-    "elkjs": "^0.9.3",
-    "jsdom": "^26.x",
     "vitest": "4.1.11",
-    "vitest-webgl-canvas-mock": "~1.1.0",
     "typescript": "~6.0.0"
   }
 }
