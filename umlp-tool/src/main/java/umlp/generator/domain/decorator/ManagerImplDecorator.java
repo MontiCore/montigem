@@ -151,7 +151,8 @@ public class ManagerImplDecorator extends AbstractDecorator {
           sideToCorrectManager.put(a.getName(), correctManager);
         });
         getCD4C().addMethod(managerClass, "umlp.managerimpl.DoAdd", name, managerName, assocs, sideToCorrectManager);
-        getCD4C().addMethod(managerClass, "umlp.managerimpl.DoDelete",origCD.getCDDefinition().getName(), name, managerName);
+        getCD4C().addMethod(managerClass, "umlp.managerimpl.DoDelete",origCD.getCDDefinition().getName(), name, managerName,
+            GemMapOwnerRole.holding(origCD, domainClass));
         getCD4C().addMethod(managerClass, "umlp.managerimpl.DoRegister", name);
       }
       getCD4C().addMethod(managerClass, "umlp.managerimpl.DoAddRequiredObserver", origCD.getCDDefinition().getName(), name);

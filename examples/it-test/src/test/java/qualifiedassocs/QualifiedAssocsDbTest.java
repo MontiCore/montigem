@@ -36,16 +36,16 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
   }
 
   /**
-   * runs a put that replaces a value deriving the same key: the server reports it (0xA7307, the qualifying attribute
-   * is not unique) and replaces the value nonetheless
+   * runs an action that is expected to log an error starting with message, e.g. a put that replaces a value deriving
+   * the same key: the server reports it (0xA7307, the qualifying attribute is not unique) and replaces the value
    */
-  default void assertReportsSameKey(Runnable put) {
+  default void assertLogsError(String message, Runnable action) {
     boolean failQuick = Log.isFailQuickEnabled();
     Log.enableFailQuick(false);
     try {
-      put.run();
+      action.run();
       // removed before fail quick is enabled again: enabling it terminates if errors were logged
-      assertTrue(Log.getFindings().removeIf(f -> f.getMsg().startsWith("0xA7307")));
+      assertTrue(Log.getFindings().removeIf(f -> f.getMsg().startsWith(message)));
     } finally {
       Log.enableFailQuick(failQuick);
     }
@@ -66,7 +66,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertFalse(directory.containsKeyByLogin("bob"));
 
     // the key is unique: putting another target with the same key replaces the first
-    assertReportsSameKey(() -> directory.putByLogin(otherAnna));
+    assertLogsError("0xA7307", () -> directory.putByLogin(otherAnna));
     assertSame(otherAnna, directory.getByLogin("anna"));
     assertFalse(directory.containsByLogin(anna));
     assertEquals(1, directory.sizeByLogins());
@@ -188,7 +188,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertEquals(observers + 1, anna.personObservers.size());
 
     // replaced by another value for its key
-    assertReportsSameKey(() -> directory.putByLogin(otherAnna));
+    assertLogsError("0xA7307", () -> directory.putByLogin(otherAnna));
     assertEquals(observers, anna.personObservers.size());
 
     // removed; the subclass value is observed with its own observer, also registered with the superclass
@@ -379,5 +379,79 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
 
     clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
     assertEquals(Map.of("annabelle", anna.getGemId()), clone._internal_getByLoginFromRightGemMap().getIDMap());
+  }
+
+  /**
+   * deleting a value removes its entry (key and value) from the maps of the loaded owners and from the database
+   * (qualifier on the left and on the right side)
+   */
+  @Test
+  default void testDeleteValue() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder()
+        .byLoginPut(anna).byLoginPut(bob)
+        .byLoginFromRightPut(anna).byLoginFromRightPut(bob)
+        .build().get();
+
+    assertTrue(QualifiedAssocsManager.deletePerson(anna.getGemId()));
+    assertFalse(QualifiedAssocsDAOFactory.getPersonDAO().selectPerson(anna.getGemId()).isPresent());
+
+    assertFalse(directory.containsKeyByLogin("anna"));
+    assertFalse(directory.containsKeyByLoginFromRight("anna"));
+    assertEquals(1, directory.sizeByLogins());
+    assertSame(bob, directory.getByLogin("bob"));
+    assertSame(bob, directory.getByLoginFromRight("bob"));
+
+    var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
+    assertEquals(Map.of("bob", bob.getGemId()), clone._internal_getByLoginGemMap().getIDMap());
+    assertEquals(Map.of("bob", bob.getGemId()), clone._internal_getByLoginFromRightGemMap().getIDMap());
+  }
+
+  /**
+   * a value deleted while its owner is not loaded: the loaded owner does not know the value any more (its keys are
+   * derived lazily, a value that cannot be loaded is dropped), also if a row of the association outlived the value
+   */
+  @Test
+  default void testDeleteValueOfOwnerNotLoaded() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    long directoryId = QualifiedAssocsManager.directoryBuilder()
+        .byLoginPut(anna).byLoginPut(bob)
+        .byLoginFromRightPut(anna).byLoginFromRightPut(bob)
+        .build().get().getGemId();
+
+    // the owner is not loaded any more, the value is (deleting an object the manager has not loaded fails in
+    // SoftValueHashMap#remove)
+    QualifiedAssocsManager.TESTING_clearCache();
+    QualifiedAssocsManager.getPersonSure(anna.getGemId());
+    assertTrue(QualifiedAssocsManager.deletePerson(anna.getGemId()));
+
+    var directory = QualifiedAssocsManager.getDirectorySure(directoryId);
+    assertFalse(directory.containsKeyByLogin("anna"));
+    assertEquals(Map.of("bob", bob.getGemId()), directory._internal_getByLoginGemMap().getIDMap());
+    assertEquals(Map.of("bob", bob.getGemId()), directory._internal_getByLoginFromRightGemMap().getIDMap());
+  }
+
+  /** deleting the owner deletes its association rows, the values remain (qualifier on the left and on the right side) */
+  @Test
+  default void testDeleteOwner() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder().byLoginPut(anna).byLoginFromRightPut(bob).build().get();
+
+    assertTrue(QualifiedAssocsManager.deleteDirectory(directory.getGemId()));
+    assertFalse(QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).isPresent());
+    assertTrue(QualifiedAssocsDAOFactory.getPersonDAO().selectPerson(anna.getGemId()).isPresent());
+    assertTrue(QualifiedAssocsDAOFactory.getPersonDAO().selectPerson(bob.getGemId()).isPresent());
+
+    // the values can be put into another owner, which is saved and loaded with them only
+    var other = QualifiedAssocsManager.directoryBuilder().byLoginPut(anna).byLoginFromRightPut(bob).build().get();
+    var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(other.getGemId()).get();
+    assertEquals(Map.of("anna", anna.getGemId()), clone._internal_getByLoginGemMap().getIDMap());
+    assertEquals(Map.of("bob", bob.getGemId()), clone._internal_getByLoginFromRightGemMap().getIDMap());
   }
 }

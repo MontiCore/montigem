@@ -442,10 +442,10 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
     unkeyedValueIDs.clear();
     List<LoadResult<V>> loaded = loadValueObjects(gemIDs);
     for (int i = 0; i < loaded.size(); i++) {
+      // a value that cannot be loaded (deleted; e.g. a row of a unidirectional association outlives it) has no key:
+      // it is dropped, like a GemList skips such ids when loading its elements
       if (loaded.get(i).isPresent()) {
         keyLoadedValue(loaded.get(i).get());
-      } else {
-        Log.error("0xA7312 Can not load Object with id " + gemIDs.get(i) + " to derive its key");
       }
     }
   }

@@ -410,10 +410,10 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
       const size = await loaded.size();
       for (let i = 0; i < size; i++) {
         const lr: LoadResult<V> = await loaded.get(i);
+        // a value that cannot be loaded (deleted; e.g. a row of a unidirectional association outlives it) has no key:
+        // it is dropped, like a GemList skips such ids when loading its elements
         if (lr.isPresent()) {
           await this.keyLoadedValue(lr.get());
-        } else {
-          Log.error("0xA7312 Can not load Object with id " + gemIDs[i] + " to derive its key");
         }
       }
     })();

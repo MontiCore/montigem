@@ -151,7 +151,8 @@ public class ManagerMockDecorator extends AbstractDecorator {
                 .filter(GenService::isBidirectional)
                 .filter(Predicate.not(GenService::isSymbolDerived))
                 .collect(Collectors.toList()));
-        getCD4C().addMethod(managerClass, "umlp.managermock.DoDelete", name, managerName);
+        getCD4C().addMethod(managerClass, "umlp.managermock.DoDelete", name, managerName,
+            GemMapOwnerRole.holding(origCD, domainClass));
       }
       getCD4C().addImport(managerClass, Joiners.DOT.join(getPackageName(origCD, CLIENT_PACKAGE), domainClass.getName() + CommandSendingObserverDecorator.SUFFIX));
     } else {

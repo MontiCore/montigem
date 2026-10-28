@@ -387,6 +387,56 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     assertEquals(secondId, course().getEnrollmentByStudent(anna).getGemId());
   }
 
+  /**
+   * deleting a value (not removing it from one map) removes its entry from every map holding it, on every participant
+   * that loaded the owner, without loading the value there
+   */
+  @Test
+  public void testDeleteValueRemovesItsEntryEverywhere() {
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(benId));
+    long otherCourseId = AssociationsManager.courseBuilder().title("Compilers")
+        .participantByMatNrPut(AssociationsManager.getStudentSure(annaId)).build().get().getGemId();
+
+    getClients(1).activate();
+    assertEquals(2, course().sizeParticipantByMatNrs());
+    assertEquals(1, AssociationsManager.getCourseSure(otherCourseId).sizeParticipantByMatNrs());
+
+    getClients(0).activate();
+    assertTrue(AssociationsManager.deleteStudent(annaId));
+
+    getBackend().activate();
+    assertFalse(course().containsKeyParticipantByMatNr(1001));
+    assertTrue(course().containsKeyParticipantByMatNr(1002));
+    assertFalse(AssociationsManager.getCourseSure(otherCourseId).containsKeyParticipantByMatNr(1001));
+
+    getClients(1).activate();
+    assertFalse(course().containsKeyParticipantByMatNr(1001));
+    assertEquals(1, course().sizeParticipantByMatNrs());
+    assertEquals(0, AssociationsManager.getCourseSure(otherCourseId).sizeParticipantByMatNrs());
+    assertFalse(AssociationsManager.isLoadedStudent(annaId));
+  }
+
+  /** removing a value from one map keeps it in the others */
+  @Test
+  public void testRemoveKeepsTheValueInOtherMaps() {
+    getBackend().activate();
+    course().putParticipantByMatNr(AssociationsManager.getStudentSure(annaId));
+    long otherCourseId = AssociationsManager.courseBuilder().title("Compilers")
+        .participantByMatNrPut(AssociationsManager.getStudentSure(annaId)).build().get().getGemId();
+
+    getClients(0).activate();
+    course().removeParticipantByMatNr(1001);
+
+    getBackend().activate();
+    assertFalse(course().containsKeyParticipantByMatNr(1001));
+    assertTrue(AssociationsManager.getCourseSure(otherCourseId).containsKeyParticipantByMatNr(1001));
+
+    getClients(1).activate();
+    assertTrue(AssociationsManager.getCourseSure(otherCourseId).containsKeyParticipantByMatNr(1001));
+  }
+
   /** GemEntryMap: the key is the Student the Enrollment references, identified by its gemId */
   @Test
   public void testEntryMap() {
