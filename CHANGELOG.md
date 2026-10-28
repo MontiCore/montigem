@@ -36,6 +36,17 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-10-28: 7.10.0-SNAPSHOT
+* The domain model can be copied into the assets of the app, where it is served as
+  `assets/models/<Name>.umlp`. It is off by default. 
+  Enable it in the`build.gradle` of the frontend:
+  ```groovy
+  montigem {
+    publishDomainModels = true
+  }
+  ```
+  If the domain consists of several `.umlp` files, the merged model is copied.
+
 ## 2026-10-23: 7.10.0-SNAPSHOT
 * MontiCore (and CD4A, GUIDSL, CD2GUI, MontiArc, MCLSG) updated to 7.10.0-SNAPSHOT
 
