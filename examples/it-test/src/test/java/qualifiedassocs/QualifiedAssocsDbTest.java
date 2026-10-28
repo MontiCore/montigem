@@ -59,15 +59,15 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var otherAnna = QualifiedAssocsManager.personBuilder().login("anna").number(2).build().get();
 
     directory.putByLogin(anna);
-    assertSame(anna, directory.getByLogin("anna").get());
+    assertSame(anna, directory.getByLogin("anna"));
     assertTrue(directory.containsKeyByLogin("anna"));
     assertTrue(directory.containsByLogin(anna));
     assertEquals(1, directory.sizeByLogins());
-    assertTrue(directory.getByLogin("bob").isEmpty());
+    assertFalse(directory.containsKeyByLogin("bob"));
 
     // the key is unique: putting another target with the same key replaces the first
     assertReportsSameKey(() -> directory.putByLogin(otherAnna));
-    assertSame(otherAnna, directory.getByLogin("anna").get());
+    assertSame(otherAnna, directory.getByLogin("anna"));
     assertFalse(directory.containsByLogin(anna));
     assertEquals(1, directory.sizeByLogins());
 
@@ -93,7 +93,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
     // the keys are derived from the loaded targets
     assertEquals(Map.of("anna", anna.getGemId(), "bob", bob.getGemId()), clone._internal_getByLoginGemMap().getIDMap());
-    assertEquals(bob.getGemId(), clone.getByNumber(2).get().getGemId());
+    assertEquals(bob.getGemId(), clone.getByNumber(2).getGemId());
     assertEquals(sales.getGemId(), clone.getDepartmentByName("sales").getGemId());
   }
 
@@ -109,7 +109,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     clientDirectory.putByLogin(clientAnna);
 
     getBackend().activate();
-    assertEquals("anna", directory.getByLogin("anna").get().getLogin());
+    assertEquals("anna", directory.getByLogin("anna").getLogin());
     var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
     assertTrue(clone.containsKeyByLogin("anna"));
 
@@ -129,8 +129,8 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var directory = QualifiedAssocsManager.directoryBuilder().byLoginPut(anna).build().get();
 
     anna.setLogin("annabelle");
-    assertTrue(directory.getByLogin("anna").isEmpty());
-    assertSame(anna, directory.getByLogin("annabelle").get());
+    assertFalse(directory.containsKeyByLogin("anna"));
+    assertSame(anna, directory.getByLogin("annabelle"));
   }
 
   @Test
@@ -149,7 +149,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
 
     getBackend().activate();
     assertFalse(directory.containsKeyByLogin("anna"));
-    assertSame(anna, directory.getByLogin("annabelle").get());
+    assertSame(anna, directory.getByLogin("annabelle"));
   }
 
   @Test
@@ -157,11 +157,11 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     getBackend().activate();
     var admin = QualifiedAssocsManager.adminBuilder().login("root").number(0).build().get();
     var directory = QualifiedAssocsManager.directoryBuilder().adminByLoginPut(admin).build().get();
-    assertSame(admin, directory.getAdminByLogin("root").get());
+    assertSame(admin, directory.getAdminByLogin("root"));
 
     admin.setLogin("admin");
-    assertSame(admin, directory.getAdminByLogin("admin").get());
-    assertTrue(directory.getAdminByLogin("root").isEmpty());
+    assertSame(admin, directory.getAdminByLogin("admin"));
+    assertFalse(directory.containsKeyAdminByLogin("root"));
   }
 
   @Test
@@ -172,8 +172,8 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var directory = QualifiedAssocsManager.directoryBuilder().byLoginPut(admin).build().get();
 
     admin.setLogin("admin");
-    assertSame(admin, directory.getByLogin("admin").get());
-    assertTrue(directory.getByLogin("root").isEmpty());
+    assertSame(admin, directory.getByLogin("admin"));
+    assertFalse(directory.containsKeyByLogin("root"));
   }
 
   @Test
@@ -203,7 +203,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var it = QualifiedAssocsManager.departmentBuilder().name("it").build().get();
     var eve = QualifiedAssocsManager.employeeBuilder().name("eve").department(sales).build().get();
     var directory = QualifiedAssocsManager.directoryBuilder().byDepartmentPut(eve).build().get();
-    assertSame(eve, directory.getByDepartment(sales).get());
+    assertSame(eve, directory.getByDepartment(sales));
 
     getClients(0).activate();
     var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
@@ -214,8 +214,8 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertTrue(clientDirectory.containsKeyByDepartment(clientIt));
 
     getBackend().activate();
-    assertSame(eve, directory.getByDepartment(it).get());
-    assertTrue(directory.getByDepartment(sales).isEmpty());
+    assertSame(eve, directory.getByDepartment(it));
+    assertFalse(directory.containsKeyByDepartment(sales));
   }
 
   @Test
@@ -345,15 +345,15 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var eve = QualifiedAssocsManager.employeeBuilder().name("eve").department(sales).build().get();
     var directory = QualifiedAssocsManager.directoryBuilder().byDepartmentPut(eve).build().get();
 
-    assertSame(eve, directory.getByDepartment(sales).get());
-    assertTrue(directory.getByDepartment(it).isEmpty());
+    assertSame(eve, directory.getByDepartment(sales));
+    assertFalse(directory.containsKeyByDepartment(it));
 
     eve.setDepartment(it);
-    assertSame(eve, directory.getByDepartment(it).get());
-    assertTrue(directory.getByDepartment(sales).isEmpty());
+    assertSame(eve, directory.getByDepartment(it));
+    assertFalse(directory.containsKeyByDepartment(sales));
 
     var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
-    assertEquals(eve.getGemId(), clone.getByDepartment(it).get().getGemId());
+    assertEquals(eve.getGemId(), clone.getByDepartment(it).getGemId());
   }
 
   /** qualifier on the right side: the owner is the right side of the association and of its table */
@@ -364,8 +364,8 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
     var directory = QualifiedAssocsManager.directoryBuilder().byLoginFromRightPut(anna).build().get();
     directory.putByLoginFromRight(bob);
-    assertSame(anna, directory.getByLoginFromRight("anna").get());
-    assertSame(bob, directory.getByLoginFromRight("bob").get());
+    assertSame(anna, directory.getByLoginFromRight("anna"));
+    assertSame(bob, directory.getByLoginFromRight("bob"));
 
     // saved and loaded: the keys are derived from the loaded targets
     var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
@@ -373,8 +373,8 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
         clone._internal_getByLoginFromRightGemMap().getIDMap());
 
     anna.setLogin("annabelle");
-    assertSame(anna, directory.getByLoginFromRight("annabelle").get());
-    assertTrue(directory.getByLoginFromRight("anna").isEmpty());
+    assertSame(anna, directory.getByLoginFromRight("annabelle"));
+    assertFalse(directory.containsKeyByLoginFromRight("anna"));
     assertTrue(directory.removeByLoginFromRight("bob"));
 
     clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();

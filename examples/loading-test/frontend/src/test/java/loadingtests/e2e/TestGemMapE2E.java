@@ -62,7 +62,7 @@ public class TestGemMapE2E extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put By Owner");
     assertTrue(course.containsKeyParticipantByMatNr(1001));
-    assertEquals(anna.getGemId(), course.getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(anna.getGemId(), course.getParticipantByMatNr(1001).getGemId());
   }
 
   @Test
@@ -70,7 +70,7 @@ public class TestGemMapE2E extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put By Map");
     assertTrue(course.containsKeyParticipantByMatNr(1001));
-    assertEquals(anna.getGemId(), course.getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(anna.getGemId(), course.getParticipantByMatNr(1001).getGemId());
   }
 
   @Test
@@ -139,7 +139,7 @@ public class TestGemMapE2E extends AbstractLoadingTestsE2ETest {
     click(page, "Put Enrollment");
     assertThat(result(page)).hasText("enrollment=true;grade=2");
     assertTrue(course.containsKeyEnrollmentByStudent(anna));
-    assertEquals(enrollment.getGemId(), course.getEnrollmentByStudent(anna).get().getGemId());
+    assertEquals(enrollment.getGemId(), course.getEnrollmentByStudent(anna).getGemId());
   }
 
   /** a builder in the browser keeps the values until it is built */
@@ -151,7 +151,7 @@ public class TestGemMapE2E extends AbstractLoadingTestsE2ETest {
     Course built = LoadingTestsManager.getCourseList().stream()
         .filter(c -> c.getTitle().equals("Built In Browser")).findFirst().get();
     assertTrue(built.containsKeyParticipantByMatNr(1001));
-    assertEquals(anna.getGemId(), built.getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(anna.getGemId(), built.getParticipantByMatNr(1001).getGemId());
   }
 
   /** a put in the backend reaches the GemMap in the browser */

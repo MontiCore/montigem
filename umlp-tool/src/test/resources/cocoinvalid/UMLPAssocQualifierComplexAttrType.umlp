@@ -10,6 +10,6 @@ umlp UMLPAssocQualifierComplexAttrType {
 
   enum E;
 
-  association A [[names]] -> B [*];
-  association B [[e]] -> A [*];
+  association A [[names]] -> B [1];
+  association B [[e]] -> A [1];
 }

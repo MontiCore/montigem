@@ -10,10 +10,10 @@ umlp UMLPAssocQualifierKeyCardinality {
   association A -> (manyC) C [*];
   association A -> (someC) C [1..*];
 
-  association B [[optName]] -> A [*];
-  association B [[names]] -> A [*];
-  association B [[optC]] -> A [*];
-  association B [[manyC]] -> A [*];
-  association B [[someC]] -> A [*];
-  association [*] A <- [[manyC]] B;
+  association B [[optName]] -> A [1];
+  association B [[names]] -> A [1];
+  association B [[optC]] -> A [1];
+  association B [[manyC]] -> A [1];
+  association B [[someC]] -> A [1];
+  association [1] A <- [[manyC]] B;
 }

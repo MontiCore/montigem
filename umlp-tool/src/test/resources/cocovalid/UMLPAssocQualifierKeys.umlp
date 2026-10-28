@@ -15,13 +15,13 @@ umlp UMLPAssocQualifierKeys {
 
   // a key via an association role instead of an attribute
   association A -> (d) D [1];
-  association B [[d]] (byD) -> A [*];
+  association B [[d]] (byD) -> A [1];
 
-  association B [[name]] (byName) -> A [*];
-  association B [[number]] (byNumber) -> A [0..1];
-  association B [[flag]] (byFlag) -> A [*];
-  association B [[c]] (byC) -> A [*];
+  association B [[name]] (byName) -> A [1];
+  association B [[number]] (byNumber) -> A [1];
+  association B [[flag]] (byFlag) -> A [1];
+  association B [[c]] (byC) -> A [1];
 
   // the qualifier on the right side, navigable from right to left
-  association [*] A (byNameFromRight) <- [[name]] B;
+  association [1] A (byNameFromRight) <- [[name]] B;
 }

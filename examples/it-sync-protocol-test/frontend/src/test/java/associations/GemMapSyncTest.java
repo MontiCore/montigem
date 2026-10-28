@@ -72,11 +72,11 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
 
     getBackend().activate();
     assertTrue(course().containsKeyParticipantByMatNr(1001));
-    assertEquals(annaId, course().getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(annaId, course().getParticipantByMatNr(1001).getGemId());
 
     getClients(1).activate();
     assertTrue(course().containsKeyParticipantByMatNr(1001));
-    assertEquals(annaId, course().getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(annaId, course().getParticipantByMatNr(1001).getGemId());
   }
 
   /** the change carries the key: client 1 knows it without loading the value */
@@ -91,7 +91,7 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     getClients(1).activate();
     assertTrue(client1Course.containsKeyParticipantByMatNr(1002));
     assertFalse(AssociationsManager.isLoadedStudent(benId));
-    assertEquals("Ben", client1Course.getParticipantByMatNr(1002).get().getName());
+    assertEquals("Ben", client1Course.getParticipantByMatNr(1002).getName());
   }
 
   /** a loaded map carries its keys: size, keys and ids are known without loading any value */
@@ -310,13 +310,13 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     // Ben takes Anna's matNr: his rekeying is refused, he stays under 1002
     AssociationsManager.getStudentSure(benId).setMatNr(1001);
     assertTrue(logged("0xA7304"));
-    assertEquals(benId, course().getParticipantByMatNr(1002).get().getGemId());
+    assertEquals(benId, course().getParticipantByMatNr(1002).getGemId());
 
     // Anna leaves, Ben is put again: moved from 1002 to 1001
     course().removeParticipantByMatNr(1001);
     course().putParticipantByMatNr(AssociationsManager.getStudentSure(benId));
     assertEquals(1, course().sizeParticipantByMatNrs());
-    assertEquals(benId, course().getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(benId, course().getParticipantByMatNr(1001).getGemId());
     assertFalse(course().containsKeyParticipantByMatNr(1002));
 
     getClients(1).activate();
@@ -347,11 +347,11 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     getBackend().activate();
     assertTrue(logged("0xA7307"));
     assertEquals(1, course().sizeParticipantByMatNrs());
-    assertEquals(benId, course().getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(benId, course().getParticipantByMatNr(1001).getGemId());
 
     getClients(1).activate();
     assertEquals(1, course().sizeParticipantByMatNrs());
-    assertEquals(benId, course().getParticipantByMatNr(1001).get().getGemId());
+    assertEquals(benId, course().getParticipantByMatNr(1001).getGemId());
   }
 
   /** replacing a stale entry (its value derives another key by now) is a repair, not an error */
@@ -369,8 +369,8 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     course().putParticipantByMatNr(AssociationsManager.getStudentSure(carlId));
     assertFalse(logged("0xA7307"));
     assertEquals(2, course().sizeParticipantByMatNrs());
-    assertEquals(carlId, course().getParticipantByMatNr(1001).get().getGemId());
-    assertEquals(benId, course().getParticipantByMatNr(1002).get().getGemId());
+    assertEquals(carlId, course().getParticipantByMatNr(1001).getGemId());
+    assertEquals(benId, course().getParticipantByMatNr(1002).getGemId());
   }
 
   @Test
@@ -384,7 +384,7 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
 
     assertTrue(logged("0xA7317"));
     assertEquals(1, course().sizeEnrollmentByStudents());
-    assertEquals(secondId, course().getEnrollmentByStudent(anna).get().getGemId());
+    assertEquals(secondId, course().getEnrollmentByStudent(anna).getGemId());
   }
 
   /** GemEntryMap: the key is the Student the Enrollment references, identified by its gemId */
@@ -402,6 +402,6 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     getClients(1).activate();
     Student client1Anna = AssociationsManager.getStudentSure(annaId);
     assertTrue(course().containsKeyEnrollmentByStudent(client1Anna));
-    assertEquals(enrollmentId, course().getEnrollmentByStudent(client1Anna).get().getGemId());
+    assertEquals(enrollmentId, course().getEnrollmentByStudent(client1Anna).getGemId());
   }
 }

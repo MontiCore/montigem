@@ -12,6 +12,6 @@ umlp QualifierKeyForms {
   // a key as the role of a to-one association
   association Enrollment -> (tutor) Student [1];
 
-  association Course [[student]] (studentCourse) -> (byStudent) Enrollment [*];
-  association Course [[tutor]] (tutorCourse) -> (byTutor) Enrollment [*];
+  association Course [[student]] (studentCourse) -> (byStudent) Enrollment [1];
+  association Course [[tutor]] (tutorCourse) -> (byTutor) Enrollment [1];
 }

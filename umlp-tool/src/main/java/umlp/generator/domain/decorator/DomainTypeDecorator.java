@@ -45,8 +45,6 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
   public static final String STEREOTYPE_OTHERSIDE = "otherSide";
   public static final String STEREOTYPE_MANAGER = "manager";
   public static final String STEREOTYPE_OTHERSIDE_ISLIST = "isList";
-  // GemMap of an attribute qualified association with target cardinality [1]: each key yields exactly one value
-  public static final String STEREOTYPE_QUALIFIED_ONE = "qualifiedOne";
 
   public DomainTypeDecorator(GlobalExtensionManagement glex) {
     super(glex);
@@ -239,10 +237,6 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
       if(GenService.isOptional(assocSide)){
         addStereotype(attribute.getModifier(), "Optional", "");
       }
-      if (GenService.isMap(assocSide) && (!assocSide.isPresentCDCardinality() || assocSide.getCDCardinality().isOne())) {
-        addStereotype(attribute.getModifier(), STEREOTYPE_QUALIFIED_ONE, "");
-      }
-
       attrList.add(attribute);
     }
     return attrList;

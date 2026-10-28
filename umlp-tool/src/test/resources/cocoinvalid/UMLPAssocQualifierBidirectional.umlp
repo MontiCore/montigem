@@ -8,8 +8,8 @@ umlp UMLPAssocQualifierBidirectional {
     int number;
   }
 
-  association B [[name]] -> A [*];
-  association B [[name]] <-> A [*];
-  association B [[name]] <- A [*];
-  association [*] B <-> [[number]] A;
+  association B [[name]] -> A [1];
+  association B [[name]] <-> A [1];
+  association B [[name]] <- A [1];
+  association [1] B <-> [[number]] A;
 }

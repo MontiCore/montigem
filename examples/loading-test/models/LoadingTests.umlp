@@ -153,14 +153,14 @@ classdiagram LoadingTests {
   }
 
   // GemValueMap, int key declared in the target
-  association Course [[matNr]] (attendedCourse) -> (participantByMatNr) Student [*];
+  association Course [[matNr]] (attendedCourse) -> (participantByMatNr) Student [1];
 
   // GemValueMap, String key declared in the target
-  association Faculty [[title]] (faculty) -> (courseByTitle) Course [*];
+  association Faculty [[title]] (faculty) -> (courseByTitle) Course [1];
 
   // GemValueMap, key declared in the superclass of the target
-  association Course [[staffId]] (tutoredCourse) -> (tutorByStaffId) Tutor [*];
+  association Course [[staffId]] (tutoredCourse) -> (tutorByStaffId) Tutor [1];
 
   // GemEntryMap, keyed by the referenced Student
-  association Course [[student]] (enrollmentCourse) -> (enrollmentByStudent) Enrollment [*];
+  association Course [[student]] (enrollmentCourse) -> (enrollmentByStudent) Enrollment [1];
 }

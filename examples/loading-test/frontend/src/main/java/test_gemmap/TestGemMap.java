@@ -102,7 +102,7 @@ public class TestGemMap extends TestGemMapTOP {
     return $ -> {
       c.putEnrollmentByStudent(e);
       setResult("enrollment=" + c.containsKeyEnrollmentByStudent(s)
-          + ";grade=" + c.getEnrollmentByStudent(s).get().getGrade());
+          + ";grade=" + c.getEnrollmentByStudent(s).getGrade());
     };
   }
 
