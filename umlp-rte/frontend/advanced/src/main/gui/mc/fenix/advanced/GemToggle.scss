@@ -1,0 +1,62 @@
+:host {
+  display: inline-block;
+}
+
+.gem-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.gem-toggle-label {
+  color: inherit;
+  font: inherit;
+}
+
+.gem-toggle-control {
+  position: relative;
+  width: var(--gem-toggle-width);
+  height: var(--gem-toggle-height);
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--gem-toggle-height) / 2);
+  background: var(--gem-toggle-off-color);
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.gem-toggle-control:focus-visible {
+  outline: 2px solid var(--gem-toggle-on-color);
+  outline-offset: 2px;
+}
+
+.gem-toggle-active {
+  background: var(--gem-toggle-on-color);
+}
+
+.gem-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(var(--gem-toggle-height) - 4px);
+  height: calc(var(--gem-toggle-height) - 4px);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 30%);
+  transition: transform 160ms ease;
+}
+
+.gem-toggle-active .gem-toggle-thumb {
+  transform: translateX(calc(var(--gem-toggle-width) - var(--gem-toggle-height)));
+}
+
+.gem-toggle-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.gem-toggle-control:disabled {
+  cursor: not-allowed;
+}
