@@ -301,6 +301,7 @@ Instead of copying the entire JSON file from the `config` directory,
 we also support overriding JSON files.
 E.g., all key-values of `config/package.override.json` will be merged into the `package.json`.
 Null-values will result in the removal of the original element.
+Override files may reference Gradle properties of the project as `${name}`.
 For example, the following JSON overrides the name of the app,
  adds the editor dependency, and removes the cad dependency.
 ````json
@@ -308,12 +309,16 @@ For example, the following JSON overrides the name of the app,
 {
   "name": "my_fancy_app",
   "dependencies": {
-    "@umlp/editor": "^8.0.0",
+    "@umlp/editor": "g-${mg_version}",
     "@umlp/cad": null
   }
 }
 
 ````
+`@umlp/*` and `@montigem/*` libraries that are not part of the default `package.json`
+should be added with the npm dist-tag `g-${mg_version}`:
+every MontiGem build tags its libraries with `g-<version>`, e.g. `g-7.10.0-SNAPSHOT`,
+so the libraries always match the MontiGem version of the project.
 
 
 ### 4.1 Playwright E2E-Tests

@@ -50,7 +50,7 @@ The module originates from a master thesis, which describes its design in more d
   ```
 - The frontend requires the npm packages `@montigem/dashboard`, `gridstack` (its styles are included by the module),
   and `ngx-monaco-editor-v2` (`MonacoEditorModule.forRoot(...)` within the `AppGemModuleConfig.ts`),
-  e.g., via `config/package.override.json`,
+  e.g., via `config/package.override.json` (`"@montigem/dashboard": "g-${mg_version}"`),
   and the images used by the components in `assets/images`: `montigem-diamond.png`, `class-diagram.png`,
   `preset1.png`, and `empty-preset.png` (cf. `examples/dashboard/frontend/config`).
   The example application instead compiles the sources of `@montigem/dashboard` together with the application

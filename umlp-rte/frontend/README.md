@@ -175,17 +175,14 @@ required, as npm rejects tags that are valid semver ranges.
 default `package.json` of applications to this tag (version from
 `mg3BuildInfo.properties`), so a generator uses the libraries of its own build.
 Versions defined in `package.override.json` take precedence over automatically set versions.
+Applications add further libraries there with the tag of their MontiGem version,
+`"g-${mg_version}"`, which `SetupFrontendTask` resolves from the Gradle properties.
 
-**Release** (e.g. `7.10.0`): `publishLib` publishes the version of the libraries
-`package.json` as `latest`, and skips it if it is already published(by checking if it is
-available in the nexus).
-`tagLib` then adds the tag, also to an already published version, e.g. of a
-library that did not change since the last release.
-
-**Snapshot** (e.g. `7.10.0-SNAPSHOT`): `publishLib` publishes a prepatch
-version with the build timestamp, e.g. `9.0.3` becomes `9.0.4-20261028143012`,
-with the tag instead of `latest`. Raising the patch is required as the
-prerelease `9.0.3-…` would be older than the released `9.0.3`.
+Releases (e.g. `7.10.0`) and snapshots (e.g. `7.10.0-SNAPSHOT`) are published
+alike: `publishLib` publishes a prepatch version with the build timestamp,
+e.g. `9.0.3` becomes `9.0.4-20261028143012`, with the tag instead of `latest`.
+Raising the patch is required as the prerelease `9.0.3-…` would be older than
+the released `9.0.3`.
 Peer dependencies on other `@umlp/*` and `@montigem/*` libraries are set to
 the tag in the published `package.json`, as a range like `^9.0.3` does not
 match the prerelease `9.0.4-…`.
