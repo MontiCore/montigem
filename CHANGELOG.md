@@ -46,6 +46,10 @@ For MontiGem users:
   }
   ```
   If the domain consists of several `.umlp` files, the merged model is copied.
+* The generator uses the npm libraries (`@umlp/*`, `@montigem/*`) of the same build
+  via the dist-tag `g-<version>`, e.g. `g-7.10.0` or `g-7.10.0-SNAPSHOT`.
+  An existing `package-lock.json` keeps the old library versions:
+  run `gradle :frontend:clean :frontend:npmInstall` (or `npm update`) to get the current ones
 
 ## 2026-10-23: 7.10.0-SNAPSHOT
 * MontiCore (and CD4A, GUIDSL, CD2GUI, MontiArc, MCLSG) updated to 7.10.0-SNAPSHOT

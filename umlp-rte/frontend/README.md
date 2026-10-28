@@ -166,6 +166,35 @@ example should be replaced with your own library):
     `"7.5.12"`. Set new value according to MontiCore version `"8.0.0"`.
 - Commit and push changes
 
+## Versions and dist-tags
+
+Every build marks its libraries with the npm dist-tag `g-<gradle version>`,
+e.g. `g-7.10.0` or `g-7.10.0-SNAPSHOT` (`ModuleFrontendPlugin`). The prefix is
+required, as npm rejects tags that are valid semver ranges.
+`SetupFrontendTask` sets the `@umlp/*` and `@montigem/*` dependencies of the
+default `package.json` of applications to this tag (version from
+`mg3BuildInfo.properties`), so a generator uses the libraries of its own build.
+A `package.override.json` of the application is not changed.
+
+**Release** (e.g. `7.10.0`): `publishLib` publishes the version of the
+`package.json` as `latest`, and skips it if it is already published. `tagLib`
+then adds the tag, also to an already published version, e.g. of a library
+that did not change since the last release.
+
+**Snapshot** (e.g. `7.10.0-SNAPSHOT`): `publishLib` publishes a prepatch
+version with the build timestamp, e.g. `9.0.3` becomes `9.0.4-20261028143012`,
+with the tag instead of `latest`. Raising the patch is required as the
+prerelease `9.0.3-…` would be older than the released `9.0.3`.
+Peer dependencies on other `@umlp/*` and `@montigem/*` libraries are set to
+the tag in the published `package.json`, as a range like `^9.0.3` does not
+match the prerelease `9.0.4-…`.
+
+The `package.json` files in the repository are not changed and still hold the
+last released version.
+npm keeps a tag dependency that is already locked in `package-lock.json`:
+applications get the libraries of a newer build only with `npm update` or
+without the lockfile, e.g. after `gradle clean`.
+
 ## Add component
 
 For example, you want to add a component `foo.Bar` to the `experimental`

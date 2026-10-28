@@ -4,6 +4,7 @@ import com.github.gradle.node.NodeExtension;
 import com.github.gradle.node.NodePlugin;
 import com.github.gradle.node.npm.task.NpmTask;
 import com.github.gradle.node.npm.task.NpxTask;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.monticore.gradle.common.CommonMCTask;
@@ -61,6 +62,8 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -79,8 +82,10 @@ import static de.montigem.gradle.FrontendBasePlugin.addProjectDependencies;
 import static de.montigem.gradle.FrontendBasePlugin.getModels;
 import static de.montigem.gradle.FrontendBasePlugin.inRTE;
 import static de.montigem.gradle.FrontendBasePlugin.inUMLP;
+import static de.montigem.gradle.FrontendBasePlugin.npmDistTag;
 import static de.montigem.gradle.FrontendBasePlugin.umlpVersion;
 import static de.montigem.gradle.FrontendBasePlugin.useLocalDependencies;
+import static de.montigem.gradle.FrontendBasePlugin.useNpmDistTag;
 import static de.montigem.gradle.FrontendPlugin.CD2JAVA_TASK;
 import static de.montigem.gradle.FrontendPlugin.CD2SYM_TASK;
 import static de.montigem.gradle.FrontendPlugin.GUI_JAVA2TS_TASK;
@@ -138,6 +143,12 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
         .gradleProperty("publishToLocalNpmRepo")
         .map(Boolean::parseBoolean)
         .orElse(false);
+    // all libs get the dist-tag of the Gradle version, e.g. `g-7.10.0`.
+    // Snapshot builds publish the libs as prepatch versions, e.g. 9.0.3 -> 9.0.4-20261028143012,
+    // and point their peer dependencies on @umlp and @montigem libs to the snapshot tag
+    Optional<String> snapshotTimestamp = project.getVersion().toString().endsWith("SNAPSHOT")
+        ? Optional.of(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")))
+        : Optional.empty();
     Provider<Map<String, String>> isolatedNpmEnvironment = project.getProviders().provider(() ->
         useLocalNpmRepo.get() || publishToLocalNpmRepo.get()
             ? Map.of("npm_config_userconfig", project.getLayout().getProjectDirectory()
@@ -624,13 +635,32 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
               ? Map.of("npm_config_userconfig", localNpmrc.get().getAsFile().getAbsolutePath())
               : Map.of()));
           task.doFirst(t -> packDestDir.get().getAsFile().mkdirs());
+          snapshotTimestamp.ifPresent(timestamp -> task.doFirst(t -> {
+            try {
+              String version = readJson(subproject.file("package.json")).get("version").getAsString();
+              File builtPackageJson = libBuildDir.get().file("package.json").getAsFile();
+              JsonObject packageJson = readJson(builtPackageJson);
+              packageJson.addProperty("version", prepatchVersion(version, timestamp));
+              if (packageJson.has("peerDependencies")) {
+                useNpmDistTag(packageJson.getAsJsonObject("peerDependencies"), project.getVersion().toString());
+              }
+              Files.writeString(builtPackageJson.toPath(),
+                  new GsonBuilder().setPrettyPrinting().create().toJson(packageJson));
+            }
+            catch (IOException e) {
+              throw new UncheckedIOException(e);
+            }
+          }));
           task.getOutputs().dir(packDestDir);
         });
 
         TaskProvider<NpmTask> publishLib = subproject.getTasks().register("publishLib", NpmTask.class, task -> {
           task.setGroup("publishing");
           task.dependsOn(npmrc4publish, packLibForPublish, localNpmAdduser);
-          task.getArgs().set(List.of("publish"));
+          // npm refuses prerelease versions without a tag, this also keeps `latest` on the releases
+          task.getArgs().set(snapshotTimestamp.isPresent()
+              ? List.of("publish", "--tag", npmDistTag(project.getVersion().toString()))
+              : List.of("publish"));
           // e.g. `build/dist/basic/`
           task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
           task.getEnvironment().putAll(publishToLocalNpmRepo.map(publishLocal -> publishLocal
@@ -674,6 +704,30 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           });
         });
         publishSubprojects.add(publishLib);
+
+        // releases are published as `latest`, the tag is added afterward. Also if the version was
+        // already published by an earlier release, i.e., if the lib did not change since then
+        TaskProvider<NpmTask> tagLib = subproject.getTasks().register("tagLib", NpmTask.class, task -> {
+          task.setGroup("publishing");
+          task.dependsOn(publishLib);
+          task.getArgs().set(project.getProviders().provider(() -> {
+            try {
+              JsonObject packageJson = readJson(libBuildDir.get().file("package.json").getAsFile());
+              return List.of("dist-tag", "add",
+                  packageJson.get("name").getAsString() + "@" + packageJson.get("version").getAsString(),
+                  npmDistTag(project.getVersion().toString()));
+            }
+            catch (IOException e) {
+              throw new UncheckedIOException(e);
+            }
+          }));
+          task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
+          task.getEnvironment().putAll(publishToLocalNpmRepo.map(publishLocal -> publishLocal
+              ? Map.of("npm_config_userconfig", localNpmrc.get().getAsFile().getAbsolutePath())
+              : Map.of()));
+          task.onlyIf("release version, snapshots are published with the tag", t -> snapshotTimestamp.isEmpty());
+        });
+        publishSubprojects.add(tagLib);
       }
     });
 
@@ -789,6 +843,17 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
     try (Reader reader = new FileReader(file)) {
       return JsonParser.parseReader(reader).getAsJsonObject();
     }
+  }
+
+  /**
+   * @return the prepatch version of {@code version} with the prerelease identifier {@code preid}, e.g. `9.0.4-20261028143012` for `9.0.3`
+   */
+  private static String prepatchVersion(String version, String preid) {
+    String[] parts = version.split("-", 2)[0].split("\\.");
+    if (parts.length != 3) {
+      throw new GradleException("Expected a major.minor.patch version, but got " + version);
+    }
+    return parts[0] + "." + parts[1] + "." + (Integer.parseInt(parts[2]) + 1) + "-" + preid;
   }
 
   /**

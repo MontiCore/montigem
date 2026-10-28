@@ -27,7 +27,7 @@ def isWindows = System.getProperty("os.name").toLowerCase().startsWith("win")
 
 def getNodeDir() {
   def nodejs_dir = file("${rootDir}/.gradle/nodejs/")
-  def node_dir = nodejs_dir.listFiles().find { it.isDirectory() }
+  def node_dir = nodejs_dir.listFiles().find { it.isDirectory() && it.name.startsWith("node-") }
   assert node_dir != null: "Can't find node installation"
   return node_dir
 }

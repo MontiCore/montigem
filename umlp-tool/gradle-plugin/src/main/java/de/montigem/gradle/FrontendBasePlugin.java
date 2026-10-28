@@ -5,6 +5,7 @@ import com.github.gradle.node.NodeExtension;
 import com.github.gradle.node.NodePlugin;
 import com.github.gradle.node.npm.task.NpmTask;
 import com.github.gradle.node.npm.task.NpxTask;
+import com.google.gson.JsonObject;
 import de.montigem.gradle.specific.CreateSymlinkTask;
 import de.montigem.gradle.specific.FrontendCIImageTask;
 import de.montigem.gradle.specific.FrontendLocalImageTask;
@@ -378,6 +379,26 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
           + DependencyPlugin.class.getSimpleName() + "` plugin.");
     }
     return DependencyPlugin.version;
+  }
+
+  /**
+   * @return the npm dist-tag of the libraries published by the build of {@code gradleVersion},
+   * e.g. `g-7.10.0` or `g-7.10.0-SNAPSHOT`.
+   * npm rejects tags that are valid semver ranges, such as `7.10.0`, hence the prefix.
+   */
+  public static String npmDistTag(String gradleVersion) {
+    return "g-" + gradleVersion;
+  }
+
+  /**
+   * Points all dependencies on @umlp and @montigem libraries to the npm dist-tag of the build of {@code gradleVersion}.
+   */
+  public static void useNpmDistTag(JsonObject dependencies, String gradleVersion) {
+    for (String name : dependencies.keySet()) {
+      if (name.startsWith("@umlp/") || name.startsWith("@montigem/")) {
+        dependencies.addProperty(name, npmDistTag(gradleVersion));
+      }
+    }
   }
 
   public static String requireProjectProperty(Project project, String propertyName) {

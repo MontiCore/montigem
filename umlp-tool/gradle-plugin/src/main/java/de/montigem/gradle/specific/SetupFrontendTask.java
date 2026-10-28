@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.montigem.gradle.specific;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -23,6 +24,7 @@ import org.gradle.work.Incremental;
 import org.gradle.work.InputChanges;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -43,7 +45,9 @@ import java.util.jar.JarFile;
 import java.util.stream.StreamSupport;
 
 import static de.montigem.gradle.FrontendBasePlugin.inUMLP;
+import static de.montigem.gradle.FrontendBasePlugin.umlpVersion;
 import static de.montigem.gradle.FrontendBasePlugin.useLocalDependencies;
+import static de.montigem.gradle.FrontendBasePlugin.useNpmDistTag;
 
 public abstract class SetupFrontendTask extends DefaultTask {
 
@@ -173,6 +177,13 @@ public abstract class SetupFrontendTask extends DefaultTask {
         filename = filename.substring(1);
       }
       usedHandwrittenFiles.add(filename);
+
+      // the generator uses the libraries published by the same build
+      if (config.equals(FRONTEND_CONFIG_PROD) && filename.equals("package.json")) {
+        JsonObject packageJson = JsonParser.parseReader(new InputStreamReader(file, StandardCharsets.UTF_8)).getAsJsonObject();
+        useNpmDistTag(packageJson.getAsJsonObject("dependencies"), umlpVersion(getProject()));
+        file = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting().create().toJson(packageJson).getBytes(StandardCharsets.UTF_8));
+      }
 
       // if a handwritten file exists, use that instead
       if (doOverrideWithHWC(filename, file)) continue;

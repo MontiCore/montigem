@@ -55,7 +55,9 @@ The plugin creates/logs in the fixed local development user automatically when
 required. Each `publishLib` task builds its library, checks
 whether the version already exists, and publishes to Verdaccio. npm versions
 are immutable; bump the package version or reset the volume before republishing
-different content under the same version.
+different content under the same version. This only affects release versions:
+snapshot builds publish a new timestamped version every time, see
+[Versions and dist-tags](../../umlp-rte/frontend/README.md#versions-and-dist-tags).
 
 ## Use from an external MontiGem Gradle project
 
