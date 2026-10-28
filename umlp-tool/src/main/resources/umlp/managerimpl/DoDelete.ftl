@@ -15,8 +15,9 @@ ${cd4c.method("protected boolean _doDelete${name}(Long gemId, NotificationScope 
     ${r.owner?uncap_first}Instance.remove${r.role?cap_first}ByIdSure(gemId, NotificationScope.ALL);
   }
   <#else>
+  // a cache entry the garbage collector has cleared is null
   for (${r.owner} owner : new java.util.ArrayList<>(known${r.owner}s.values())) {
-    if (owner._internal_get${r.role?cap_first}GemMap().containsValueID(gemId)) {
+    if (owner != null && owner._internal_get${r.role?cap_first}GemMap().containsValueID(gemId)) {
       owner.remove${r.role?cap_first}ByIdSure(gemId, NotificationScope.ALL);
     }
   }
