@@ -64,6 +64,24 @@ For MontiGem users:
 * Every chart component has a configuration (context) menu, opened via the gear button
     * new parameter `boolean showConfig = false` on every chart controls whether the gear button is shown
 
+* the GUI generator has its own task `gui2java`, `gui2java2ts` became `guiJava2ts` and only runs JSweet
+    * generator settings (e.g. `guiCreateModels`, `input`, `modelDir`, `symbolPath`) move to
+    `tasks.named("gui2java", GUI2JavaTask)`, JSweet settings (e.g. `excludeSource`) move to `guiJava2ts`
+    * the class `GUI2Java2TSTask` is now `GUIJava2TSTask`: build scripts that import it and Gradle plugins
+    that use it have to be adapted, Gradle plugins have to be compiled again
+    * other references to the task name in build scripts have to be renamed as well, to `gui2java` (generated Java)
+    or `guiJava2ts` (TypeScript): `tasks.named("gui2java2ts")` fails, but `getTasksByName("gui2java2ts", true)`
+    silently returns an empty set
+    * migration: split the `gui2java2ts` block of the `build.gradle`
+        ```groovy
+        tasks.named("gui2java", GUI2JavaTask) {         // was gui2java2ts
+          guiCreateModels = ["gui.CarCreate"]
+        }
+        tasks.named("guiJava2ts", GUIJava2TSTask) {     // JSweet settings only
+          excludeSource.add("glob:**/MyBackendOnlyUtil.java")
+        }
+        ```
+
 * Fixes for the MontiGem theme (see 7.9.2), which may change the layout of existing pages:
     * `GemRow` and `GemColumn` default to `height = "auto"` and `width = "auto"` (was `"100%"`);
       set `height = "100%"` explicitly where a container should fill its parent
