@@ -1,5 +1,5 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("className", "gemAssocs", "listAssocs")}
+${tc.signature("className", "gemAssocs", "listAssocs", "mapAssocs")}
 ${cd4c.method("public boolean TESTING_deepEquals(Object o)")}
 if(this == o){
   return true;
@@ -15,6 +15,9 @@ return this.equals(other) &&
   </#list>
   <#list listAssocs as gemListAssoc>
   _internal_get${gemListAssoc.getName()?cap_first}GemList().TESTING_deepEquals(other. _internal_get${gemListAssoc.getName()?cap_first}GemList()) &&
+  </#list>
+  <#list mapAssocs as gemMapAssoc>
+  _internal_get${gemMapAssoc.getName()?cap_first}GemMap().getIDMap().equals(other._internal_get${gemMapAssoc.getName()?cap_first}GemMap().getIDMap()) &&
   </#list>
   true;
 }

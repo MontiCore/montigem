@@ -30,6 +30,7 @@ public class UMLPCoCos {
     checker.addCoCo(new UMLPNoCyclicCDImports());
     checker.addCoCo(new UMLPAssociationQualifierByType());
     checker.addCoCo(new UMLPAssociationQualifierByAttributeName());
+    checker.addCoCo(new UMLPAssociationQualifierUnidirectional());
     checker.addCoCo(new UMLPAssociationCardinality());
     checker.addCoCo(new UMLPCheckAttributeModifier());
     checker.addCoCo(new UMLPAttributeTypeIsNotJavaUtilSet());

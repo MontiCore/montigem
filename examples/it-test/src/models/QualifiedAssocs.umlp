@@ -1,0 +1,33 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+umlp QualifiedAssocs {
+
+  class Directory;
+
+  class Person {
+    String login;
+    int number;
+  }
+
+  class Admin extends Person;
+
+  class Department {
+    String name;
+  }
+
+  class Employee {
+    String name;
+    Department department;
+  }
+
+  /* GemValueMaps: keyed by an attribute of the target */
+  association Directory [[login]] (loginDirectory) -> (byLogin) Person [*];
+  association Directory [[number]] (numberDirectory) -> (byNumber) Person [0..1];
+  association Directory [[name]] (departmentDirectory) -> (departmentByName) Department [1];
+
+  /* GemValueMap: the key attribute is declared in the superclass of the target */
+  association Directory [[login]] (adminDirectory) -> (adminByLogin) Admin [*];
+
+  /* GemEntryMap: keyed by the domain object the target references */
+  association Directory [[department]] (employeeDirectory) -> (byDepartment) Employee [*];
+}

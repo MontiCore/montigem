@@ -3,6 +3,8 @@ package umlp.generator.domain.decorator;
 
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 
+import java.util.Optional;
+
 public class CommandObserverDecorator extends CommandSendingObserverDecorator {
 
   public static final String SUFFIX = "CommandObserver";
@@ -29,6 +31,19 @@ public class CommandObserverDecorator extends CommandSendingObserverDecorator {
   @Override
   protected String addAttributeTmplt() {
     return "umlp.commandobserver.NotifyAddAttribute";
+  }
+
+  @Override
+  protected String putAttributeTmplt() {
+    return "umlp.commandobserver.NotifyPutAttribute";
+  }
+
+  /**
+   * clients do not send rekeying: the server derives the key itself when the value changes
+   */
+  @Override
+  protected Optional<String> rekeyAttributeTmplt() {
+    return Optional.empty();
   }
 
   @Override

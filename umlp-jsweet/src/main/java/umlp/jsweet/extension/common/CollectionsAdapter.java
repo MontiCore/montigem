@@ -33,16 +33,28 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
 import java.util.AbstractList;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.Vector;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -58,6 +70,15 @@ public class CollectionsAdapter extends AbstractAdapter {
   public static final String CustomAsyncSetImplementationName = "AsyncSet";
   public static final String CustomAsyncSetImplementationConstructor = "AsyncSet<any>().__AsyncSetConstructor";
 
+  public static final String CustomUMLPMapInterfaceName = "IUMLPMap";
+
+  public static final String CustomAsyncMapBaseName = "AbstractAsyncMap";
+
+  public static final String CustomAsyncMapImplementationName = "AsyncMap";
+  public static final String CustomAsyncMapImplementationConstructor = "AsyncMap<any, any>().__AsyncMapConstructor";
+
+  public static final String MapEntryHelperName = "MapEntryHelper";
+
   public static final String COLLECTORS = "Collectors";
   public static final String STREAM = "AsyncStream";
 
@@ -67,7 +88,6 @@ public class CollectionsAdapter extends AbstractAdapter {
     super(parentAdapter);
     super.addTypeMappings(getStaticLibrary());
     getTypeMirrorMappings().add(0, computeUMLPGuiArrayTypeMapping());
-    getTypeMirrorMappings().add(0, computeMapTypeMapping());
     getTypeMirrorMappings().add(0, computeMapEntryTypeMapping());
     this.adapterUtils = new GUIAdapterUtils(this, types(), context, util());
   }
@@ -76,37 +96,6 @@ public class CollectionsAdapter extends AbstractAdapter {
     return (TypeMirror type) -> {
       if (type.toString().equals("umlp.guiutil.UMLPGuiArray")) {
         return "Array";
-      }
-      return null;
-    };
-  }
-
-  @Override
-  public TypeMirror mapType(TypeMirror type) {
-    if (this.types().isSubtype(this.types().erasure(type), this.types().erasure(
-        this.util().getType(Map.class)))
-        && type instanceof DeclaredType) {
-      return type;
-    }
-    return super.mapType(type);
-  }
-
-  public Function<TypeMirror, String> computeMapTypeMapping() {
-    return (TypeMirror type) -> {
-      if (this.types().isSubtype(this.types().erasure(type), this.types().erasure(
-          this.util().getType(Map.class)))) {
-        StringBuilder result = new StringBuilder();
-        result.append("Map<");
-        List<? extends TypeMirror> typeArgs = ((DeclaredType) type).getTypeArguments();
-        for (int i = 0; i < typeArgs.size(); i++) {
-          String qualifiedTypeName = getMappedTypeArgument(typeArgs.get(i));
-          result.append(qualifiedTypeName);
-          if (i < typeArgs.size() - 1) {
-            result.append(", ");
-          }
-        }
-        result.append(">");
-        return result.toString();
       }
       return null;
     };
@@ -163,6 +152,22 @@ public class CollectionsAdapter extends AbstractAdapter {
     putToStaticLibrary(HashSet.class.getName(), CustomAsyncSetImplementationName);
     putToStaticLibrary(LinkedHashSet.class.getName(), CustomAsyncSetImplementationName);
     putToStaticLibrary(Collection.class.getName(), CustomCollectionInterfaceName);
+
+    // maps work like lists: the interfaces become IUMLPMap, the classes AsyncMap
+    // (insertion ordered, keys compared like ===)
+    putToStaticLibrary(Map.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(AbstractMap.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(SortedMap.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(NavigableMap.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(ConcurrentMap.class.getName(), CustomUMLPMapInterfaceName);
+    putToStaticLibrary(HashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(LinkedHashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(TreeMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(Hashtable.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(WeakHashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(IdentityHashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(ConcurrentHashMap.class.getName(), CustomAsyncMapImplementationName);
+    putToStaticLibrary(ConcurrentSkipListMap.class.getName(), CustomAsyncMapImplementationName);
   }
 
   @Override
@@ -236,22 +241,32 @@ public class CollectionsAdapter extends AbstractAdapter {
         case "umlp.guiutil.UMLPGuiArray":
           if (substituteUMLPGuiArrayInvocations(invocation, targetMethodName))
             return true;
+          break;
         case "java.util.Map":
         case "java.util.AbstractMap":
-        case "java.util.HashMap":
-        case "java.util.concurrent.ConcurrentHashMap":
+        case "java.util.SortedMap":
         case "java.util.NavigableMap":
+        case "java.util.concurrent.ConcurrentMap":
+        case "java.util.HashMap":
+        case "java.util.LinkedHashMap":
         case "java.util.TreeMap":
         case "java.util.Hashtable":
         case "java.util.WeakHashMap":
-        case "java.util.LinkedHashMap":
+        case "java.util.IdentityHashMap":
+        case "java.util.concurrent.ConcurrentHashMap":
+        case "java.util.concurrent.ConcurrentSkipListMap":
+        case "umlp.backendrte.common.GemValueMap":
+        case "umlp.backendrte.common.GemEntryMap":
+          // Handle standard Map methods
           if (substituteMapInvocations(invocation, targetMethodName)) {
             return true;
           }
+          break;
         case "java.util.Map.Entry":
           if (substituteMapEntryInvocations(invocation, targetMethodName)) {
             return true;
           }
+          break;
       }
     }
 
@@ -452,16 +467,18 @@ public class CollectionsAdapter extends AbstractAdapter {
           Log.warn("Did not implement new UMLPGuiArray with more than one parameters");
         }
         return true;
-      case "java.util.Map":
-      case "java.util.AbstractMap":
       case "java.util.HashMap":
-      case "java.util.concurrent.ConcurrentHashMap":
-      case "java.util.NavigableMap":
+      case "java.util.LinkedHashMap":
       case "java.util.TreeMap":
       case "java.util.Hashtable":
       case "java.util.WeakHashMap":
-      case "java.util.LinkedHashMap":
-        print("new Map()");
+      case "java.util.IdentityHashMap":
+      case "java.util.concurrent.ConcurrentHashMap":
+      case "java.util.concurrent.ConcurrentSkipListMap":
+        // no arguments, a capacity (+ load factor), a comparator (ignored) or a map to copy
+        print("(await new " + CustomAsyncMapImplementationConstructor + "(")
+            .printArgList(newClass.getArguments()).print("))");
+        getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncMapImplementationName, getLibraryLocation()));
         return true;
     }
 
@@ -532,6 +549,17 @@ public class CollectionsAdapter extends AbstractAdapter {
   @Override
   public boolean substituteInstanceof(String exprStr, ExtendedElement expr, TypeMirror type) {
     String typeString = types().erasure(type).toString();
+    String replacement = getStaticLibrary().get(typeString);
+    if (CustomUMLPMapInterfaceName.equals(replacement) || CustomAsyncMapImplementationName.equals(replacement)) {
+      // AsyncMap and the GemMaps extend AbstractAsyncMap
+      print("(");
+      print(exprStr, expr);
+      print(" != null && ");
+      print(exprStr, expr);
+      print(" instanceof " + CustomAsyncMapBaseName + ")");
+      getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncMapBaseName, getLibraryLocation()));
+      return true;
+    }
     if (containedInStaticLibrary(typeString)) {
       print("(");
       print(exprStr, expr);
@@ -552,69 +580,23 @@ public class CollectionsAdapter extends AbstractAdapter {
 
   private boolean substituteMapInvocations(MethodInvocationElement invocation,
                                            String targetMethodName) {
+    if (invocation.getMethod().getModifiers().contains(Modifier.STATIC)) {
+      // Map.of, Map.entry, ...: not supported, see JSweetCoCoChecker
+      return false;
+    }
     switch (targetMethodName) {
-      case "put":
-        printMacroName(targetMethodName);
-        print(invocation.getTargetExpression()).print(".set(")
-            .printArgList(invocation.getArguments())
-            .print(")");
-        return true;
-      case "get":
-        printMacroName(targetMethodName);
-        print(invocation.getTargetExpression()).print(".get(")
-            .printArgList(invocation.getArguments())
-            .print(")");
-        return true;
-      case "containsKey":
-        printMacroName(targetMethodName);
-        print(invocation.getTargetExpression()).print(".has(")
-            .printArgList(invocation.getArguments())
-            .print(")");
-        return true;
-      case "keySet":
-        printMacroName(targetMethodName);
-        print("(await new " + CollectionsAdapter.CustomAsyncSetImplementationConstructor + "(");
-        print("[...").print(invocation.getTargetExpression()).print(".keys()").print("]");
-        print("))");
-        getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncSetImplementationName, getLibraryLocation()));
-        return true;
-      case "values":
-        printMacroName(targetMethodName);
-        print(invocation.getTargetExpression()).print(".values()");
-        return true;
-      case "size":
-        printMacroName(targetMethodName);
-        print(invocation.getTargetExpression()).print(".size");
-        return true;
-      case "isEmpty":
-        printMacroName(targetMethodName);
-        print("(").print(invocation.getTargetExpression()).print(".size === 0)");
-        return true;
-      case "remove":
-        printMacroName(targetMethodName);
-        print(invocation.getTargetExpression()).print(".delete(")
-            .printArgList(invocation.getArguments())
-            .print(")");
-        return true;
-      case "clear":
-        printMacroName(targetMethodName);
-        print(invocation.getTargetExpression()).print(".clear()");
-        return true;
-      case "entrySet":
-        printMacroName(targetMethodName);
-        print("(await new " + CollectionsAdapter.CustomAsyncSetImplementationConstructor + "(");
-        print("[...").print(invocation.getTargetExpression()).print(".entries()").print("]");
-        print("))");
-        getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncSetImplementationName, getLibraryLocation()));
-        return true;
       case "clone":
+        // java.util.HashMap#clone() → a shallow copy
         printMacroName(targetMethodName);
-        print("(o => { let c = {}; for (let k in Object.keys(o)){ c[k] = o[k] } return c; })(");
-        printTargetForParameter(invocation.getTargetExpression()).print(")");
+        print("(await new " + CustomAsyncMapImplementationConstructor + "(");
+        printTargetForParameter(invocation.getTargetExpression()).print("))");
+        getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncMapImplementationName, getLibraryLocation()));
+        return true;
+      default:
+        // IUMLPMap has the methods of java.util.Map, so print them as standard method calls
+        getPrinter().printDefaultMethodInvocation(ExtendedElementFactory.toTree(invocation));
         return true;
     }
-
-    return false;
   }
 
   private boolean substituteMapEntryInvocations(MethodInvocationElement invocation,
@@ -627,6 +609,13 @@ public class CollectionsAdapter extends AbstractAdapter {
       case "getKey":
         printMacroName(targetMethodName);
         print(invocation.getTargetExpression()).print("[0]");
+        return true;
+      case "setValue":
+        // entries are tuples, the entries of an AsyncMap write through to their map
+        printMacroName(targetMethodName);
+        print("(await " + MapEntryHelperName + ".setValue(").print(invocation.getTargetExpression())
+            .print(", ").print(invocation.getArgument(0)).print("))");
+        getPrinter().useModule(new ModuleImportDescriptor(MapEntryHelperName, getLibraryLocation()));
         return true;
     }
     return false;

@@ -112,6 +112,8 @@ public class GemListDomainDecorator extends AbstractDecorator {
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("GemListBuilder"));
     getCD4C().addImport(ast, "umlp.backendrte.common.LoadResult");
     getCD4C().addImport(ast, "umlp.backendrte.common.LoadingState");
+    getCD4C().addImport(ast, "java.util.HashMap");
+    getCD4C().addImport(ast, "java.util.Map");
   }
 
 }

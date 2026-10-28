@@ -82,8 +82,8 @@ public class DAONeo4jDecorator extends DAODecorator {
             assoc.getRight().getName(),
             assoc.getCDAssocDir().isDefinitiveNavigableLeft(),
             assoc.getCDAssocDir().isDefinitiveNavigableRight(),
-            GenService.isList(assoc.getLeft()),
-            GenService.isList(assoc.getRight()));
+            GenService.isMultiValued(assoc.getLeft()),
+            GenService.isMultiValued(assoc.getRight()));
     getCD4C().addMethod(daoClass, "umlp.dao.associations.AddForAssocDAONeo4j", assoc);
     getCD4C().addMethod(daoClass, "umlp.dao.associations.AddManyForAssocDAONeo4j", assoc);
   }
@@ -221,12 +221,12 @@ public class DAONeo4jDecorator extends DAODecorator {
     if(!startIsLeft) {
       getCD4C().addMethod(daoClass, "umlp.dao.associations.UpdateInitNeo4jForAssocDAO", association.getName(),
           rightName, leftName, rightType, leftType, navigableLeft, navigableRight,
-          GenService.isList(association.getRight()), GenService.isList(association.getLeft()));
+          GenService.isMultiValued(association.getRight()), GenService.isMultiValued(association.getLeft()));
       getCD4C().addMethod(daoClass, "umlp.dao.associations.UpdateNeo4jForAssocDAO", rightName, leftName);
     } else {
       getCD4C().addMethod(daoClass, "umlp.dao.associations.UpdateInitNeo4jForAssocDAO", association.getName(),
           leftName, rightName, leftType, rightType, navigableRight, navigableLeft,
-          GenService.isList(association.getLeft()), GenService.isList(association.getRight()));
+          GenService.isMultiValued(association.getLeft()), GenService.isMultiValued(association.getRight()));
       getCD4C().addMethod(daoClass, "umlp.dao.associations.UpdateNeo4jForAssocDAO", leftName, rightName);
     }
 

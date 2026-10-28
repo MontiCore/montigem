@@ -14,6 +14,7 @@ import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._ast.ASTCDType;
+import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.literals.mccommonliterals._ast.ASTStringLiteral;
@@ -44,6 +45,8 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
   public static final String STEREOTYPE_OTHERSIDE = "otherSide";
   public static final String STEREOTYPE_MANAGER = "manager";
   public static final String STEREOTYPE_OTHERSIDE_ISLIST = "isList";
+  // GemMap of an attribute qualified association with target cardinality [1]: each key yields exactly one value
+  public static final String STEREOTYPE_QUALIFIED_ONE = "qualifiedOne";
 
   public DomainTypeDecorator(GlobalExtensionManagement glex) {
     super(glex);
@@ -56,6 +59,12 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
     getCD4C().addImport(cdType, PathUtil.getBackendRTECommonPath("Gem"));
     getCD4C().addImport(cdType, PathUtil.getBackendRTECommonPath("GemList"));
     getCD4C().addImport(cdType, PathUtil.getBackendRTECommonPath("GemBuildable"));
+    if (CDSymbolTables.getAssociationsInHierarchy(domainType).stream().anyMatch(GenService::isMap)) {
+      getCD4C().addImport(cdType, PathUtil.getBackendRTECommonPath("GemValueMap"));
+      getCD4C().addImport(cdType, PathUtil.getBackendRTECommonPath("GemEntryMap"));
+      getCD4C().addImport(cdType, "java.util.Map");
+      getCD4C().addImport(cdType, "java.util.Collections");
+    }
     addDBAnnotationInfo(cdType);
     if (cdType.getModifier().isPresentStereotype()&& cdType.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_MANAGER)) {
       getCD4C().addImport(cdType, getPackageName(UMLPSymbolTables.getDiagramFor(domainType), DEFAULT_PACKAGE+"."
@@ -195,9 +204,16 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
     // handle associations
     for (ASTCDAssocSide assocSide : associations) {
       String type = assocSide.getSymbol().getType().print();
+      ASTMCType fieldType;
+      if (GenService.isMap(assocSide)) {
+        QualifierKey key = QualifierKey.of(assocSide);
+        fieldType = getMCTypeFacade().createBasicGenericTypeOf(key.getMapType(), key.getKeyType(), type);
+      } else {
+        fieldType = getMCTypeFacade().createBasicGenericTypeOf(GenService.isList(assocSide) ? "GemList" : "Gem", type);
+      }
       ASTCDAttribute attribute = getCDAttributeFacade().createAttribute(
           PROTECTED.build(),
-          getMCTypeFacade().createBasicGenericTypeOf(GenService.isList(assocSide) ? "GemList" : "Gem", type),
+          fieldType,
           GenService.createName(assocSide.getName())
       );
       attribute.getModifier().setLocal(assocSide.getModifier().isLocal() || GenService.isSymbolLocal(assocSide));
@@ -222,6 +238,9 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
 
       if(GenService.isOptional(assocSide)){
         addStereotype(attribute.getModifier(), "Optional", "");
+      }
+      if (GenService.isMap(assocSide) && (!assocSide.isPresentCDCardinality() || assocSide.getCDCardinality().isOne())) {
+        addStereotype(attribute.getModifier(), STEREOTYPE_QUALIFIED_ONE, "");
       }
 
       attrList.add(attribute);
@@ -249,9 +268,10 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
 
   public void addDeepEqualsMethod(ASTCDType domainType, ASTCDType targetType) {
     List<ASTCDAssocSide> assocs = CDSymbolTables.getAssociationsInHierarchy(domainType);
-    List<ASTCDAssocSide> listAssocs = assocs.stream().filter(a -> GenService.isList(a.getSymbol().getCardinality())).collect(Collectors.toList());
-    List<ASTCDAssocSide> gemAssocs = assocs.stream().filter(a -> !listAssocs.contains(a)).collect(Collectors.toList());
-    ASTCDMethodSignature m = getCD4C().addMethod(targetType, getDeepEqualsTemplate(), domainType.getName(), gemAssocs, listAssocs);
+    List<ASTCDAssocSide> mapAssocs = assocs.stream().filter(GenService::isMap).collect(Collectors.toList());
+    List<ASTCDAssocSide> listAssocs = assocs.stream().filter(a -> !mapAssocs.contains(a) && GenService.isList(a.getSymbol().getCardinality())).collect(Collectors.toList());
+    List<ASTCDAssocSide> gemAssocs = assocs.stream().filter(a -> !listAssocs.contains(a) && !mapAssocs.contains(a)).collect(Collectors.toList());
+    ASTCDMethodSignature m = getCD4C().addMethod(targetType, getDeepEqualsTemplate(), domainType.getName(), gemAssocs, listAssocs, mapAssocs);
     markDeepEqualsBackendOnly(targetType, m);
   }
 
