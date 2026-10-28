@@ -168,7 +168,7 @@ example should be replaced with your own library):
 
 ## Versions and dist-tags
 
-Every build marks its libraries with the npm dist-tag `g-<gradle version>`,
+Every build marks its libraries with the npm dist-tag `g-<montigem version>`,
 e.g. `g-7.10.0` or `g-7.10.0-SNAPSHOT` (`ModuleFrontendPlugin`). The prefix is
 required, as npm rejects tags that are valid semver ranges.
 `SetupFrontendTask` sets the `@umlp/*` and `@montigem/*` dependencies of the
