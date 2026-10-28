@@ -174,12 +174,13 @@ required, as npm rejects tags that are valid semver ranges.
 `SetupFrontendTask` sets the `@umlp/*` and `@montigem/*` dependencies of the
 default `package.json` of applications to this tag (version from
 `mg3BuildInfo.properties`), so a generator uses the libraries of its own build.
-A `package.override.json` of the application is not changed.
+Versions defined in `package.override.json` take precedence over automatically set versions.
 
-**Release** (e.g. `7.10.0`): `publishLib` publishes the version of the
-`package.json` as `latest`, and skips it if it is already published. `tagLib`
-then adds the tag, also to an already published version, e.g. of a library
-that did not change since the last release.
+**Release** (e.g. `7.10.0`): `publishLib` publishes the version of the libraries
+`package.json` as `latest`, and skips it if it is already published(by checking if it is
+available in the nexus).
+`tagLib` then adds the tag, also to an already published version, e.g. of a
+library that did not change since the last release.
 
 **Snapshot** (e.g. `7.10.0-SNAPSHOT`): `publishLib` publishes a prepatch
 version with the build timestamp, e.g. `9.0.3` becomes `9.0.4-20261028143012`,
