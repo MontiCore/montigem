@@ -138,7 +138,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
         .map(Boolean::parseBoolean)
         .orElse(false);
     // the libs are published as prepatch versions, e.g. 9.0.3 -> 9.0.4-20261028143012, with the
-    // dist-tag of the Gradle version, e.g. `g-7.10.0`, and their peer dependencies on @umlp and
+    // dist-tag of the MontiGem version, e.g. `g-7.10.0`, and their peer dependencies on @umlp and
     // @montigem libs point to this tag
     String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
     Provider<Map<String, String>> isolatedNpmEnvironment = project.getProviders().provider(() ->
