@@ -423,11 +423,10 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
         .byLoginFromRightPut(anna).byLoginFromRightPut(bob)
         .build().get().getGemId();
 
-    // the owner is not loaded any more, the value is (deleting an object the manager has not loaded fails in
-    // SoftValueHashMap#remove)
+    // neither the owner nor the value is loaded any more: the value is deleted from the database only
     QualifiedAssocsManager.TESTING_clearCache();
-    QualifiedAssocsManager.getPersonSure(anna.getGemId());
     assertTrue(QualifiedAssocsManager.deletePerson(anna.getGemId()));
+    assertFalse(QualifiedAssocsDAOFactory.getPersonDAO().selectPerson(anna.getGemId()).isPresent());
 
     var directory = QualifiedAssocsManager.getDirectorySure(directoryId);
     assertFalse(directory.containsKeyByLogin("anna"));
