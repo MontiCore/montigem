@@ -10,18 +10,19 @@ import common.ParameterList;
 
 /**
   The demonstrator notes of one example page, ready to be passed to
-  common.ExamplePage as `notes`: a DemoBox holding an InfoCard ("what is this
-  component, what do I see here") next to a DemoInstructions card ("what can I
-  try here"), with the parameter reference of the demonstrated library
-  components behind the "Parameters" toggle of the info card.
+  common.ExamplePage as `notes`: a DemoBox holding an InfoCard ("what do I see
+  here") next to a DemoInstructions card ("what can I try here"). So that the
+  example stays near the top of the page, the info card shows only the first
+  paragraph of `about`. The rest is behind its "More" toggle.
 
-  `docComponents` names the library components the example demonstrates
-  (simple names such as "GemBarChart"). Their descriptions are taken from the
-  documentation of the component library (common.ComponentDocs, generated from
-  the doc comments of the component models) and shown as the first paragraphs,
-  each with the component name as bold lead line. `about` adds the hand-written
-  paragraphs about this particular example ("What you see.|..." renders a bold
-  lead line, see InfoCard), and `tryIt` the steps of the instructions card.
+  `about` holds the hand-written paragraphs about this particular example
+  ("What you see.|..." renders a bold lead line, see InfoCard), and `tryIt` the
+  steps of the instructions card. `docComponents` names the library components
+  the example demonstrates (simple names such as "GemBarChart"). Behind "More",
+  their descriptions come first, taken from the documentation of the component
+  library (common.ComponentDocs, generated from the doc comments of the component
+  models) with the component name as bold lead line. The other paragraphs of
+  `about` and the parameter reference of these components follow.
 
   Every example keeps its notes in a small component of its own (e.g.
   example_charts.GemBarChartNotes) instead of inline in the example page: the
@@ -33,8 +34,9 @@ component ExampleNotes(String title, List<String> docComponents, List<String> ab
     List<String> tryIt, String tryItTitle = "Try it yourself") {
   @DemoBox(content =
     notesRow@GemRow(width = "100%", height = "fit-content", colGap = "1rem", rowGap = "1rem", vAlign = "top", wrap = "wrap", components = [
-      @InfoCard(title = title, paragraphs = paragraphs(docComponents, about),
-        detailsTitle = "Parameters", hasDetails = hasDocComponents(docComponents),
+      @InfoCard(title = title, paragraphs = paragraphs(about),
+        moreParagraphs = moreParagraphs(docComponents, about),
+        detailsTitle = "More", hasDetails = hasDocComponents(docComponents),
         details = @ParameterList(componentNames = docComponents)),
       tryItGuard@guard(hasSteps(tryIt)) {
         @DemoInstructions(title = tryItTitle, steps = tryIt);

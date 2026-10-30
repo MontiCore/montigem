@@ -27,10 +27,12 @@ import mc.fenix.view.GUIViewElement;
   viewport. `details` is a template slot and therefore invisible on the Java
   side, so `hasDetails` says whether the caller passed one. `detailsTitle`
   labels the collapsed toggle ("Parameters", "How this works", ...); expanded,
-  it reads "Hide". The paragraphs always stay visible, only the details collapse.
+  it reads "Less" (the "Hide" button of the DemoBox closes the whole box).
+  `paragraphs` always stay visible. The optional
+  `moreParagraphs` follow them only while the details are expanded.
 */
 component InfoCard(String title = "About this page", List<String> paragraphs,
-    String detailsTitle = "More details", GUIViewElement details,
+    List<String> moreParagraphs, String detailsTitle = "More details", GUIViewElement details,
     Boolean hasDetails = false, Boolean detailsExpanded = false) {
   card@GemCard(width = "100%", titleComponent =
     titleRow@GemRow(height = "fit-content", vAlign = "center", colGap = ".5rem", components = [
@@ -38,7 +40,7 @@ component InfoCard(String title = "About this page", List<String> paragraphs,
       detailsToggleGuard@guard(hasDetails) {
         detailsToggleRow@GemRow(width = "fit-content", height = "fit-content", vAlign = "center", components = [
           expandedGuard@guard(detailsExpanded) {
-            detailsHideButton@GemButton(label = "Hide", leftClick = toggleDetails());
+            detailsHideButton@GemButton(label = "Less", leftClick = toggleDetails());
           } else {
             detailsShowButton@GemButton(label = detailsTitle, leftClick = toggleDetails());
           }
@@ -47,10 +49,10 @@ component InfoCard(String title = "About this page", List<String> paragraphs,
     ]),
     component =
     infoBody@GemColumn(width = "100%", height = "fit-content", rowGap = ".5rem", components = [
-      @iterate(String p : paragraphs) {
+      @iterate(String p : shownParagraphs(paragraphs, moreParagraphs, detailsExpanded)) {
         /* "<lead>|<body>" entry (see header comment): bold lead line tightly
-           above its body, grouped as one paragraph unit. `paragraphs` is fixed
-           per usage, so a single evaluation at initialization is enough. */
+           above its body, grouped as one paragraph unit. The text of an entry
+           never changes, so a single evaluation at initialization is enough. */
         leadGuard@guard(hasLead(p)) {
           paragraphBlock@GemColumn(width = "100%", height = "fit-content", rowGap = ".1rem", components = [
             paragraphLeadText@GemText(width = "100%", height = "fit-content", value = paragraphLead(p), weight = "bold"),
