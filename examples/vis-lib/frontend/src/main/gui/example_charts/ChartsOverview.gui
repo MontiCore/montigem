@@ -13,7 +13,7 @@ import example_charts.GemGaugeChartExample;
 import example_charts.GemRadarChartExample;
 import example_charts.GemScatterPlotExample;
 import example_charts.GemVennDiagramExample;
-import example_charts.GemNetworkGraphExample;
+import example_network.NetworkChartExample;
 import example_charts.GemHeatmapChartExample;
 import example_charts.GemSunburstChartExample;
 import example_charts.GemTimelineChartExample;
@@ -43,7 +43,7 @@ page ChartsOverview() {
             @ComponentCard(title = "Radar Chart", icon = "radar", description = "Compare multivariate data.", click = navigate(@GemRadarChartExample())),
             @ComponentCard(title = "Scatter Plot", icon = "scatter_plot", description = "Show relationship between variables.", click = navigate(@GemScatterPlotExample())),
             @ComponentCard(title = "Venn Diagram", icon = "bubble_chart", description = "Visualize set relationships.", click = navigate(@GemVennDiagramExample())),
-            @ComponentCard(title = "Network Graph", icon = "hub", description = "Display nodes and edges.", click = navigate(@GemNetworkGraphExample())),
+            @ComponentCard(title = "Network Graph", icon = "hub", description = "Display nodes and edges.", click = navigate(@NetworkChartExample())),
             @ComponentCard(title = "Heatmap", icon = "grid_on", description = "Visualize data density.", click = navigate(@GemHeatmapChartExample())),
             @ComponentCard(title = "Sunburst", icon = "donut_large", description = "Hierarchical data visualization.", click = navigate(@GemSunburstChartExample())),
             @ComponentCard(title = "Timeline", icon = "view_timeline", description = "Events over time.", click = navigate(@GemTimelineChartExample())),
