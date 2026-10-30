@@ -1,0 +1,32 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import Domain.Person;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemText;
+import mc.fenix.networkgraph.GemGraph;
+import manual.*;
+
+page GemGraphTest(List<Person> persons) {
+  @GemColumn(
+    hAlign = "center",
+    components = [
+      @GemText(
+        value = "Note: This page only shows 4 test containers. Each network graph uses 3 WebGL contexts, and Chrome allows only about 16 active WebGL contexts per page. With more graphs, Chrome silently drops the oldest contexts and those graphs stay blank. The general layout tester shows 8 containers (24 contexts), so this page uses a reduced set instead.",
+        size = "1rem",
+        color = "#8a5a00",
+        width = "900px"
+      ),
+      @GraphLayoutTester(input =
+        networkgraph@GemGraph(
+          graph = null,
+          minHeight = "100%",
+          showFilterGroup = true,
+          showSearchNode = true,
+          showControlButtons = true,
+          showInformation = true
+        )
+      )
+    ]
+  );
+}

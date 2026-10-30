@@ -18,7 +18,6 @@
     "angular-plotly.js": "^5.2.2",
     "plotly.js-dist-min": "2.18.1",
     "tslib": "2.5.0",
-    "chartjs-plugin-streaming": "2.0.0",
-    "vis-network": "^9.1.2"
+    "chartjs-plugin-streaming": "2.0.0"
   }
 }

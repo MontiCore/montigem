@@ -36,7 +36,6 @@ public class ScreenshotGen extends AbstractDomainE2ETest {
         new Screenshot("/example_charts/GemBarChartFromCommandCopy", "gem-bar-chart-from-command-copy", "../../../docs/gendoc_img/GemBarChartFromCommandCopy.png"),
         new Screenshot("/example_charts/GemBoxPlotExample", "gem-box-plot-example", "../../../docs/gendoc_img/GemBoxPlotExample.png"),
         new Screenshot("/example_charts/GemGaugeChartExample", "gem-gauge-chart-example", "../../../docs/gendoc_img/GemGaugeChartExample.png"),
-        new Screenshot("/example_charts/GemNetworkGraphExample", "gem-network-graph-example", "../../../docs/gendoc_img/GemNetworkGraphExample.png"),
         new Screenshot("/example_charts/GemHeatmapChartExample", "gem-heatmap-chart-example", "../../../docs/gendoc_img/GemHeatmapChartExample.png"),
         new Screenshot("/example_charts/GemLineChartExample", "gem-line-chart-example", "../../../docs/gendoc_img/GemLineChartExample.png"),
         new Screenshot("/example_charts/GemPieChartExample", "gem-pie-chart-example", "../../../docs/gendoc_img/GemPieChartExample.png"),

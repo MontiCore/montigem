@@ -1,0 +1,7 @@
+package manual;
+
+/**
+  Variant of LayoutTester with fewer test containers. Each GemGraph uses three WebGL contexts and browsers only
+  allow ~16 per page, so the eight containers of LayoutTester would cause the first graphs to lose their context.
+*/
+component GraphLayoutTester(GUIViewElement input)

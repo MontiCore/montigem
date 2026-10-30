@@ -90,8 +90,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "RadarChart", target = "/example_charts/GemRadarChartExample");
         @GemNavItem(title = "SunburstChart", target = "/example_charts/GemSunburstChartExample");
         @GemNavItem(title = "VennDiagram", target = "/example_charts/GemVennDiagramExample");
-        @GemNavItem(title = "NetworkGraph", target = "/example_charts/GemNetworkGraphExample");
-        @GemNavItem(title = "NewNetworkChart", target = "/example_network/NetworkChartExample");
+        @GemNavItem(title = "NetworkChart", target = "/example_network/NetworkChartExample");
         @GemNavItem(title = "GemScatterPlot", target = "/example_charts/GemScatterPlotExample");
       },
 
@@ -111,7 +110,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "GemCandlestickChartTest", target = "/manual/GemCandlestickChartTest");
         @GemNavItem(title = "GemScatterPlotTest", target = "/manual/GemScatterPlotTest");
         @GemNavItem(title = "GemVennDiagramTest", target = "/manual/GemVennDiagramTest");
-        @GemNavItem(title = "GemNetworkGraphTest", target = "/manual/GemNetworkGraphTest");
+        @GemNavItem(title = "GemGraphTest", target = "/manual/GemGraphTest");
       },
 
       @guard(activeCategory == "Other") {

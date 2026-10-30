@@ -51,7 +51,6 @@
     "lodash.isequal": "^4.5.0",
     "sigma": "3.0.0",
     "@sigma/node-image": "3.0.0",
-    "vis-network": "^9.1.2",
     "xlsx": "^0.18.5",
     "three": "^0.160.0",
     "flatpickr": "^4.6.13"
