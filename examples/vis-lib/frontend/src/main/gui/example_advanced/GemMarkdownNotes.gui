@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_advanced;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemMarkdownExample (see common.ExampleNotes). */
+component GemMarkdownNotes() {
+  @ExampleNotes(
+    title = "Markdown",
+    docComponents = ["GemMarkdown"],
+    about = [
+      "What you see.|A Markdown document rendered as formatted HTML: headings, lists, links, a blockquote, a table, a code block, a horizontal rule and mathematical formulas.",
+      "How it is used.|value takes the Markdown text; here it is written directly in the model as one long string, in a real page it would come from a domain object or a Java method. The component renders with markdown-it and typesets formulas with KaTeX ($...$ inline, $$...$$ as a block)."
+    ],
+    tryIt = [
+      "Scroll to section 9: the formulas are typeset, not images.",
+      "Open \"Show GUI\": the whole document is the value parameter.",
+      "Flip the dark mode switch: the rendered HTML follows the theme."
+    ]
+  );
+}

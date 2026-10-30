@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package fischertechnik;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of FischertechnikExample (see common.ExampleNotes). */
+component FischertechnikNotes() {
+  @ExampleNotes(
+    title = "Fischertechnik Stations",
+    docComponents = ["Conveyor", "MultiProcessingStation", "SortingLine", "VacuumGripper", "Warehouse"],
+    about = [
+      "What you see.|Animated views of the five stations of a Fischertechnik model factory - conveyor, multi-processing station, sorting line, vacuum gripper and high-bay warehouse - each with the checkboxes and sliders that drive its sensors and actuators.",
+      "How it works.|Every station has a singleton state class in the class diagram (FischertechnikConveyorState and so on) with one boolean or integer attribute per sensor and actuator. The demo page of a station binds the inputs to these attributes and passes the same attributes to the station component, so ticking a checkbox moves the animation. In a digital twin the attributes would be written by the machine's data instead.",
+      "Structure.|Each station is its own small page (Conveyor_Demo, ...) embedded here in a card - a reusable page can be a component of another page."
+    ],
+    tryIt = [
+      "Tick \"Bewegung zum Einzug\" of the conveyor: the belt starts moving.",
+      "Open this page in a second browser tab and toggle a switch: the state is a domain object, so both tabs move.",
+      "Open \"Show GUI\": the page is five cards with five embedded pages."
+    ]
+  );
+}

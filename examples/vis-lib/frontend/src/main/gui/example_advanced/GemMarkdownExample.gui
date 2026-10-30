@@ -4,9 +4,11 @@ package example_advanced;
 import mc.fenix.advanced.GemMarkdown;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_advanced.GemMarkdownNotes;
 
 page GemMarkdownExample() {
   @ExamplePage(
+    notes = @GemMarkdownNotes(),
     component = @GemColumn(components = [
       @GemMarkdown(
         value = "# GemMarkdown Markdown Demo\n\n" +

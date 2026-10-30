@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemRangeInputExample (see common.ExampleNotes). */
+component GemRangeInputNotes() {
+  @ExampleNotes(
+    title = "Range Input",
+    docComponents = ["GemRangeInput", "GemDualRangeInput"],
+    about = [
+      "What you see.|Six sliders. Four of them select a single value (satisfaction with labelled ticks, a price with snapping, a vertical project phase, a vertical volume), the last two select a range with two thumbs (a price range and a temperature range).",
+      "How it is used.|minValue, maxValue and step define the scale, ticks a list of Marker objects with a value and a label, snapping = true makes the thumb jump to the nearest tick. vertical = true turns the slider upright. A single slider binds its value parameter to a variable, the dual slider startValue and endValue."
+    ],
+    tryIt = [
+      "Drag the price slider: step = 50 makes it stop every 50 euros. It also sets snapping = true, but without ticks that has no effect.",
+      "Move both thumbs of the price range - they cannot cross each other.",
+      "Open \"Show GUI\": every tick label is a Marker written in the model."
+    ]
+  );
+}

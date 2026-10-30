@@ -6,9 +6,13 @@ import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import mc.fenix.navigation.GemNavItem;
 import mc.fenix.navigation.GemNavList;
+import common.ExamplePage;
+import common.NavListPageNotes;
 
 page NavListExample() {
-  @GemColumn(
+  @ExamplePage(
+    notes = @NavListPageNotes(),
+    component = @GemColumn(
     hAlign = "center",
     components = [
       @GemText(value = "GemNavList Examples", size = "2rem", weight = "bold", height = "auto", width = "auto"),
@@ -51,5 +55,8 @@ page NavListExample() {
         ]
       )
     ]
+    ),
+    basePath = "common",
+    componentName = "NavListExample"
   );
 }

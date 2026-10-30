@@ -24,6 +24,7 @@ const CATEGORY_BY_SEGMENT: { [segment: string]: string } = {
 };
 
 const HOME_URL = '/common/LandingPage';
+const ABOUT_URL = '/common/AboutMontiGem';
 
 /**
  * Sets the active category of the navigation bar to the category of the current page,
@@ -48,7 +49,8 @@ export class NavigationRouteSync implements OnInit {
 
   private sync(url: string): void {
     const path = url.split(/[?#]/)[0];
-    const category = path === HOME_URL ? 'Home' : CATEGORY_BY_SEGMENT[path.split('/')[1]];
+    const category =
+      path === HOME_URL ? 'Home' : path === ABOUT_URL ? 'About' : CATEGORY_BY_SEGMENT[path.split('/')[1]];
     if (category != null && category !== this.navigation.getActiveCategory()) {
       this.navigation.setActiveCategory(category);
     }

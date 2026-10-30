@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemAutocompleteInputExample (see common.ExampleNotes). */
+component GemAutocompleteInputNotes() {
+  @ExampleNotes(
+    title = "Autocomplete",
+    docComponents = ["GemAutocompleteInput"],
+    about = [
+      "What you see.|Two text fields that suggest matching entries while you type: a short list of search engines and a long list of hobbies.",
+      "How it is used.|Like the dropdown, options is a list of Option objects written in the model, and entry would bind the chosen text to a variable. The difference: the user types freely and the suggestions narrow down with every character; a value that is not in the list is allowed as well. placeholder is the hint shown in the empty field."
+    ],
+    tryIt = [
+      "Type \"g\" into the first field and pick Google from the suggestions.",
+      "Type a hobby that is not in the list: the field keeps it.",
+      "Compare with the Dropdown example, which restricts the choice to its options."
+    ]
+  );
+}

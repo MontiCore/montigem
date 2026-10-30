@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemBoxPlotExample (see common.ExampleNotes). */
+component GemBoxPlotNotes() {
+  @ExampleNotes(
+    title = "Box Plot",
+    docComponents = ["GemBoxPlot"],
+    about = [
+      "What you see.|Two box plots over synthetic groups of values: a vertical one with a scale starting at 0, and a horizontal one (the default) with a scale starting at -5 and a group with a deliberately long label. Each box shows the median, the quartiles and the whiskers of its group; the individual data points are drawn on top (showDataPoints defaults to true).",
+      "How it is used.|data, width and height are all bound to helper methods of the Java class; a box plot is sized in pixels, not in CSS lengths, because it is drawn as an SVG. min fixes the lower end of the value axis, horizontal sets the direction."
+    ],
+    tryIt = [
+      "Hover a box to read median and quartiles.",
+      "Compare the labels of the two plots: the horizontal direction, which is the default, leaves room for long labels.",
+      "Open \"Show Java\": every GemBoxPlotEntry holds a group name, its raw points and a box with median, quantiles and extremes. The chart draws these given values."
+    ]
+  );
+}

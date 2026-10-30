@@ -3,9 +3,11 @@ package example_basic;
 
 import mc.fenix.basic.GemAudio;
 import common.ExamplePage;
+import example_basic.GemAudioNotes;
 
 page GemAudioExample() {
   @ExamplePage(
+    notes = @GemAudioNotes(),
     component = @GemAudio(
       width = "300px",
       source = "assets/audio/audio.mp3"

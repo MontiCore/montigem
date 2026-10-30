@@ -5,9 +5,11 @@ import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_arrange.GemRowNotes;
 
 page GemRowExample() {
   @ExamplePage(
+    notes = @GemRowNotes(),
     component = @GemColumn(components = [
       @GemRow(
         colGap = "15px",

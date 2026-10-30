@@ -5,10 +5,12 @@ import mc.fenix.basic.GemIcon;
 import mc.fenix.basic.GemButton;
 import mc.fenix.arrange.GemRow;
 import common.ExamplePage;
+import example_basic.GemIconNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemIconExample() {
   @ExamplePage(
+    notes = @GemIconNotes(),
     component = @GemColumn(components = [
       @GemRow(
         colGap = "15px",

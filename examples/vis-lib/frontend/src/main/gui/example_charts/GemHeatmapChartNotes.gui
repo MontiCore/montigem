@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemHeatmapChartExample (see common.ExampleNotes). */
+component GemHeatmapChartNotes() {
+  @ExampleNotes(
+    title = "Heat Map",
+    docComponents = ["GemHeatmapChart"],
+    about = [
+      "What you see.|Five hundred synthetic measurements of a machine - temperature against rotation speed - sorted into a grid of 10 by 10 bins. The three clusters of the data show up as three hot regions.",
+      "Where the data comes from.|data = getData() calls a helper method of the Java class that generates the points with Math.random() around three operating points - the same helper-method binding the gauge chart uses. Because the method runs in the browser, every reload draws a new sample. xBins and yBins set the resolution, xLabel and yLabel the axis titles."
+    ],
+    tryIt = [
+      "Reload the page: the clusters stay, the exact cells change - the data is random.",
+      "Open \"Show Java\": each GemHeatmapChartEntry is just an x and a y value; the binning is done by the chart.",
+      "Open \"Parameters\": fewer bins make coarser, hotter cells."
+    ]
+  );
+}

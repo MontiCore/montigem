@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemCandlestickChartExample (see common.ExampleNotes). */
+component GemCandlestickChartNotes() {
+  @ExampleNotes(
+    title = "Candlestick Chart",
+    docComponents = ["GemCandlestickChart"],
+    about = [
+      "What you see.|Eight trading days of a fictional stock in March 2026. Each candle spans the opening and closing price, the thin line its high and low; green candles closed higher than they opened, red ones lower.",
+      "How it is used.|data = getData() binds the chart to a helper method of the Java class that builds a GemCandlestickChartData with one entry per day: a date label and the four values open, high, low and close, in that order."
+    ],
+    tryIt = [
+      "Hover a candle to read its four values.",
+      "Open \"Show Java\": the dates are ISO strings, the values plain numbers.",
+      "Open \"Parameters\": besides the data there is only showConfig."
+    ]
+  );
+}

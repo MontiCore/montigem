@@ -1,0 +1,69 @@
+/* (c) https://github.com/MontiCore/monticore */
+package common;
+
+import mc.fenix.arrange.GemCard;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemLink;
+import mc.fenix.basic.GemText;
+import common.InfoCard;
+
+/*
+  Explanatory page: how this demonstrator was built - the generator stack behind
+  it, the TOP mechanism that separates generated from handwritten code, and how
+  the component library and the documentation shown on the example pages fit
+  together. Reachable from the navigation bar ("About") and from the landing page.
+*/
+page AboutMontiGem() {
+  contentCol@GemColumn(width = "100%", height = "fit-content", rowGap = "1rem", components = [
+    @InfoCard(title = "How this demonstrator was built", paragraphs = [
+      "This application is a MontiGem application like any other: its domain model is a class diagram, its pages are GUI models, and the generator produced the database schema, the Java backend and the Angular frontend from them. What is special is only its purpose - every page demonstrates one component of the component library that ships with the MontiGem runtime, and shows the model it was generated from next to the result."
+    ]),
+
+    gemCard@GemCard(title = "MontiGem", width = "100%", component =
+      gemCol@GemColumn(width = "100%", height = "fit-content", rowGap = ".6rem", components = [
+        gemWhat@GemText(value = "MontiGem is a model-driven generator framework for data-centric web applications. From a class diagram of the domain (UML/P) and a set of GUI models (GUI DSL) it generates a complete, runnable application: the database schema, a Spring Boot backend with data access and command handling, and an Angular frontend including the synchronization between the two - every change of a domain object reaches all open browser windows over a WebSocket."),
+        gemModels@GemText(value = "In this demonstrator the class diagram is models/Domain.umlp. It declares persons with friends, addresses and stocks, the messages of the chat example, the states of the Fischertechnik stations, and a few service methods such as App.getBarChart - the backend commands the chart pages call. The GUI models live in frontend/src/main/gui, one file per page or reusable component."),
+        gemStack@GemText(value = "The languages themselves are built with MontiCore, a language workbench for developing and composing domain-specific languages. Frontend logic is written in Java and transpiled to TypeScript with JSweet, so pages, commands and domain classes share one language and one type system.")
+      ])
+    ),
+
+    topCard@GemCard(title = "Generated and handwritten code: the TOP mechanism", width = "100%", component =
+      topCol@GemColumn(width = "100%", height = "fit-content", rowGap = ".6rem", components = [
+        topWhat@GemText(value = "Generated code is never edited. For every page the generator creates a class such as GemBarChartExampleTOP with the inputs, the state and the data binding of the page. Wherever the page needs logic of its own, a handwritten class GemBarChartExample extends that TOP class and overrides single methods - the generator detects the handwritten file and instantiates it instead of the generated one."),
+        topDemo@GemText(value = "That is exactly what the code viewer of an example page shows: \"Show GUI\" is the model, \"Show Java\" the handwritten subclass (for the chart pages it computes the chart data from the persons in the database), \"Show SCSS\" the styling that is merged into the generated component. Pages without a Java or SCSS file need no handwritten code at all."),
+        topRegen@GemText(value = "Because the handwritten files live next to, not inside, the generated ones, the whole application can be regenerated at any time - after a change of the class diagram, a GUI model or the generator - without losing a line of handwritten code.")
+      ])
+    ),
+
+    libCard@GemCard(title = "The component library", width = "100%", component =
+      libCol@GemColumn(width = "100%", height = "fit-content", rowGap = ".6rem", components = [
+        libWhat@GemText(value = "The components used in GUI models are themselves declared as GUI models - with a doc comment and a typed parameter list - and implemented as Angular components in the runtime library. They are organized in packages under mc.fenix and published as one npm package each:"),
+        libList@GemText(value = "• mc.fenix.basic - text, icon, image, link, button, audio, video, loading spinner, dark mode switch"
+          + "\n• mc.fenix.input - text, number, date and text-area inputs, checkbox, radio button, dropdown, autocomplete, range sliders"
+          + "\n• mc.fenix.arrange - row, column, grid, card, dialog, overlay, tree"
+          + "\n• mc.fenix.table and mc.fenix.navigation - tables with spanning cells, navigation lists"
+          + "\n• mc.fenix.charts - bar, pie, line, gauge, radar, scatter, Venn, network, heat map, sunburst, timeline, time series, box plot, bullet and candlestick charts"
+          + "\n• mc.fenix.editor, mc.fenix.advanced, mc.fenix.cad - Monaco code editor, Markdown, 3D CAD viewer"
+          + "\n• mc.fenix.functiondisplay, mc.fenix.networkgraph, mc.fenix.fischertechnik - component-and-connector diagrams, interactive graphs, Fischertechnik factory stations"),
+        libTheme@GemText(value = "Their look comes from the theme package (mc.fenix.theme): colors, spacing and fonts are CSS tokens with a light and a dark value, which is why the dark mode switch in the navigation bar restyles every page at once.")
+      ])
+    ),
+
+    docsCard@GemCard(title = "Where the explanations come from", width = "100%", component =
+      docsCol@GemColumn(width = "100%", height = "fit-content", rowGap = ".6rem", components = [
+        docsWhat@GemText(value = "The description and the parameter reference in the \"Demonstrator\" box of an example page are not written for this demonstrator. They are the doc comments of the component models in the runtime library - the same comments from which the online documentation of the component library is generated. A small generator (frontend/tools/ComponentDocsGenerator.java, run by the Gradle task generateComponentDocs before every build) extracts them into the class common.ComponentDocs, so the demonstrator always shows the current documentation."),
+        docsNotes@GemText(value = "Only the \"What you see\" paragraphs and the \"Try it yourself\" steps are written by hand, in a small <Name>Notes component next to every example page. The example page itself stays the plain usage of the component - which matters, because the documentation generator embeds the source of every example page into the online documentation as well.")
+      ])
+    ),
+
+    furtherCard@GemCard(title = "Further links", width = "100%", component =
+      furtherCol@GemColumn(width = "100%", height = "fit-content", rowGap = ".4rem", components = [
+        @GemLink(url = "https://monticore.pages.rwth-aachen.de/umlp/index.html", text = "MontiGem documentation"),
+        @GemLink(url = "https://monticore.pages.rwth-aachen.de/umlp/gendoc_components/Frontend-RTE.html", text = "GUI component library reference"),
+        @GemLink(url = "https://monticore.pages.rwth-aachen.de/umlp/Tutorial.html", text = "MontiGem tutorial"),
+        @GemLink(url = "https://www.monticore.de/", text = "MontiCore language workbench"),
+        @GemLink(url = "https://www.se-rwth.de", text = "Chair of Software Engineering, RWTH Aachen University")
+      ])
+    )
+  ]);
+}

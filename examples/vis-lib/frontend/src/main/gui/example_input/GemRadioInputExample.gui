@@ -8,10 +8,12 @@ import mc.fenix.basic.GemText;
 import Domain.Role;
 import Domain.Person;
 import common.ExamplePage;
+import example_input.GemRadioInputNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemRadioInputExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemRadioInputNotes(),
     component = @GemColumn(components = [
       @iterate(Person p : persons) {
         @GemText(value = getPersonRoleInfo(p));

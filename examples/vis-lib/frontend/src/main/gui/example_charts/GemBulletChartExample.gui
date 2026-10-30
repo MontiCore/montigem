@@ -3,6 +3,7 @@ package example_charts;
 
 import Domain.Person;
 import common.ExamplePage;
+import example_charts.GemBulletChartNotes;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.charts.GemBulletChart;
 
@@ -12,6 +13,7 @@ page GemBulletChartExample(
     List<Integer> steps
 ) {
   @ExamplePage(
+      notes = @GemBulletChartNotes(),
       component = @GemColumn(components = [
         bulletchart@GemBulletChart(
             value = null,

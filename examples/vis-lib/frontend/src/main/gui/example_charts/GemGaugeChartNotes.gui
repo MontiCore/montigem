@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemGaugeChartExample (see common.ExampleNotes). */
+component GemGaugeChartNotes() {
+  @ExampleNotes(
+    title = "Gauge Chart",
+    docComponents = ["GemGaugeChart"],
+    about = [
+      "What you see.|A dial from 0 to 50 with one needle per age group of the persons in the demo database, each showing the average number of friends in that group, rounded and then multiplied by ten; unit and caption are printed below the dial.",
+      "How it is used.|min and max define the scale, unit and textValue the labels, textPosition where the caption goes. data = getData() binds the needles to a helper method of the Java class, which computes the averages from the persons - the alternative to the generated getter of a named instance that the bar and pie chart examples use."
+    ],
+    tryIt = [
+      "Open \"Show Java\": one GemGaugeChartData entry per age group with a name and a value.",
+      "Add a friend to a person in the Person Overview (category \"Other\") and come back: the needle moves as soon as the rounded average of the group changes.",
+      "Open \"Parameters\": textPosition takes \"center\", \"top\" or \"bottom\"."
+    ]
+  );
+}

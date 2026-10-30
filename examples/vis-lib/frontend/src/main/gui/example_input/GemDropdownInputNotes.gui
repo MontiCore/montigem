@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemDropdownInputExample (see common.ExampleNotes). */
+component GemDropdownInputNotes() {
+  @ExampleNotes(
+    title = "Dropdown",
+    docComponents = ["GemDropdownInput"],
+    about = [
+      "What you see.|Three dropdowns: an academic degree whose options carry a display text different from their value, a long list of hobbies with a search box, and a short list of frequencies.",
+      "How it is used.|options is a list of Option objects created right in the model - Option(\"Master\", \"M.Sc.\") is the value and its label, Option(\"PhD\") uses the value as label. entry binds the selection to a variable of the page (degreeEntry, hobbyEntry, ...). searchEnabled = true adds the filter box on top of long lists. The Person Overview (category \"Other\") shows dropdowns whose options are built from domain objects in Java."
+    ],
+    tryIt = [
+      "Open the hobby dropdown and type a few letters into its search box.",
+      "Select a degree: the field shows the label \"M.Sc.\", the bound variable holds the value \"Master\".",
+      "Open \"Show GUI\": every option is written in the model, no Java needed."
+    ]
+  );
+}

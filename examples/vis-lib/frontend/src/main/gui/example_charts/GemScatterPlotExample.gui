@@ -4,9 +4,11 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemScatterPlot;
 import common.ExamplePage;
+import example_charts.GemScatterPlotNotes;
 
 page GemScatterPlotExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemScatterPlotNotes(),
     component = @GemScatterPlot(
       data = getSimpleData(),
       xAxis = null,

@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_monaco;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of ExampleFromLib, the Monaco editor page (see common.ExampleNotes). */
+component MonacoEditorNotes() {
+  @ExampleNotes(
+    title = "Monaco Editor",
+    docComponents = ["MonacoEditor"],
+    about = [
+      "What you see.|The code editor of VS Code, editing the aboutMe text of the person with id 3 (the route ends in /3) in a made-up language, with a highlighted range and a hover tooltip provided by the page, scrolled to line 20 on opening. Below it, the two configuration snippets an application needs to add to use the editor.",
+      "How it is used.|entry = p.aboutMe is the same two-way binding the input components use - whatever you type is written into the person. highlighting and hoverContents are lists of InlineDecoration and HoverContent objects built by helper methods of the Java class. The editor is also what this demonstrator uses to show source code: the code viewer of every example page is a read-only MonacoEditor.",
+      "Extra dependencies.|The editor package brings its own npm dependency and assets, which is why the page prints the entries for package.override.json and angular.override.json."
+    ],
+    tryIt = [
+      "Type into the editor, then open the Text Area example (category \"Input\"): the aboutMe text of the third person has changed.",
+      "Hover the first lines of the text to see the hover content.",
+      "Open \"Show Java\": getHighlights() and getHoverContents() build the decorations."
+    ]
+  );
+}

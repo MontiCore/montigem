@@ -2,10 +2,12 @@ package example_basic;
 
 import mc.fenix.basic.GemLoadingSpinner;
 import common.ExamplePage;
+import example_basic.GemLoadingSpinnerNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemLoadingSpinnerExample() {
   @ExamplePage(
+    notes = @GemLoadingSpinnerNotes(),
     component = @GemColumn(components = [
       @GemLoadingSpinner(
         size = "100px",

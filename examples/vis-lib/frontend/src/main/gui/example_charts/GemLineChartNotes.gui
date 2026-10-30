@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemLineChartExample (see common.ExampleNotes). */
+component GemLineChartNotes() {
+  @ExampleNotes(
+    title = "Line Chart",
+    docComponents = ["GemLineChart"],
+    about = [
+      "What you see.|One line per age group of the persons in the demo database, showing the summed price of the stocks the people of that group bought on each of five dates in 2022. enableBackgroundColor is false here, so only the lines are drawn; set it to true and the area under each line is filled.",
+      "Where the data comes from.|The model passes data = null; the Java class overrides the generated getter of the named instance (linechart@GemLineChart) and builds a GemLineChartData with the five date labels and one GemLineChartEntry per group from the persons and their stocks. The chart sits in a row of fixed height, because a chart takes the height of its container."
+    ],
+    tryIt = [
+      "Hover a point to read its value; click a legend entry to hide that line.",
+      "Open \"Show Java\": the age groups are a map from group name to the list of persons in it.",
+      "Open the chart's configuration panel: it is there because the model sets showConfig = true."
+    ]
+  );
+}

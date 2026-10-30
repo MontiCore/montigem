@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_table;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemTableExample (see common.ExampleNotes). */
+component GemTableNotes() {
+  @ExampleNotes(
+    title = "Table",
+    docComponents = ["GemTable", "GemTableHeader", "GemTableRow", "GemTableHeaderCell", "GemTableRowCell"],
+    about = [
+      "What you see.|Two tables. The first lists the persons of the demo database with an editable birthday field in every row. The second has a fixed layout and cells that span rows and columns: a two-row header (\"Name\" spans both rows, \"Address\" spans two columns) and body cells that span two rows.",
+      "How it is used.|headers takes GemTableHeader rows, body takes GemTableRow rows; both accept either cols (a plain list of contents) or cells (GemTableHeaderCell / GemTableRowCell components with rowSpan and colSpan). Any component may be a cell - the first table puts a text input into each row, bound to p.birthday, so the table edits the database."
+    ],
+    tryIt = [
+      "Change a birthday in the first table, then open a chart example: the age groups of the charts are computed from these dates.",
+      "Open \"Show GUI\": the first table is an @iterate over the persons, the second is written cell by cell.",
+      "Open \"Parameters\" of GemTable: layout = \"fixed\" spreads the columns evenly instead of fitting the content."
+    ]
+  );
+}

@@ -9,9 +9,11 @@ import mc.fenix.functiondisplay.FunctionDisplay;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.basic.GemText;
 import common.ExamplePage;
+import example_functiondisplay.FunctionDisplayNotes;
 
 page FunctionDisplayExample(List<Channel4Display> selectedChannels, List<Function4Display> selectedFunctions, List<Port4Display> selectedPorts, List<FunctionAction> contextMenuActions, String clickedInfo) {
   @ExamplePage(
+    notes = @FunctionDisplayNotes(),
     component = @GemColumn(components = [
       @GemText(value = "Status: " + clickedInfo, size = "1.5rem"),
       @FunctionDisplay(

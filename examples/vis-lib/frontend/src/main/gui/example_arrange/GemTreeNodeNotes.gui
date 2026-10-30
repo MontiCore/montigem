@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemTreeNodeExample (see common.ExampleNotes). */
+component GemTreeNodeNotes() {
+  @ExampleNotes(
+    title = "Tree Node",
+    docComponents = ["GemTreeNode"],
+    about = [
+      "What you see.|An expandable tree of the persons in the demo database: every person is a node, their friends are its children, and the friends of the friends are leaves with a checkbox.",
+      "How it is used.|A tree is built from nested GemTreeNode components: the root has only children, every other node has a content component and optionally children. The nesting follows the domain model - three nested @iterate blocks walk persons, p.friends and f.friends - so the tree is as deep as the friends association reaches. onClick = sayHello(p.name) binds a click on a node to a handler of the page; this page does not implement it in Java, so the generated default does nothing (the Button example shows an implemented handler)."
+    ],
+    tryIt = [
+      "Expand a person, then one of the friends: the checkboxes are the same ones as in the Checkbox example, bound to the same attribute.",
+      "Add a friend in the Person Overview (category \"Other\") and come back: the tree has grown.",
+      "Open \"Show GUI\": the whole tree is three nested @iterate blocks."
+    ]
+  );
+}

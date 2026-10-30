@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemRowExample2 (see common.ExampleNotes). */
+component GemRow2Notes() {
+  @ExampleNotes(
+    title = "Row: alignment and wrapping",
+    docComponents = ["GemRow"],
+    about = [
+      "What you see.|An outer row of 200 by 300 pixels that wraps its children. The inner row takes the full width and 30% of the height and pushes \"First col\" and \"Second col\" to its right edge with a gap of 5 pixels; \"Third col\" does not fit next to it and wraps onto a new line. vAlign = \"space-evenly\" distributes the remaining height evenly above, between and below the two lines.",
+      "How it is used.|This is the example from the library documentation of GemRow: a fixed-size container makes the effect of every alignment and wrapping option visible. In a real page the sizes usually come from the content and from percentages."
+    ],
+    tryIt = [
+      "Open \"Show GUI\" and change one value in your head: hAlign = \"left\" on the inner row would move the two texts to the left edge.",
+      "Compare with the Column example \"Column2\", which does the same with the axes swapped.",
+      "Open \"Parameters\": the documentation of vAlign lists every option shown here."
+    ]
+  );
+}

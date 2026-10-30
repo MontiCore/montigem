@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemIconExample (see common.ExampleNotes). */
+component GemIconNotes() {
+  @ExampleNotes(
+    title = "Icon",
+    docComponents = ["GemIcon"],
+    about = [
+      "What you see.|Three icons in a row - add, edit and delete - in three sizes and three ways of writing a color (a color name, an rgb() value and a hex value), and below them a button whose only content is a home icon.",
+      "How it is used.|An icon is referenced by its name from the Material Design icon set (fonts.google.com/icons); the font is loaded once in index.html. size takes any CSS length, even 2cm. The button shows the content parameter of GemButton: a list of components replaces the text label."
+    ],
+    tryIt = [
+      "Look up any icon name at fonts.google.com/icons - the name in the model is the name on that page, with underscores instead of spaces.",
+      "Open \"Show GUI\": the third icon is sized in centimeters, the first in rem - the browser scales all of them.",
+      "Hover the button: it behaves like the text buttons of the Button example, only its label is an icon."
+    ]
+  );
+}

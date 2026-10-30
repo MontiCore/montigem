@@ -4,11 +4,13 @@ package example_network;
 import example_input.GemChat;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_network.NetworkChartNotes;
 import mc.fenix.networkgraph.GemGraph;
 import mc.fenix.basic.GemText;
 
 page NetworkChartExample(String lastClickedNodeName = "None") {
   @ExamplePage(
+    notes = @NetworkChartNotes(),
     component = @GemColumn(width = "100%", components = [
       @GemText(value="Last Clicked Node: " + lastClickedNodeName),
       personGraph@GemGraph(

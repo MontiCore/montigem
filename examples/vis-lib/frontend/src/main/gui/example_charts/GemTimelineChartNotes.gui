@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemTimelineChartExample (see common.ExampleNotes). */
+component GemTimelineChartNotes() {
+  @ExampleNotes(
+    title = "Timeline Chart",
+    docComponents = ["GemTimelineChart"],
+    about = [
+      "What you see.|One timeline per person of the demo database (at most seven, one per color of the palette), each in its own color, with blocks on the lanes \"Birthday Month\" and \"Not Birthday Month\" along a shared time axis.",
+      "How it is used.|data = computeDate(persons) hands the persons to a helper method of the Java class that builds a TimelineData with one Timeline per person and its TimelineBlocks. blockClick = getBlockClick() binds a click on a block to a handler that receives the clicked TimelineBlock. showAfter and showUntil would restrict the visible range."
+    ],
+    tryIt = [
+      "Click a block: the handler in the Java file receives it and prints its start to the browser console.",
+      "Hover a block to read its start and end.",
+      "Open \"Show Java\": the colors are a fixed palette assigned per person."
+    ]
+  );
+}

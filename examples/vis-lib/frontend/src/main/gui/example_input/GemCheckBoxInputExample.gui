@@ -5,10 +5,12 @@ import Domain.Person;
 
 import mc.fenix.input.GemCheckBoxInput;
 import common.ExamplePage;
+import example_input.GemCheckBoxInputNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemCheckBoxInputExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemCheckBoxInputNotes(),
     component = @GemColumn(components = [
       @iterate(Person p : persons) {
         @GemCheckBoxInput(

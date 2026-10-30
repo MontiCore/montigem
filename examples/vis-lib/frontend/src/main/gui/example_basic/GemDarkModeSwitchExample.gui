@@ -2,10 +2,12 @@ package example_basic;
 
 import mc.fenix.basic.GemDarkModeSwitch;
 import common.ExamplePage;
+import example_basic.GemDarkModeSwitchNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemDarkModeSwitchExample() {
   @ExamplePage(
+    notes = @GemDarkModeSwitchNotes(),
     component = @GemColumn(components = [
       @GemDarkModeSwitch()
     ]),

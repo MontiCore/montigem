@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemTextInputExample (see common.ExampleNotes). */
+component GemTextInputNotes() {
+  @ExampleNotes(
+    title = "Text Input",
+    docComponents = ["GemTextInput"],
+    about = [
+      "What you see.|A field that accepts at most three characters, followed by a name field and a date field for every person in the demo database.",
+      "Two-way binding.|The page declares List<Person> persons as a parameter, and MontiGem loads the persons from the backend when the page opens. Inside @iterate(Person p : persons) each field binds entry = p.name or entry = p.birthday: it shows the attribute and writes every keystroke back into the object, which is synchronized with the server and every other open browser window.",
+      "Input types.|inputType selects the browser's input type - \"text\", \"date\", \"number\", \"password\" - so the birthday field gets the browser's calendar picker without any extra code."
+    ],
+    tryIt = [
+      "Type into a name field, then open the Person Overview (category \"Other\") - the new name is there.",
+      "Open this page in a second browser tab and change a name in one of them: the other tab follows.",
+      "Type more than three characters into the first field - maxLength stops you."
+    ]
+  );
+}

@@ -5,6 +5,7 @@ import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import common.ComponentCard;
+import common.InfoCard;
 
 import example_basic.GemButtonExample;
 import example_basic.GemTextExample;
@@ -20,9 +21,18 @@ import example_basic.GemTooltipExample;
 page BasicOverview() {
   @GemColumn(
     hAlign = "center",
+    rowGap = "1rem",
     components = [
       @GemText(value = "Basic Components", size = "2rem", weight = "bold", height = "auto", width = "auto"),
       @GemText(value = "Fundamental UI elements", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+
+      introCol@GemColumn(width = "80%", height = "fit-content", components = [
+        @InfoCard(title = "About the basic components", paragraphs = [
+          "What they are.|The smallest building blocks of a page: a piece of text, an icon, an image, a link, a button, a media player, a progress indicator and the switch between light and dark mode. Every other component of the library is composed of these or wraps them.",
+          "Where they live.|Package mc.fenix.basic of the component library (npm package @umlp/basic). A GUI model imports a component by its qualified name, e.g. import mc.fenix.basic.GemButton, and uses it as @GemButton(label = \"...\").",
+          "How to read the examples.|Every example page opens with its notes: what the component is for, taken from the library documentation, what the example shows and what to try. \"Parameters\" lists every option with its documentation; the code buttons open the model and the handwritten code of the page."
+        ])
+      ]),
 
       @GemRow(
         wrap = "wrap",
@@ -30,17 +40,18 @@ page BasicOverview() {
         rowGap = "20px",
         colGap = "20px",
         width = "100%",
+        height = "fit-content",
         components = [
-            @ComponentCard(title = "Button", icon = "smart_button", description = "Clickable button for actions.", click = navigate(@GemButtonExample())),
-            @ComponentCard(title = "Text", icon = "text_fields", description = "Display text content.", click = navigate(@GemTextExample())),
-            @ComponentCard(title = "Icon", icon = "star", description = "Material Design icons.", click = navigate(@GemIconExample())),
-            @ComponentCard(title = "Image", icon = "image", description = "Embed images.", click = navigate(@GemImageExample())),
-            @ComponentCard(title = "Link", icon = "link", description = "Hyperlinks to other pages.", click = navigate(@GemLinkExample())),
-            @ComponentCard(title = "Loading Spinner", icon = "loop", description = "Indicate loading state.", click = navigate(@GemLoadingSpinnerExample())),
-            @ComponentCard(title = "Audio", icon = "audiotrack", description = "Play audio files.", click = navigate(@GemAudioExample())),
-            @ComponentCard(title = "Video", icon = "videocam", description = "Play video files.", click = navigate(@GemVideoExample())),
-            @ComponentCard(title = "Dark Mode Switch", icon = "dark_mode", description = "Toggle between light and dark themes.", click = navigate(@GemDarkModeSwitchExample())),
-            @ComponentCard(title = "Tooltip", icon = "info", description = "Show a hint when hovering a component.", click = navigate(@GemTooltipExample()))
+            @ComponentCard(title = "Button", icon = "smart_button", description = "Triggers an action on click; text or any content as label.", click = navigate(@GemButtonExample())),
+            @ComponentCard(title = "Text", icon = "text_fields", description = "Displays text with color, size, weight and font.", click = navigate(@GemTextExample())),
+            @ComponentCard(title = "Icon", icon = "star", description = "Any Material Design icon, in any size and color.", click = navigate(@GemIconExample())),
+            @ComponentCard(title = "Image", icon = "image", description = "Embeds an image, scaled by width or height.", click = navigate(@GemImageExample())),
+            @ComponentCard(title = "Link", icon = "link", description = "Hyperlink to another page or website.", click = navigate(@GemLinkExample())),
+            @ComponentCard(title = "Loading Spinner", icon = "loop", description = "Shows progress, determinate or indeterminate.", click = navigate(@GemLoadingSpinnerExample())),
+            @ComponentCard(title = "Audio", icon = "audiotrack", description = "Plays an audio file from the assets.", click = navigate(@GemAudioExample())),
+            @ComponentCard(title = "Video", icon = "videocam", description = "Plays a video file from the assets.", click = navigate(@GemVideoExample())),
+            @ComponentCard(title = "Dark Mode Switch", icon = "dark_mode", description = "Toggles the light and dark theme of the whole app.", click = navigate(@GemDarkModeSwitchExample())),
+            @ComponentCard(title = "Tooltip", icon = "info", description = "Shows a short hint while the pointer rests on a component.", click = navigate(@GemTooltipExample()))
         ]
       )
     ]

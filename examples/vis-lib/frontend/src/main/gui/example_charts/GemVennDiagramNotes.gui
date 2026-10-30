@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemVennDiagramExample (see common.ExampleNotes). */
+component GemVennDiagramNotes() {
+  @ExampleNotes(
+    title = "Venn Diagram",
+    docComponents = ["GemVennDiagram"],
+    about = [
+      "What you see.|One circle per person of the demo database, sized by the number of friends, and an overlap wherever two persons are friends with each other.",
+      "Where the data comes from.|The Java class overrides the generated getter of the named instance (venndiagramm@GemVennDiagram): every person becomes a GemVennDiagramEntry with a single set, every friendship an entry with two sets and size 1 - that is what draws the overlaps."
+    ],
+    tryIt = [
+      "Hover a circle or an overlap to see which sets it belongs to.",
+      "Add a friend in the Person Overview (category \"Other\") and come back: a new overlap appears.",
+      "This page uses the simple code toggle (one button) because the diagram does not cope with the split view."
+    ]
+  );
+}

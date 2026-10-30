@@ -1,0 +1,47 @@
+/* (c) https://github.com/MontiCore/monticore */
+package common;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemLink;
+import mc.fenix.basic.GemText;
+
+/**
+  Parameter reference of one or more library components, taken from the
+  documentation of the component library: for every component of `componentNames`
+  (simple names such as "GemBarChart") a heading with a link to its page in the
+  online documentation, followed by one row per parameter with name, type,
+  default value and the parameter's doc comment.
+
+  The texts come from common.ComponentDocs, which the Gradle task
+  generateComponentDocs generates from the doc comments of the component models
+  in umlp-rte - the same comments that produce the online documentation. The
+  companion class splits the "name|type|default|doc" entries of that class.
+*/
+component ParameterList(List<String> componentNames) {
+  parameterList@GemColumn(width = "100%", height = "fit-content", rowGap = "1rem", components = [
+    @iterate(String c : componentNames) {
+      componentBlock@GemColumn(width = "100%", height = "fit-content", rowGap = ".4rem", components = [
+        componentHead@GemRow(width = "100%", height = "fit-content", vAlign = "center", colGap = ".75rem", wrap = "wrap", components = [
+          componentName@GemText(width = "auto", height = "fit-content", value = c, weight = "bold"),
+          componentPackage@GemText(width = "auto", height = "fit-content", value = packageOf(c), size = "0.85rem"),
+          componentDocLink@GemLink(url = docUrl(c), text = "Online documentation")
+        ]),
+        noParamsGuard@guard(hasNoParameters(c)) {
+          noParamsText@GemText(width = "100%", height = "fit-content", value = "This component has no parameters.", size = "0.9rem");
+        },
+        parameterRows@GemColumn(width = "100%", height = "fit-content", rowGap = ".35rem", components = [
+          @iterate(String p : parametersOf(c)) {
+            parameterRow@GemRow(width = "100%", height = "fit-content", vAlign = "top", colGap = ".75rem", wrap = "wrap", components = [
+              parameterSignature@GemColumn(width = "16rem", height = "fit-content", rowGap = ".1rem", components = [
+                parameterName@GemText(width = "100%", height = "fit-content", value = paramName(p)),
+                parameterType@GemText(width = "100%", height = "fit-content", value = paramTypeAndDefault(p), size = "0.8rem")
+              ]),
+              parameterDoc@GemText(width = "100%", height = "fit-content", value = paramDoc(p), size = "0.9rem")
+            ]);
+          }
+        ])
+      ]);
+    }
+  ]);
+}

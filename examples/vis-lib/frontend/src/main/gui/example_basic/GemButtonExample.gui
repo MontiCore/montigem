@@ -3,10 +3,12 @@ package example_basic;
 
 import mc.fenix.basic.GemButton;
 import common.ExamplePage;
+import example_basic.GemButtonNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemButtonExample() {
   @ExamplePage(
+    notes = @GemButtonNotes(),
     component = @GemColumn(components = [
       @GemButton(label = "windows alert", leftClick = alert()),
       @GemButton(label = "Cannot click me", disabled = true)

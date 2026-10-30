@@ -1,0 +1,36 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+:host ::ng-deep {
+  .entryCard .gem-card {
+    height: 100%;
+  }
+
+  .entryCardVisual .entryCardIcon {
+    color: var(--color-primary);
+  }
+
+  .entryCardText,
+  .entryCardText p,
+  .entryCardText span,
+  .entryCardText div {
+    margin: 0;
+    line-height: 1.5;
+    white-space: pre-line;
+  }
+
+  /* The way on sits at the bottom edge of every box, so the buttons of a row of
+     boxes line up however long the texts above them are. */
+  .entryCardAction {
+    margin-top: auto;
+  }
+
+  .entryCardAction .gem-button {
+    margin: 0;
+  }
+}

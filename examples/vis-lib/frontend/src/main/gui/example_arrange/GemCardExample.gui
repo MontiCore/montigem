@@ -7,9 +7,11 @@ import mc.fenix.basic.GemButton;
 import mc.fenix.basic.GemLink;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_arrange.GemCardNotes;
 
 page GemCardExample() {
   @ExamplePage(
+    notes = @GemCardNotes(),
     component = @GemColumn(components = [
       @GemCard(
         title = "Info Text",

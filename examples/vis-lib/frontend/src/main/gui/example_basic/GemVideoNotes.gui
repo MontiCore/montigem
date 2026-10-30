@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemVideoExample (see common.ExampleNotes). */
+component GemVideoNotes() {
+  @ExampleNotes(
+    title = "Video",
+    docComponents = ["GemVideo"],
+    about = [
+      "What you see.|The browser's native video player with a short clip from the assets of the application.",
+      "How it is used.|source is a path relative to the application root; the file lives in frontend/config/src/assets/video. The player fills the width of its container - put it into a row or column with a fixed width to size it."
+    ],
+    tryIt = [
+      "Press play, or use the full-screen button of the player.",
+      "Open \"Show GUI\": one component, one parameter.",
+      "Open \"Show SCSS\": there is no stylesheet for this page - the code viewer says so instead of failing."
+    ]
+  );
+}

@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemScatterPlotExample (see common.ExampleNotes). */
+component GemScatterPlotNotes() {
+  @ExampleNotes(
+    title = "Scatter Plot",
+    docComponents = ["GemScatterPlot"],
+    about = [
+      "What you see.|Two sets of points, one green and one blue, on a pair of axes, with the configuration panel of the chart enabled.",
+      "Where the data comes from.|The model calls getSimpleData() of the handwritten Java class. The method builds two GemScatterPlotSets - each one has a label, a color and its points. xAxis and yAxis stay null, so the chart derives both axes from the data."
+    ],
+    tryIt = [
+      "Hover a point to read its coordinates.",
+      "Open the gear icon above the chart: showConfig = true adds the configuration panel.",
+      "Open \"Show Java\": getSimpleData builds the two point sets with the generated builders.",
+      "Open \"Parameters\" and follow the link to the online documentation, which shows the class diagram of the data types."
+    ]
+  );
+}

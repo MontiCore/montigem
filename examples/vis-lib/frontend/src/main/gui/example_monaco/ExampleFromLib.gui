@@ -5,9 +5,11 @@ import mc.fenix.arrange.GemColumn;
 import mc.fenix.editor.MonacoEditor;
 import Domain.Person;
 import common.ExamplePage;
+import example_monaco.MonacoEditorNotes;
 
 page ExampleFromLib(Person p) {
   @ExamplePage(
+    notes = @MonacoEditorNotes(),
     component = @GemColumn(width = "100%", components = [
       @MonacoEditor(
         width = "100%",

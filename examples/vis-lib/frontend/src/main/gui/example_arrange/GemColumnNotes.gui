@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemColumnExample (see common.ExampleNotes). */
+component GemColumnNotes() {
+  @ExampleNotes(
+    title = "Column",
+    docComponents = ["GemColumn"],
+    about = [
+      "What you see.|Three texts below each other with a gap of 15 pixels between them.",
+      "How it is used.|A column is the vertical container of the library and the most used component of all: almost every page starts with one. components = [...] lists the children, rowGap the space between them, hAlign and vAlign the alignment of all children. Width and height default to \"auto\"; give them a length when the column needs a fixed size.",
+      "See also.|The second column example (\"Column2\" in the navigation bar) shows alignment and wrapping in a container of fixed size."
+    ],
+    tryIt = [
+      "Open \"Show GUI\": three children, one gap.",
+      "Open \"Parameters\": component is the deprecated shortcut for a single child, new models use components."
+    ]
+  );
+}

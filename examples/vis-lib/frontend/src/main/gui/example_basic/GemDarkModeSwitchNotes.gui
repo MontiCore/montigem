@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemDarkModeSwitchExample (see common.ExampleNotes). */
+component GemDarkModeSwitchNotes() {
+  @ExampleNotes(
+    title = "Dark Mode Switch",
+    docComponents = ["GemDarkModeSwitch"],
+    about = [
+      "What you see.|A switch between the light and the dark color scheme of the whole application - the same switch sits in the navigation bar at the top of every page.",
+      "How it works.|The theme of the component library defines every color as a CSS token with a light and a dark value (light-dark() in @umlp/theme). The switch flips the color scheme of the document, and every component - cards, buttons, inputs, charts, this demonstrator box - picks up its other value at once. The color scheme is global and the choice is stored in the browser. Each switch keeps its own on/off state, though: the other switch on this page shows the new state only after it has been created again."
+    ],
+    tryIt = [
+      "Flip the switch here: the whole page changes, while the switch in the navigation bar keeps its position until the next reload.",
+      "Navigate to another page - the choice persists.",
+      "Open a chart example in dark mode: the chart follows the theme as well."
+    ]
+  );
+}

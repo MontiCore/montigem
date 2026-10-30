@@ -1,0 +1,91 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+/* The demonstrator box: a tinted, dashed frame with a small "Demonstrator" chip
+   on its top edge, so explanatory material is visibly set apart from the
+   component that is demonstrated. All colors come from the theme tokens of
+   @umlp/theme (see umlp-rte/frontend/theme, _rwth-blue.scss), so the box follows
+   the dark mode switch like everything else. */
+:host {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep {
+  .demoBox {
+    position: relative;
+    /* visible: the chip overlaps the top border, and the column would otherwise
+       clip it or show a scrollbar. */
+    overflow: visible;
+    background-color: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+    border: 1.5px dashed color-mix(in srgb, var(--color-primary) 45%, transparent);
+    border-radius: 12px;
+    padding: 1.5rem 1.25rem 1.25rem;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+  }
+
+  /* Small "Demonstrator" tag pinned to the box's top edge. */
+  .demoBoxLabel {
+    position: absolute;
+    top: -0.75rem;
+    left: 1.25rem;
+    background-color: var(--color-primary);
+    color: var(--text-on-primary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .demoBoxLabel p,
+  .demoBoxLabel span,
+  .demoBoxLabel div {
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  /* The toggle strip sits in the box's top-right corner, level with the chip. */
+  .demoBoxToggleRow {
+    margin-top: -0.35rem;
+  }
+
+  .demoBoxHintText,
+  .demoBoxHintText p,
+  .demoBoxHintText span,
+  .demoBoxHintText div {
+    margin: 0;
+    color: var(--text-muted);
+  }
+
+  /* Collapse toggle: a compact outline button instead of a filled action button,
+     so it does not compete with the buttons of the example. */
+  .demoBoxShowButton .gem-button,
+  .demoBoxHideButton .gem-button {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1.5px solid var(--color-primary);
+    box-shadow: none;
+    padding: 0.2rem 0.7rem;
+    margin: 0;
+    min-width: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .demoBoxShowButton .gem-button:hover:enabled,
+  .demoBoxHideButton .gem-button:hover:enabled {
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+    box-shadow: none;
+  }
+
+  /* Collapsed the box holds nothing but the chip and the toggle strip, so it
+     loses the generous padding of the expanded state and reads as a slim
+     placeholder. */
+  .demoBox:not(:has(.demoBoxContent)) {
+    padding: 1.1rem 1.25rem 0.7rem;
+  }
+}

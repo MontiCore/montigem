@@ -4,9 +4,11 @@ package example_cad;
 import mc.fenix.cad.GemCAD;
 import mc.fenix.cad.GemCADTypes.Marker;
 import common.ExamplePage;
+import example_cad.GemCADNotes;
 
 page GemCADExample() {
   @ExamplePage(
+    notes = @GemCADNotes(),
     component = cad@GemCAD(
       height = "500px",
       width = "100%",

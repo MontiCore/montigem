@@ -1,0 +1,29 @@
+/* (c) https://github.com/MontiCore/monticore */
+package common;
+
+import mc.fenix.arrange.GemCard;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
+import mc.fenix.view.GUIViewElement;
+
+/**
+  One box of the landing page and of the about page: a card with an icon, a
+  heading, two or three sentences and one way on. `action` is the way on,
+  handed in as a component so a box can carry a button to another page or a
+  link out of the application. The layout of a group of these - a responsive
+  grid of equally high cards - lives in the SCSS of the page that uses them
+  (see LandingPage.scss, .entryGrid).
+*/
+component EntryCard(String title, String icon, String text, GUIViewElement action) {
+  entryCard@GemCard(title = title, width = "100%", height = "100%", component =
+    entryCardCol@GemColumn(width = "100%", height = "100%", rowGap = ".8rem", components = [
+      entryCardVisual@GemRow(width = "100%", height = "fit-content", vAlign = "center", components = [
+        entryCardIcon@GemIcon(name = icon, size = "2.4rem")
+      ]),
+      entryCardText@GemText(width = "100%", height = "fit-content", value = text),
+      entryCardAction@GemRow(width = "100%", height = "fit-content", vAlign = "center", component = action)
+    ])
+  );
+}

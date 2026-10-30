@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemRadarChartExample (see common.ExampleNotes). */
+component GemRadarChartNotes() {
+  @ExampleNotes(
+    title = "Radar Chart",
+    docComponents = ["GemRadarChart"],
+    about = [
+      "What you see.|Two data sets - a current and a target state - compared across five categories. Above the chart sit buttons for width and height and checkboxes for legend and labels; a vertical slider for the fill opacity stands to the right of it.",
+      "Reactivity.|The controls are not part of the chart. They are ordinary input components bound to page parameters (width, height, showLegend, showLabels, opacityPercent), and the chart's parameters are bound to the same variables. Change a variable and everything bound to it re-renders - the model contains no event wiring for that, only the two-way bindings.",
+      "Where the data comes from.|data = getData() calls a helper method of the Java class that builds the labels and the two data sets with their colors."
+    ],
+    tryIt = [
+      "Drag the opacity slider on the right: the fill of both data sets follows immediately.",
+      "Untick \"Show Legend\" or \"Show Labels\".",
+      "Click \"Width +\" a few times, then open \"Show Java\": changeWidth() only sets the variable, the rest is data binding."
+    ]
+  );
+}

@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package person;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of SimpleOverview, the person overview page (see common.ExampleNotes). */
+component SimpleOverviewNotes() {
+  @ExampleNotes(
+    title = "Person Overview",
+    docComponents = ["GemDropdownInput", "GemButton"],
+    about = [
+      "What you see.|Not a library component but a complete application page: a form that creates a person with an address, two dropdowns that pick a person and a new friend, a button that connects them, and a list of all persons with their addresses and friends.",
+      "How it works.|The page declares List<Person> persons and MontiGem loads them from the backend. The form is the reusable component CreatePerson, which executes a backend command to store the new person. The dropdown options are built from the persons in Java (getPersonOptions(), getPotentialFriends()), and addFriend(personId, friendId) adds the association. Every change is a command to the backend, and the list follows the synchronized objects - that is the pattern all data-centric MontiGem pages are built from.",
+      "Data of the demonstrator.|The persons you create here appear in every other example that iterates over persons: inputs, tree, table and charts."
+    ],
+    tryIt = [
+      "Create a person, then open a chart example: the new person is counted.",
+      "Connect two persons as friends and open the Network Graph (category \"Charts\"): the edge is there.",
+      "Open \"Show Java\": the option lists and the friend handler are a few lines each."
+    ]
+  );
+}

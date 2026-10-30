@@ -1,0 +1,81 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep {
+  .parameterList gem-text p,
+  .parameterList gem-text span,
+  .parameterList gem-text div {
+    margin: 0;
+    line-height: 1.4;
+    white-space: pre-line;
+  }
+
+  .componentHead {
+    padding-bottom: .3rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .componentName,
+  .componentName p,
+  .componentName span,
+  .componentName div {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
+  .componentPackage,
+  .componentPackage p,
+  .componentPackage span,
+  .componentPackage div {
+    color: var(--text-muted);
+  }
+
+  /* Name in code font, type and default muted underneath; the description takes
+     the remaining width of the row and wraps under the signature on narrow
+     screens. */
+  .parameterSignature {
+    flex: 0 0 16rem;
+    min-width: 0;
+  }
+
+  .parameterName,
+  .parameterName p,
+  .parameterName span,
+  .parameterName div {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+
+  .parameterType,
+  .parameterType p,
+  .parameterType span,
+  .parameterType div {
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .parameterDoc {
+    flex: 1 1 18rem;
+    min-width: 0;
+  }
+
+  .parameterDoc p,
+  .parameterDoc span,
+  .parameterDoc div {
+    overflow-wrap: anywhere;
+  }
+
+  .noParamsText,
+  .noParamsText p,
+  .noParamsText span,
+  .noParamsText div {
+    color: var(--text-muted);
+  }
+}

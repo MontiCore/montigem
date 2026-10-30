@@ -3,9 +3,11 @@ package example_basic;
 
 import mc.fenix.basic.GemVideo;
 import common.ExamplePage;
+import example_basic.GemVideoNotes;
 
 page GemVideoExample() {
   @ExamplePage(
+    notes = @GemVideoNotes(),
     component = @GemVideo(source = "assets/video/video.mp4"),
     basePath = "example_basic",
     componentName = "GemVideoExample"

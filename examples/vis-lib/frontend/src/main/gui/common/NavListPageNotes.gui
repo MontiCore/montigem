@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package common;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of NavListExample (see common.ExampleNotes). */
+component NavListPageNotes() {
+  @ExampleNotes(
+    title = "Navigation List",
+    docComponents = ["GemNavList", "GemNavItem"],
+    about = [
+      "What you see.|Two vertical navigation lists: one expanded with six entries showing icon and text, one with three entries collapsed to its icons. The arrow at the top of a list switches between the two modes.",
+      "How it is used.|components lists the GemNavItem entries. title is the text, iconName the icon and target the route of an entry. collapsed selects the icon-only mode, collapsedWidth its width."
+    ],
+    tryIt = [
+      "Click \"Cockpit\" in a list: the application navigates to the route in target.",
+      "Click the arrow of the collapsed list: it expands to its width of 280 pixels.",
+      "Open \"Parameters\": header and footer add optional elements above and below the entries."
+    ]
+  );
+}

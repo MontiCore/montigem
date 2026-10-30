@@ -10,6 +10,7 @@ import mc.fenix.basic.GemText;
 import mc.fenix.input.GemCheckBoxInput;
 import mc.fenix.input.GemRangeInput;
 import common.ExamplePage;
+import example_charts.GemRadarChartNotes;
 
 page GemRadarChartExample(
   List<Person> persons,
@@ -21,6 +22,7 @@ page GemRadarChartExample(
 )
 {
   @ExamplePage(
+    notes = @GemRadarChartNotes(),
     component = @GemColumn(components = [
         @GemRow(wrap = "wrap", components = [
           @GemButton(label = "Height +", leftClick = changeHeight(50)),

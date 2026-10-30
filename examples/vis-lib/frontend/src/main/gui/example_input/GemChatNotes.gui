@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemChatExample (see common.ExampleNotes). */
+component GemChatNotes() {
+  @ExampleNotes(
+    title = "Chat",
+    docComponents = ["GemTextareaInput", "GemCard", "GemButton"],
+    about = [
+      "What you see.|A small chat: the messages so far, a text area for a new message, and buttons to send and to clear. It is not a library component but a component of this demonstrator (example_input.GemChat) assembled from a card, a text area and two buttons - a typical piece of application UI. The clear button is bound to clearMessages(), which this example does not implement in Java, so it has no effect yet.",
+      "How it works.|The page loads all Message objects of the domain. Typing binds the text area to a fresh Message (entry = userMsg.content); \"send\" stamps sender, receiver and time in Java and executes the backend command Answer, which creates the reply as another Message object. Because the page is bound to the list of messages, the reply appears as soon as the backend has stored it - that is the command-and-synchronization pattern of every MontiGem application.",
+      "The domain side.|Message, Role and the service AiService.answer are declared in models/Domain.umlp; the command class Answer in the backend is the handwritten part of that service."
+    ],
+    tryIt = [
+      "Send a message and watch the answer arrive from the backend.",
+      "Open the page in a second browser tab: both tabs show the same conversation.",
+      "Open \"Show GUI\" and \"Show Java\": the model iterates over the messages, the Java file holds the send handler and the command call."
+    ]
+  );
+}

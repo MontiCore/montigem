@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemTextareaInputExample (see common.ExampleNotes). */
+component GemTextareaInputNotes() {
+  @ExampleNotes(
+    title = "Text Area",
+    docComponents = ["GemTextareaInput"],
+    about = [
+      "What you see.|One multi-line field per person in the demo database, labelled with the person's name and bound to the person's aboutMe text.",
+      "How it is used.|Like the single-line text input, entry = p.aboutMe reads and writes the attribute of the domain object. The label is computed in the model from the name (labelText = p.name + \":\"). resize controls whether the user may drag the field larger; the Chat example sets it to \"none\"."
+    ],
+    tryIt = [
+      "Write a few lines about a person, then open the Monaco Editor example (category \"Other\"): it edits the same aboutMe text of person 3 in a code editor.",
+      "Drag the corner of a field to resize it.",
+      "Open \"Show GUI\": the whole form is one @iterate over the persons."
+    ]
+  );
+}

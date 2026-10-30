@@ -4,9 +4,11 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemNetworkGraph;
 import common.ExamplePage;
+import example_charts.GemNetworkGraphNotes;
 
 page GemNetworkGraphExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemNetworkGraphNotes(),
     component = networkgraph@GemNetworkGraph(
       data = null,
       showConfig = true

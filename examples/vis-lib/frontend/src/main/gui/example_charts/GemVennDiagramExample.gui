@@ -4,9 +4,11 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemVennDiagram;
 import common.ExamplePage;
+import example_charts.GemVennDiagramNotes;
 
 page GemVennDiagramExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemVennDiagramNotes(),
     component = venndiagramm@GemVennDiagram(
       data = null,
       showConfig = true

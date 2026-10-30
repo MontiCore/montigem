@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemLinkExample (see common.ExampleNotes). */
+component GemLinkNotes() {
+  @ExampleNotes(
+    title = "Link",
+    docComponents = ["GemLink"],
+    about = [
+      "What you see.|A single hyperlink to an external website.",
+      "How it is used.|url is the target, text the visible label. A link is meant for targets outside the application; navigation between the pages of a MontiGem application uses navigate(@Page()) on a button (as the overview pages of this demonstrator do) or a GemNavItem in the navigation bar, so that the Angular router keeps the application state."
+    ],
+    tryIt = [
+      "Click the link - it leaves the demonstrator, use the browser's back button to return.",
+      "Compare it with the \"View Example\" buttons of the overview pages, which navigate inside the application without reloading it.",
+      "Open \"Parameters\": a link has exactly two of them."
+    ]
+  );
+}

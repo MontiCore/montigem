@@ -3,11 +3,13 @@ package example_charts;
 
 import mc.fenix.charts.GemBoxPlot;
 import common.ExamplePage;
+import example_charts.GemBoxPlotNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemBoxPlotExample()
 {
   @ExamplePage(
+    notes = @GemBoxPlotNotes(),
     component = @GemColumn(components = [
       secondBoxplot@GemBoxPlot(
         data = getSecondBoxPlotData(),

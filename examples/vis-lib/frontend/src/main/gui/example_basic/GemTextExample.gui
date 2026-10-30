@@ -3,9 +3,11 @@ package example_basic;
 
 import mc.fenix.basic.GemText;
 import common.ExamplePage;
+import example_basic.GemTextNotes;
 
 page GemTextExample() {
   @ExamplePage(
+    notes = @GemTextNotes(),
     component = @GemText(
       value = "My text",
       color = "blue",

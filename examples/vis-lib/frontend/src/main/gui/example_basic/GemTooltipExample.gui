@@ -7,10 +7,12 @@ import mc.fenix.basic.GemIcon;
 import mc.fenix.basic.GemText;
 import mc.fenix.arrange.GemRow;
 import common.ExamplePage;
+import example_basic.GemTooltipNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemTooltipExample() {
   @ExamplePage(
+    notes = @GemTooltipNotes(),
     component = @GemColumn(components = [
       @GemRow(
         colGap = "15px",
@@ -30,6 +32,8 @@ page GemTooltipExample() {
           )
         ]
       )
-    ])
+    ]),
+    basePath = "example_basic",
+    componentName = "GemTooltipExample"
   );
 }

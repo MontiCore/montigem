@@ -6,6 +6,7 @@ import mc.fenix.arrange.GemGridCell;
 import mc.fenix.basic.GemText;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_arrange.GemGridNotes;
 
 /**
   Following example shows 4 grids.
@@ -28,6 +29,7 @@ import common.ExamplePage;
 */
 page GemGridExample() {
   @ExamplePage(
+    notes = @GemGridNotes(),
     component = @GemColumn(components = [
       @GemGrid(
         rows = [

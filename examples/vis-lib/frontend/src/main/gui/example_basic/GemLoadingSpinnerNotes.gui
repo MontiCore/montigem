@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemLoadingSpinnerExample (see common.ExampleNotes). */
+component GemLoadingSpinnerNotes() {
+  @ExampleNotes(
+    title = "Loading Spinner",
+    docComponents = ["GemLoadingSpinner"],
+    about = [
+      "What you see.|Two spinners. The first one is determinate: progress = 0.5f fills exactly half of the ring, and the label says so. The second one is indeterminate (intermediate = true): it spins endlessly because the duration of the wait is unknown.",
+      "How it is used.|progress is a value between 0 and 1; a page would bind it to a state variable and update it from Java while a long operation runs, e.g. while a backend command is being processed. size and color take CSS values. Note the parameter name: the library spells it intermediate."
+    ],
+    tryIt = [
+      "Watch the second spinner: it never completes - the mode for waits of unknown length.",
+      "Open \"Show GUI\": the first spinner sets a fixed progress; in a real page that value would come from a state variable.",
+      "Open \"Parameters\" for the defaults - without a size the spinner fills its container."
+    ]
+  );
+}

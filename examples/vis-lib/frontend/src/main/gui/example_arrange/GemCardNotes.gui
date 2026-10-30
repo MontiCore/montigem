@@ -1,0 +1,23 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemCardExample (see common.ExampleNotes). */
+component GemCardNotes() {
+  @ExampleNotes(
+    title = "Card",
+    docComponents = ["GemCard"],
+    about = [
+      "What you see.|Four cards: one with a text title and a text body, one of half width and 300 pixels height whose title is a link and whose body is a button, and two with collapsible = true, whose body folds away when you click the header.",
+      "How it is used.|title takes a string; titleComponent takes any component for the header and wins if both are set. component is the body. A card is the usual frame for a section of a page.",
+      "Composition.|GemCard is itself modelled in the GUI DSL: its model in the library composes a column with a row for the header and a column for the body, exactly like an application component would."
+    ],
+    tryIt = [
+      "Open \"Show GUI\": the second card passes a link as its title.",
+      "Flip the dark mode switch: the cards follow the theme.",
+      "Click the header of a collapsible card: collapsible = true adds the chevron and the fold animation.",
+      "Open \"Parameters\": width and height default to the size of the content."
+    ]
+  );
+}

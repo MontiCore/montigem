@@ -1,0 +1,66 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+:host {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep {
+  /* GemText brings its own block spacing; without resetting it the card is
+     mostly air. Paragraphs may carry their own line breaks ("...\n" + "..."),
+     so related sentences stay one GemText block instead of one block per
+     sentence. */
+  .infoBody gem-text p,
+  .infoBody gem-text span,
+  .infoBody gem-text div {
+    margin: 0;
+    line-height: 1.45;
+    white-space: pre-line;
+  }
+
+  /* Bold lead line of an opted-in "<lead>|<body>" paragraph (see the header
+     comment in InfoCard.gui): same font size as the body, only heavier, so
+     two-part cards scan as "What you see." / "How it is used.". The rule must
+     also hit the inner element, because the theme sets an explicit font weight
+     on p. */
+  .paragraphLeadText,
+  .paragraphLeadText p,
+  .paragraphLeadText span,
+  .paragraphLeadText div {
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  .titleRow {
+    justify-content: space-between;
+  }
+
+  /* The details toggle: a compact outline button in the card header instead of
+     a filled action button, so it does not compete with the buttons of the
+     example. */
+  .detailsShowButton .gem-button,
+  .detailsHideButton .gem-button {
+    background-color: transparent;
+    color: var(--color-primary);
+    border: 1.5px solid var(--color-primary);
+    box-shadow: none;
+    padding: 0.2rem 0.7rem;
+    margin: 0;
+    min-width: 0;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .detailsShowButton .gem-button:hover:enabled,
+  .detailsHideButton .gem-button:hover:enabled {
+    background-color: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    color: var(--color-primary);
+    box-shadow: none;
+  }
+
+  .detailsBlock {
+    margin-top: .5rem;
+    padding-top: .75rem;
+    border-top: 1px dashed var(--color-border);
+  }
+}

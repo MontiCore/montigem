@@ -4,9 +4,11 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemTimelineChart;
 import common.ExamplePage;
+import example_charts.GemTimelineChartNotes;
 
 page GemTimelineChartExample (List<Person> persons) {
   @ExamplePage(
+    notes = @GemTimelineChartNotes(),
     component = @GemTimelineChart(
       data = computeDate(persons),
       blockClick = getBlockClick(),

@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_cad;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemCADExample (see common.ExampleNotes). */
+component GemCADNotes() {
+  @ExampleNotes(
+    title = "CAD Viewer",
+    docComponents = ["GemCAD"],
+    about = [
+      "What you see.|A 3D model (glTF format) from the assets of the application, rendered in the browser with three colored markers attached to its nodes. You can rotate, pan and zoom the model.",
+      "How it is used.|filePath points to the model file, markers is a list of Marker objects with a label and a color, written in the model. onNodeClick = handleNodeClick() binds a click on a node of the model to a handler of the Java class that receives the node's name and reacts to it - in this example with an alert.",
+      "In a digital twin.|This is how a digital twin shows the geometry of its physical counterpart, with markers for sensors or faults placed on the parts they belong to."
+    ],
+    tryIt = [
+      "Drag to rotate the model, scroll to zoom.",
+      "Click a node of the model: the handler tells you which one you hit.",
+      "Open \"Show Java\": handleNodeClick() is a Consumer<String> - the payload of the event is the node name."
+    ]
+  );
+}

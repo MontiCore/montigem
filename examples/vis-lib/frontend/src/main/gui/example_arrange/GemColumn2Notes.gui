@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemColumnExample2 (see common.ExampleNotes). */
+component GemColumn2Notes() {
+  @ExampleNotes(
+    title = "Column: alignment and wrapping",
+    docComponents = ["GemColumn"],
+    about = [
+      "What you see.|An outer column of 300 by 200 pixels that wraps its children. The inner column is 30% wide and 100% high and pushes \"First row\" and \"Second row\" to its bottom edge with a gap of 5 pixels; \"Third row\" does not fit below it and wraps into a new column to the right. hAlign = \"space-evenly\" distributes the remaining width evenly left of, between and right of the two columns.",
+      "How it is used.|This is the example from the library documentation of GemColumn: a fixed-size container makes the effect of every alignment and wrapping option visible. In a real page the sizes usually come from the content and from percentages."
+    ],
+    tryIt = [
+      "Open \"Show GUI\" and follow the comment at the top of the model - it walks through every parameter.",
+      "Compare with the Row example \"Row2\", which does the same with the axes swapped.",
+      "Open \"Parameters\": the documentation of wrap explains where a wrapped child goes."
+    ]
+  );
+}

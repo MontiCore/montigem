@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemImageExample (see common.ExampleNotes). */
+component GemImageNotes() {
+  @ExampleNotes(
+    title = "Image",
+    docComponents = ["GemImage"],
+    about = [
+      "What you see.|The same picture of the Earth four times: inside a card, filling the available space, scaled to a width of 300 pixels, scaled to a height of 300 pixels, and squeezed into a 30 by 30 pixel box.",
+      "How it is used.|source is a path relative to the application root - the files live in frontend/config/src/assets and are copied into the app. If only width or only height is set, the aspect ratio is preserved; if both are set, the image is fitted into that box. alt is the text shown when the image cannot be loaded."
+    ],
+    tryIt = [
+      "Compare the second and the third image: one dimension given, the other follows.",
+      "Open \"Show GUI\": the first image sets no size at all and simply fills its card.",
+      "Right-click an image and open it in a new tab: the URL is the source path of the model, served from the assets folder."
+    ]
+  );
+}

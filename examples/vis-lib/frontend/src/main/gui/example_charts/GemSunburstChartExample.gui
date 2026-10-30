@@ -6,9 +6,11 @@ import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.charts.GemSunburstChart;
 import common.ExamplePage;
+import example_charts.GemSunburstChartNotes;
 
 page GemSunburstChartExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemSunburstChartNotes(),
     component = @GemRow(width = "513px", height = "620px", components = [
       @GemColumn(rowGap = "10px", width = "100%", components = [
         @GemSunburstChart(

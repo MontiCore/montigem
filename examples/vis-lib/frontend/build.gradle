@@ -22,6 +22,7 @@ configurations {
 
 tasks.named("umlpJava2ts", UMLPJava2TSTask) {
   verbose = true
+  dependsOn "generateComponentDocs"
 }
 
 tasks.named("gui2java", GUI2JavaTask) {
@@ -30,6 +31,7 @@ tasks.named("gui2java", GUI2JavaTask) {
 
 tasks.named("guiJava2ts", GUIJava2TSTask) {
   verbose = true
+  dependsOn "generateComponentDocs"
 }
 
 test {
@@ -67,6 +69,49 @@ tasks.register("runAppNoBuild", NpxTask) {
   args = ["serve"]
 }
 
+// The demonstrator explains every library component with the text of the library
+// documentation: the doc comments of the component models in umlp-rte (the same
+// comments the online documentation is generated from). This task extracts them
+// into src/main/java/common/ComponentDocs.java, a plain Java class the pages read
+// (see common.ExampleNotes / common.ParameterList). It runs before every build, so
+// the generated file follows the documentation; it is checked in so that the
+// sources compile without a build step as well. The generator is a single Java
+// file run through the JDK source launcher - no build of its own needed.
+def rteFrontendDir = layout.projectDirectory.dir("../../../umlp-rte/frontend")
+def componentDocsFile = layout.projectDirectory.file("src/main/java/common/ComponentDocs.java")
+
+tasks.register("generateComponentDocs", Exec) {
+  group = "build"
+  description = "Generates common/ComponentDocs.java from the doc comments of the umlp-rte component models"
+
+  // Only the model directories of the libraries, not the whole rte frontend tree
+  // (node_modules would make the up-to-date check crawl thousands of files).
+  def libDirs = rteFrontendDir.asFile.listFiles({ f -> new File(f, "src/main/gui/mc/fenix").isDirectory() } as FileFilter)
+  (libDirs ?: []).each { lib ->
+    inputs.files(fileTree(new File(lib, "src/main/gui")) { include "**/*.gui" })
+  }
+  inputs.file("tools/ComponentDocsGenerator.java")
+  outputs.file(componentDocsFile)
+
+  workingDir = projectDir
+  executable = new File(System.getProperty("java.home"), "bin/java").absolutePath
+  args = ["tools/ComponentDocsGenerator.java", rteFrontendDir.asFile.absolutePath, componentDocsFile.asFile.absolutePath]
+}
+
+tasks.named("compileJava") {
+  dependsOn "generateComponentDocs"
+}
+
+// Gradle validates that every task reading src/main/java (cd2java, gui2java,
+// compileJava, ...) is ordered after the task that writes into it. Ordering every
+// task of this project after the generator is the simplest way to satisfy that;
+// the generator itself depends on nothing, so no cycle can arise.
+tasks.configureEach { t ->
+  if (t.name != "generateComponentDocs") {
+    t.mustRunAfter("generateComponentDocs")
+  }
+}
+
 // Task to copy source code to assets for CodeViewer
 tasks.register("copySourceCodeToAssets", Copy) {
   group = "build"
@@ -84,6 +129,8 @@ tasks.register("copySourceCodeToAssets", Copy) {
 
   // Ensure the app directory structure exists
   dependsOn "setupFrontend"
+  // The generated ComponentDocs.java is part of src/main/java
+  dependsOn "generateComponentDocs"
 }
 
 tasks.register("copyLayoutTests", Copy) {

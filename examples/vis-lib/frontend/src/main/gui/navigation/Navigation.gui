@@ -8,6 +8,7 @@ import mc.fenix.basic.GemButton;
 import mc.fenix.basic.GemDarkModeSwitch;
 
 import common.LandingPage;
+import common.AboutMontiGem;
 import common.OtherOverview;
 import example_arrange.ArrangeOverview;
 import example_basic.BasicOverview;
@@ -28,6 +29,7 @@ component Navigation(String activeCategory = "Basic") {
       @GemButton(label = "Charts", active = activeCategory == "Charts", leftClick = navigate(@ChartsOverview())),
       @GemButton(label = "Test", active = activeCategory == "Test", leftClick = navigate(@ChartsTestOverview())),
       @GemButton(label = "Other", active = activeCategory == "Other", leftClick = navigate(@OtherOverview())),
+      @GemButton(label = "About", active = activeCategory == "About", leftClick = navigate(@AboutMontiGem())),
       @GemDarkModeSwitch()
     ]),
 
@@ -118,11 +120,12 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "Overview", target = "/common/OtherOverview");
         @GemNavItem(title = "Person Overview", target = "/person/SimpleOverview");
         @GemNavItem(title = "MonacoEditor", target = "/example_monaco/ExampleFromLib/3");
-        @GemNavItem(title = "Fischertechnik", target = "/fischertechnik/FischertechnikExample");
-        @GemNavItem(title = "CAD Viewer", target = "/example_cad/GemCADExample");
-        @GemNavItem(title = "Function Display", target = "/example_functiondisplay/FunctionDisplayExample");
         @GemNavItem(title = "Markdown", target = "/example_advanced/GemMarkdownExample");
         @GemNavItem(title = "NavList", target = "/common/NavListExample");
+        @GemNavItem(title = "CAD Viewer", target = "/example_cad/GemCADExample");
+        @GemNavItem(title = "Network Graph", target = "/example_network/NetworkChartExample");
+        @GemNavItem(title = "Function Display", target = "/example_functiondisplay/FunctionDisplayExample");
+        @GemNavItem(title = "Fischertechnik", target = "/fischertechnik/FischertechnikExample");
         //@GemNavItem(title = "Chart Tests", target = "/manual/ChartsTestOverview");
       }
     ])

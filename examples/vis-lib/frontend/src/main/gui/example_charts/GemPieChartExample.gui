@@ -4,9 +4,11 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemPieChart;
 import common.ExamplePage;
+import example_charts.GemPieChartNotes;
 
 page GemPieChartExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemPieChartNotes(),
     component = chart@GemPieChart(
       data = null,
       innerRadius = 10,

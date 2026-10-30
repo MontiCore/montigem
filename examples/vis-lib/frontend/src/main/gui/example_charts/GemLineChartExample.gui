@@ -4,10 +4,12 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemLineChart;
 import common.ExamplePage;
+import example_charts.GemLineChartNotes;
 import mc.fenix.arrange.GemRow;
 
 page GemLineChartExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemLineChartNotes(),
     component = @GemRow(height = "450px", components = [
       linechart@GemLineChart(
         data = null,

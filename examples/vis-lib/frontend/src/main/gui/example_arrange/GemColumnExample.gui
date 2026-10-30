@@ -4,9 +4,11 @@ package example_arrange;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.basic.GemText;
 import common.ExamplePage;
+import example_arrange.GemColumnNotes;
 
 page GemColumnExample() {
   @ExamplePage(
+    notes = @GemColumnNotes(),
     component = @GemColumn(
       rowGap = "15px",
       components = [

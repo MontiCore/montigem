@@ -3,9 +3,11 @@ package example_basic;
 
 import mc.fenix.basic.GemLink;
 import common.ExamplePage;
+import example_basic.GemLinkNotes;
 
 page GemLinkExample() {
   @ExamplePage(
+    notes = @GemLinkNotes(),
     component = @GemLink(
       url = "https://www.google.com/",
       text = "click here for Google"

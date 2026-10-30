@@ -5,19 +5,30 @@ import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import common.ComponentCard;
+import common.InfoCard;
 
 import fischertechnik.FischertechnikExample;
 import example_cad.GemCADExample;
 import person.SimpleOverview;
 import example_functiondisplay.FunctionDisplayExample;
 import example_advanced.GemMarkdownExample;
+import example_network.NetworkChartExample;
 
 page OtherOverview() {
   @GemColumn(
     hAlign = "center",
+    rowGap = "1rem",
     components = [
       @GemText(value = "Other Components", size = "2rem", weight = "bold", height = "auto", width = "auto"),
       @GemText(value = "Specialized and domain-specific components", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+
+      introCol@GemColumn(width = "80%", height = "fit-content", components = [
+        @InfoCard(title = "About the specialized components", paragraphs = [
+          "What they are.|Components that wrap a larger third-party library or serve one application domain: the Monaco code editor (mc.fenix.editor), Markdown rendering (mc.fenix.advanced), a 3D CAD viewer (mc.fenix.cad), interactive graphs (mc.fenix.networkgraph), component-and-connector diagrams as used by digital twins (mc.fenix.functiondisplay) and the stations of a Fischertechnik model factory (mc.fenix.fischertechnik).",
+          "Extra dependencies.|Unlike the basic packages, some of these bring their own npm dependencies and assets - the Monaco editor page shows what an application has to add to its configuration to use it.",
+          "One complete page.|The person overview is not a library component but a small application page: a form that creates persons with a backend command, dropdowns to connect them as friends, and a list that follows every change - the pattern every MontiGem application is built from."
+        ])
+      ]),
 
       @GemRow(
         wrap = "wrap",
@@ -25,13 +36,15 @@ page OtherOverview() {
         rowGap = "20px",
         colGap = "20px",
         width = "100%",
+        height = "fit-content",
         components = [
-            @ComponentCard(title = "Monaco Editor", icon = "code", description = "Powerful code editor.", click = navigate("example_monaco/ExampleFromLib/3")),
-            @ComponentCard(title = "Fischertechnik", icon = "precision_manufacturing", description = "Control Fischertechnik models.", click = navigate(@FischertechnikExample())),
-            @ComponentCard(title = "CAD Viewer", icon = "3d_rotation", description = "View 3D CAD models.", click = navigate(@GemCADExample())),
-            @ComponentCard(title = "Person Overview", icon = "people", description = "Example domain overview.", click = navigate(@SimpleOverview())),
-            @ComponentCard(title = "Function Display", icon = "account_tree", description = "Show component functions.", click = navigate(@FunctionDisplayExample())),
-            @ComponentCard(title = "Markdown", icon = "article", description = "Display formatted text with Markdown.", click = navigate(@GemMarkdownExample()))
+            @ComponentCard(title = "Monaco Editor", icon = "code", description = "The VS Code editor with highlighting, decorations and hovers.", click = navigate("example_monaco/ExampleFromLib/3")),
+            @ComponentCard(title = "Markdown", icon = "article", description = "Formatted text, tables, code and formulas from Markdown.", click = navigate(@GemMarkdownExample())),
+            @ComponentCard(title = "CAD Viewer", icon = "3d_rotation", description = "3D models (glTF) with clickable nodes and markers.", click = navigate(@GemCADExample())),
+            @ComponentCard(title = "Network Graph", icon = "hub", description = "Interactive graph with search, filters and layouts.", click = navigate(@NetworkChartExample())),
+            @ComponentCard(title = "Function Display", icon = "account_tree", description = "Component-and-connector diagrams with ports and channels.", click = navigate(@FunctionDisplayExample())),
+            @ComponentCard(title = "Fischertechnik", icon = "precision_manufacturing", description = "Animated views of five model-factory stations.", click = navigate(@FischertechnikExample())),
+            @ComponentCard(title = "Person Overview", icon = "people", description = "A complete page: create, connect and list domain objects.", click = navigate(@SimpleOverview()))
         ]
       )
     ]

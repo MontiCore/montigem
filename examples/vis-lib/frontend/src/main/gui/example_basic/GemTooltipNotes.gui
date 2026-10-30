@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemTooltipExample (see common.ExampleNotes). */
+component GemTooltipNotes() {
+  @ExampleNotes(
+    title = "Tooltip",
+    docComponents = ["GemTooltip"],
+    about = [
+      "What you see.|A button, an icon and a text in a row. Each one shows its own short hint while the pointer rests on it.",
+      "How it is used.|GemTooltip wraps another component: component is the wrapped element, text is the hint. An empty text shows no tooltip."
+    ],
+    tryIt = [
+      "Hover the button, the icon and the text one after the other.",
+      "Move to the button with the Tab key: the tooltip also appears on focus.",
+      "Open \"Show GUI\": the same wrapper works around all three components."
+    ]
+  );
+}

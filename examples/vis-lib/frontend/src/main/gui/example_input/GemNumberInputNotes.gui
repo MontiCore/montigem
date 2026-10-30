@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemNumberInputExample (see common.ExampleNotes). */
+component GemNumberInputNotes() {
+  @ExampleNotes(
+    title = "Number Input",
+    docComponents = ["GemNumberInput"],
+    about = [
+      "What you see.|Five number fields: two bound to variables of the page (a double and an int), one with a step of 0.5, a disabled one, and one that shows a validation error.",
+      "How it is used.|entry binds the field to a numeric variable - here the page parameters priceEntry and quantityEntry, which the generator turns into state variables of the page. step sets the increment of the spinner buttons and the granularity of allowed values. validity takes a GemTextInputValidity object with a state and a message; a page would compute it from the value and set it from Java."
+    ],
+    tryIt = [
+      "Use the arrow keys or the spinner in the third field: it moves in steps of 0.5.",
+      "Type letters into a field - a number input refuses them.",
+      "Open \"Show GUI\": the error state of the last field is a fixed value in the model; in a real page it would come from a validation method in Java."
+    ]
+  );
+}

@@ -8,9 +8,11 @@ import mc.fenix.basic.GemButton;
 import mc.fenix.basic.GemLink;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_arrange.GemDialogNotes;
 
 page GemDialogExample(?boolean dialogOpen = false) {
   @ExamplePage(
+    notes = @GemDialogNotes(),
     component = @GemColumn(components = [
       @GemButton(label = "Click Me!", leftClick = openDialog()),
       dialog@GemDialog(isOpen = dialogOpen, component =

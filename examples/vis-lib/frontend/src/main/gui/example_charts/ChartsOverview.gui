@@ -5,6 +5,7 @@ import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import common.ComponentCard;
+import common.InfoCard;
 
 import example_charts.GemBarChartExample;
 import example_charts.GemPieChartExample;
@@ -25,9 +26,18 @@ import example_charts.GemCandlestickChartExample;
 page ChartsOverview() {
   @GemColumn(
     hAlign = "center",
+    rowGap = "1rem",
     components = [
       @GemText(value = "Charts Overview", size = "2rem", weight = "bold", height = "auto", width = "auto"),
       @GemText(value = "Explore the available chart components", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+
+      introCol@GemColumn(width = "80%", height = "fit-content", components = [
+        @InfoCard(title = "About the chart components", paragraphs = [
+          "What they are.|Fifteen kinds of diagrams from package mc.fenix.charts (npm package @umlp/charts): comparisons (bar, bullet, radar), proportions (pie, sunburst), trends (line, time series, candlestick), distributions (box plot, heat map, scatter plot), relations (Venn, network graph), single values (gauge) and periods (timeline).",
+          "Where the data comes from.|A chart takes a typed data object - GemBarChartData, GemPieChartData, TimeSeriesData and so on - that the handwritten Java class of the page builds, in most examples from the persons of the demo database (their birthdays, friends and stocks). \"Show Java\" on an example page shows exactly how. The data types are class diagrams of their own and documented with each chart.",
+          "Live data.|Because a chart is bound to a getter of the page, it re-renders whenever the data changes: the time series example feeds one of its charts with new points every second, and a chart built from domain objects follows every change that reaches the browser through the synchronization of MontiGem."
+        ])
+      ]),
 
       @GemRow(
         wrap = "wrap",
@@ -35,22 +45,23 @@ page ChartsOverview() {
         rowGap = "20px",
         colGap = "20px",
         width = "100%",
+        height = "fit-content",
         components = [
-            @ComponentCard(title = "Bar Chart", icon = "bar_chart", description = "Compare categorical data.", click = navigate(@GemBarChartExample())),
-            @ComponentCard(title = "Pie Chart", icon = "pie_chart", description = "Show proportions.", click = navigate(@GemPieChartExample())),
-            @ComponentCard(title = "Line Chart", icon = "show_chart", description = "Visualize trends over time.", click = navigate(@GemLineChartExample())),
-            @ComponentCard(title = "Gauge Chart", icon = "speed", description = "Display single value within range.", click = navigate(@GemGaugeChartExample())),
-            @ComponentCard(title = "Radar Chart", icon = "radar", description = "Compare multivariate data.", click = navigate(@GemRadarChartExample())),
-            @ComponentCard(title = "Scatter Plot", icon = "scatter_plot", description = "Show relationship between variables.", click = navigate(@GemScatterPlotExample())),
-            @ComponentCard(title = "Venn Diagram", icon = "bubble_chart", description = "Visualize set relationships.", click = navigate(@GemVennDiagramExample())),
-            @ComponentCard(title = "Network Graph", icon = "hub", description = "Display nodes and edges.", click = navigate(@GemNetworkGraphExample())),
-            @ComponentCard(title = "Heatmap", icon = "grid_on", description = "Visualize data density.", click = navigate(@GemHeatmapChartExample())),
-            @ComponentCard(title = "Sunburst", icon = "donut_large", description = "Hierarchical data visualization.", click = navigate(@GemSunburstChartExample())),
-            @ComponentCard(title = "Timeline", icon = "view_timeline", description = "Events over time.", click = navigate(@GemTimelineChartExample())),
-            @ComponentCard(title = "Time Series", icon = "timeline", description = "Interactive time series data.", click = navigate(@GemTimeSeriesChartExmaple())),
-            @ComponentCard(title = "Box Plot", icon = "candlestick_chart", description = "Statistical distribution.", click = navigate(@GemBoxPlotExample())),
-            @ComponentCard(title = "Bullet Chart", icon = "linear_scale", description = "Performance against target.", click = navigate(@GemBulletChartExample())),
-            @ComponentCard(title = "Candlestick", icon = "waterfall_chart", description = "Financial data visualization.", click = navigate(@GemCandlestickChartExample()))
+            @ComponentCard(title = "Bar Chart", icon = "bar_chart", description = "Compares values per category, grouped or stacked.", click = navigate(@GemBarChartExample())),
+            @ComponentCard(title = "Pie Chart", icon = "pie_chart", description = "Shows proportions of a whole, as pie or donut.", click = navigate(@GemPieChartExample())),
+            @ComponentCard(title = "Line Chart", icon = "show_chart", description = "Shows how values develop over a period.", click = navigate(@GemLineChartExample())),
+            @ComponentCard(title = "Gauge Chart", icon = "speed", description = "One value on a dial within a range.", click = navigate(@GemGaugeChartExample())),
+            @ComponentCard(title = "Radar Chart", icon = "radar", description = "Compares data sets across several criteria.", click = navigate(@GemRadarChartExample())),
+            @ComponentCard(title = "Scatter Plot", icon = "scatter_plot", description = "Points in two dimensions, in colored sets.", click = navigate(@GemScatterPlotExample())),
+            @ComponentCard(title = "Venn Diagram", icon = "bubble_chart", description = "Overlapping sets and their intersections.", click = navigate(@GemVennDiagramExample())),
+            @ComponentCard(title = "Network Graph", icon = "hub", description = "Nodes and edges, laid out automatically.", click = navigate(@GemNetworkGraphExample())),
+            @ComponentCard(title = "Heatmap", icon = "grid_on", description = "Density of value pairs in a grid of colored cells.", click = navigate(@GemHeatmapChartExample())),
+            @ComponentCard(title = "Sunburst", icon = "donut_large", description = "Hierarchical proportions in nested rings.", click = navigate(@GemSunburstChartExample())),
+            @ComponentCard(title = "Timeline", icon = "view_timeline", description = "Time blocks on lanes along a shared axis.", click = navigate(@GemTimelineChartExample())),
+            @ComponentCard(title = "Time Series", icon = "timeline", description = "Values over time, with events and live updates.", click = navigate(@GemTimeSeriesChartExmaple())),
+            @ComponentCard(title = "Box Plot", icon = "candlestick_chart", description = "Distribution of values per group.", click = navigate(@GemBoxPlotExample())),
+            @ComponentCard(title = "Bullet Chart", icon = "linear_scale", description = "A measure against a target and quality ranges.", click = navigate(@GemBulletChartExample())),
+            @ComponentCard(title = "Candlestick", icon = "waterfall_chart", description = "Open, high, low and close per period.", click = navigate(@GemCandlestickChartExample()))
         ]
       )
     ]

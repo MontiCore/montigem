@@ -15,9 +15,11 @@ import person.HierarchicalList;
 import person.CreatePerson;
 import person.PieChart;
 import common.ExamplePage;
+import person.SimpleOverviewNotes;
 
 page SimpleOverview(List<Person> persons, ?int personId, ?int friendId) {
   @ExamplePage(
+    notes = @SimpleOverviewNotes(),
     component = @GemColumn(rowGap = "10px", width = "50%", components = [
       @CreatePerson(),
       @GemDropdownInput(

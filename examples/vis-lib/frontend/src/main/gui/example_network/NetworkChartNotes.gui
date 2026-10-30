@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_network;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of NetworkChartExample, the GemGraph page (see common.ExampleNotes). */
+component NetworkChartNotes() {
+  @ExampleNotes(
+    title = "Network Graph (GemGraph)",
+    docComponents = ["GemGraph"],
+    about = [
+      "What you see.|An interactive graph with a control panel: a search box for nodes, a filter by group, layout buttons and an information panel. Above it the label of the node you clicked last.",
+      "How it is used.|graph is null in the model; the Java class overrides the generated getters of the named instance (personGraph@GemGraph) to build the nodes and edges in its init() method, with groups, colors, hover labels and tooltips per node. graphClickNode = updateClickedNode() binds a click on a node to a handler that writes the node's label into the page variable lastClickedNodeName; nodePositionsAfterLayout receives the final positions once the layout has settled.",
+      "See also.|The Network Graph under \"Charts\" is the older, simpler GemNetworkGraph component."
+    ],
+    tryIt = [
+      "Click a node: the text above the graph changes.",
+      "Type a node name into the search box, or filter by group.",
+      "Open \"Show Java\": the nodes are built with a small helper that sets label, group and size."
+    ]
+  );
+}

@@ -4,9 +4,11 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemCandlestickChart;
 import common.ExamplePage;
+import example_charts.GemCandlestickChartNotes;
 
 page GemCandlestickChartExample() {
   @ExamplePage(
+    notes = @GemCandlestickChartNotes(),
     component = @GemCandlestickChart(
       data = getData(),
       showConfig = true

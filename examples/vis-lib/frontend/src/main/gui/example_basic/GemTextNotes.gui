@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemTextExample (see common.ExampleNotes). */
+component GemTextNotes() {
+  @ExampleNotes(
+    title = "Text",
+    docComponents = ["GemText"],
+    about = [
+      "What you see.|A single text in a monospace font, tilted by twelve degrees, in a light weight and in blue - every one of these traits is a parameter of the component.",
+      "How it is used.|color, size, fontFamily, fontStyle and weight take CSS values as strings, exactly as you would write them in a stylesheet. width and height size the box of the text; by default a text is as large as its content or the layout allows."
+    ],
+    tryIt = [
+      "Open \"Show GUI\" and compare each parameter with the result: fontStyle = \"oblique 12deg\" is the tilt, weight = \"200\" the thin strokes.",
+      "Open \"Parameters\" in this box: width and height default to \"auto\".",
+      "Flip the dark mode switch in the navigation bar: a text with an explicit color keeps it, a text without one follows the theme."
+    ]
+  );
+}

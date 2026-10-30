@@ -4,9 +4,11 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemGaugeChart;
 import common.ExamplePage;
+import example_charts.GemGaugeChartNotes;
 
 page GemGaugeChartExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemGaugeChartNotes(),
     component = @GemGaugeChart(
       data = getData(),
       min = 0,

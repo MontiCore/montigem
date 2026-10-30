@@ -4,11 +4,13 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemTimeSeriesChart;
 import common.ExamplePage;
+import example_charts.GemTimeSeriesChartNotes;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.basic.GemText;
 
 page GemTimeSeriesChartExmaple (List<Person> persons, String lastClickedEvent = "No event clicked yet") {
   @ExamplePage(
+    notes = @GemTimeSeriesChartNotes(),
     component = @GemColumn(components = [
       chart1@GemTimeSeriesChart(
         data = computeData1(persons),

@@ -5,6 +5,7 @@ import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import common.ComponentCard;
+import common.InfoCard;
 
 import example_arrange.GemGridExample;
 import example_arrange.GemRowExample;
@@ -17,9 +18,18 @@ import example_table.GemTableExample;
 page ArrangeOverview() {
   @GemColumn(
     hAlign = "center",
+    rowGap = "1rem",
     components = [
       @GemText(value = "Layout & Arrange", size = "2rem", weight = "bold", height = "auto", width = "auto"),
       @GemText(value = "Structure your page", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+
+      introCol@GemColumn(width = "80%", height = "fit-content", components = [
+        @InfoCard(title = "About the layout components", paragraphs = [
+          "What they are.|The containers that give a page its structure: rows and columns arrange their children horizontally or vertically (flexbox), a grid places them in cells, a card frames them with a title, a dialog puts them in front of the page, a tree nests them. They live in package mc.fenix.arrange; tables in mc.fenix.table.",
+          "How they are used.|Containers take their children in the components list - components = [ @GemText(...), @GemButton(...) ] - and control alignment (hAlign, vAlign), gaps (rowGap, colGap) and wrapping. Layout is always set on the container, not on the child: a text is centered by the row it sits in.",
+          "Sizes.|Rows and columns fill their parent by default (width and height 100%); a container that should only be as tall as its content gets height = \"fit-content\". The second row and column examples show what the alignment and wrapping options do with a fixed-size container."
+        ])
+      ]),
 
       @GemRow(
         wrap = "wrap",
@@ -27,14 +37,15 @@ page ArrangeOverview() {
         rowGap = "20px",
         colGap = "20px",
         width = "100%",
+        height = "fit-content",
         components = [
-            @ComponentCard(title = "Grid", icon = "grid_view", description = "2D grid layout.", click = navigate(@GemGridExample())),
-            @ComponentCard(title = "Row", icon = "view_column", description = "Horizontal layout.", click = navigate(@GemRowExample())),
-            @ComponentCard(title = "Column", icon = "view_stream", description = "Vertical layout.", click = navigate(@GemColumnExample())),
-            @ComponentCard(title = "Card", icon = "crop_portrait", description = "Container with header.", click = navigate(@GemCardExample())),
-            @ComponentCard(title = "Dialog", icon = "open_in_new", description = "Modal dialog window.", click = navigate(@GemDialogExample())),
-            @ComponentCard(title = "Tree Node", icon = "account_tree", description = "Hierarchical tree structure.", click = navigate(@GemTreeNodeExample())),
-            @ComponentCard(title = "Table", icon = "table_chart", description = "Data table.", click = navigate(@GemTableExample()))
+            @ComponentCard(title = "Grid", icon = "grid_view", description = "Two-dimensional layout with rows, columns or spanning cells.", click = navigate(@GemGridExample())),
+            @ComponentCard(title = "Row", icon = "view_column", description = "Arranges children horizontally.", click = navigate(@GemRowExample())),
+            @ComponentCard(title = "Column", icon = "view_stream", description = "Arranges children vertically.", click = navigate(@GemColumnExample())),
+            @ComponentCard(title = "Card", icon = "crop_portrait", description = "Container with a header and a body.", click = navigate(@GemCardExample())),
+            @ComponentCard(title = "Dialog", icon = "open_in_new", description = "Modal window opened from Java logic.", click = navigate(@GemDialogExample())),
+            @ComponentCard(title = "Tree Node", icon = "account_tree", description = "Expandable hierarchy, built from domain data.", click = navigate(@GemTreeNodeExample())),
+            @ComponentCard(title = "Table", icon = "table_chart", description = "Rows and columns, headers and spanning cells.", click = navigate(@GemTableExample()))
         ]
       )
     ]

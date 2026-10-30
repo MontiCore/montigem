@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemDialogExample (see common.ExampleNotes). */
+component GemDialogNotes() {
+  @ExampleNotes(
+    title = "Dialog",
+    docComponents = ["GemDialog"],
+    about = [
+      "What you see.|A button that opens a modal dialog with a card in it; a click on the backdrop closes it again.",
+      "How it is used.|The dialog is always part of the page; isOpen = dialogOpen binds its visibility to a boolean page parameter. GemDialog declares isOpen as ?boolean, so the component can also write the value back. The button's handler openDialog() in the Java file sets the variable to true, the dialog sets it back to false when it is dismissed. Toggling a dialog with a @guard instead would destroy and recreate it; binding isOpen is the intended way."
+    ],
+    tryIt = [
+      "Click \"Click Me!\" and close the dialog by clicking outside of it.",
+      "Open \"Show Java\": openDialog() is a one-line handler that sets the state variable.",
+      "Open \"Parameters\": top and left position the dialog, enableBackdrop dims the page behind it."
+    ]
+  );
+}

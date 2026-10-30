@@ -5,11 +5,13 @@ import Domain.Stock;
 
 import mc.fenix.input.GemDateInput;
 import common.ExamplePage;
+import example_input.GemDateInputNotes;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.input.GemTextInputTypes.GemTextInputValidity;
 
 page GemDateInputExample(List<Stock> stocks) {
   @ExamplePage(
+    notes = @GemDateInputNotes(),
     component = @GemColumn(components = [
       @iterate(Stock s : stocks) {
         @GemDateInput(

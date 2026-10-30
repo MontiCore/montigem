@@ -5,6 +5,7 @@ import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_arrange.GemRow2Notes;
 
 /**
   Following example shows a `200 x 300` row. The vertical alignment of
@@ -18,6 +19,7 @@ import common.ExamplePage;
 */
 page GemRowExample2() {
   @ExamplePage(
+    notes = @GemRow2Notes(),
     component = @GemColumn(components = [
       outer@GemRow(
         width = "200px",

@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemNetworkGraphExample (see common.ExampleNotes). */
+component GemNetworkGraphNotes() {
+  @ExampleNotes(
+    title = "Network Graph",
+    docComponents = ["GemNetworkGraph"],
+    about = [
+      "What you see.|The persons of the demo database as red nodes, their friendships as edges; the layout is computed by a force-directed algorithm, so the nodes drift into place when the page opens.",
+      "Where the data comes from.|The Java class overrides the generated getter of the named instance (networkgraph@GemNetworkGraph) and builds a GemNetworkData: one GemNetworkNode per person - its mass is the number of friends, which the layout uses - and one GemNetworkEdge per friendship.",
+      "See also.|The Network Graph under \"Other\" is the newer, interactive GemGraph component with search, filters and layout controls."
+    ],
+    tryIt = [
+      "Drag a node: the others follow the forces of the layout.",
+      "Add a friend in the Person Overview (category \"Other\") and come back: a new edge appears.",
+      "Open \"Show Java\": the persons are mapped to node ids first, then the friendships to edges."
+    ]
+  );
+}

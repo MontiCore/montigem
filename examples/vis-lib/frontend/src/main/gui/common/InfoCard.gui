@@ -1,0 +1,68 @@
+/* (c) https://github.com/MontiCore/monticore */
+package common;
+
+import mc.fenix.arrange.GemCard;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.view.GUIViewElement;
+
+/**
+  Reusable explanatory text box: a titled card containing one paragraph of
+  GemText per entry of `paragraphs`. Used across the demonstrator to make every
+  page self-explanatory (same construction as the info card of the Digital Twin
+  demonstrator).
+
+  Scannable two-part paragraphs (opt-in): an entry of the form "<lead>|<body>"
+  - e.g. "What you see.|The chart displays ..." - renders <lead> as a bold line
+  of its own (InfoCard.scss) tightly above <body>; lead and body stay one visual
+  unit with the normal paragraph gap to the next entry. Entries without "|" (or
+  with nothing in front of it) render as plain paragraphs. The split lives in
+  hasLead / paragraphLead / paragraphBody in the companion class.
+
+  Everything a visitor does not need in the first ten seconds goes into
+  `details`: an optional component behind a toggle in the card header, collapsed
+  by default, so the card stays a few lines high instead of filling the
+  viewport. `details` is a template slot and therefore invisible on the Java
+  side, so `hasDetails` says whether the caller passed one. `detailsTitle`
+  labels the collapsed toggle ("Parameters", "How this works", ...); expanded,
+  it reads "Hide". The paragraphs always stay visible, only the details collapse.
+*/
+component InfoCard(String title = "About this page", List<String> paragraphs,
+    String detailsTitle = "More details", GUIViewElement details,
+    Boolean hasDetails = false, Boolean detailsExpanded = false) {
+  card@GemCard(width = "100%", titleComponent =
+    titleRow@GemRow(height = "fit-content", vAlign = "center", colGap = ".5rem", components = [
+      titleText@GemText(width = "auto", height = "fit-content", value = title, weight = "bold"),
+      detailsToggleGuard@guard(hasDetails) {
+        detailsToggleRow@GemRow(width = "fit-content", height = "fit-content", vAlign = "center", components = [
+          expandedGuard@guard(detailsExpanded) {
+            detailsHideButton@GemButton(label = "Hide", leftClick = toggleDetails());
+          } else {
+            detailsShowButton@GemButton(label = detailsTitle, leftClick = toggleDetails());
+          }
+        ]);
+      }
+    ]),
+    component =
+    infoBody@GemColumn(width = "100%", height = "fit-content", rowGap = ".5rem", components = [
+      @iterate(String p : paragraphs) {
+        /* "<lead>|<body>" entry (see header comment): bold lead line tightly
+           above its body, grouped as one paragraph unit. `paragraphs` is fixed
+           per usage, so a single evaluation at initialization is enough. */
+        leadGuard@guard(hasLead(p)) {
+          paragraphBlock@GemColumn(width = "100%", height = "fit-content", rowGap = ".1rem", components = [
+            paragraphLeadText@GemText(width = "100%", height = "fit-content", value = paragraphLead(p), weight = "bold"),
+            paragraphBodyText@GemText(width = "100%", height = "fit-content", value = paragraphBody(p))
+          ]);
+        } else {
+          paragraphText@GemText(width = "100%", height = "fit-content", value = p);
+        }
+      },
+      detailsGuard@guard(detailsExpanded) {
+        detailsBlock@GemColumn(width = "100%", height = "fit-content", component = details);
+      }
+    ])
+  );
+}

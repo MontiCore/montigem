@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemGridExample (see common.ExampleNotes). */
+component GemGridNotes() {
+  @ExampleNotes(
+    title = "Grid",
+    docComponents = ["GemGrid", "GemGridCell"],
+    about = [
+      "What you see.|Four grids. The first two are given as rows and as columns of texts - a shorter row is padded with empty cells. The third has a fixed size and column widths of 200px, 1fr and auto. The fourth places three colored cells with GemGridCell, each spanning a rectangle of a 4 by 4 grid; the cells may overlap.",
+      "How it is used.|rows or cols hand the children in as nested lists; x and y set the widths of the columns and the heights of the rows with CSS grid values (\"200px\", \"1fr\", \"auto\"). For spanning cells, cells takes GemGridCell components whose a and b give the start and end coordinates of the cell rectangle."
+    ],
+    tryIt = [
+      "Open \"Show GUI\" and read the comment above the model - it explains every grid.",
+      "Resize the browser window: the third grid keeps its 500 pixels, the first two follow their content.",
+      "Open \"Show GUI\": the blue cell runs from a = [1, 1] to b = [3, 2]; a cell without b, like the red one, covers a single grid position."
+    ]
+  );
+}

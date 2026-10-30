@@ -12,7 +12,36 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
 
-  .sectionContainer {
+  .heroLead,
+  .heroLead p,
+  .heroLead span,
+  .heroLead div {
+    max-width: 60rem;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .heroButtons {
+    margin-top: 1rem;
+  }
+
+  /* The two hero buttons on the blue gradient: white outline instead of the
+     blue filled button of the theme, which would vanish on the blue background. */
+  .heroButtons .gem-button {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: white;
+    border: 1.5px solid rgba(255, 255, 255, 0.85);
+    box-shadow: none;
+  }
+
+  .heroButtons .gem-button:hover:enabled {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: white;
+  }
+
+  .sectionContainer,
+  .stepsSection,
+  .backgroundSection {
       padding: 60px 0;
   }
 
@@ -23,6 +52,10 @@
 
   .demoRow {
       margin-top: 40px;
+  }
+
+  .dslHint {
+      margin-top: 1.5rem;
   }
 
   .codeBlock {
@@ -49,5 +82,34 @@
   .gem-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+
+  .stepsRow gem-text p,
+  .stepsRow gem-text span,
+  .stepsRow gem-text div {
+    margin: 0;
+    line-height: 1.55;
+  }
+
+  .entryGridTitle {
+    margin-bottom: 1rem;
+  }
+
+  /* The background boxes: as many columns as fit, all cards equally high. */
+  .entryGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .entryGrid > entry-card {
+    min-width: 0;
+  }
+
+  /* The hover lift of the section cards above must not apply to the boxes and
+     their inner cards, which are text, not clickable tiles. */
+  .entryGrid .gem-card:hover {
+    transform: none;
   }
 }

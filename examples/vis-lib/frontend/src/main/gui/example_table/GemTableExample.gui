@@ -12,9 +12,11 @@ import mc.fenix.input.GemTextInput;
 import Domain.*;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_table.GemTableNotes;
 
 page GemTableExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemTableNotes(),
     component = @GemColumn(rowGap = "20px", width = "50%", components = [
       @GemTable(
         headers = [

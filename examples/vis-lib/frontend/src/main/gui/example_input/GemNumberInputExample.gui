@@ -3,11 +3,13 @@ package example_input;
 
 import mc.fenix.input.GemNumberInput;
 import common.ExamplePage;
+import example_input.GemNumberInputNotes;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.input.GemTextInputTypes.GemTextInputValidity;
 
 page GemNumberInputExample(double priceEntry, int quantityEntry) {
   @ExamplePage(
+    notes = @GemNumberInputNotes(),
     component = @GemColumn(components = [
       @GemNumberInput(
         id = "price",

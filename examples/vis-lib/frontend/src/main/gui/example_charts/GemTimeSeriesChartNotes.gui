@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemTimeSeriesChartExmaple (see common.ExampleNotes). */
+component GemTimeSeriesChartNotes() {
+  @ExampleNotes(
+    title = "Time Series Chart",
+    docComponents = ["GemTimeSeriesChart"],
+    about = [
+      "What you see.|Two charts. The upper one shows two fixed series - a sine and a cosine wave - with event annotations such as \"Peak Start\". The lower one is live: a new point arrives every second, viewPort = \"60s\" keeps the last minute in view, and the live toggle of the chart pauses the scrolling. The text between the charts shows the last event annotation you clicked.",
+      "How it works.|Both charts are bound to helper methods of the Java class (computeData1, computeData2). The live chart is driven by a browser timer that the Java class starts with an @Replace annotation - MontiGem's escape hatch for browser APIs that have no Java counterpart - and each tick appends a point to a list and tells MontiGem with GUIUtils.update to evaluate the chart's data again. eventClick = onEventClick() binds a click on an annotation to a handler that writes the event's name into the page variable lastClickedEvent.",
+      "In a digital twin.|This is the chart the Digital Twin demonstrator uses for live sensor values: same component, data coming from the backend instead of a timer."
+    ],
+    tryIt = [
+      "Click an event marker in the lower chart: the text above it changes.",
+      "Pause the live data with the toggle of the chart, then resume it.",
+      "Open \"Show Java\": the timer is one line of JavaScript inside a Java annotation."
+    ]
+  );
+}

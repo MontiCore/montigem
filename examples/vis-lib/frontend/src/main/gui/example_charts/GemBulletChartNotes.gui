@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemBulletChartExample (see common.ExampleNotes). */
+component GemBulletChartNotes() {
+  @ExampleNotes(
+    title = "Bullet Chart",
+    docComponents = ["GemBulletChart"],
+    about = [
+      "What you see.|Six bullet charts, the compact KPI widget of a dashboard: revenue against target, a satisfaction score that misses its target, a server load with many range steps, a defect rate without any. Each chart shows the measure as a bar, the reference as a tick and the qualitative ranges as shaded bands.",
+      "How it is used.|value is the measure, reference the target, thresholdvalue a critical limit; range gives the bounds of the scale and steps the boundaries of the shaded bands. All of that is written in the model - no Java needed. The first chart has no value and takes range and steps from page parameters that nothing sets; it shows what the component draws with missing data."
+    ],
+    tryIt = [
+      "Compare \"Revenue\" (target met) with \"Customer Satisfaction\" (target missed): the bar ends left or right of the reference tick.",
+      "Open \"Show GUI\": six components, all data inline.",
+      "Open \"Show Java\": there is no Java file for this page - the code viewer says so."
+    ]
+  );
+}

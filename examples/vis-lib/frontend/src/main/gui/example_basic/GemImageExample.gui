@@ -4,10 +4,12 @@ package example_basic;
 import mc.fenix.basic.GemImage;
 import mc.fenix.arrange.GemCard;
 import common.ExamplePage;
+import example_basic.GemImageNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemImageExample() {
   @ExamplePage(
+    notes = @GemImageNotes(),
     component = @GemColumn(components = [
       @GemCard(component =
         @GemImage(

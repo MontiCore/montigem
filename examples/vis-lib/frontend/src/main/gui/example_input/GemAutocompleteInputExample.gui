@@ -6,9 +6,11 @@ import mc.fenix.input.GemDropdownInputTypes.Option;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import common.ExamplePage;
+import example_input.GemAutocompleteInputNotes;
 
 page GemAutocompleteInputExample() {
   @ExamplePage(
+    notes = @GemAutocompleteInputNotes(),
     component = @GemColumn(components = [
       @GemRow(
         components = [

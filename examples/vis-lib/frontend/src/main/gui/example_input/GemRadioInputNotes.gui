@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemRadioInputExample (see common.ExampleNotes). */
+component GemRadioInputNotes() {
+  @ExampleNotes(
+    title = "Radio Button",
+    docComponents = ["GemRadioInput"],
+    about = [
+      "What you see.|For every person a line with the person's role and one radio button per value of the Role enumeration, followed by two plain groups (\"Group 1\", \"Group 2\") that are not bound to any data.",
+      "How it is used.|Radio buttons that share a group name form one group in which only one button can be selected. selectedValue = p.role binds the group to the role attribute of the person, value is what each button stands for. The list of roles and the group name per person come from small helper methods in the Java file (getRoles(), getGroupName(p)) - the GUI DSL keeps computations out of the model."
+    ],
+    tryIt = [
+      "Change the role of a person: the text line above the buttons follows immediately, because both are bound to the same attribute.",
+      "Select a button in \"Group 1\" and one in \"Group 2\": the groups are independent.",
+      "Open \"Show Java\": three short methods are all the logic this page needs."
+    ]
+  );
+}

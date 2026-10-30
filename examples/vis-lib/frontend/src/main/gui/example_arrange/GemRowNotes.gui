@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemRowExample (see common.ExampleNotes). */
+component GemRowNotes() {
+  @ExampleNotes(
+    title = "Row",
+    docComponents = ["GemRow"],
+    about = [
+      "What you see.|Three texts side by side with a gap of 15 pixels between them.",
+      "How it is used.|A row is the horizontal container of the library: components = [...] lists its children, colGap the space between them. Alignment is set on the container - hAlign for the horizontal, vAlign for the vertical direction - never on the child. Width and height default to \"auto\"; give them a length when the row needs a fixed size.",
+      "See also.|The second row example (\"Row2\" in the navigation bar) shows alignment and wrapping in a container of fixed size."
+    ],
+    tryIt = [
+      "Open \"Show GUI\": the whole page is a row inside a column.",
+      "Open \"Parameters\" and read the possible values of hAlign, vAlign and wrap - they are the options of CSS flexbox.",
+      "Narrow the browser window: with the default wrap = \"nowrap\" the three texts stay on one line, and a scrollbar appears if they no longer fit."
+    ]
+  );
+}

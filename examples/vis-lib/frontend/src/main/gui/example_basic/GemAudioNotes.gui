@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemAudioExample (see common.ExampleNotes). */
+component GemAudioNotes() {
+  @ExampleNotes(
+    title = "Audio",
+    docComponents = ["GemAudio"],
+    about = [
+      "What you see.|The browser's native audio player, 300 pixels wide, playing a sound file from the assets of the application.",
+      "How it is used.|source is a path relative to the application root, like the source of an image; the file lives in frontend/config/src/assets/audio. The controls - play, pause, volume, position - come from the browser, so they look slightly different in every browser."
+    ],
+    tryIt = [
+      "Press play.",
+      "Open \"Show GUI\": the whole example is one component with two parameters.",
+      "Compare with the Video example, which works the same way for moving pictures."
+    ]
+  );
+}

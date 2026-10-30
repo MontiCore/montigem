@@ -8,10 +8,12 @@ import fischertechnik.Warehouse_Demo;
 
 import mc.fenix.arrange.GemCard;
 import common.ExamplePage;
+import fischertechnik.FischertechnikNotes;
 import mc.fenix.arrange.GemColumn;
 
 page FischertechnikExample(){
   @ExamplePage(
+    notes = @FischertechnikNotes(),
     component = @GemColumn(width = "50%", components = [
       @GemCard(title="Conveyor", component=@Conveyor_Demo()),
       @GemCard(title="MultiProcessingStation", component=@MultiProcessingStation_Demo()),

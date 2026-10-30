@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemDateInputExample (see common.ExampleNotes). */
+component GemDateInputNotes() {
+  @ExampleNotes(
+    title = "Date and Time Input",
+    docComponents = ["GemDateInput"],
+    about = [
+      "What you see.|For every stock in the demo database five variants of the same field, all bound to the stock's date: date only, time only, date and time in one overlay, a disabled field, and a field in the error state.",
+      "How it is used.|entry = s.date binds the field to a LocalDateTime attribute - the picker writes a proper date value, not a string. showTimeOnly and showDateTime switch the overlay; validity takes a GemTextInputValidity object like the text and number inputs."
+    ],
+    tryIt = [
+      "Pick a date in the first field: the other four fields of the same stock change with it, they are bound to the same attribute.",
+      "Open the \"Date and Time\" field: one overlay for both.",
+      "Open \"Show GUI\": the five variants differ only in showTimeOnly, showDateTime, disabled and validity."
+    ]
+  );
+}

@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemSunburstChartExample (see common.ExampleNotes). */
+component GemSunburstChartNotes() {
+  @ExampleNotes(
+    title = "Sunburst Chart",
+    docComponents = ["GemSunburstChart"],
+    about = [
+      "What you see.|The persons of the demo database as a hierarchy of age groups: the inner ring splits them into born before 1993, between 1993 and 1998 and after 1998, the outer ring refines each group into finer year ranges. Every segment's size is the number of persons in it.",
+      "Where the data comes from.|data = getData() calls a helper method of the Java class that nests GemSunburstData builders - an entry with a label and a value, and its children - exactly like the rings nest. ignoreError = true lets the chart draw a hierarchy whose parent values do not add up precisely."
+    ],
+    tryIt = [
+      "Hover a segment to read its label and count; click one to zoom into that part of the hierarchy.",
+      "Open \"Show Java\": the nesting of the builders mirrors the rings.",
+      "Compare with the Pie Chart example - a sunburst is a pie with more than one level."
+    ]
+  );
+}

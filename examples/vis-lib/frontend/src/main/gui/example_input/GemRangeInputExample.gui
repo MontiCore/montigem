@@ -5,10 +5,12 @@ import mc.fenix.input.GemRangeInputTypes.Marker;
 import mc.fenix.input.GemRangeInput;
 import mc.fenix.input.GemDualRangeInput;
 import common.ExamplePage;
+import example_input.GemRangeInputNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemRangeInputExample() {
   @ExamplePage(
+    notes = @GemRangeInputNotes(),
     component = @GemColumn(components = [
       @GemRangeInput(
         id = "satisfaction",

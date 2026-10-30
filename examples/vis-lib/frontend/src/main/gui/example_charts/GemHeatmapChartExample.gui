@@ -5,9 +5,11 @@ import domain.Person;
 import mc.fenix.charts.GemHeatmapChart;
 import mc.fenix.charts.GemHeatmapChartTypes.GemHeatmapChartData;
 import common.ExamplePage;
+import example_charts.GemHeatmapChartNotes;
 
 page GemHeatmapChartExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemHeatmapChartNotes(),
     component = @GemHeatmapChart(
       data = getData(),
       xBins = 10,

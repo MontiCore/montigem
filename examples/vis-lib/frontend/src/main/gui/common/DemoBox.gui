@@ -1,0 +1,48 @@
+/* (c) https://github.com/MontiCore/monticore */
+package common;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.view.GUIViewElement;
+
+/**
+  Frame around everything on a page that is demonstrator meta rather than part
+  of the example itself: the explanatory notes of an example page, the "try it"
+  instructions, the parameter reference. A tinted, dashed container with a small
+  "Demonstrator" chip on its top edge (see DemoBox.scss), so a visitor can tell
+  at a glance what belongs to the demo and what belongs to the component that
+  is demonstrated.
+
+  Same construction as the demo box of the Digital Twin demonstrator: `content`
+  is the page's demonstrator material, handed in as one component. The whole box
+  collapses: `visible` is a state-var parameter toggled from the companion class,
+  and collapsed only the chip, the hint and the "Show" button remain - a slim
+  strip instead of nothing, otherwise there would be no way back. The choice is
+  remembered in the browser (localStorage, see the companion class), so hiding
+  the notes once keeps them hidden while walking through the example pages.
+*/
+component DemoBox(GUIViewElement content, Boolean visible = true,
+    String collapsedHint = "Explanations for this example — open with \"Show\".") {
+  demoBox@GemColumn(width = "100%", height = "fit-content", rowGap = "1rem", components = [
+    demoBoxLabel@GemText(width = "fit-content", height = "fit-content", value = "Demonstrator"),
+
+    /* Toggle strip: right-aligned so it does not collide with the chip pinned to
+       the top-left corner of the box. Collapsed it carries the hint about what is
+       hidden, expanded just the "Hide" button. */
+    demoBoxToggleRow@GemRow(width = "100%", height = "fit-content", hAlign = "right", vAlign = "center", colGap = ".5rem", components = [
+      demoBoxToggleGuard@guard(visible) {
+        demoBoxHideButton@GemButton(label = "Hide", leftClick = toggleVisible());
+      } else {
+        demoBoxHintText@GemText(width = "auto", height = "fit-content", value = collapsedHint, size = "0.9rem");
+        demoBoxShowButton@GemButton(label = "Show", leftClick = toggleVisible());
+      }
+    ]),
+
+    /* No else branch: hidden, the box is just the chip and the toggle strip. */
+    demoBoxContentGuard@guard(visible) {
+      demoBoxContent@GemColumn(width = "100%", height = "fit-content", component = content);
+    }
+  ]);
+}

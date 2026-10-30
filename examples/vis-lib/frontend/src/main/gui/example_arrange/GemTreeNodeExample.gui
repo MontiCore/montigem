@@ -8,9 +8,11 @@ import mc.fenix.basic.GemText;
 import mc.fenix.input.GemCheckBoxInput;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_arrange.GemTreeNodeNotes;
 
 page GemTreeNodeExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemTreeNodeNotes(),
     component = @GemColumn(components = [
       @GemTreeNode(children = [
         @iterate(Person p : persons) {

@@ -5,6 +5,7 @@ import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
 import common.ComponentCard;
+import common.InfoCard;
 
 import example_input.GemTextInputExample;
 import example_input.GemNumberInputExample;
@@ -20,9 +21,18 @@ import example_input.GemDateInputExample;
 page InputOverview() {
   @GemColumn(
     hAlign = "center",
+    rowGap = "1rem",
     components = [
       @GemText(value = "Input Components", size = "2rem", weight = "bold", height = "auto", width = "auto"),
       @GemText(value = "Forms and user input", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+
+      introCol@GemColumn(width = "80%", height = "fit-content", components = [
+        @InfoCard(title = "About the input components", paragraphs = [
+          "What they are.|Everything a form is made of: single- and multi-line text fields, number and date inputs, checkboxes, radio buttons, dropdowns with and without search, an autocomplete field and range sliders. They live in package mc.fenix.input (npm package @umlp/input).",
+          "Two-way binding.|The distinguishing feature of these components is the entry parameter: bound to an attribute of a domain object - entry = p.name - the field shows the value and writes every keystroke back into the object. Several examples bind to the persons of the demo database, so what you type here is also what the other pages show.",
+          "Validation.|Most inputs take a validity object that turns the field red and shows a message. The number and date examples show it in the \"Error\" state."
+        ])
+      ]),
 
       @GemRow(
         wrap = "wrap",
@@ -30,17 +40,18 @@ page InputOverview() {
         rowGap = "20px",
         colGap = "20px",
         width = "100%",
+        height = "fit-content",
         components = [
-            @ComponentCard(title = "Text Input", icon = "input", description = "Single-line text field.", click = navigate(@GemTextInputExample())),
-            @ComponentCard(title = "Number Input", icon = "pin", description = "Numeric input field.", click = navigate(@GemNumberInputExample())),
-            @ComponentCard(title = "Text Area", icon = "notes", description = "Multi-line text field.", click = navigate(@GemTextareaInputExample())),
-            @ComponentCard(title = "Checkbox", icon = "check_box", description = "Binary choice input.", click = navigate(@GemCheckBoxInputExample())),
-            @ComponentCard(title = "Radio Button", icon = "radio_button_checked", description = "Select one from many.", click = navigate(@GemRadioInputExample())),
-            @ComponentCard(title = "Dropdown", icon = "arrow_drop_down_circle", description = "Select from a list.", click = navigate(@GemDropdownInputExample())),
-            @ComponentCard(title = "Autocomplete", icon = "search", description = "Input with suggestions.", click = navigate(@GemAutocompleteInputExample())),
-            @ComponentCard(title = "Range Input", icon = "linear_scale", description = "Slider for numeric range.", click = navigate(@GemRangeInputExample())),
-            @ComponentCard(title = "Chat", icon = "chat", description = "Chat interface component.", click = navigate(@GemChatExample())),
-            @ComponentCard(title = "DateTime", icon = "calendar_month", description = "Date and time component.", click = navigate(@GemDateInputExample()))
+            @ComponentCard(title = "Text Input", icon = "input", description = "Single-line field, bound to a domain attribute.", click = navigate(@GemTextInputExample())),
+            @ComponentCard(title = "Number Input", icon = "pin", description = "Numeric field with step, placeholder and validation.", click = navigate(@GemNumberInputExample())),
+            @ComponentCard(title = "Text Area", icon = "notes", description = "Multi-line field for longer text.", click = navigate(@GemTextareaInputExample())),
+            @ComponentCard(title = "Checkbox", icon = "check_box", description = "Binary choice, bound to a boolean attribute.", click = navigate(@GemCheckBoxInputExample())),
+            @ComponentCard(title = "Radio Button", icon = "radio_button_checked", description = "One of several options within a group.", click = navigate(@GemRadioInputExample())),
+            @ComponentCard(title = "Dropdown", icon = "arrow_drop_down_circle", description = "Select from a list, optionally with a search box.", click = navigate(@GemDropdownInputExample())),
+            @ComponentCard(title = "Autocomplete", icon = "search", description = "Text field with suggestions while typing.", click = navigate(@GemAutocompleteInputExample())),
+            @ComponentCard(title = "Range Input", icon = "linear_scale", description = "Sliders for one value or a range, with tick marks.", click = navigate(@GemRangeInputExample())),
+            @ComponentCard(title = "Chat", icon = "chat", description = "A chat built from library components and a backend command.", click = navigate(@GemChatExample())),
+            @ComponentCard(title = "DateTime", icon = "calendar_month", description = "Date, time or both with a picker overlay.", click = navigate(@GemDateInputExample()))
         ]
       )
     ]

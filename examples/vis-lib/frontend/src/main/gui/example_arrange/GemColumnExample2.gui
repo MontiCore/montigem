@@ -4,6 +4,7 @@ package example_arrange;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.basic.GemText;
 import common.ExamplePage;
+import example_arrange.GemColumn2Notes;
 
 /**
   Following example shows a `300 x 200` column. The horizontal alignment of
@@ -17,6 +18,7 @@ import common.ExamplePage;
 */
 page GemColumnExample2() {
   @ExamplePage(
+    notes = @GemColumn2Notes(),
     component = outer@GemColumn(
       width = "300px",
       height = "200px",

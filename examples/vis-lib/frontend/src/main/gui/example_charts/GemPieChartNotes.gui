@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_charts;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemPieChartExample (see common.ExampleNotes). */
+component GemPieChartNotes() {
+  @ExampleNotes(
+    title = "Pie Chart",
+    docComponents = ["GemPieChart"],
+    about = [
+      "What you see.|The persons of the demo database split into two slices: born before 1993 and born in or after 1993. innerRadius = 10 cuts a small hole into the middle - a larger value turns the pie into a donut.",
+      "Where the data comes from.|As in the bar chart example the model passes data = null, and the Java class overrides the generated getter of the named instance (chart@GemPieChart, so getChartData()) to count the persons. One slice sets an explicit color, the other takes the default palette of the chart."
+    ],
+    tryIt = [
+      "Open \"Show Java\": each GemPieChartEntry is a value, a label and an optional color.",
+      "Open \"Parameters\": besides the data there are only innerRadius and showConfig.",
+      "Add a person in the Person Overview (category \"Other\") and come back: the proportions change."
+    ]
+  );
+}

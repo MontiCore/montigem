@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_basic;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemButtonExample (see common.ExampleNotes). */
+component GemButtonNotes() {
+  @ExampleNotes(
+    title = "Button",
+    docComponents = ["GemButton"],
+    about = [
+      "What you see.|Two buttons. The first one is wired to a click handler and opens the browser's alert dialog; the second one is disabled and cannot be clicked.",
+      "How it is used.|leftClick = alert() binds the click to the method alert() of the page's Java class. Such a handler returns a Consumer that runs in the browser - here it calls HTMLUtils.alert, a small wrapper around the browser API. A button shows its label text or, with the content parameter, any components (the Icon example puts an icon into a button)."
+    ],
+    tryIt = [
+      "Click \"windows alert\" - the dialog comes from the handler in the Java file, not from the model.",
+      "Try the disabled button: disabled = true blocks the click and greys the button out.",
+      "Open \"Show Java\" in the code viewer: alert() returns a Consumer<Void>, the shape every click handler has in MontiGem."
+    ]
+  );
+}

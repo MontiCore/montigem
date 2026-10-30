@@ -1,0 +1,44 @@
+/* (c) https://github.com/MontiCore/monticore */
+package common;
+
+import mc.fenix.arrange.GemCard;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
+
+/**
+  Reusable card for the hands-on instructions of an example page: what a
+  visitor can actually do on this page and what to look at while doing it.
+  Deliberately set apart from the descriptive InfoCard (accent border, tinted
+  background, one bulleted step per entry) so the two never blur into one wall
+  of text.
+
+  Convention: InfoCard answers "what is this component", DemoInstructions
+  answers "what could I do here next" - each entry is one self-contained thing
+  to try. `intro` is an optional lead-in line above the step list, rendered
+  only when it is non-empty.
+*/
+component DemoInstructions(String title = "Try it yourself", List<String> steps,
+    String intro = "") {
+  card@GemCard(
+    width = "100%",
+    titleComponent = titleRow@GemRow(height = "fit-content", vAlign = "center", colGap = ".5rem", components = [
+      titleIcon@GemIcon(name = "play_circle", size = "1.4rem"),
+      titleText@GemText(width = "auto", height = "fit-content", value = title, weight = "bold")
+    ]),
+    component = instructionsBody@GemColumn(width = "100%", height = "fit-content", rowGap = ".6rem", components = [
+      introGuard@guard(hasIntro(intro)) {
+        introText@GemText(width = "100%", height = "fit-content", value = intro);
+      },
+      stepList@GemColumn(width = "100%", height = "fit-content", rowGap = ".6rem", components = [
+        @iterate(String s : steps) {
+          stepRow@GemRow(width = "100%", height = "fit-content", colGap = ".5rem", vAlign = "top", components = [
+            stepBullet@GemIcon(name = "chevron_right", size = "1.2rem"),
+            stepText@GemText(width = "100%", height = "fit-content", value = s)
+          ]);
+        }
+      ])
+    ])
+  );
+}

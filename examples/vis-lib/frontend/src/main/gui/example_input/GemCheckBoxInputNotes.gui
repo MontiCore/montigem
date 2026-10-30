@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_input;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of GemCheckBoxInputExample (see common.ExampleNotes). */
+component GemCheckBoxInputNotes() {
+  @ExampleNotes(
+    title = "Checkbox",
+    docComponents = ["GemCheckBoxInput"],
+    about = [
+      "What you see.|One checkbox per person in the demo database, stating whether the person is employed.",
+      "How it is used.|checked = p.employed binds the box to a boolean attribute of the domain object. GemCheckBoxInput declares checked as ?boolean, so the component writes the new value back. Ticking the box changes the object, and the change is synchronized to the backend and to every other open browser window."
+    ],
+    tryIt = [
+      "Tick a box, reload the page: the value was stored.",
+      "Open the Tree Node example (category \"Arrange\"): its leaves are the same checkboxes bound to the same attribute.",
+      "Open \"Show GUI\": the label is computed from the name, the state from the object."
+    ]
+  );
+}

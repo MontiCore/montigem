@@ -4,10 +4,12 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemBarChart;
 import common.ExamplePage;
+import example_charts.GemBarChartNotes;
 
 page GemBarChartExample(List<Person> persons) 
 {
   @ExamplePage(
+    notes = @GemBarChartNotes(),
     component = barchart@GemBarChart(
       data = null,
       stacked = false,

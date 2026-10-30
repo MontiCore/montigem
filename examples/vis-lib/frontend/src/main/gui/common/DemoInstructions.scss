@@ -1,0 +1,50 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+/* Visual counterpart to the InfoCard: same card geometry, but tinted and with
+   an accent bar on the left, so the "what can I do here" block is recognizable
+   at a glance on every example page. Colors come from the theme tokens, so the
+   card follows the dark mode switch. */
+:host {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep {
+  .card .gem-card {
+    background-color: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+    border-left: 4px solid var(--color-primary);
+  }
+
+  .card .gem-card-header,
+  .card .gem-card-body {
+    background-color: transparent;
+  }
+
+  .titleText,
+  .titleText p,
+  .titleText span,
+  .titleText div {
+    color: var(--color-primary);
+    margin: 0;
+  }
+
+  .titleIcon,
+  .stepBullet {
+    color: var(--color-primary);
+  }
+
+  .instructionsBody gem-text p,
+  .instructionsBody gem-text span,
+  .instructionsBody gem-text div {
+    margin: 0;
+    line-height: 1.45;
+    white-space: pre-line;
+  }
+
+  /* Keep the bullet on the first text line instead of centering it vertically
+     next to a multi-line step. */
+  .stepRow > gem-icon {
+    flex: 0 0 auto;
+    margin-top: 0.1rem;
+  }
+}

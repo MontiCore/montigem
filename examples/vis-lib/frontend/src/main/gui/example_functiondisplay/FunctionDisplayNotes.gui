@@ -1,0 +1,22 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_functiondisplay;
+
+import common.ExampleNotes;
+
+/** Demonstrator notes of FunctionDisplayExample (see common.ExampleNotes). */
+component FunctionDisplayNotes() {
+  @ExampleNotes(
+    title = "Function Display",
+    docComponents = ["FunctionDisplay"],
+    about = [
+      "What you see.|Four component-and-connector diagrams: a plain one, a colored one without minimap and home button, a wide one, and one whose functions carry images. Functions are boxes with ports, channels connect the ports. The status line above the diagrams reports what you clicked last.",
+      "How it is used.|data is a Function4Display tree - the root function with its subfunctions, ports and channels - built by helper methods of the Java class. Clicks on functions, ports, channels and the background are bound to handlers that write into the page variable clickedInfo; selectedFunctions, selectedPorts and selectedChannels highlight elements from the page's state; contextMenuActions adds entries to the burger menu of every function in the first diagram.",
+      "In a digital twin.|This is the component the Digital Twin demonstrator uses for its \"Function Model\" view: the architecture of the machine, generated from a MontiArc model."
+    ],
+    tryIt = [
+      "Click a function, a port and a channel: the status line names each.",
+      "Drag the canvas and use the minimap of the first diagram to navigate; the home button resets the view.",
+      "Open \"Show Java\": getData() builds the tree of functions, ports and channels by hand."
+    ]
+  );
+}

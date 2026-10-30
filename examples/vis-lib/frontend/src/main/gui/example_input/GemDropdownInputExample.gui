@@ -6,9 +6,11 @@ import mc.fenix.input.GemDropdownInputTypes.Option;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import common.ExamplePage;
+import example_input.GemDropdownInputNotes;
 
 page GemDropdownInputExample(String degreeEntry, String hobbyEntry, String hobbyFrequencyEntry) {
   @ExamplePage(
+    notes = @GemDropdownInputNotes(),
     component = @GemColumn(components = [
       @GemRow(
         components = [

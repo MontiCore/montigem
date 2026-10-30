@@ -4,9 +4,11 @@ import example_input.GemChat;
 import Domain.Message;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
+import example_input.GemChatNotes;
 
 page GemChatExample(List<Message> messages) {
   @ExamplePage(
+    notes = @GemChatNotes(),
     component = @GemColumn(width="50%",components =[@GemChat(messages=messages)]),
     basePath = "example_input",
     componentName = "GemChatExample"

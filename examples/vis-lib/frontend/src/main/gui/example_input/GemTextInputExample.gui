@@ -5,10 +5,12 @@ import Domain.Person;
 
 import mc.fenix.input.GemTextInput;
 import common.ExamplePage;
+import example_input.GemTextInputNotes;
 import mc.fenix.arrange.GemColumn;
 
 page GemTextInputExample(List<Person> persons) {
   @ExamplePage(
+    notes = @GemTextInputNotes(),
     component = @GemColumn(components = [
       @GemTextInput(
         inputType = "text",
