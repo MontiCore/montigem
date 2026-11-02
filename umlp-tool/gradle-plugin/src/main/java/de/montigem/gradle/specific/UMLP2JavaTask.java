@@ -20,6 +20,8 @@ import umlp.UMLPToolOptions;
 import javax.inject.Inject;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -93,6 +95,19 @@ public abstract class UMLP2JavaTask extends MGSingleFileTask {
 
   public void setOcl(File f) {
     ocl.from(f);
+  }
+
+  // Not Incremental: the IncGen reports only list the OCL files of the previous run, so an added one is no relevant change
+  @Input
+  public List<String> getOclFileNames() {
+    List<String> names = new ArrayList<>();
+    getOcl().getAsFileTree().visit(f -> {
+      if (!f.isDirectory()) {
+        names.add(f.getRelativePath().getPathString());
+      }
+    });
+    Collections.sort(names);
+    return names;
   }
 
   /**
