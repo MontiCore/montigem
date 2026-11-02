@@ -207,6 +207,7 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
           for (URL modelUrl : oclFiles) {
             try {
               File oclFile = new File(modelUrl.toURI());
+              Reporting.reportOpenInputFile(Optional.of(oclFile.getParentFile().toPath()), oclFile.toPath().getFileName());
               // Use OCLWithErrorMessagesMill to parse so we don't lose error messages
               Optional<ASTOCLCompilationUnit> oclCompilationUnit;
               try {
