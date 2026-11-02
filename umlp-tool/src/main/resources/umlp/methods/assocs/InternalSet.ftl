@@ -3,10 +3,10 @@ ${tc.signature("name", "targetName", "sourceName")}
 
 ${cd4c.method("public void _internal_set${name?cap_first}(int idx, long gemID, NotificationScope scope)")}
 if(idx < 0){
-  throw new IllegalStateException("idx must be 0 or higher");
+  throw new IllegalStateException("idx (=" + idx + ") must be 0 or higher");
 }
 if(idx > this._${name}.size()){
-  throw new IllegalStateException("idx must be at most ${name}.size");
+  throw new IllegalStateException("idx (=" + idx + ") must be at most ${name}.size (=" + this._${name}.size() + ")");
 }
 long oldValue;
 if(this._${name}.size() > idx){
