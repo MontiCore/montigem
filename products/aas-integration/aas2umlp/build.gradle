@@ -1,0 +1,30 @@
+plugins {
+  id 'java-library'
+  id 'de.monticore.generator' version "$mc_version"
+  id "application"
+}
+
+application {
+  mainClass = 'umlp.aas.AAS2UMLPTool'
+}
+
+dependencies {
+  implementation "de.monticore.lang:cd4analysis:$mc_version"
+  implementation "${'de.monticore.lang' + ":" + 'cd4analysis' + ":" + mc_version + ":"}cdmerge"
+  implementation "org.freemarker:freemarker:$freemarker_version"
+  implementation("umlp:umlp-tool:$mc_version")
+
+  implementation "org.yaml:snakeyaml:$snake_yaml_version"
+
+
+  implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+  //AAS dependencies
+  implementation "org.eclipse.digitaltwin.aas4j:aas4j-model:1.0.4"
+  implementation "org.eclipse.digitaltwin.aas4j:aas4j-dataformat-json:1.0.4"
+  implementation "org.eclipse.digitaltwin.aas4j:aas4j-dataformat-xml:1.0.4"
+  implementation "org.eclipse.digitaltwin.aas4j:aas4j-dataformat-aasx:1.0.4"
+
+  //Mockito for unit tests
+  testImplementation 'org.mockito:mockito-core:5.14.2'
+
+}

@@ -56,7 +56,6 @@ include ":experiments:python-client:backend"
 include ":experiments:statecharts-integration"
 include ":experiments:module-system:module-definition"
 include ":experiments:module-system:module-definition:backend"
-include ":experiments:module-system:routes-usage"
 include ':experiments:server-performance'
 include ':experiments:server-performance:backend'
 
@@ -109,4 +108,7 @@ include ':modules:dashboard:backend'
 include ':modules:dashboard:frontend'
 include ':modules:dashboard:frontend:dashboard'
 include ':modules:dashboard:lang'
+
+include 'products:aas-integration:aas2umlp'
+include 'products:aas-integration'
 

@@ -1,0 +1,585 @@
+import java.util.Optional;
+
+classdiagram aasMetamodel {
+
+/* Common attributes */
+
+class AdministrativeInformation implements HasDataSpecification {
+}
+
+association [1] AdministrativeInformation ->(version) VersionType [0..1];
+association [1] AdministrativeInformation ->(revision) RevisionType [0..1];
+association [1] AdministrativeInformation ->(creator) Reference [0..1];
+association [1] AdministrativeInformation ->(createdAt) DateTime [0..1];
+association [1] AdministrativeInformation ->(updatedAt) DateTimeUtc [0..1];
+association [1] AdministrativeInformation ->(templateId) Identifier [0..1];
+
+interface HasDataSpecification {
+}
+
+association [1] HasDataSpecification ->(dataSpecification) Reference [*];
+
+
+interface HasExtensions {
+}
+
+association [1] HasExtensions -> Extension [*];
+
+class Extension implements HasSemantics {
+}
+
+association [1] Extension -> (name) NameType [1];
+association [1] Extension -> (valueType) DataTypeDefXsd [0..1];
+association [1] Extension -> (value) ValueDataType [0..1];
+association [1] Extension -> (refersTo) Reference [*];
+
+interface HasKind {
+}
+
+association [1] HasKind -> (kind) ModellingKind [0..1];
+
+enum ModellingKind {
+    INSTANCE,
+    TEMPLATE;
+}
+
+interface HasSemantics {
+}
+
+association [1] HasSemantics -> (semanticId) Reference [0..1];
+association [1] HasSemantics -> (supplementalSemanticId) Reference [*];
+
+interface Identifiable extends Referable {
+}
+
+association [1] Identifiable -> (id) Identifier [1];
+association [1] Identifiable ->(administration) AdministrativeInformation [0..1];
+
+interface Qualifiable {
+}
+
+association [1] Qualifiable -> (qualifier) Qualifier [*];
+
+class Qualifier implements HasSemantics {
+}
+
+association [1] Qualifier -> (kind) QualifierKind [0..1];
+association [1] Qualifier -> (type) QualifierType [1];
+association [1] Qualifier -> (valueType) DataTypeDefXsd [0..1];
+association [1] Qualifier -> (value) ValueDataType [0..1];
+association [1] Qualifier -> (valueId) Reference [0..1];
+
+enum QualifierKind {
+    CONCEPT_QUALIFIER,
+    TEMPLATE_QUALIFIER,
+    VALUE_QUALIFIER;
+}
+
+interface Referable extends HasExtensions {
+
+}
+
+association [1] Referable -> (idShort) NameType [0..1];
+association [1] Referable -> (category) NameType [0..1];
+association [1] Referable -> (displayName) MultiLanguageNameType [0..1];
+association [1] Referable -> (description) MultiLanguageTextType [0..1];
+
+/* Common attributes */
+
+/* Core classes */
+
+class AssetAdministrationShell implements Identifiable, HasDataSpecification {
+}
+
+association [1] AssetAdministrationShell -> (derivedFrom) Reference [0..1];
+association [1] AssetAdministrationShell -> (assetInformation) AssetInformation [1];
+association [1] AssetAdministrationShell -> (submodel) Reference [*];
+
+
+class AssetInformation {
+}
+
+association [1] AssetInformation -> (assetKind) AssetKind [1];
+association [1] AssetInformation -> (globalAssetId) Identifier [0..1];
+association [1] AssetInformation -> (specificAssetId) SpecificAssetId [*];
+association [1] AssetInformation -> (assetType) Identifier [0..1];
+association [1] AssetInformation -> (defaultThumbnail) Resource [0..1];
+
+
+class Resource {
+}
+
+association [1] Resource -> (path) PathType [1];
+association [1] Resource -> (contentType) ContentType [0..1];
+
+enum AssetKind {
+  TYPE,
+  INSTANCE,
+  BATCH,
+  ROLE,
+  NOT_APPLICABLE;
+}
+
+class SpecificAssetId implements HasSemantics {
+}
+
+association [1] SpecificAssetId -> (name) LabelType [1];
+association [1] SpecificAssetId -> (value) Identifier [1];
+association [1] SpecificAssetId -> (externalSubjectId) Reference [0..1];
+
+
+class Submodel implements Identifiable, HasKind, HasSemantics, Qualifiable, HasDataSpecification {
+}
+
+association [1] Submodel -> (submodelElement) SubmodelElement [*];
+
+abstract class SubmodelElement implements Referable, HasSemantics, Qualifiable, HasDataSpecification {
+}
+
+/* Core classes */
+
+/* Submodel element types */
+
+class AnnotatedRelationshipElement extends RelationshipElement {
+}
+
+association [1] AnnotatedRelationshipElement -> (annotation) DataElement [*];
+
+class BasicEventElement extends EventElement {
+}
+
+association [1] BasicEventElement -> (observed) Reference [1];
+association [1] BasicEventElement -> (direction) Direction [1];
+association [1] BasicEventElement -> (state) StateOfEvent [1];
+association [1] BasicEventElement -> (messageTopic) MessageTopicType [1];
+association [1] BasicEventElement -> (messageBroker) Reference [0..1];
+association [1] BasicEventElement -> (lastUpdate) DateTimeUtc [0..1];
+association [1] BasicEventElement -> (minInterval) Duration [0..1];
+association [1] BasicEventElement -> (maxInterval) Duration [0..1];
+
+enum Direction {
+  INPUT,
+  OUTPUT;
+}
+
+enum StateOfEvent {
+  ON,
+  OFF;
+}
+
+class EventPayload {
+}
+
+association [1] EventPayload -> (source) Reference [1];
+association [1] EventPayload -> (sourceSemanticId) Reference [0..1];
+association [1] EventPayload -> (observableReference) Reference [1];
+association [1] EventPayload -> (observableSemanticId) Reference [0..1];
+association [1] EventPayload -> (topic) MessageTopicType [0..1];
+association [1] EventPayload -> (subjectId) Reference [0..1];
+association [1] EventPayload -> (timeStamp) DateTime [1];
+association [1] EventPayload -> (payload) BlobType [0..1];
+
+class Blob extends DataElement {
+}
+
+association [1] Blob -> (value) BlobType [0..1];
+association [1] Blob -> (contentType) ContentType [0..1];
+
+class Capability extends SubmodelElement {
+}
+
+abstract class DataElement extends SubmodelElement {
+}
+
+class AASEntity extends SubmodelElement {
+}
+
+association [1] AASEntity -> (statement) SubmodelElement [0..*];
+association [1] AASEntity -> (entityType) AASEntityType [0..1];
+association [1] AASEntity -> (globalAssetId) Identifier [0..1];
+association [1] AASEntity -> (specificAssetId) SpecificAssetId [0..*];
+
+enum AASEntityType {
+    CO_MANAGED_ENTITY,
+    SELF_MANAGED_ENTITY;
+}
+
+abstract class EventElement extends SubmodelElement {
+}
+
+class File extends DataElement {
+}
+
+association [1] File -> (value) PathType [0..1];
+association [1] File -> (contentType) ContentType [0..1];
+
+class MultiLanguageProperty extends DataElement {
+}
+
+association [1] MultiLanguageProperty ->(value) MultiLanguageTextType [0..1];
+association [1] MultiLanguageProperty ->(valueId) Reference [0..1];
+
+class Operation extends SubmodelElement {
+}
+
+association [1] Operation -> (inputVariable) OperationVariable [*];
+association [1] Operation -> (outputVariable) OperationVariable [*];
+association [1] Operation -> (inoutputVariable) OperationVariable [*];
+
+class OperationVariable {
+}
+
+association [1] OperationVariable -> (value) SubmodelElement [1];
+
+class Property extends DataElement {
+}
+
+/* There is no association to value so that the generator can then assign the correct type to the actual value in the submodel */
+association [1] Property -> (valueType) DataTypeDefXsd [1];
+association [1] Property -> (valueId) Reference [0..1];
+
+class Range extends DataElement {
+}
+
+association [1] Range -> (valueType) DataTypeDefXsd [1];
+
+class ReferenceElement extends DataElement {
+}
+
+/* There is no association to min and max so that the generator can then assign the correct type to the actual value in the submodel */
+association [1] ReferenceElement -> (value) Reference [0..1];
+
+class RelationshipElement extends SubmodelElement {
+}
+
+association [1] RelationshipElement -> (first) Reference [0..1];
+association [1] RelationshipElement -> (second) Reference [0..1];
+
+class SubmodelElementCollection extends SubmodelElement {
+}
+/* There is no association to value so that the generator can then assign the correct type to the actual value in the submodel */
+
+class SubmodelElementList extends SubmodelElement {
+    Optional<Boolean> orderRelevant;
+}
+
+/* There is no association to value so that the generator can then assign the correct type to the actual value in the submodel */
+association [1] SubmodelElementList -> (semanticIdListElement) Reference [0..1];
+association [1] SubmodelElementList -> (typeValueListElement) AasSubmodelElements [1];
+association [1] SubmodelElementList -> (valueTypeListElement) DataTypeDefXsd [0..1];
+
+enum AasSubmodelElements {
+    ANNOTATED_RELATIONSHIP_ELEMENT,
+    BASIC_EVENT_ELEMENT,
+    BLOB,
+    CAPABILITY,
+    DATA_ELEMENT,
+    ENTITY,
+    EVENT_ELEMENT,
+    FILE,
+    MULTI_LANGUAGE_PROPERTY,
+    OPERATION,
+    PROPERTY,
+    RANGE,
+    REFERENCE_ELEMENT,
+    RELATIONSHIP_ELEMENT,
+    SUBMODEL_ELEMENT,
+    SUBMODEL_ELEMENT_COLLECTION,
+    SUBMODEL_ELEMENT_LIST;
+}
+
+/* end submodel element types */
+
+/* Concept Description */
+
+class ConceptDescription implements Identifiable, HasDataSpecification {
+}
+
+association [1]ConceptDescription -> (isCaseOf)Reference [*];
+
+/* Concept Description */
+
+/* Environment */
+
+class Environment {
+}
+
+association [1] Environment -> (assetAdministrationShell) AssetAdministrationShell [*];
+association [1] Environment -> (submodel) Submodel [*];
+association [1] Environment -> (conceptDescription) ConceptDescription [*];
+
+/* Environment */
+
+/* Reference Attributes */
+
+class Reference {
+    ReferenceTypes type;
+}
+
+association [1] Reference -> (referredSemanticId) Reference [0..1];
+association [1] Reference -> Key [1..*] {ordered};
+
+enum ReferenceTypes {
+    EXTERNAL_REFERENCE,
+    MODEL_REFERENCE;
+}
+
+/* Reference Attributes */
+
+/* Key Attributes */
+
+class Key {
+    KeyTypes type;
+}
+
+association [1] Key -> (value) Identifier[1];
+
+enum KeyTypes {
+    ANNOTATED_RELATIONSHIP_ELEMENT,
+    ASSET_ADMINISTRATION_SHELL,
+    BASIC_EVENT_ELEMENT,
+    BLOB,
+    CAPABILITY,
+    CONCEPT_DESCRIPTION,
+    DATA_ELEMENT,
+    ENTITY,
+    EVENT_ELEMENT,
+    FILE,
+    FRAGMENT_REFERENCE,
+    GLOBAL_REFERENCE,
+    IDENTIFIABLE,
+    MULTI_LANGUAGE_PROPERTY,
+    OPERATION,
+    PROPERTY,
+    RANGE,
+    REFERABLE,
+    REFERENCE_ELEMENT,
+    RELATIONSHIP_ELEMENT,
+    SUBMODEL,
+    SUBMODEL_ELEMENT,
+    SUBMODEL_ELEMENT_COLLECTION,
+    SUBMODEL_ELEMENT_LIST;
+}
+
+/* Key Attributes */
+
+/* Simple Data Types */
+
+class DateTime extends StringType {
+  /* string that follows the format for xsd dateTime */
+}
+
+class Duration extends StringType {
+  /* string that represents an xsd duration */
+}
+
+class LangString {
+    String language;
+    String text;
+}
+
+/* Simple Data Types */
+
+/* Primitive Data Types */
+
+/* Abstract class introduced as a parent to all primitives that are some sort of strings. */
+abstract class StringType {
+  String value;
+}
+
+class BlobType extends StringType {
+  /* base64binary to represent file content */
+}
+
+class ContentType extends StringType {
+  /* max 128 characters and min 1 character. Any content type specified in RFC2046. */
+}
+
+class DateTimeUtc extends StringType {
+  /* string represents dateTime for UTC */
+}
+
+class Identifier extends StringType {
+  /* Max 2048 characters and min 1 character. */
+}
+
+class LabelType extends StringType {
+  /* Max 64 characters and min 1 character. */
+}
+
+class MessageTopicType extends StringType {
+  /* Max 255 characters and min 1 character. */
+}
+
+class MultiLanguageNameType {
+  /* Each string within has a max of 128 characters and min 1 character. */
+}
+association [1] MultiLanguageNameType -> LangString [*];
+
+class MultiLanguageTextType {
+  /* Each string within has a max of 1023 characters and at least 1.*/
+}
+association [1]MultiLanguageTextType -> LangString [*];
+
+class NameType extends StringType {
+  /* Max 128 characters and min 1 character. */
+}
+
+class PathType extends StringType {
+  /* Max 2048 characters and min 1 character. Conforms to a URI as per RFC2396. */
+}
+
+class QualifierType extends NameType {
+}
+
+class RevisionType extends StringType {
+  /* string with max 4 and min 1 characters following the following regular expression: ^([0-9]|[1-9][0-9]*)$ */
+}
+
+class ValueDataType extends StringType {
+  /* any xsd atomic type as specified via DataTypeDefXsd */
+}
+
+class VersionType extends StringType {
+  /* string with max 4 and min 1 characters following the following regular expression: ^([0-9]|[1-9][0-9]*)$ */
+}
+
+enum DataTypeDefXsd {
+    ANY_URI,
+    BASE64BINARY,
+    BOOLEAN,
+    BYTE,
+    DATE,
+    DATE_TIME,
+    DATE_TIME_UTC,
+    DECIMAL,
+    DOUBLE,
+    DURATION,
+    FLOAT,
+    GDAY,
+    GMONTH,
+    GMONTH_DAY,
+    GYEAR,
+    GYEAR_MONTH,
+    HEX_BINARY,
+    INT,
+    INTEGER,
+    LONG,
+    NEGATIVE_INTEGER,
+    NON_NEGATIVE_INTEGER,
+    NON_POSITIVE_INTEGER,
+    POSITIVE_INTEGER,
+    SHORT,
+    STRING,
+    TIME,
+    UNSIGNED_BYTE,
+    UNSIGNED_INT,
+    UNSIGNED_LONG,
+    UNSIGNED_SHORT;
+}
+
+/* Primitive Data Types */
+
+/* Data Specifications */
+
+class DataSpecification {
+}
+
+association [1] DataSpecification -> (description) MultiLanguageTextType [0..1];
+association [1] DataSpecification -> (administration) AdministrativeInformation [0..1];
+association [1] DataSpecification -> (id) Identifier [1];
+association [1] DataSpecification -> (dataSpecificationContent) DataSpecificationContent [1];
+
+abstract class DataSpecificationContent {
+}
+
+/* Data Specifications */
+
+/* Data Specification IEC61360 */
+
+class DataSpecificationIec61360  extends DataSpecificationContent {
+  Optional<String> unit;
+  Optional<String> sourceOfDefinition;
+  Optional<String> symbol;
+}
+
+association [1] DataSpecificationIec61360 -> (preferredName) PreferredNameTypeIec61360 [1];
+association [1] DataSpecificationIec61360 -> (shortName) ShortNameTypeIec61360 [0..1];
+association [1] DataSpecificationIec61360 -> (unitId) Reference [0..1];
+association [1] DataSpecificationIec61360 -> (dataType) DataTypeIec61360 [0..1];
+association [1] DataSpecificationIec61360 -> (definition) DefinitionTypeIec61360 [0..1];
+association [1] DataSpecificationIec61360 -> (valueFormat) ValueFormatTypeIec61360 [0..1];
+association [1] DataSpecificationIec61360 -> (valueList) ValueList [0..1];
+association [1] DataSpecificationIec61360 -> (value) ValueTypeIec61360 [0..1];
+association [1] DataSpecificationIec61360 -> (levelType) LevelType [0..1];
+
+class LevelType extends DataSpecificationContent {
+  boolean min;
+  boolean nom;
+  boolean typ;
+  boolean max;
+}
+
+class ValueList {
+}
+
+association [1] ValueList -> (valueReferencePair) ValueReferencePair [1..*];
+
+class ValueReferencePair {
+}
+
+association [1] ValueReferencePair -> (value) ValueTypeIec61360 [1];
+association [1] ValueReferencePair -> (valueId) Reference [0..1];
+
+class DefinitionTypeIec61360 {
+  /* Each string within has a max of 1023 characters and a min of 1 */
+}
+
+association [1] DefinitionTypeIec61360 -> LangString [*];
+
+class PreferredNameTypeIec61360 {
+  /* Each string within has a max of 255 characters and a min of 1 */
+}
+
+association [1] PreferredNameTypeIec61360 -> LangString [*];
+
+class ShortNameTypeIec61360 {
+  /* Each string within has a max of 18 characters and a min of 1 */
+}
+
+association [1] ShortNameTypeIec61360 -> LangString [*];
+
+class ValueFormatTypeIec61360 extends StringType {
+  /* Value format is based on ISO 13584-42 and IEC 61360-2. */
+}
+
+class ValueTypeIec61360 extends StringType {
+  /* Each string within has a max of 2048 characters and a min of 1 */
+}
+
+enum DataTypeIec61360 {
+  DATE,
+  STRING,
+  STRING_TRANSLATABLE,
+  INTEGER_MEASURE,
+  INTEGER_COUNT,
+  INTEGER_CURRENCY,
+  REAL_MEASURE,
+  REAL_COUNT,
+  REAL_CURRENCY,
+  BOOLEAN,
+  IRI,
+  IRDI,
+  RATIONAL,
+  RATIONAL_MEASURE,
+  TIME,
+  TIMESTAMP,
+  HTML,
+  BLOB,
+  FILE;
+}
+
+
+/* Data Specification IEC61360 */
+
+}
