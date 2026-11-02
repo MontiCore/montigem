@@ -97,7 +97,6 @@ public abstract class UMLP2JavaTask extends MGSingleFileTask {
     ocl.from(f);
   }
 
-  // Not Incremental: the IncGen reports only list the OCL files of the previous run, so an added one is no relevant change
   @Input
   public List<String> getOclFileNames() {
     List<String> names = new ArrayList<>();

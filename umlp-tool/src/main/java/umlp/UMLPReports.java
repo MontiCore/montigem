@@ -99,7 +99,6 @@ public class UMLPReports implements ReportManager.ReportManagerFactory {
         lowerCaseName) {
       @Override
       protected boolean isModelFile(String fileName) {
-        // The generated code depends on the OCL files given with -ocl
         return super.isModelFile(fileName) || fileName.endsWith(".ocl");
       }
     };
