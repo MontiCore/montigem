@@ -1,0 +1,17 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPAssocQualifierTargetCardinality {
+  class A {
+    String name;
+  }
+  class B;
+
+  association B [[name]] (byNameMany) -> A [*];
+  association B [[name]] (byNameOpt) -> A [0..1];
+  association B [[name]] (byNameSome) -> A [1..*];
+  association B [[name]] (byNameNone) -> A;
+  association [*] A (byNameFromRight) <- [[name]] B;
+
+  // valid: the value side is [1], the qualifier side may have any cardinality
+  association B [[name]] (byName) -> A [1];
+  association [*] B [[name]] (byNameManyOwners) -> A [1];
+}

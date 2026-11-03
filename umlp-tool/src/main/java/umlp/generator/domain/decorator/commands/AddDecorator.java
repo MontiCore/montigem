@@ -67,7 +67,9 @@ public class AddDecorator extends AbstractDeSerDecorator {
           .stream()
           .filter(Predicate.not(GenService::isSymbolDerived))
           .filter(Predicate.not(GenService::isBidirectional))
-          .filter(GenService::isList)
+          .filter(GenService::isMultiValued)
+          // maps have no positions: their values are put, see PutDecorator
+          .filter(Predicate.not(GenService::isMap))
           .forEach(a -> {
             ASTCDClass clazz = createClass(
                 origCD, a.getName(), a.getSymbol().getType(),
@@ -95,7 +97,9 @@ public class AddDecorator extends AbstractDeSerDecorator {
           .stream()
           .filter(Predicate.not(GenService::isSymbolDerived))
           .filter(Predicate.not(GenService::isBidirectional))
-          .filter(GenService::isList)
+          .filter(GenService::isMultiValued)
+          // maps have no positions: their values are put, see PutDecorator
+          .filter(Predicate.not(GenService::isMap))
           .forEach(a -> {
             ASTCDClass clazz = createClass(origCD, a.getName(), a.getSymbol().getType(), c, getCorrectManagerOfTargetType(a), true);
             astcdPackage.addCDElement(withOrigin(clazz));

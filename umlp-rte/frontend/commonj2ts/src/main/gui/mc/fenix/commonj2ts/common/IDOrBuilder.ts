@@ -1,8 +1,8 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-// Solely used in GemListBuilder <- THIS  IS A CONTRACT
+// Used in GemListBuilder (and the GemMap builders of the backend) <- THIS  IS A CONTRACT
 // SumType of a domain-objects GemID and builder
-// as the builder may not have an ID that can be used to get the element from the manager
+// as the builder is not yet known to the manager, so its ID cannot be used to get the element
 export class IDOrBuilder<E extends GemIdentifiable & GemBuildable> {
   gemIDOpt: number;
 
@@ -54,6 +54,14 @@ export class IDOrBuilder<E extends GemIdentifiable & GemBuildable> {
       if (v == null) throw new Error('value is null');
       return v;
     })(this.builderOpt);
+  }
+
+  /**
+   * @return {number} the gemId of the element. Unlike getIDAndMaybeBuild() this never builds;
+   *         builders carry their gemId from construction, they are just not known to the manager yet
+   */
+  public getGemId(): number {
+    return this.isPresentID() ? this.getID() : this.getBuilder().getGemId();
   }
 
   /**

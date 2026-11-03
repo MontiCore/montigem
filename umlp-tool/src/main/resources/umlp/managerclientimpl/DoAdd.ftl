@@ -1,5 +1,6 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("name", "managerName")}
+<#-- keyObservers: the key observers of the map roles that may hold objects of the class (GemMapKeyRole) -->
+${tc.signature("name", "managerName", "keyObservers")}
 ${cd4c.method("protected void _doAddWithScope${name}(${name} o, NotificationScope scope)")}
   if(scope.contains(NotificationScope.GLOBAL)){
     StatusResult res = CommandManager.executeCommand(new ${name}_create(o)).asStatusResult();
@@ -13,4 +14,9 @@ ${cd4c.method("protected void _doAddWithScope${name}(${name} o, NotificationScop
   if (!o.containsObserver(the${name}CommandObserver)) {
     o.addObserver(the${name}CommandObserver);
   }
+<#list keyObservers as keyObserver>
+  if (!o.containsObserver(${keyObserver})) {
+    o.addObserver(${keyObserver});
+  }
+</#list>
   ${managerName?uncap_first}Observers.forEach(obs -> obs.maybeNotify${name}Added(o, scope));

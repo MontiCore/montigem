@@ -12,6 +12,8 @@ import {StringDeSer} from "../common/StringDeSer";
 import {LocalDateDeSer} from "../deser";
 import {LocalDateTimeDeSer} from "../deser/LocalDateTimeDeSer";
 import {DeSer, JsonDeSer} from "../command";
+import {IUMLPMap} from "./IUMLPMap";
+import {AsyncMap} from "../javautil/AsyncMap";
 
 /**
  * (De)serializer for base classes from java.lang
@@ -44,12 +46,18 @@ export class BaseClassObjectMapper {
     return this;
   }
 
-  public getBaseDeSers() : Map<string, DeSer<any>> {
-    return this.baseDeSers;
+  /** java.util.Map in transpiled code: a live view of the base DeSers */
+  public getBaseDeSers() : IUMLPMap<string, DeSer<any>> {
+    return AsyncMap.__viewOf(this.baseDeSers);
   }
 
-  public static addDeSers(addedDeSers : Map<string, JsonDeSer<any>>) : void {
-    for (const [deSerTypeName,deSer] of addedDeSers) {
+  /**
+   * Synchronous like in Java: the DeSers come from an AsyncMap (generated DeSerRepository#getDeSerMap)
+   * or a native Map (libraries transpiled before maps became IUMLPMaps)
+   */
+  public static addDeSers(addedDeSers : IUMLPMap<string, JsonDeSer<any>> | Map<string, JsonDeSer<any>>) : void {
+    const deSers = addedDeSers instanceof Map ? addedDeSers : addedDeSers.__internalMap();
+    for (const [deSerTypeName,deSer] of deSers) {
       this.getInstance().baseDeSers.set(deSerTypeName, deSer)
     }
   }

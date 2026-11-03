@@ -17,7 +17,7 @@ export class PojoGraphContext {
   }
 
   public async serialize(object: any, className: string): Promise<string> {
-    const deser = BaseClassObjectMapper.getInstance().getBaseDeSers().get(className);
+    const deser = await BaseClassObjectMapper.getInstance().getBaseDeSers().get(className);
     if (this.isPojoDeSer(deser)) {
       return this.serializeObject(object, deser as PojoJsonDeSer<any>);
     }
@@ -25,7 +25,7 @@ export class PojoGraphContext {
   }
 
   public async deserialize<T>(json: string, className: string): Promise<T> {
-    const deser = BaseClassObjectMapper.getInstance().getBaseDeSers().get(className);
+    const deser = await BaseClassObjectMapper.getInstance().getBaseDeSers().get(className);
     if (this.isPojoDeSer(deser)) {
       return this.deserializeObject(JSON.parse(json), deser as PojoJsonDeSer<T>);
     }
@@ -33,7 +33,7 @@ export class PojoGraphContext {
   }
 
   public async deserializeValue<T>(value: any, className: string): Promise<T> {
-    const deser = BaseClassObjectMapper.getInstance().getBaseDeSers().get(className);
+    const deser = await BaseClassObjectMapper.getInstance().getBaseDeSers().get(className);
     if (this.isPojoDeSer(deser)) {
       return this.deserializeObject(value, deser as PojoJsonDeSer<T>);
     }

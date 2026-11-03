@@ -1,0 +1,10 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+package coco;
+
+import packaged.QualifiedDomain.Directory;
+import util.I;
+
+component GuiNoAttributeQualifiedRoleCoCo1(Directory d) {
+  @I(i = d.office.room);
+}

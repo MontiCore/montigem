@@ -25,7 +25,11 @@ ${cd4c.method("public void insert${typeName}(${typeName} o)")}
 
   List<Long> iDs;
   <#list listAssocs as assocSide, assoc>
+  <#if genService.isMap(assocSide)>
+  iDs = new ArrayList<>(o._internal_get${assocSide.getName()?cap_first}GemMap().getValueIDs());
+  <#else>
   iDs = o._internal_get${assocSide.getName()?cap_first}GemList().getIDs();
+  </#if>
   HashMap<Long, List<Long>> ${assocSide.getName()?uncap_first}Map = new HashMap<>();
     <#if assocSide.isLeft()>
   iDs.forEach(id -> ${assocSide.getName()?uncap_first}Map.put(id, Arrays.asList(o.getGemId())));
