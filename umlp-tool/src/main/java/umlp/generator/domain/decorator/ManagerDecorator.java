@@ -62,6 +62,12 @@ public class ManagerDecorator extends AbstractDecorator {
     origCD.getCDDefinition().getCDInterfacesList()
         .forEach(i -> addInterfaceElements(i, managerClass));
 
+    // the key observers of the map roles rekey through the manager, see GemMapKeyRole
+    GemMapKeyRole.declaredIn(origCD).forEach(r -> {
+      getCD4C().addMethod(managerClass, "umlp.manager.Rekey", r.getRekeyName(), r.getKeyType(), true);
+      getCD4C().addMethod(managerClass, "umlp.manager.Rekey", r.getRekeyName(), r.getKeyType(), false);
+    });
+
     addImports(managerClass);
 
     return managerClass;

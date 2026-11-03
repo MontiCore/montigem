@@ -61,10 +61,11 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     List<ASTCDClass> retList = Lists.newArrayList();
     if (GenService.isMap(assoc)) {
       retList.add(createGemMapClass(origCD, assoc, clazz));
-      // one key observer per type of values, as subclasses notify their own observers only
+      // one key observer per type of values, as subclasses notify their own observers only;
+      // the managers attach them to the values, see GemMapKeyRole
       CDTypeSymbol targetSymbol = (CDTypeSymbol) UMLPSymbolTables.getTypeSymbol(assoc.getMCQualifiedType()).get();
       for (CDTypeSymbol observedType : getObservedTypes(origCD, targetSymbol)) {
-        retList.add(createKeyObserverClass(assoc, clazz, targetSymbol, observedType));
+        retList.add(createKeyObserverClass(origCD, assoc, clazz, targetSymbol, observedType));
       }
     }
     return retList;
@@ -90,22 +91,8 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     ASTCDAttribute attr = getCD4C().addAttribute(ast, "protected long ownerGemID");
     ast.addAllCDMembers(accessor.decorate(attr));
 
-    // one observer per type of values, as subclasses notify their own observers only
-    List<CDTypeSymbol> observedTypes = getObservedTypes(origCD, targetSymbol);
-    for (CDTypeSymbol observedType : observedTypes) {
-      // created by the constructor, see createKeyObserverClass
-      ASTCDAttribute keyObserver = getCD4C().addAttribute(ast,
-          "protected " + observedType.getName() + "Observer keyObserver" + observedType.getName());
-      glex.replaceTemplate("cd2java.Annotations", keyObserver, new StringHookPoint("transient"));
-      addDomainImports(ast, observedType.getAstNode());
-      getCD4C().addImport(ast, Joiners.DOT.join(getPackageName(UMLPSymbolTables.getDiagramFor(observedType.getAstNode()), DEFAULT_PACKAGE),
-          observedType.getName() + "Observer"));
-    }
-
     // constructor
-    getCD4C().addConstructor(ast, "umlp.gemmap.Constructor", className,
-        observedTypes.stream().map(CDTypeSymbol::getName).collect(Collectors.toList()),
-        getKeyObserverNamePrefix(domainClass, assoc));
+    getCD4C().addConstructor(ast, "umlp.gemmap.Constructor", className);
 
     // methods
     getCD4C().addMethod(ast, "umlp.gemmap.LoadObjects", "loadValueObjects", targetName,
@@ -124,29 +111,22 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     getCD4C().addMethod(ast, "umlp.gemmap.PutValueAndSync", targetName, assoc.getName());
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveValueIDAndSync", assoc.getName());
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveAndSync", key.getKeyType(), key.isEntryKey());
-    getCD4C().addMethod(ast, "umlp.gemmap.RekeyAndSync", assoc.getName(), key.isEntryKey() ? "long" : key.getKeyType());
     addDomainImports(ast, domainClass);
-
-    getCD4C().addMethod(ast, "umlp.gemmap.OnValueKeyed", targetName,
-        observedTypes.stream().map(CDTypeSymbol::getName).collect(Collectors.toList()));
-    getCD4C().addMethod(ast, "umlp.gemmap.OnValueRemoved", targetName,
-        getCorrectManager(targetSymbol.getAstNode()),
-        observedTypes.stream().map(CDTypeSymbol::getName).collect(Collectors.toList()));
 
     return ast;
   }
 
   /**
-   * The observer that rekeys the values of type observedType of a GemMap when their qualifying attribute changes.
-   * A class of its own (not an anonymous class of the GemMap), like the other generated observers,
-   * so that it can be extended by hand-written code (TOP mechanism).
+   * The observer that rekeys the values of type observedType of a GemMap role when their qualifying attribute
+   * changes: the manager of observedType attaches it to every object it takes up or loads (like its other observers),
+   * the manager of the owner rekeys the maps of the loaded owners, see {@link GemMapKeyRole}.
+   * A class of its own, like the other generated observers, so that it can be extended by hand-written code (TOP
+   * mechanism).
    */
-  protected ASTCDClass createKeyObserverClass(ASTCDAssocSide assoc, ASTCDType domainClass,
+  protected ASTCDClass createKeyObserverClass(ASTCDCompilationUnit origCD, ASTCDAssocSide assoc, ASTCDType domainClass,
                                               CDTypeSymbol targetSymbol, CDTypeSymbol observedType) {
     QualifierKey key = QualifierKey.of(assoc);
     String className = getKeyObserverName(domainClass, assoc, observedType.getName());
-    // the RTE type of the map: a GemMap extended by hand-written code passes its TOP class
-    String mapType = key.getMapType() + "<" + key.getKeyType() + ", " + targetSymbol.getName() + ">";
 
     ASTCDClass ast = UMLPMill.cDClassBuilder()
         .setModifier(PUBLIC.build())
@@ -162,16 +142,17 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     }
     getCD4C().addImport(ast, Joiners.DOT.join(getPackageName(UMLPSymbolTables.getDiagramFor(observedType.getAstNode()), DEFAULT_PACKAGE),
         observedType.getName() + "Observer"));
-    getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath(key.getMapType()));
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("NotificationScope"));
+    // the manager of the owner's class diagram rekeys the maps of its loaded owners
+    String managerName = origCD.getCDDefinition().getName() + ManagerDecorator.SUFFIX;
+    getCD4C().addImport(ast, Joiners.DOT.join(getPackageName(origCD, DEFAULT_PACKAGE), managerName));
 
-    getCD4C().addAttribute(ast, "protected " + mapType + " map");
-    getCD4C().addConstructor(ast, "umlp.gemmap.KeyObserverConstructor", className, mapType);
     // rekeys locally and on changes by other participants
     ASTCDMethodSignature getScope = getCD4C().addMethod(ast, "umlp.common_observer.GetScopeLocal");
     glex.replaceTemplate("cd2java.Annotations", getScope, new StringHookPoint("@Override"));
     ASTCDMethodSignature notify = getCD4C().addMethod(ast, "umlp.gemmap.KeyObserverNotify",
-        key.getDeclaringType().getName(), key.getAttrName(), key.getNotifyType());
+        key.getDeclaringType().getName(), key.getAttrName(), key.getNotifyType(), managerName,
+        domainClass.getName() + StringTransformations.capitalize(assoc.getName()));
     glex.replaceTemplate("cd2java.Annotations", notify, new StringHookPoint("@Override"));
     return ast;
   }
@@ -248,12 +229,10 @@ public class GemMapAssocDecorator extends AbstractDecorator {
    * for values of type Course
    */
   public static String getKeyObserverName(ASTCDType type, ASTCDAssocSide assoc, String observedType) {
-    return getKeyObserverNamePrefix(type, assoc) + observedType + "KeyObserver";
+    return getKeyObserverName(type.getName(), assoc.getName(), observedType);
   }
 
-  protected static String getKeyObserverNamePrefix(ASTCDType type, ASTCDAssocSide assoc) {
-    return type.getName()
-        + "_"
-        + StringTransformations.capitalize(assoc.getName());
+  public static String getKeyObserverName(String declaringType, String role, String observedType) {
+    return declaringType + "_" + StringTransformations.capitalize(role) + observedType + "KeyObserver";
   }
 }

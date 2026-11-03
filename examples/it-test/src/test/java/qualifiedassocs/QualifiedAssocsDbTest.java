@@ -177,23 +177,28 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
   }
 
   @Test
-  default void testRekeyObserverIsRemovedWithValue() {
+  default void testValueThatLeftTheMapIsNotRekeyed() {
     getBackend().activate();
     var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
     var otherAnna = QualifiedAssocsManager.personBuilder().login("anna").number(2).build().get();
     var admin = QualifiedAssocsManager.adminBuilder().login("root").number(0).build().get();
     int observers = anna.personObservers.size();
-    int adminObservers = admin.personObservers.size() + admin.adminObservers.size();
     var directory = QualifiedAssocsManager.directoryBuilder().byLoginPut(anna).byLoginPut(admin).build().get();
-    assertEquals(observers + 1, anna.personObservers.size());
+    QualifiedAssocsManager.directoryBuilder().byLoginPut(anna).build().get();
+    // the manager observes the values, one key observer per map role, however many maps hold them
+    assertEquals(observers, anna.personObservers.size());
 
     // replaced by another value for its key
     assertLogsError("0xA7307", () -> directory.putByLogin(otherAnna));
-    assertEquals(observers, anna.personObservers.size());
+    anna.setLogin("annabelle");
+    assertFalse(directory.containsKeyByLogin("annabelle"));
+    assertSame(otherAnna, directory.getByLogin("anna"));
 
-    // removed; the subclass value is observed with its own observer, also registered with the superclass
+    // removed; the subclass value is observed with its own observer
     directory.removeByLogin("root");
-    assertEquals(adminObservers, admin.personObservers.size() + admin.adminObservers.size());
+    admin.setLogin("admin");
+    assertFalse(directory.containsKeyByLogin("admin"));
+    assertFalse(directory.containsKeyByLogin("root"));
   }
 
   @Test

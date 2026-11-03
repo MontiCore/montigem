@@ -19,6 +19,11 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
   // a Map keeps the insertion order
   protected builderElemStorage: Map<K, IDOrBuilder<V>> = new Map();
 
+  // The values put as objects (built values or builders) before build(): the managers observe the values of the
+  // owners they know, an owner that is a builder is not known yet, so build() derives their keys again
+  // (values put by id, e.g. as received from another participant, keep their keys)
+  protected valuesPutBeforeBuild: Map<number, V> = new Map();
+
   public constructor() {
     super();
   }
@@ -40,6 +45,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       return this;
     }
 
+    await this.rederiveKeys();
     this.idMap.clear();
     for (const [key, element] of Array.from(this.builderElemStorage.entries())) {
       this.idMap.set(key, await element.getIDAndMaybeBuild());
@@ -51,6 +57,27 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     this.builderElemStorage.clear();
 
     return this;
+  }
+
+  /**
+   * moves the values put as objects before build() to the keys they derive now, e.g. after their qualifying
+   * attribute changed (a key used by another value is reported and keeps its value, see _internal_rekey)
+   */
+  protected async rederiveKeys(): Promise<void> {
+    if (this.isKeyDerived()) {
+      for (const value of Array.from(this.valuesPutBeforeBuild.values())) {
+        for (const [key, element] of Array.from(this.builderElemStorage.entries())) {
+          if (element.getGemId() === value.getGemId()) {
+            const derived: K = await this.deriveKey(value);
+            if (key !== derived) {
+              await this._internal_rekey(key, derived, value.getGemId());
+            }
+            break;
+          }
+        }
+      }
+    }
+    this.valuesPutBeforeBuild.clear();
   }
 
   public override isBuildFinished(): boolean {
@@ -153,6 +180,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       const old: IDOrBuilder<V> = this.storageGet(key);
       this.builderElemStorage.set(key, new IDOrBuilder<V>(value));
       await this.valueLeft(old, value.getGemId());
+      this.valuesPutBeforeBuild.set(value.getGemId(), value);
       await this.onValueKeyed(value);
     }
   }

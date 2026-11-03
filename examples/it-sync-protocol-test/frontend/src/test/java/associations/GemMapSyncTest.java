@@ -116,6 +116,40 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
   }
 
   /**
+   * a key that changes while the owner is still a builder is derived when the owner is built (the managers observe
+   * the values of the owners they know): the key of a built value changed by its setter, and the key of a value
+   * builder set after it was put
+   */
+  @Test
+  public void testKeyChangeBeforeTheOwnerIsBuilt() {
+    getClients(0).activate();
+    NumPlainOwnerBuilder ownerBuilder = AssociationsManager.numPlainOwnerBuilder();
+    ownerBuilder.byKeyPut(value(annaId));
+    NumPlainValueBuilder carlBuilder = AssociationsManager.numPlainValueBuilder().key(1003);
+    ownerBuilder.byKeyPut(carlBuilder);
+    value(annaId).setKey(2001);
+    carlBuilder.key(2003);
+    long builtId = ownerBuilder.build().get().getGemId();
+    long carlId = carlBuilder.getGemId();
+
+    getClients(0).activate();
+    assertBuiltOwnerKeys(builtId, carlId);
+    getBackend().activate();
+    assertBuiltOwnerKeys(builtId, carlId);
+    getClients(1).activate();
+    assertBuiltOwnerKeys(builtId, carlId);
+  }
+
+  void assertBuiltOwnerKeys(long builtId, long carlId) {
+    NumPlainOwner built = AssociationsManager.getNumPlainOwnerSure(builtId);
+    assertEquals(annaId, built.getByKey(2001).getGemId());
+    assertFalse(built.containsKeyByKey(1001));
+    assertEquals(carlId, built.getByKey(2003).getGemId());
+    assertFalse(built.containsKeyByKey(1003));
+    assertEquals(2, built.sizeByKeys());
+  }
+
+  /**
    * a value is stored under one key only: after its rekeying was refused it keeps its old key; putting it again moves
    * it to the key it derives, on every participant, instead of storing it twice
    */

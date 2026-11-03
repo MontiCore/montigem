@@ -21,6 +21,11 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
   // LinkedHashMap, so that the order is the insertion order, like in a JS Map.
   protected Map<K, IDOrBuilder<V>> builderElemStorage = new LinkedHashMap<>();
 
+  // The values put as objects (built values or builders) before build(): the managers observe the values of the
+  // owners they know, an owner that is a builder is not known yet, so build() derives their keys again
+  // (values put by id, e.g. as received from another participant, keep their keys)
+  protected transient Map<Long, V> valuesPutBeforeBuild = new LinkedHashMap<>();
+
   public GemValueMapBuilder(Map<K,Long> initialIds) {
     if (initialIds != null) {
       for (Entry<K,Long> idMapEntry : initialIds.entrySet()) {
@@ -35,6 +40,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       return Optional.of(this);
     }
 
+    rederiveKeys();
     idMap.clear();
     for(Entry<K, IDOrBuilder<V>> element : builderElemStorage.entrySet()) {
       idMap.put(element.getKey(), element.getValue().getIDAndMaybeBuild());
@@ -46,6 +52,27 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     builderElemStorage.clear();
 
     return Optional.of(this);
+  }
+
+  /**
+   * moves the values put as objects before build() to the keys they derive now, e.g. after their qualifying
+   * attribute changed (a key used by another value is reported and keeps its value, see _internal_rekey)
+   */
+  protected void rederiveKeys() {
+    if (isKeyDerived()) {
+      for (V value : valuesPutBeforeBuild.values()) {
+        for (Entry<K, IDOrBuilder<V>> e : new ArrayList<>(builderElemStorage.entrySet())) {
+          if (e.getValue().getGemId() == value.getGemId()) {
+            K derived = deriveKey(value);
+            if (!Objects.equals(e.getKey(), derived)) {
+              _internal_rekey(e.getKey(), derived, value.getGemId());
+            }
+            break;
+          }
+        }
+      }
+    }
+    valuesPutBeforeBuild.clear();
   }
 
   @Override
@@ -149,6 +176,7 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
           && !Objects.equals(e.getKey(), key));
       // keep the element itself, it may be an unbuilt builder
       valueLeft(builderElemStorage.put(key, new IDOrBuilder<>(value)), value.getGemId());
+      valuesPutBeforeBuild.put(value.getGemId(), value);
       onValueKeyed(value);
     }
   }

@@ -21,6 +21,11 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
   // a Map keeps the insertion order
   protected builderElemStorage: Map<number, [IDOrBuilder<K>, IDOrBuilder<V>]> = new Map();
 
+  // The values put as objects (built values or builders) before build(): the managers observe the values of the
+  // owners they know, an owner that is a builder is not known yet, so build() derives their keys again
+  // (values put by id, e.g. as received from another participant, keep their keys)
+  protected valuesPutBeforeBuild: Map<number, V> = new Map();
+
   public constructor() {
     super();
   }
@@ -44,6 +49,7 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
       return this;
     }
 
+    await this.rederiveKeys();
     this.idMap.clear();
     for (const [key, value] of Array.from(this.builderElemStorage.values())) {
       this.idMap.set(await key.getIDAndMaybeBuild(), await value.getIDAndMaybeBuild());
@@ -55,6 +61,27 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     this.builderElemStorage.clear();
 
     return this;
+  }
+
+  /**
+   * moves the values put as objects before build() to the keys they derive now, e.g. after their qualifying
+   * attribute changed (a key used by another value is reported and keeps its value, see _internal_rekey)
+   */
+  protected async rederiveKeys(): Promise<void> {
+    if (this.isKeyDerived()) {
+      for (const value of Array.from(this.valuesPutBeforeBuild.values())) {
+        for (const [keyGemID, entry] of Array.from(this.builderElemStorage.entries())) {
+          if (entry[1].getGemId() === value.getGemId()) {
+            const derived: number = await this.deriveKeyID(value);
+            if (keyGemID !== derived) {
+              await this._internal_rekey(keyGemID, derived, value.getGemId());
+            }
+            break;
+          }
+        }
+      }
+    }
+    this.valuesPutBeforeBuild.clear();
   }
 
   public override isBuildFinished(): boolean {
@@ -168,6 +195,7 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
       }
       // keep the element itself, it may be an unbuilt builder; the key is referenced by id
       await this.storeEntry(new IDOrBuilder<K>(keyGemID), new IDOrBuilder<V>(value));
+      this.valuesPutBeforeBuild.set(value.getGemId(), value);
       await this.onValueKeyed(value);
     }
   }

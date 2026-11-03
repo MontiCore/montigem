@@ -1,7 +1,7 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-<#-- rekeys a value of the map when its qualifying attribute changes,
-     locally and by changes of other participants (the observer's scope is NotificationScope.LOCAL);
-     through the owner, so that the server tells the participants that loaded the owner (see RekeyAndSync) -->
-${tc.signature("declaringType", "attrName", "notifyType")}
+<#-- rekeys a value when its qualifying attribute changes, locally and by changes of other participants (the
+     observer's scope is NotificationScope.LOCAL): the manager rekeys the maps of its loaded owners, through the
+     owners, so that the server tells the participants that loaded an owner (see managerimpl/DoRekey) -->
+${tc.signature("declaringType", "attrName", "notifyType", "managerName", "rekeyName")}
 ${cd4c.method("public void notifySet${attrName?cap_first}(${declaringType} o, ${notifyType} oldValue, ${notifyType} newValue)")}
-map._internal_rekeyAndSync(oldValue, newValue, o.getGemId());
+${managerName}.rekey${rekeyName}(oldValue, newValue, o.getGemId());
