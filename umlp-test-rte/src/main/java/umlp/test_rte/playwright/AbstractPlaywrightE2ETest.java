@@ -1,9 +1,11 @@
 package umlp.test_rte.playwright;
 
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.junit.UsePlaywright;
 import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.test.annotation.DirtiesContext;
@@ -32,6 +34,8 @@ public abstract class AbstractPlaywrightE2ETest implements PlaywrightUtils {
   static final int backendServerPort = getFreePort();
 
   protected FrontendServer4Test frontendServer;
+
+  protected CoverageTracker coverageTracker;
 
   @Override
   public String getUrlBase() {
@@ -89,6 +93,18 @@ public abstract class AbstractPlaywrightE2ETest implements PlaywrightUtils {
     );
     Log.info("Starting the FrontEnd Server", this.getClass().getName());
     frontendServer.start();
+  }
+
+  /**
+   * Initializes the coverage tracker for JavaScript coverage analysis.
+   *
+   * @param context The {@link BrowserContext} associated with the Playwright browser session.
+   *                It provides the execution environment for the tests.
+   */
+  @BeforeEach
+  protected void autoInitCoverage(BrowserContext context){
+    coverageTracker = new CoverageTracker(context, getFrontendDistDirectory());
+    coverageTracker.startJSCoverage();
   }
 
   /**
