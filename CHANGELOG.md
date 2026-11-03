@@ -36,6 +36,23 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-11-03: 7.10.0-SNAPSHOT
+* Attribute qualified associations become maps (GemMaps), keyed by an attribute or a to-one
+  association role of the value:
+  ```
+  association Course [[login]] -> (byLogin) Student [1];
+  ```
+  The owner gets `putByLogin(student)`, `getByLogin(key)`, `containsKeyByLogin(key)`,
+  `removeByLogin(key)` and the live `java.util.Map` `getByLoginMap()`; changing the key attribute
+  of a value moves it in every map holding it. Primitive and `String` keys make a `GemValueMap`,
+  domain object keys a `GemEntryMap`. The association must be unidirectional (`0xCDC6A`), the
+  value side `[1]` (`0xCDC6C`) and the key single valued (`0xCDC6B`).
+  Qualified roles are not supported in GUI models yet (`0x00032`).
+* **Breaking:** `java.util.Map` in transpiled Java becomes the asynchronous `IUMLPMap` of
+  `@umlp/commonj2ts`, like `java.util.List` becomes `IUMLPList`: handwritten TypeScript has to
+  `await` its methods, e.g. `await BaseClassObjectMapper.getInstance().getBaseDeSers().get(name)`
+* `@umlp/commonj2ts` moved to version 9.1.0
+
 ## 2026-10-28: 7.10.0-SNAPSHOT
 * The domain model can be copied into the assets of the app, where it is served as
   `assets/models/<Name>.umlp`. It is off by default. 
