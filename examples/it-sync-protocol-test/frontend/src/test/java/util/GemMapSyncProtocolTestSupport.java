@@ -55,7 +55,11 @@ public interface GemMapSyncProtocolTestSupport extends AssociationsTestSetup {
 
   void assertMapSize(GemMapSyncProtocolTestScenario scenario, int size);
 
+  void assertOtherOwnerEntryPresent(GemMapSyncProtocolTestScenario scenario, int keyIndex, long valueId);
+
   boolean isValueKnown(long valueId);
+
+  boolean isOwnerKnown(long ownerId);
 
   void assertPersistedEntryPresent(GemMapSyncProtocolTestScenario scenario, int keyIndex, long valueId);
 
@@ -63,5 +67,11 @@ public interface GemMapSyncProtocolTestSupport extends AssociationsTestSetup {
 
   void assertPersistedMapSize(GemMapSyncProtocolTestScenario scenario, int size);
 
+  void assertPersistedOtherOwnerEntryPresent(GemMapSyncProtocolTestScenario scenario, int keyIndex, long valueId);
+
   void assertPersistedValueDeleted(long valueId);
+
+  void assertPersistedValuePresent(long valueId);
+
+  void assertPersistedOwnerDeleted(long ownerId);
 }

@@ -100,7 +100,9 @@ public final class GemMapSyncTestGenerator {
     REMOVE("Remove"),
     REMOVE_BY_KEY_SET("RemoveByKeySet"),
     REPLACE("Replace"),
-    DELETE_OBJECT("DeleteObject");
+    DELETE_OBJECT("DeleteObject"),
+    // deleting the owner removes its map, the values and the maps of other owners stay
+    DELETE_OWNER("DeleteOwner");
 
     final String namePart;
 
@@ -295,7 +297,7 @@ public final class GemMapSyncTestGenerator {
   private static int initialValueCount(Operation operation) {
     return switch (operation) {
       case BUILD_OBJECT, PUT, PUT_BY_MAP, REPLACE -> 1;
-      case GET, REKEY, REMOVE, REMOVE_BY_KEY_SET, DELETE_OBJECT -> 2;
+      case GET, REKEY, REMOVE, REMOVE_BY_KEY_SET, DELETE_OBJECT, DELETE_OWNER -> 2;
     };
   }
 
@@ -363,6 +365,19 @@ public final class GemMapSyncTestGenerator {
           content.append("    assertPersistedValueDeleted(scenario.targetValueId);\n");
         }
       }
+      case DELETE_OWNER -> {
+        if (persisted.isEmpty()) {
+          content.append("    assertFalse(isOwnerKnown(scenario.ownerId));\n");
+          content.append("    assertTrue(isValueKnown(scenario.value0Id));\n");
+          content.append("    assertTrue(isValueKnown(scenario.value1Id));\n");
+        }
+        else {
+          content.append("    assertPersistedOwnerDeleted(scenario.ownerId);\n");
+          content.append("    assertPersistedValuePresent(scenario.value0Id);\n");
+          content.append("    assertPersistedValuePresent(scenario.value1Id);\n");
+        }
+        content.append("    assert").append(persisted).append("OtherOwnerEntryPresent(scenario, 0, scenario.value0Id);\n");
+      }
     }
   }
 
@@ -390,20 +405,14 @@ public final class GemMapSyncTestGenerator {
         .append(operation.namePart)
         .append(", ")
         .append(loadState.namePart)
-        .append(" is not sensible: ")
-        .append(buildState.hasBuilder && contextPair != ContextPair.SERVER_TO_SERVER
-            ? "builders are not synchronized with other participants yet"
-            : "the server has loaded all objects")
-        .append(".\n\n");
+        .append(" is not sensible: the server has loaded all objects.\n\n");
   }
 
+  /**
+   * builders are built on the source before the operation, so every build state is sensible for every context pair:
+   * the other participants receive the built objects
+   */
   private static boolean isSensible(BuildState buildState, ContextPair contextPair, LoadState loadState) {
-    // TODO: make more specific (like for lists)
-    if (buildState.hasBuilder
-        && contextPair != ContextPair.SERVER_TO_SERVER // No cross participant sync -> ok
-    ) {
-      return false;
-    }
     // the server has loaded everything it created or received
     if (loadState != LoadState.FULL_OBJECT_LOADED && !expectedIsClient(contextPair)) {
       return false;
@@ -550,6 +559,13 @@ public final class GemMapSyncTestGenerator {
     content.append("        scenario.targetValueId = scenario.value0Id;\n");
     content.append("        assertTrue(AssociationsManager.delete").append(valueType).append("(scenario.targetValueId));\n");
     content.append("      }\n");
+
+    content.append("      case DELETE_OWNER -> {\n");
+    content.append("        ").append(ownerType).append(" otherOwner = newBareOwner();\n");
+    content.append("        scenario.otherOwnerId = otherOwner.getGemId();\n");
+    content.append("        otherOwner.putByKey(AssociationsManager.get").append(valueType).append("Sure(scenario.value0Id));\n");
+    content.append("        assertTrue(AssociationsManager.delete").append(ownerType).append("(scenario.ownerId));\n");
+    content.append("      }\n");
     content.append("    }\n");
     content.append("  }\n\n");
   }
@@ -580,10 +596,32 @@ public final class GemMapSyncTestGenerator {
 
     appendEntryAssertions(content, gemMap, "", "AssociationsManager.get" + ownerType + "Sure(scenario.ownerId)");
     appendEntryAssertions(content, gemMap, "Persisted", "selectPersistedOwner(scenario.ownerId)");
+    appendEntryPresentAssertion(content, gemMap, "OtherOwner",
+        "AssociationsManager.get" + ownerType + "Sure(scenario.otherOwnerId)");
+    appendEntryPresentAssertion(content, gemMap, "PersistedOtherOwner", "selectPersistedOwner(scenario.otherOwnerId)");
 
     content.append("  default void assertPersistedValueDeleted(long valueId) {\n");
     content.append("    assertFalse(AssociationsDAOFactory.get").append(valueType).append("DAO().select")
         .append(valueType).append("(valueId).isPresent());\n");
+    content.append("  }\n\n");
+
+    content.append("  default void assertPersistedValuePresent(long valueId) {\n");
+    content.append("    assertTrue(AssociationsDAOFactory.get").append(valueType).append("DAO().select")
+        .append(valueType).append("(valueId).isPresent());\n");
+    content.append("  }\n\n");
+
+    content.append("  default void assertPersistedOwnerDeleted(long ownerId) {\n");
+    content.append("    assertFalse(AssociationsDAOFactory.get").append(ownerType).append("DAO().select")
+        .append(ownerType).append("(ownerId).isPresent());\n");
+    content.append("  }\n\n");
+
+    content.append("  default boolean isOwnerKnown(long ownerId) {\n");
+    content.append("    for (").append(ownerType).append(" owner : AssociationsManager.get").append(ownerType).append("List()) {\n");
+    content.append("      if (owner.getGemId() == ownerId) {\n");
+    content.append("        return true;\n");
+    content.append("      }\n");
+    content.append("    }\n");
+    content.append("    return false;\n");
     content.append("  }\n\n");
 
     content.append("  default boolean isValueKnown(long valueId) {\n");
@@ -604,13 +642,7 @@ public final class GemMapSyncTestGenerator {
   private static void appendEntryAssertions(StringBuilder content, GemMap gemMap, String persisted, String owner) {
     String ownerType = gemMap.ownerType();
 
-    content.append("  default void assert").append(persisted)
-        .append("EntryPresent(GemMapSyncProtocolTestScenario scenario, int keyIndex, long valueId) {\n");
-    content.append("    ").append(ownerType).append(" owner = ").append(owner).append(";\n");
-    content.append("    assertTrue(owner.containsKeyByKey(key(scenario, keyIndex)));\n");
-    content.append("    assertEquals(Long.valueOf(valueId), owner._internal_getByKeyGemMap().getID(storedKey(scenario, keyIndex)));\n");
-    content.append("    assertEquals(valueId, owner.getByKey(key(scenario, keyIndex)).getGemId());\n");
-    content.append("  }\n\n");
+    appendEntryPresentAssertion(content, gemMap, persisted, owner);
 
     content.append("  default void assert").append(persisted)
         .append("EntryAbsent(GemMapSyncProtocolTestScenario scenario, int keyIndex) {\n");
@@ -622,6 +654,19 @@ public final class GemMapSyncTestGenerator {
         .append("MapSize(GemMapSyncProtocolTestScenario scenario, int size) {\n");
     content.append("    ").append(ownerType).append(" owner = ").append(owner).append(";\n");
     content.append("    assertEquals(size, owner.sizeByKeys());\n");
+    content.append("  }\n\n");
+  }
+
+  /**
+   * assert<prefix>EntryPresent: the map of the owner holds the value under the key with index
+   */
+  private static void appendEntryPresentAssertion(StringBuilder content, GemMap gemMap, String prefix, String owner) {
+    content.append("  default void assert").append(prefix)
+        .append("EntryPresent(GemMapSyncProtocolTestScenario scenario, int keyIndex, long valueId) {\n");
+    content.append("    ").append(gemMap.ownerType()).append(" owner = ").append(owner).append(";\n");
+    content.append("    assertTrue(owner.containsKeyByKey(key(scenario, keyIndex)));\n");
+    content.append("    assertEquals(Long.valueOf(valueId), owner._internal_getByKeyGemMap().getID(storedKey(scenario, keyIndex)));\n");
+    content.append("    assertEquals(valueId, owner.getByKey(key(scenario, keyIndex)).getGemId());\n");
     content.append("  }\n\n");
   }
 
