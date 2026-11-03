@@ -54,12 +54,19 @@
                   "maximumWarning": "2kb"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "sourceMap": {
+                "scripts": true,
+                "vendor": true
+              }
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
-              "sourceMap": true,
+              "sourceMap": {
+                "scripts": true,
+                "vendor": true
+              },
               "namedChunks": true
             }
           },
