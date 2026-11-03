@@ -69,36 +69,138 @@ umlp Associations {
   association uniSomeToMany [1..*] UniSomeToManyLhs -> UniSomeToManyRhs [*];
   // Not allowed: association uniSomeToSome [1..*] UniSomeToSomeLhs -> UniSomeToSomeRhs [1..*];
 
-  // Attribute qualified associations (GemMaps), see GemMapSyncTest
+  // Attribute qualified associations (GemMaps), one per case, see GemMapSyncTestGenerator. Names: <Key><Value>.
+  //   Key:   Str  String attribute key                  (GemValueMap)
+  //          Num  int attribute key                     (GemValueMap)
+  //          Obj  domain typed attribute key: MapKey   (GemEntryMap)
+  //          Role to-one association role key -> MapKey (GemEntryMap)
+  //   Value: Plain    the map holds <Case>Value, which declares the key
+  //          Super    the map holds <Case>Value, the key is declared in its superclass <Case>Base
+  //          Sub      the map holds <Case>Base (declares the key) and contains instances of its subclass <Case>Value
+  //          Abstract the map holds the abstract <Case>Base (declares the key), values are <Case>Value instances
+  //   The owner is <Case>Owner, the role byKey; the value side is [1]: a key stands for one value.
 
-  class Student {
+  class MapKey {
     String name;
-    int matNr;
   }
 
-  class Course {
-    String title;
+  // StrPlain
+  class StrPlainOwner;
+  class StrPlainValue {
+    String key;
   }
+  association strPlainMap StrPlainOwner [[key]] -> (byKey) StrPlainValue [1];
 
-  class Staff {
-    String staffId;
+  // StrSuper
+  class StrSuperOwner;
+  class StrSuperBase {
+    String key;
   }
+  class StrSuperValue extends StrSuperBase;
+  association strSuperMap StrSuperOwner [[key]] -> (byKey) StrSuperValue [1];
 
-  class Tutor extends Staff {
-    int weeklyHours;
+  // StrSub
+  class StrSubOwner;
+  class StrSubBase {
+    String key;
   }
+  class StrSubValue extends StrSubBase;
+  association strSubMap StrSubOwner [[key]] -> (byKey) StrSubBase [1];
 
-  class Enrollment {
-    Student student;
-    int grade;
+  // StrAbstract
+  class StrAbstractOwner;
+  abstract class StrAbstractBase {
+    String key;
   }
+  class StrAbstractValue extends StrAbstractBase;
+  association strAbstractMap StrAbstractOwner [[key]] -> (byKey) StrAbstractBase [1];
 
-  // GemValueMap, int key declared in the target
-  association Course [[matNr]] (attendedCourse) -> (participantByMatNr) Student [1];
+  // NumPlain
+  class NumPlainOwner;
+  class NumPlainValue {
+    int key;
+  }
+  association numPlainMap NumPlainOwner [[key]] -> (byKey) NumPlainValue [1];
 
-  // GemValueMap, key declared in the superclass of the target
-  association Course [[staffId]] (tutoredCourse) -> (tutorByStaffId) Tutor [1];
+  // NumSuper
+  class NumSuperOwner;
+  class NumSuperBase {
+    int key;
+  }
+  class NumSuperValue extends NumSuperBase;
+  association numSuperMap NumSuperOwner [[key]] -> (byKey) NumSuperValue [1];
 
-  // GemEntryMap, keyed by the referenced Student
-  association Course [[student]] (enrollmentCourse) -> (enrollmentByStudent) Enrollment [1];
+  // NumSub
+  class NumSubOwner;
+  class NumSubBase {
+    int key;
+  }
+  class NumSubValue extends NumSubBase;
+  association numSubMap NumSubOwner [[key]] -> (byKey) NumSubBase [1];
+
+  // NumAbstract
+  class NumAbstractOwner;
+  abstract class NumAbstractBase {
+    int key;
+  }
+  class NumAbstractValue extends NumAbstractBase;
+  association numAbstractMap NumAbstractOwner [[key]] -> (byKey) NumAbstractBase [1];
+
+  // ObjPlain
+  class ObjPlainOwner;
+  class ObjPlainValue {
+    MapKey key;
+  }
+  association objPlainMap ObjPlainOwner [[key]] -> (byKey) ObjPlainValue [1];
+
+  // ObjSuper
+  class ObjSuperOwner;
+  class ObjSuperBase {
+    MapKey key;
+  }
+  class ObjSuperValue extends ObjSuperBase;
+  association objSuperMap ObjSuperOwner [[key]] -> (byKey) ObjSuperValue [1];
+
+  // ObjSub
+  class ObjSubOwner;
+  class ObjSubBase {
+    MapKey key;
+  }
+  class ObjSubValue extends ObjSubBase;
+  association objSubMap ObjSubOwner [[key]] -> (byKey) ObjSubBase [1];
+
+  // ObjAbstract
+  class ObjAbstractOwner;
+  abstract class ObjAbstractBase {
+    MapKey key;
+  }
+  class ObjAbstractValue extends ObjAbstractBase;
+  association objAbstractMap ObjAbstractOwner [[key]] -> (byKey) ObjAbstractBase [1];
+
+  // RolePlain
+  class RolePlainOwner;
+  class RolePlainValue;
+  association rolePlainKey RolePlainValue -> (key) MapKey [1];
+  association rolePlainMap RolePlainOwner [[key]] -> (byKey) RolePlainValue [1];
+
+  // RoleSuper
+  class RoleSuperOwner;
+  class RoleSuperBase;
+  class RoleSuperValue extends RoleSuperBase;
+  association roleSuperKey RoleSuperBase -> (key) MapKey [1];
+  association roleSuperMap RoleSuperOwner [[key]] -> (byKey) RoleSuperValue [1];
+
+  // RoleSub
+  class RoleSubOwner;
+  class RoleSubBase;
+  class RoleSubValue extends RoleSubBase;
+  association roleSubKey RoleSubBase -> (key) MapKey [1];
+  association roleSubMap RoleSubOwner [[key]] -> (byKey) RoleSubBase [1];
+
+  // RoleAbstract
+  class RoleAbstractOwner;
+  abstract class RoleAbstractBase;
+  class RoleAbstractValue extends RoleAbstractBase;
+  association roleAbstractKey RoleAbstractBase -> (key) MapKey [1];
+  association roleAbstractMap RoleAbstractOwner [[key]] -> (byKey) RoleAbstractBase [1];
 }
