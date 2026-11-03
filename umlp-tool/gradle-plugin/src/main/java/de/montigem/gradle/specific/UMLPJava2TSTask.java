@@ -229,6 +229,7 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
       // the UMLP adapters run the same rule in their merged async scanner
       params.getAutoPropagateAsync().set(false);
       params.getOutputList().set(outputList);
+      params.getCreateSourceMaps().set(getCreateSourceMaps().orElse(false));
     });
 
     // Block until jsweet finishes

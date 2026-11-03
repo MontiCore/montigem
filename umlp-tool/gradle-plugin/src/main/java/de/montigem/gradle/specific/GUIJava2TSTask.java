@@ -406,6 +406,7 @@ public abstract class GUIJava2TSTask extends DefaultTask {
         params.getJSweetClassPath().from(getJSweetClassPath());
         // the UMLP adapters run the same rule in their merged async scanner
         params.getAutoPropagateAsync().set(false);
+        params.getCreateSourceMaps().set(getCreateSourceMaps().orElse(false));
       });
       jsweetQueue.await();
     }
@@ -452,6 +453,7 @@ public abstract class GUIJava2TSTask extends DefaultTask {
       params.getJSweetClassPath().from(getJSweetClassPath());
       // the UMLP adapters run the same rule in their merged async scanner
       params.getAutoPropagateAsync().set(false);
+      params.getCreateSourceMaps().set(getCreateSourceMaps().orElse(false));
     });
 
     // Block until jsweet finishes
