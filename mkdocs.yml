@@ -85,4 +85,9 @@ nav:
     - Reference: 'MontiGem_Documentation.md'
     - Helpful Links: 'HelpfulLinks.md'
     - GUI Validity Generator Internals: 'GUIValidityDev.md'
+    - Design Decisions:
+      - Protocol Rules: 'protocols/2026.11.03.Protocol_Rules.md'
+      - Protocol Template: 'protocols/2026.11.03.Template.md'
+      - Protocols:
+        - 2026-11-02: 'protocols/2026.11.02.Protocol.md'
   - License: http://monticore.github.io/monticore/00.org/Licenses/LICENSE-MONTICORE-3-LEVEL/
