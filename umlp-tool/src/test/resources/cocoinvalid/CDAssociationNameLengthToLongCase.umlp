@@ -1,0 +1,6 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp CDAssociationNameLengthToLongCase {
+  class FooFooFooFooFooFooFooFooFooFooFooFooFooFoo;
+  class BarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBar;
+  association FooFooFooFooFooFooFooFooFooFooFooFooFooFoo (fooooooooooooooooooooooooooooooooooooooo) -> (barrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr) BarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBarBar;
+}

@@ -18,8 +18,20 @@ public class UMLPCoCos {
     checker.checkAll(ast);
   }
 
+  public static void checkAfterTrafo(ASTCDCompilationUnit ast) {
+    UMLPCoCoChecker checker = new UMLPCoCoChecker();
+    addAllCDCoCosAfterTrafo(checker);
+    checker.checkAll(ast);
+  }
+
   public static void addAllUMLPCoCos(UMLPCoCoChecker checker){
     // TODO add cocos, once these are implemented
+  }
+
+  public static void addAllCDCoCosAfterTrafo(UMLPCoCoChecker checker) {
+    checker.addChecker(new CD4AnalysisCoCosDelegator().getCheckerForAllCoCos());
+    // CoCos for generation after Trafo
+    checker.addCoCo(new UMLPAssociationNameLength());
   }
 
   public static void addAllCDCoCos(UMLPCoCoChecker checker){
