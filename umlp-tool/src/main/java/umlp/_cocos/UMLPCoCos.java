@@ -41,5 +41,6 @@ public class UMLPCoCos {
     checker.addCoCo(new UMLPCheckCDEnumModifier());
     checker.addCoCo(new UMLPCheckAttributeName());
     checker.addCoCo(new UMLPCheckCommandUnique());
+    checker.addCoCo(new UMLPCheckParameterOfCDEnum());
   }
 }

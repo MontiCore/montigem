@@ -1,0 +1,13 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+umlp CDEnumAsParameterFromSingletonClass {
+
+    enum RentableStatus {
+        AVAILABLE;
+    }
+
+    <<singleton>>
+    class RentalService {
+        void rentCar(RentableStatus wowenum);
+    }
+}
