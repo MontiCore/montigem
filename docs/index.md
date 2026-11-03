@@ -18,7 +18,8 @@ hide:
 Make sure you have installed the following dependencies:
 - Java 21 (check it with `java -version`)
 - Gradle 8.14.4 (check it with `gradle --version`) older versions may lead to an error with the jackson dependency
-- Make sure there is a file `~/.gradle/gradle.properties` with your (SE RWTH) Nexus username and password. Example:
+- Building needs no credentials, dependencies are downloaded anonymously from the SE RWTH Nexus.
+- Only for publishing, make sure there is a file `~/.gradle/gradle.properties` with your (SE RWTH) Nexus username and password. Example:
 - If that does not work, place the file in `C:\Users\$USERNAME\.gradle`
 
 ```

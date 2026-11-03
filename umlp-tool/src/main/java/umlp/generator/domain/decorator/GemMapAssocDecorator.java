@@ -62,7 +62,7 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     if (GenService.isMap(assoc)) {
       retList.add(createGemMapClass(origCD, assoc, clazz));
       // one key observer per type of values, as subclasses notify their own observers only
-      CDTypeSymbol targetSymbol = (CDTypeSymbol) assoc.getMCQualifiedType().getDefiningSymbol().get();
+      CDTypeSymbol targetSymbol = (CDTypeSymbol) UMLPSymbolTables.getTypeSymbol(assoc.getMCQualifiedType()).get();
       for (CDTypeSymbol observedType : getObservedTypes(origCD, targetSymbol)) {
         retList.add(createKeyObserverClass(assoc, clazz, targetSymbol, observedType));
       }
@@ -72,7 +72,7 @@ public class GemMapAssocDecorator extends AbstractDecorator {
 
   protected ASTCDClass createGemMapClass(ASTCDCompilationUnit origCD, ASTCDAssocSide assoc, ASTCDType domainClass) {
     String className = getName(domainClass, assoc);
-    CDTypeSymbol targetSymbol = (CDTypeSymbol) assoc.getMCQualifiedType().getDefiningSymbol().get();
+    CDTypeSymbol targetSymbol = (CDTypeSymbol) UMLPSymbolTables.getTypeSymbol(assoc.getMCQualifiedType()).get();
     String targetName = targetSymbol.getName();
     QualifierKey key = QualifierKey.of(assoc);
 

@@ -17,10 +17,12 @@ import de.monticore.ocl.ocl.OCLMill;
 import de.monticore.ocl.util.SymbolTableUtil;
 import de.monticore.symbols.basicsymbols._ast.ASTType;
 import de.monticore.symbols.basicsymbols._symboltable.DiagramSymbol;
+import de.monticore.symbols.basicsymbols._symboltable.TypeSymbol;
 import de.monticore.symboltable.IScope;
 import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.mcbasictypes._ast.ASTMCImportStatement;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
+import de.monticore.types3.TypeCheck3;
 import de.se_rwth.commons.Joiners;
 import umlp.UMLPMill;
 import umlp._symboltable.CDRoleSymbol2VariableSymbolAdapterDeSer;
@@ -32,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class UMLPSymbolTables {
@@ -122,7 +125,16 @@ public class UMLPSymbolTables {
   }
 
   public static ASTCDCompilationUnit getDiagramFor(ASTMCType type){
-    return getDiagramFor(type.getDefiningSymbol().get().getAstNode());
+    return getDiagramFor(getTypeSymbol(type).get().getAstNode());
+  }
+
+  /**
+   * Type symbol of {@code type}, e.g. List for List&lt;Foo&gt;.
+   * Replaces {@link ASTMCType#getDefiningSymbol()}, which TypeCheck3 leaves empty.
+   */
+  public static Optional<TypeSymbol> getTypeSymbol(ASTMCType type) {
+    SymTypeExpression symType = TypeCheck3.symTypeFromAST(type);
+    return symType.hasTypeInfo() ? Optional.of(symType.getTypeInfo()) : Optional.empty();
   }
 
   public static ASTCDCompilationUnit getDiagramFor(ASTCDType type){

@@ -2,6 +2,10 @@
 import {DeSer} from '../command/DeSer';
 
 export class ByteDeSer implements DeSer<number> {
+
+  public isPojoDeSer(): boolean {
+    return false;
+  }
   constructor() {
   }
 

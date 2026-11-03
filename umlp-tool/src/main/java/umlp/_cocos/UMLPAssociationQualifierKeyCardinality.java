@@ -1,7 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp._cocos;
 
-import de.monticore.cd4code.typescalculator.FullSynthesizeFromCD4Code;
+import de.monticore.types3.TypeCheck3;
 import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdassociation._cocos.CDAssociationASTCDAssociationCoCo;
@@ -23,8 +23,6 @@ public class UMLPAssociationQualifierKeyCardinality implements CDAssociationASTC
   public static final String ERROR_MSG_FORMAT = " Qualifier %s of a qualified association must be single valued " +
       "([1]) in class %s; optional and multi-valued attributes or roles are not supported as keys.";
 
-  private final FullSynthesizeFromCD4Code synthesizer = new FullSynthesizeFromCD4Code();
-
   private final WithinTypeBasicSymbolsResolver resolver = new WithinTypeBasicSymbolsResolver();
 
   @Override
@@ -39,7 +37,7 @@ public class UMLPAssociationQualifierKeyCardinality implements CDAssociationASTC
 
   protected void check(ASTCDAssocSide qualifiedSide, ASTCDAssocSide targetSide) {
     String qualifier = qualifiedSide.getCDQualifier().getByAttributeName();
-    SymTypeExpression targetType = synthesizer.synthesizeType(targetSide.getMCQualifiedType()).getResult();
+    SymTypeExpression targetType = TypeCheck3.symTypeFromAST(targetSide.getMCQualifiedType());
     // a role of an association navigable from the target class
     Optional<ASTCDAssocSide> role = UMLPAssociationQualifierByAttributeName.findRole(targetType, qualifier);
     if (role.isPresent()) {

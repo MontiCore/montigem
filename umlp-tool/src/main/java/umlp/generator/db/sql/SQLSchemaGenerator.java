@@ -268,7 +268,7 @@ public class SQLSchemaGenerator {
 
     for (ASTCDAttribute attribute : relevantListAttributes) {
       generateListFieldTable(cd, node, attribute, p);
-      if (attribute.getMCType().getDefiningSymbol().isEmpty()) {
+      if (UMLPSymbolTables.getTypeSymbol(attribute.getMCType()).isEmpty()) {
         generateListFieldTable(cd, node, attribute, p);
       }
     }
@@ -318,7 +318,7 @@ public class SQLSchemaGenerator {
     String origin = "attribute " + cd.getName() + "." + classNode.getName() + "." + attribute.getName();
     p.print(AttributeType.QUOTED.format(checkIdentifier(className(classNode.getName()), attributeName(attribute.getName()), origin)));
     p.print(" ");
-    Optional<? extends ISymbol> typeSymbolOpt = attribute.getMCType().getDefiningSymbol();
+    Optional<? extends ISymbol> typeSymbolOpt = UMLPSymbolTables.getTypeSymbol(attribute.getMCType());
     if (typeSymbolOpt.isEmpty()) {
       Log.error("0xdf10d Can not find symbol for type of attribute " + cd.getName() + "." + classNode.getName() + "." + attribute.getName());
       return;

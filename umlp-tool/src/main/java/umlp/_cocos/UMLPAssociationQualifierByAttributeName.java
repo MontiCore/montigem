@@ -2,7 +2,7 @@
 package umlp._cocos;
 
 import de.monticore.cd._symboltable.CDSymbolTables;
-import de.monticore.cd4code.typescalculator.FullSynthesizeFromCD4Code;
+import de.monticore.types3.TypeCheck3;
 import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdassociation._cocos.CDAssociationASTCDAssociationCoCo;
@@ -29,11 +29,9 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
   public static final String NO_ATTR_ERROR_MSG_FORMAT = " Attribute or association role %s of qualified association " +
       "does not exist in class %s.";
 
-  private final FullSynthesizeFromCD4Code synthesizer;
   private final WithinTypeBasicSymbolsResolver resolver;
 
   public UMLPAssociationQualifierByAttributeName(){
-    this.synthesizer = new FullSynthesizeFromCD4Code();
     this.resolver = new WithinTypeBasicSymbolsResolver();
   }
 
@@ -50,7 +48,7 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
   }
 
   private void checkTypeExists(ASTCDAssocSide qSide, ASTCDAssocSide attrSide) {
-    SymTypeExpression ste = this.synthesizer.synthesizeType(attrSide.getMCQualifiedType()).getResult();
+    SymTypeExpression ste = TypeCheck3.symTypeFromAST(attrSide.getMCQualifiedType());
     final String attributeName = qSide.getCDQualifier().getByAttributeName();
     Optional<SymTypeExpression> expr = this.resolver.resolveVariable(ste, attributeName,
         BasicAccessModifier.ALL_INCLUSION, x -> true);

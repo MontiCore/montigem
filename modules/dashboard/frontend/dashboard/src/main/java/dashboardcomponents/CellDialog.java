@@ -1,6 +1,17 @@
 package dashboardcomponents;
 
-import dashboardmodule.*;
+import dashboardmodule.Axis;
+import dashboardmodule.BarExtraData;
+import dashboardmodule.BoxExtraData;
+import dashboardmodule.CellConfig;
+import dashboardmodule.DashboardModuleManager;
+import dashboardmodule.DashboardModulePosition;
+import dashboardmodule.DashboardModuleSize;
+import dashboardmodule.ExtraData;
+import dashboardmodule.GaugeExtraData;
+import dashboardmodule.GraphExtraData;
+import dashboardmodule.LineExtraData;
+import dashboardmodule.PieExtraData;
 
 import static dashboardmodule.VizType.LINE;
 import java.util.function.Consumer;

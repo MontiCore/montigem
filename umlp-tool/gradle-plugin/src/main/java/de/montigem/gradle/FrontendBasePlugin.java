@@ -5,11 +5,13 @@ import com.github.gradle.node.NodeExtension;
 import com.github.gradle.node.NodePlugin;
 import com.github.gradle.node.npm.task.NpmTask;
 import com.github.gradle.node.npm.task.NpxTask;
+import com.google.gson.JsonObject;
 import de.montigem.gradle.specific.CreateSymlinkTask;
 import de.montigem.gradle.specific.FrontendCIImageTask;
 import de.montigem.gradle.specific.FrontendLocalImageTask;
 import de.montigem.gradle.specific.Java2TSTask;
 import de.montigem.gradle.specific.SetupFrontendTask;
+import de.montigem.gradle.specific.integrationtesting.StartLocalNpmRegistryTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
 import de.se_rwth.commons.logging.Log;
 import org.gradle.api.Plugin;
@@ -113,6 +115,9 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
         ? java.util.Map.of("npm_config_userconfig", project.getLayout().getBuildDirectory()
             .file("app/.npmrc").get().getAsFile().getAbsolutePath())
         : java.util.Map.of())));
+    if (useLocalNpmRepo.get()) {
+      StartLocalNpmRegistryTask.requiredBy(project, npmInstall);
+    }
     TaskProvider<Task> npmUpdate = project.getTasks().named("npm_update", task -> {
       task.dependsOn(npmInstall);
       task.getOutputs().dir("node_modules");
@@ -296,12 +301,20 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
       project.getRepositories().mavenLocal();
     }
     project.getRepositories().maven(repo -> {
-      String mavenUser = requireProjectProperty(project, "mavenUser");
-      String mavenPassword = requireProjectProperty(project, "mavenPassword");
       String repoURL = requireProjectProperty(project, "repo");
-      repo.getCredentials().setUsername(mavenUser);
-      repo.getCredentials().setPassword(mavenPassword);
+      Optional<String> mavenUser = getProjectProperty(project, "mavenUser");
+      Optional<String> mavenPassword = getProjectProperty(project, "mavenPassword");
       repo.setUrl(repoURL);
+      if (mavenUser.isPresent() && mavenPassword.isPresent()) {
+        repo.getCredentials().setUsername(mavenUser.get());
+        repo.getCredentials().setPassword(mavenPassword.get());
+      }
+      else {
+        Log.info("0x00133 Properties `mavenUser` and `mavenPassword` are not both set, accessing `"
+            + repoURL + "` anonymously.\nTo publish built artifacts (e.g., npm libraries), specify both via,"
+            + " e.g., command line (`-PmavenUser=<value> -PmavenPassword=<value>`) or in a"
+            + " gradle.properties file.", FrontendBasePlugin.class.getName());
+      }
     });
     project.getRepositories().mavenCentral();
   }
@@ -366,6 +379,26 @@ public abstract class FrontendBasePlugin implements Plugin<Project> {
           + DependencyPlugin.class.getSimpleName() + "` plugin.");
     }
     return DependencyPlugin.version;
+  }
+
+  /**
+   * @return the npm dist-tag of the libraries published by the build of {@code gradleVersion},
+   * e.g. `g-7.10.0` or `g-7.10.0-SNAPSHOT`.
+   * npm rejects tags that are valid semver ranges, such as `7.10.0`, hence the prefix.
+   */
+  public static String npmDistTag(String gradleVersion) {
+    return "g-" + gradleVersion;
+  }
+
+  /**
+   * Points all dependencies on @umlp and @montigem libraries to the npm dist-tag of the build of {@code gradleVersion}.
+   */
+  public static void useNpmDistTag(JsonObject dependencies, String gradleVersion) {
+    for (String name : dependencies.keySet()) {
+      if (name.startsWith("@umlp/") || name.startsWith("@montigem/")) {
+        dependencies.addProperty(name, npmDistTag(gradleVersion));
+      }
+    }
   }
 
   public static String requireProjectProperty(Project project, String propertyName) {

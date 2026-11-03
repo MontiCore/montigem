@@ -207,6 +207,7 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
           for (URL modelUrl : oclFiles) {
             try {
               File oclFile = new File(modelUrl.toURI());
+              Reporting.reportOpenInputFile(Optional.of(oclFile.getParentFile().toPath()), oclFile.toPath().getFileName());
               // Use OCLWithErrorMessagesMill to parse so we don't lose error messages
               Optional<ASTOCLCompilationUnit> oclCompilationUnit;
               try {
@@ -272,7 +273,10 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
         // execute generator
         UMLPGenerator generator = new UMLPGenerator(data.genSetup, config);
         String configTemplate = data.data.cmd.getOptionValue("ct", UMLPTool.DEFAULT_CONFIGTEMPLATE);
+        boolean qfBefore = Log.isFailQuickEnabled();
+        Log.enableFailQuick(false); // Collect Errors
         generator.generate(data.ast, configTemplate, data.oclCompilationUnits);
+        Log.enableFailQuick(qfBefore);
       }
     });
 

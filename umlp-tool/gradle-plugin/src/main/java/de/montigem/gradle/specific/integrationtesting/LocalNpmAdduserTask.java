@@ -1,9 +1,10 @@
 /* (c) https://github.com/MontiCore/monticore */
-package de.montigem.gradle.specific;
+package de.montigem.gradle.specific.integrationtesting;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import de.montigem.gradle.specific.CreateNpmrcTask;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.RegularFileProperty;

@@ -27,7 +27,7 @@ def isWindows = System.getProperty("os.name").toLowerCase().startsWith("win")
 
 def getNodeDir() {
   def nodejs_dir = file("${rootDir}/.gradle/nodejs/")
-  def node_dir = nodejs_dir.listFiles().find { it.isDirectory() }
+  def node_dir = nodejs_dir.listFiles().find { it.isDirectory() && it.name.startsWith("node-") }
   assert node_dir != null: "Can't find node installation"
   return node_dir
 }
@@ -124,8 +124,10 @@ subprojects {
       mavenLocal()
     }
     maven {
-      credentials.username mavenUser
-      credentials.password mavenPassword
+      if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+        credentials.username mavenUser
+        credentials.password mavenPassword
+      }
       url repo
     }
     mavenCentral()
@@ -276,8 +278,10 @@ repositories {
     mavenLocal()
   }
   maven {
-    credentials.username mavenUser
-    credentials.password mavenPassword
+    if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+      credentials.username mavenUser
+      credentials.password mavenPassword
+    }
     url repo
   }
   mavenCentral()
@@ -363,9 +367,22 @@ tasks.register("ciDeployRTE"){
 
 allprojects {
   plugins.withId("com.google.cloud.tools.jib") {
-    // Only configure registry auth where credentials are provided (e.g. GitLab CI);
-    // Jib rejects null values, which would break the configuration phase otherwise
-    if (System.getenv("CI") != null && System.getenv("CI_REGISTRY_USER") != null) {
+    if (System.getenv("GITHUB_ACTIONS") != null) {
+      // GitHub Actions: the base image (container_from_image) is pulled with other credentials than the images are pushed with.
+      // Only configured when the push task runs so builds without a push need none of these variables
+      System.setProperty("jib.console", "plain")
+      tasks.named("jib").configure { task ->
+        task.doFirst {
+          def jib = task.project.extensions.getByName("jib")
+          jib.from.auth.username = Objects.requireNonNull(System.getenv("REGISTRY_USER"), "REGISTRY_USER not set")
+          jib.from.auth.password = Objects.requireNonNull(System.getenv("REGISTRY_PASSWORD"), "REGISTRY_PASSWORD not set")
+          jib.to.auth.username = Objects.requireNonNull(System.getenv("UMLP_REGISTRY_USER"), "UMLP_REGISTRY_USER not set")
+          jib.to.auth.password = Objects.requireNonNull(System.getenv("UMLP_REGISTRY_PASSWORD"), "UMLP_REGISTRY_PASSWORD not set")
+        }
+      }
+    } else if (System.getenv("CI") != null && System.getenv("CI_REGISTRY_USER") != null) {
+      // Only configure registry auth where credentials are provided (e.g. GitLab CI);
+      // Jib rejects null values, which would break the configuration phase otherwise
       System.setProperty("jib.console", "plain")
       extensions.configure("jib") { jib ->
         jib.from {
@@ -381,6 +398,14 @@ allprojects {
           }
         }
       }
+    }
+  }
+
+  // Frontend images are pushed by deployImageCI that reads CI_REGISTRY_USER/CI_REGISTRY_PASSWORD (GitLab) by default
+  if (System.getenv("GITHUB_ACTIONS") != null) {
+    tasks.withType(FrontendCIImageTask).configureEach {
+      registryUser.set(project.provider { Objects.requireNonNull(System.getenv("UMLP_REGISTRY_USER"), "UMLP_REGISTRY_USER not set") })
+      registryPassword.set(project.provider { Objects.requireNonNull(System.getenv("UMLP_REGISTRY_PASSWORD"), "UMLP_REGISTRY_PASSWORD not set") })
     }
   }
 }

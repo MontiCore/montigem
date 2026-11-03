@@ -5,6 +5,7 @@ import resources.exectests.AnonymousInnerClassRuntimeCheck;
 import resources.exectests.ArrayStreamAdapterRuntimeCheck;
 import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
+import resources.exectests.FunctionDisplayGraphRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
 import resources.exectests.MapRuntimeCheck;
@@ -72,5 +73,10 @@ public class ExecutionTests {
   public void testNestedFlatMap() {
     ExecTestRunner.runExecutionTest(NestedFlatMapRuntimeCheck.class,
         NestedFlatMapElement.class, NestedFlatMapElementSource.class);
+  }
+
+  @Test
+  public void testFunctionDisplayGraph() {
+    ExecTestRunner.runExecutionTest(FunctionDisplayGraphRuntimeCheck.class);
   }
 }
