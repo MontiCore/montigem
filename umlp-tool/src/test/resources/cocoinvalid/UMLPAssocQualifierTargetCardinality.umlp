@@ -10,8 +10,13 @@ umlp UMLPAssocQualifierTargetCardinality {
   association B [[name]] (byNameSome) -> A [1..*];
   association B [[name]] (byNameNone) -> A;
   association [*] A (byNameFromRight) <- [[name]] B;
+  association B [String] (byStringMany) -> A [*];
+  association B [B] (byBOpt) -> A [0..1];
+  association [*] A (byIntFromRight) <- [int] B;
 
   // valid: the value side is [1], the qualifier side may have any cardinality
   association B [[name]] (byName) -> A [1];
   association [*] B [[name]] (byNameManyOwners) -> A [1];
+  association B [String] (byString) -> A [1];
+  association [*] B [B] (byBManyOwners) -> A [1];
 }

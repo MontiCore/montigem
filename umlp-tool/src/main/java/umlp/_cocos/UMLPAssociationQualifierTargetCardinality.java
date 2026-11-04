@@ -6,23 +6,23 @@ import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdassociation._cocos.CDAssociationASTCDAssociationCoCo;
 
 /**
- * The side of an attribute qualified association whose class holds the qualifying attribute (the values) has the
- * cardinality [1]: the keys are derived from the values, so every key stands for exactly one value (a qualified access
- * reaches one object). The qualifier side may have any cardinality.
+ * The value side of a qualified association, by an attribute ({@code [[attr]]}) or a type ({@code [Type]}), has the
+ * cardinality [1]: every key stands for exactly one value (a qualified access reaches one object), whether the key
+ * is derived from the value or chosen on put. The qualifier side may have any cardinality.
  */
 public class UMLPAssociationQualifierTargetCardinality implements CDAssociationASTCDAssociationCoCo, CoCoTestable {
 
   public static final String ERROR_CODE = "0xCDC6C";
 
-  public static final String ERROR_MSG_FORMAT = " The class %s, whose %s qualifies the association, must have the " +
-      "cardinality [1]: every key is derived from exactly one object.";
+  public static final String ERROR_MSG_FORMAT = " The class %s of the association qualified by %s must have the " +
+      "cardinality [1]: every key stands for exactly one object.";
 
   @Override
   public void check(ASTCDAssociation assoc) {
-    if (UMLPAssociationQualifierKeyCardinality.isAttributeQualified(assoc.getLeft())) {
+    if (UMLPAssociationQualifierUnidirectional.isQualified(assoc.getLeft())) {
       check(assoc.getLeft(), assoc.getRight());
     }
-    if (UMLPAssociationQualifierKeyCardinality.isAttributeQualified(assoc.getRight())) {
+    if (UMLPAssociationQualifierUnidirectional.isQualified(assoc.getRight())) {
       check(assoc.getRight(), assoc.getLeft());
     }
   }
@@ -30,7 +30,7 @@ public class UMLPAssociationQualifierTargetCardinality implements CDAssociationA
   protected void check(ASTCDAssocSide qualifiedSide, ASTCDAssocSide targetSide) {
     if (!targetSide.isPresentCDCardinality() || !targetSide.getCDCardinality().isOne()) {
       logError(qualifiedSide.getCDQualifier(), targetSide.getMCQualifiedType().getMCQualifiedName(),
-          qualifiedSide.getCDQualifier().getByAttributeName());
+          UMLPAssociationQualifierUnidirectional.printQualifier(qualifiedSide.getCDQualifier()));
     }
   }
 

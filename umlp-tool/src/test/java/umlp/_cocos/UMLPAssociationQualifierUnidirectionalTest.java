@@ -14,10 +14,13 @@ public class UMLPAssociationQualifierUnidirectionalTest extends AbstractCoCoTest
   public void testInvalidDirections() {
     parseInvalid("UMLPAssocQualifierBidirectional");
 
-    assertFindingAtLine(0, 12, "name", "B");
-    assertFindingAtLine(1, 13, "name", "B");
-    assertFindingAtLine(2, 14, "number", "A");
-    assertFindingsCount(3);
+    assertFindingAtLine(0, 12, "[[name]]", "B");
+    assertFindingAtLine(1, 13, "[[name]]", "B");
+    assertFindingAtLine(2, 14, "[[number]]", "A");
+    assertFindingAtLine(3, 16, "[String]", "B");
+    assertFindingAtLine(4, 17, "[A]", "B");
+    assertFindingAtLine(5, 18, "[int]", "A");
+    assertFindingsCount(6);
   }
 
   @Test

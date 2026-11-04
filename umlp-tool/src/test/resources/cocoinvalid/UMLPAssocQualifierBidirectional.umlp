@@ -12,4 +12,8 @@ umlp UMLPAssocQualifierBidirectional {
   association B [[name]] <-> A [1];
   association B [[name]] <- A [1];
   association [1] B <-> [[number]] A;
+  association B [String] (byName) -> A [1];
+  association B [String] (byNameBoth) <-> A [1];
+  association B [A] (byA) <- A [1];
+  association [1] B <-> [int] A;
 }
