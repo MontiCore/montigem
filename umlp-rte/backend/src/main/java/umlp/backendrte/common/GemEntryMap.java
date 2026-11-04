@@ -269,6 +269,11 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
       _internal_putValueAndSync(value);
       return oldElem;
     }
+    if (key == null) {
+      // a chosen key must be present (type qualified associations; the database stores it NOT NULL)
+      Log.error("0xA7318 The object with id " + value.getGemId() + " cannot be put under the key null");
+      return null;
+    }
     final V oldElem = get(key);
     _internal_putAndSync(key, value);
     return oldElem;

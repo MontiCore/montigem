@@ -582,6 +582,23 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
     assertNoErrors();
   }
 
+  /** a chosen key must be present, before and after build: a put with a null key is reported and changes nothing */
+  @Test
+  public void testChosenKeyMustNotBeNull() {
+    Node a = new Node();
+    NodeValueMap map = new NodeValueMap(null);
+    assertNull(map.put(null, a));
+    map.build();
+    assertNull(map.put(null, a.build().get()));
+    assertTrue(map.isEmpty());
+    assertTrue(map.putKeys.isEmpty());
+
+    NodeEntryMap entryMap = new NodeEntryMap(null);
+    assertNull(entryMap.put(null, a));
+    assertTrue(entryMap.isEmpty());
+    assertEquals(3, Log.getErrorCount());
+  }
+
   /** derivesKey tells a value that really has a key from a stale entry, whose value derives another key by now */
   @Test
   public void testDerivesKeyTellsStaleEntries() {
