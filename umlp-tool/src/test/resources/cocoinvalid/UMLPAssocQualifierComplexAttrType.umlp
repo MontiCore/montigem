@@ -8,6 +8,9 @@ umlp UMLPAssocQualifierComplexAttrType {
     java.util.List<String> names;
     java.util.Optional<String> optName;
     java.util.Set<Integer> ids;
+    double weight;
+    Float ratio;
+    char initial;
   }
 
   enum E;
@@ -16,4 +19,7 @@ umlp UMLPAssocQualifierComplexAttrType {
   association A [[optName]] -> B [1];
   association A [[ids]] -> B [1];
   association B [[e]] -> A [1];
+  association A [[weight]] (byWeight) -> B [1];
+  association A [[ratio]] (byRatio) -> B [1];
+  association A [[initial]] (byInitial) -> B [1];
 }

@@ -279,4 +279,21 @@ umlp Associations {
   abstract class TypObjAbstractBase;
   class TypObjAbstractValue extends TypObjAbstractBase;
   association typObjAbstractMap TypObjAbstractOwner [MapKey] -> (byKey) TypObjAbstractBase [1];
+
+  // long keys, Plain only (the key dimension is independent of the value hierarchy): the keys are close to the
+  // largest integer a browser represents exactly (GemValueMap#isSafeKey)
+  //   LongPlain     [[key]], long key attribute (GemValueMap)
+  //   TypLongPlain  [long] (GemValueMap)
+
+  // LongPlain
+  class LongPlainOwner;
+  class LongPlainValue {
+    long key;
+  }
+  association longPlainMap LongPlainOwner [[key]] -> (byKey) LongPlainValue [1];
+
+  // TypLongPlain
+  class TypLongPlainOwner;
+  class TypLongPlainValue;
+  association typLongPlainMap TypLongPlainOwner [long] -> (byKey) TypLongPlainValue [1];
 }

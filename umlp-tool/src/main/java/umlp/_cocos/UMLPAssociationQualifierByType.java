@@ -10,14 +10,17 @@ import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.types3.SymTypeRelations;
 
 /**
- * The type of a type qualified association ({@code Owner [Type] -> Target}) is the key type of its GemMap: numeric
- * and String types are keys of a GemValueMap, domain classes keys of a GemEntryMap.
+ * The type of a type qualified association ({@code Owner [Type] -> Target}) is the key type of its GemMap: the
+ * integral types byte, short, int and long (not float, double or char, see
+ * {@link UMLPAssociationQualifierByAttributeName#isUnsupportedKey}) and String are keys of a GemValueMap, domain
+ * classes keys of a GemEntryMap.
  */
 public class UMLPAssociationQualifierByType implements CDAssociationASTCDAssociationCoCo, CoCoTestable {
 
   public static final String ERROR_CODE = "0xCDC63";
   public static final String ERROR_MSG_FORMAT = " Qualified association with type %s is invalid, " +
-      "qualified associations only support numeric, String or domain class type qualifiers.";
+      "qualified associations only support byte, short, int, long (not float, double or char: Java and the " +
+      "browser would disagree on their keys), String or domain class type qualifiers.";
   @Override
   public void check(ASTCDAssociation a) {
     if (a.getLeft().isPresentCDQualifier() && a.getLeft().getCDQualifier().isPresentByType()) {
@@ -28,8 +31,9 @@ public class UMLPAssociationQualifierByType implements CDAssociationASTCDAssocia
   }
   private void checkKeyType(ASTMCType type) {
     SymTypeExpression ste = TypeCheck3.symTypeFromAST(type);
-    if (!SymTypeRelations.isNumericType(ste) && !SymTypeRelations.isString(ste)
-        && !UMLPAssociationQualifierByAttributeName.isDomainKey(ste)) {
+    boolean integral = SymTypeRelations.isNumericType(ste)
+        && !UMLPAssociationQualifierByAttributeName.isUnsupportedKey(ste);
+    if (!integral && !SymTypeRelations.isString(ste) && !UMLPAssociationQualifierByAttributeName.isDomainKey(ste)) {
       logError((ASTCNode) type, ste.getTypeInfo().getName());
     }
   }

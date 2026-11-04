@@ -117,6 +117,9 @@ public class GemMapAssocDecorator extends AbstractDecorator {
       // the key is chosen on put (RTE: not derived by default)
       getCD4C().addMethod(ast, "umlp.gemmap.PutAndSync", key.getKeyType(), targetName, assoc.getName());
     }
+    if (key.isLongKey()) {
+      getCD4C().addMethod(ast, "umlp.gemmap.IsSafeKey", key.getKeyType());
+    }
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveValueIDAndSync", assoc.getName());
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveAndSync", key.getKeyType(), key.isEntryKey());
     addDomainImports(ast, domainClass);
