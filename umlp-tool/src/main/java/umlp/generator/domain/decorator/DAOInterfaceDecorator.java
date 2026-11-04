@@ -27,6 +27,8 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
 
   protected String cdName = "";
 
+  protected ASTCDCompilationUnit origCD;
+
   public DAOInterfaceDecorator(GlobalExtensionManagement glex) {
     super(glex);
   }
@@ -34,6 +36,7 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
   @Override
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     cdName = origCD.getCDDefinition().getName();
+    this.origCD = origCD;
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, DEFAULT_PACKAGE);
     getConcreteDomainClasses(origCD).forEach(c ->
         astcdPackage.addCDElement(withOrigin(
@@ -207,6 +210,10 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
         ownerSide.getName(), key.getStoredKeyType());
     getCD4C().addMethod(daoInterface, "umlp.daointerface.associations.SelectWithKeysForAssocDAO",
         ownerSide.getName(), mapSide.getName(), key.getStoredKeyType());
+    if (key.isEntryKey()) {
+      // deleting a key object deletes its pairs, see GemMapOwnerRole#typeQualifiedKeyedBy
+      getCD4C().addMethod(daoInterface, "umlp.daointerface.associations.RemoveAllWithKeyForAssocDAO", assoc);
+    }
   }
 
   protected void removeAllMethodForAssocDAO(ASTCDType daoInterface, ASTCDAssociation assoc,

@@ -147,6 +147,56 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertEquals(0, load(directory).sizeByCodes());
   }
 
+  /**
+   * deleting a key object removes its entry (the value remains) from the maps of the loaded owners, on the server and
+   * on the participants that loaded an owner, and from the database
+   */
+  @Test
+  default void testDeleteKeyObject() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();
+    var it = QualifiedAssocsManager.departmentBuilder().name("it").build().get();
+    var directory = QualifiedAssocsManager.directoryBuilder()
+        .headByDepartmentPut(sales, anna).headByDepartmentPut(it, bob).build().get();
+
+    getClients(0).activate();
+    var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
+    assertEquals(2, clientDirectory.sizeHeadByDepartments());
+
+    getBackend().activate();
+    assertTrue(QualifiedAssocsManager.deleteDepartment(sales.getGemId()));
+    assertEquals(Map.of(it.getGemId(), bob.getGemId()), directory._internal_getHeadByDepartmentGemMap().getIDMap());
+    assertTrue(QualifiedAssocsDAOFactory.getPersonDAO().selectPerson(anna.getGemId()).isPresent());
+    assertEquals(Map.of(it.getGemId(), bob.getGemId()),
+        load(directory)._internal_getHeadByDepartmentGemMap().getIDMap());
+
+    getClients(0).activate();
+    assertEquals(Map.of(it.getGemId(), bob.getGemId()),
+        clientDirectory._internal_getHeadByDepartmentGemMap().getIDMap());
+  }
+
+  /** a key object deleted while its owner is not loaded: the database deletes the pairs with that key */
+  @Test
+  default void testDeleteKeyObjectOfOwnerNotLoaded() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var bob = QualifiedAssocsManager.personBuilder().login("bob").number(2).build().get();
+    var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();
+    var it = QualifiedAssocsManager.departmentBuilder().name("it").build().get();
+    long directoryId = QualifiedAssocsManager.directoryBuilder()
+        .headByDepartmentPut(sales, anna).headByDepartmentPut(it, bob).build().get().getGemId();
+
+    QualifiedAssocsManager.TESTING_clearCache();
+    assertTrue(QualifiedAssocsManager.deleteDepartment(sales.getGemId()));
+
+    var directory = QualifiedAssocsManager.getDirectorySure(directoryId);
+    assertEquals(Map.of(it.getGemId(), bob.getGemId()), directory._internal_getHeadByDepartmentGemMap().getIDMap());
+    assertSame(QualifiedAssocsManager.getDepartmentSure(it.getGemId()),
+        directory.getHeadByDepartmentMap().keySet().iterator().next());
+  }
+
   /** deleting a value removes its entries from the loaded owners and from the database */
   @Test
   default void testDeleteValue() {
