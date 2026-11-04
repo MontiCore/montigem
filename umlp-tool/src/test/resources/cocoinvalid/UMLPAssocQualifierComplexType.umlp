@@ -14,9 +14,14 @@ umlp UMLPAssocQualifierComplexType {
 
   association B [boolean] -> A [1];
   association B [E] -> A [1];
+  association B [double] -> (byDouble) A [1];
+  association B [Float] -> (byFloat) A [1];
+  association B [char] -> (byChar) A [1];
+  association B [Character] -> (byCharacter) A [1];
 
-  // valid: domain class, String and numeric keys
+  // valid: domain class, String and integral keys
   association A [C] -> B [1];
   association A [String] -> (byName) B [1];
   association A [int] -> (byNumber) B [1];
+  association A [long] -> (byLong) B [1];
 }

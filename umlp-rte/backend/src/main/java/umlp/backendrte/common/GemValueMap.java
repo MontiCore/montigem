@@ -30,6 +30,9 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
     extends AbstractMap<K, V>
     implements GemBuildable {
 
+  // the largest integer a browser represents exactly (JavaScript Number.MAX_SAFE_INTEGER), see isSafeKey
+  public static final long MAX_SAFE_KEY = 9007199254740991L;
+
   // local storage of the gemIds of the contained objects: all ids of the qualified association
   protected HashMap<K, Long> idMap;
 
@@ -206,10 +209,13 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
    * puts value under key and returns the value stored for key before, like {@link java.util.Map#put}, but a value
    * is stored under one key only: an entry the value has under another key moves to key. The key of an attribute
    * qualified association is derived from the value, so a key that does not match is rejected; a null key is
-   * rejected as well.
+   * rejected as well, and so is a key the browser cannot represent exactly (see {@link #isSafeKey}).
    */
   @Override
   public V put(K key, V value) {
+    if (key != null && refusesKey(key, value.getGemId())) {
+      return null;
+    }
     if (isKeyDerived()) {
       // the key of a value is derived from the value, it cannot be chosen
       K derived = deriveKey(value);
@@ -253,7 +259,33 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
    * stored under one key only: an entry it has under another key is moved to key, see {@link #_internal_putValueID}
    */
   public void _internal_putKeyValue(K key, V value) {
+    if (refusesKey(key, value.getGemId())) {
+      return;
+    }
     _internal_putValueID(key, value.getGemId());
+  }
+
+  /**
+   * whether the browser represents key exactly: there, numbers are doubles, which hold the integers up to
+   * {@link #MAX_SAFE_KEY} only; a larger long key would equal its neighbours in the browser, so the participants
+   * would disagree on the entries. Overridden by the maps of long keys, all other keys are safe.
+   */
+  public boolean isSafeKey(K key) {
+    return true;
+  }
+
+  /**
+   * reports a key that is not safe (see {@link #isSafeKey}): such a key is refused, the map does not change
+   *
+   * @return whether key is refused
+   */
+  protected boolean refusesKey(K key, long valueGemID) {
+    if (isSafeKey(key)) {
+      return false;
+    }
+    Log.error("0xA7309 The key " + key + " of the object with id " + valueGemID + " is refused: keys must be within "
+        + "-" + MAX_SAFE_KEY + " and " + MAX_SAFE_KEY + ", the integers a browser represents exactly");
+    return true;
   }
 
   public void _internal_put(K key, long valueGemID) {
@@ -334,7 +366,11 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
    * (only for maps of attribute qualified associations)
    */
   public void _internal_putValue(V value) {
-    _internal_putValueID(deriveKey(value), value.getGemId());
+    K key = deriveKey(value);
+    if (refusesKey(key, value.getGemId())) {
+      return;
+    }
+    _internal_putValueID(key, value.getGemId());
     onValueKeyed(value);
   }
 
@@ -414,6 +450,10 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
 
   protected void keyLoadedValue(V value) {
     K key = deriveKey(value);
+    if (refusesKey(key, value.getGemId())) {
+      // like a key that is not unique, the value is not keyed
+      return;
+    }
     Long present = lookupID(key);
     if (present != null && present != value.getGemId()) {
       Log.error("0xA7303 Key " + key + " is not unique: it is derived from the objects with ids "
@@ -456,6 +496,10 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
   public boolean _internal_rekey(K oldKey, K newKey, long valueGemID) {
     if (!Objects.equals(lookupID(oldKey), valueGemID) || Objects.equals(oldKey, newKey)) {
       // not (or no longer) contained under oldKey
+      return false;
+    }
+    if (refusesKey(newKey, valueGemID)) {
+      // like a key that is not unique, the value stays under oldKey
       return false;
     }
     if (lookupID(newKey) != null) {

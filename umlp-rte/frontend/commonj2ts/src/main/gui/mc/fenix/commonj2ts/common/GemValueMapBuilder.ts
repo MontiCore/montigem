@@ -157,6 +157,9 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     } else {
       // keep the element itself, it may be an unbuilt builder
       const key: K = await this.deriveKey(value);
+      if (this.refusesKey(key, value.getGemId())) {
+        return;
+      }
       // stored under one key only, see _internal_putValueID
       for (const [otherKey, other] of Array.from(this.builderElemStorage.entries())) {
         if (otherKey !== key && other.getGemId() === value.getGemId()) {
@@ -175,6 +178,9 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if (this.buildFinished) {
       await super._internal_putKeyValue(key, value);
     } else {
+      if (this.refusesKey(key, value.getGemId())) {
+        return;
+      }
       await this.ensureKeyed();
       // stored under one key only, see _internal_putValueID
       for (const [otherKey, other] of Array.from(this.builderElemStorage.entries())) {

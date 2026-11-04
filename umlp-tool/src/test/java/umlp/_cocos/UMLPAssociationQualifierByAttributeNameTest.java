@@ -14,9 +14,13 @@ public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTes
   public void testInvalidQAttrType() {
     parseInvalid("UMLPAssocQualifierComplexAttrType");
 
-    // the List names (line 13) is multi-valued, see UMLPAssociationQualifierKeyCardinalityTest
-    assertFindingAtLine(0, 14, "e");
-    assertFindingsCount(1);
+    // the List names (line 16) is multi-valued, see UMLPAssociationQualifierKeyCardinalityTest
+    assertFindingAtLine(0, 17, "e");
+    // Java and the browser would disagree on floating point and char keys
+    assertFindingAtLine(1, 18, "weight");
+    assertFindingAtLine(2, 19, "ratio");
+    assertFindingAtLine(3, 20, "initial");
+    assertFindingsCount(4);
   }
 
   @Test

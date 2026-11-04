@@ -127,6 +127,10 @@ public class PutDecorator extends AddDecorator {
       getCD4C().addMethod(ast, "umlp.commands.put.DoRun", domainType.getName(), getCorrectManager(domainType),
           a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getStoredKeyType(),
           key.isEntryKey() ? "0xA7316" : "0xA7306");
+      if (key.isLongKey()) {
+        // a long key the browser cannot represent is neither executed nor sent on
+        getCD4C().addMethod(ast, "umlp.commands.put.CheckContractKey", false, true);
+      }
       return;
     }
     String keyTypeManager = "";
@@ -141,8 +145,9 @@ public class PutDecorator extends AddDecorator {
     getCD4C().addMethod(ast, "umlp.commands.put.DoRunKey", domainType.getName(), getCorrectManager(domainType),
         a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getKeyType(),
         keyTypeManager);
-    // the chosen key is a precondition: a put with a null key is neither executed nor sent on
-    getCD4C().addMethod(ast, "umlp.commands.put.CheckContractKey");
+    // the chosen key is a precondition: a put with a null key (or a long key the browser cannot represent) is neither
+    // executed nor sent on
+    getCD4C().addMethod(ast, "umlp.commands.put.CheckContractKey", true, key.isLongKey());
   }
 
   protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType) {

@@ -7,6 +7,13 @@ ${tc.signature("name", "targetName", "sourceName", "isEntry", "keyType", "errorC
 
 ${cd4c.method("public void put${name?cap_first}(${targetName} o, NotificationScope scope)")}
 ${keyType} key = this._${name}.<#if isEntry>deriveKeyID<#else>deriveKey</#if>(o);
+<#if !isEntry>
+if (!this._${name}.isSafeKey(key)) {
+  Log.error("0xA7326 The object with id " + o.getGemId() + " cannot be put under the key " + key
+      + ", which a browser cannot represent exactly");
+  return;
+}
+</#if>
 Long oldID = this._${name}.getID(key);
 if (oldID != null && oldID == o.getGemId()) {
   return;

@@ -181,6 +181,14 @@ public class QualifierKey {
   }
 
   /**
+   * @return whether the key is a long (GemValueMap): the browser represents it exactly only within
+   * -2^53+1 and 2^53-1, so larger keys are refused (GemValueMap#isSafeKey)
+   */
+  public boolean isLongKey() {
+    return !isEntryKey && ("java.lang.Long".equals(keyType) || "Long".equals(keyType));
+  }
+
+  /**
    * @return the type a key is stored and synchronized as: the key itself (boxed) for GemValueMaps,
    * the gemId of the key object for GemEntryMaps
    */

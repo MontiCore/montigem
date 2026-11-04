@@ -11,6 +11,13 @@ if (key == null) {
   Log.error("0xA7323 The object with id " + o.getGemId() + " cannot be put under the key null");
   return;
 }
+<#if !isEntry>
+if (!this._${name}.isSafeKey(key)) {
+  Log.error("0xA7326 The object with id " + o.getGemId() + " cannot be put under the key " + key
+      + ", which a browser cannot represent exactly");
+  return;
+}
+</#if>
 ${storedKeyType} storedKey = <#if isEntry>key.getGemId()<#else>key</#if>;
 Long oldID = this._${name}.getID(storedKey);
 if (oldID != null && oldID == o.getGemId()) {

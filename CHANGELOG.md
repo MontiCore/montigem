@@ -47,11 +47,20 @@ For MontiGem users:
   The owner gets `putBySeat(seat, student)`, `getBySeat(seat)`, `containsKeyBySeat(seat)`,
   `removeBySeat(seat)` and the live `java.util.Map` `getBySeatMap()`, like attribute qualified
   associations. A value is stored under one key only: putting it under another key moves it.
-  Numeric and `String` keys make a `GemValueMap`, domain class keys a `GemEntryMap`; deleting
+  Integral and `String` keys make a `GemValueMap`, domain class keys a `GemEntryMap`; deleting
   the key object removes its entries. A null key is rejected (`0xA7323`). Boolean and enum keys
   are rejected (`0xCDC63`). As for attribute qualified associations, the association must be
   unidirectional (`0xCDC6A`) and the value side `[1]` (`0xCDC6C`), so existing bidirectional or
   `[*]` type qualified associations have to be changed.
+* **Breaking:** `float`, `double` and `char` (also boxed) are no longer allowed as keys of
+  qualified associations, neither as type (`[double]`, `0xCDC63`) nor as attribute (`[[weight]]`,
+  `0xCDC68`): a computed floating point key rarely equals the stored one, and Java and the browser
+  disagree on keys such as `-0.0` and `0.0`, on `float` precision and on `char` (a number in Java,
+  a string in the browser). Use `byte`, `short`, `int`, `long`, a `String` or a domain class.
+* `long` keys must lie within ±(2^53 − 1) (`GemValueMap.MAX_SAFE_KEY`), the integers a browser
+  represents exactly; larger keys would collapse into one key there. A put with such a key is
+  refused (`0xA7326`, map `0xA7309`), a put command with one is rejected (`0xA7327`), and a value
+  whose key attribute changes to such a key keeps its old key, like a key that is not unique.
 * **Breaking (database):** the table of a type qualified association stores the key in a column
   `qualifier` (`qualifier_id` for domain class keys), `NOT NULL`; in Neo4j it is the property
   `qualifier` of the relationship. There is no migration: existing tables of type qualified

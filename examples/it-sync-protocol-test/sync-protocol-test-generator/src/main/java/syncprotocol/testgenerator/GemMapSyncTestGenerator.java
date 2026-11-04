@@ -30,7 +30,10 @@ public final class GemMapSyncTestGenerator {
     // type qualified associations ([T]): the key is chosen on put
     TYP_STR("TypStr", "String", false, true),
     TYP_NUM("TypNum", "int", false, true),
-    TYP_OBJ("TypObj", "MapKey", true, true);
+    TYP_OBJ("TypObj", "MapKey", true, true),
+    // long keys close to the largest integer a browser represents exactly; Plain values only
+    LONG("Long", "long", false, false),
+    TYP_LONG("TypLong", "long", false, true);
 
     final String namePart;
     final String type;
@@ -44,6 +47,11 @@ public final class GemMapSyncTestGenerator {
       this.type = type;
       this.entry = entry;
       this.chosen = chosen;
+    }
+
+    // the value shapes of the model: all for most keys, Plain only for long keys
+    boolean hasValue(Value value) {
+      return value == Value.PLAIN || (this != LONG && this != TYP_LONG);
     }
   }
 
@@ -173,6 +181,9 @@ public final class GemMapSyncTestGenerator {
     List<GemMap> gemMaps = new ArrayList<>();
     for (Key key : Key.values()) {
       for (Value value : Value.values()) {
+        if (!key.hasValue(value)) {
+          continue;
+        }
         gemMaps.add(new GemMap(key, value));
       }
     }
@@ -474,6 +485,8 @@ public final class GemMapSyncTestGenerator {
     switch (gemMap.key()) {
       case STR, TYP_STR -> content.append("    return \"key\" + index;\n");
       case NUM, TYP_NUM -> content.append("    return 1000 + index;\n");
+      // 2^53 - 1 - 10 + index: within the keys a browser represents exactly, see GemValueMap#isSafeKey
+      case LONG, TYP_LONG -> content.append("    return 9007199254740981L + index;\n");
       case OBJ, ROLE, TYP_OBJ -> content.append("    return AssociationsManager.getMapKeySure(scenario.keyIds[index]);\n");
     }
     content.append("  }\n\n");

@@ -25,7 +25,8 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
   public static final String NO_ATTR_ERROR_CODE = "0xCDC69";
 
   public static final String TYPE_ERROR_MSG_FORMAT = " Qualified association with attribute %s " +
-      "has incompatible type, qualified associations only support primitive, String or domain class attributes as qualifiers.";
+      "has incompatible type, qualified associations only support primitive (not float, double or char: Java and " +
+      "the browser would disagree on their keys), String or domain class attributes as qualifiers.";
   public static final String NO_ATTR_ERROR_MSG_FORMAT = " Attribute or association role %s of qualified association " +
       "does not exist in class %s.";
 
@@ -87,11 +88,21 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
   }
 
   /**
-   * primitive (MontiCore typecheck, String included) qualifiers are keys of a GemValueMap
+   * primitive (MontiCore typecheck, String included) qualifiers are keys of a GemValueMap, except the ones the
+   * participants would not agree on (see {@link #isUnsupportedKey})
    */
   public static boolean isValueKey(SymTypeExpression type) {
-    return type.isPrimitive() || SymTypeRelations.isNumericType(type)
-        || SymTypeRelations.isBoolean(type) || SymTypeRelations.isString(type);
+    return (type.isPrimitive() || SymTypeRelations.isNumericType(type)
+        || SymTypeRelations.isBoolean(type) || SymTypeRelations.isString(type)) && !isUnsupportedKey(type);
+  }
+
+  /**
+   * float, double and char (also boxed) are no keys, as the participants would disagree on keys: a computed floating
+   * point key rarely equals the one stored, -0.0 and 0.0 are two keys in Java but one in the browser, and the browser
+   * does not round float values; a char is a number in Java but a string in the browser
+   */
+  public static boolean isUnsupportedKey(SymTypeExpression type) {
+    return SymTypeRelations.isFloat(type) || SymTypeRelations.isDouble(type) || SymTypeRelations.isChar(type);
   }
 
   /**

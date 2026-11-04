@@ -27,6 +27,9 @@ import {JavaUtilUtils} from "../javautil/JavaUtilUtils";
  */
 export abstract class GemValueMap<K, V extends GemIdentifiable> extends AbstractAsyncMap<K, V> implements GemBuildable {
 
+  // the largest integer a browser represents exactly (Number.MAX_SAFE_INTEGER), see isSafeKey
+  public static readonly MAX_SAFE_KEY: number = 9007199254740991;
+
   // local storage of the gemIds of the contained objects: all ids of the qualified association
   protected idMap: Map<K, number> = new Map();
 
@@ -163,9 +166,13 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   /**
    * puts value under key and returns the value stored for key before, like java.util.Map#put, but a value is stored
    * under one key only: an entry the value has under another key moves to key. The key of an attribute qualified
-   * association is derived from the value, so a key that does not match is rejected; a null key is rejected as well.
+   * association is derived from the value, so a key that does not match is rejected; a null key is rejected as well,
+   * and so is a key the browser cannot represent exactly (see isSafeKey).
    */
   async put(key: K, value: V): Promise<V> {
+    if (key != null && this.refusesKey(key, value.getGemId())) {
+      return null;
+    }
     if (this.isKeyDerived()) {
       // the key of a value is derived from the value, it cannot be chosen
       const derived: K = await this.deriveKey(value);
@@ -207,7 +214,34 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
    * stored under one key only: an entry it has under another key is moved to key, see {@link #_internal_putValueID}
    */
   public async _internal_putKeyValue(key: K, value: V): Promise<void> {
+    if (this.refusesKey(key, value.getGemId())) {
+      return;
+    }
     await this._internal_putValueID(key, value.getGemId());
+  }
+
+  /**
+   * whether the browser represents key exactly: there, numbers are doubles, which hold the integers up to
+   * MAX_SAFE_KEY only; a larger long key would equal its neighbours in the browser, so the participants would
+   * disagree on the entries. Overridden by the maps of long keys, all other keys are safe.
+   */
+  public isSafeKey(key: K): boolean {
+    return true;
+  }
+
+  /**
+   * reports a key that is not safe (see isSafeKey): such a key is refused, the map does not change
+   *
+   * @return whether key is refused
+   */
+  protected refusesKey(key: K, valueGemID: number): boolean {
+    if (this.isSafeKey(key)) {
+      return false;
+    }
+    Log.error("0xA7309 The key " + key + " of the object with id " + valueGemID + " is refused: keys must be within "
+      + "-" + GemValueMap.MAX_SAFE_KEY + " and " + GemValueMap.MAX_SAFE_KEY
+      + ", the integers a browser represents exactly");
+    return true;
   }
 
   public async _internal_put(key: K, valueGemID: number): Promise<void> {
@@ -288,7 +322,11 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
    * (only for maps of attribute qualified associations)
    */
   public async _internal_putValue(value: V): Promise<void> {
-    await this._internal_putValueID(await this.deriveKey(value), value.getGemId());
+    const key: K = await this.deriveKey(value);
+    if (this.refusesKey(key, value.getGemId())) {
+      return;
+    }
+    await this._internal_putValueID(key, value.getGemId());
     await this.onValueKeyed(value);
   }
 
@@ -394,6 +432,10 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
 
   async keyLoadedValue(value: V): Promise<void> {
     const key: K = await this.deriveKey(value);
+    if (this.refusesKey(key, value.getGemId())) {
+      // like a key that is not unique, the value is not keyed
+      return;
+    }
     const present: number = this.lookupID(key);
     if (present != null && present !== value.getGemId()) {
       Log.error("0xA7303 Key " + key + " is not unique: it is derived from the objects with ids "
@@ -436,6 +478,10 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   public async _internal_rekey(oldKey: K, newKey: K, valueGemID: number): Promise<boolean> {
     if (this.lookupID(oldKey) !== valueGemID || oldKey === newKey) {
       // not (or no longer) contained under oldKey
+      return false;
+    }
+    if (this.refusesKey(newKey, valueGemID)) {
+      // like a key that is not unique, the value stays under oldKey
       return false;
     }
     if (this.lookupID(newKey) != null) {
