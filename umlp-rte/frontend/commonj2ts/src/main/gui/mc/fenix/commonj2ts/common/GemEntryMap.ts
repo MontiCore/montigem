@@ -206,6 +206,11 @@ export abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
    */
   abstract loadValueObjects(gemIDs: IUMLPList<number>): Promise<IUMLPList<LoadResult<V>>>;
 
+  /**
+   * puts value under key and returns the value stored for key before, like java.util.Map#put, but a value is stored
+   * under one key only: an entry the value has under another key moves to key. The key of an attribute qualified
+   * association is derived from the value, so a key that does not match is rejected; a null key is rejected as well.
+   */
   async put(key: K, value: V): Promise<V> {
     if (this.isKeyDerived()) {
       // the key of a value is derived from the value, it cannot be chosen

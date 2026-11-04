@@ -178,7 +178,11 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
   }
 
   protected void assocDAOMethods(ASTCDType daoInterface, ASTCDAssociation association) {
-    addMethodsForAssociationDAO(daoInterface, association);
+    // the pairs of a type qualified association are stored with their key (put, putMany), a pair without one would
+    // violate the NOT NULL key column
+    if (GenService.getTypeQualifiedMapSide(association).isEmpty()) {
+      addMethodsForAssociationDAO(daoInterface, association);
+    }
 
     removeMethodForAssociationDAO(daoInterface, association);
     if (association.getCDAssocDir().isDefinitiveNavigableRight()) {
