@@ -6,6 +6,7 @@ import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
+import umlp.generator.domain.decorator.GenService;
 import umlp.generator.domain.decorator.QualifierKey;
 
 import java.util.List;
@@ -28,6 +29,14 @@ public class RekeyDecorator extends PutDecorator {
   @Override
   protected String getSuffix() {
     return REKEY_SUFFIX;
+  }
+
+  /**
+   * only maps whose keys are derived from the values are rekeyed; the keys of type qualified maps are chosen on put
+   */
+  @Override
+  protected boolean hasCommand(ASTCDAssocSide a) {
+    return GenService.isMap(a) && GenService.isKeyDerived(a);
   }
 
   @Override

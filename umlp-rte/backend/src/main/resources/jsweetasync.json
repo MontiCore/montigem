@@ -52,6 +52,7 @@
         "umlp.backendrte.common.GemValueMap._internal_put",
         "umlp.backendrte.common.GemValueMap._internal_remove",
         "umlp.backendrte.common.GemValueMap._internal_putValue",
+        "umlp.backendrte.common.GemValueMap._internal_putKeyValue",
         "umlp.backendrte.common.GemValueMap._internal_putValueID",
         "umlp.backendrte.common.GemValueMap._internal_removeValueID",
         "umlp.backendrte.common.GemValueMap._internal_addValueIDs",
@@ -73,6 +74,7 @@
         "umlp.backendrte.common.GemValueMapBuilder._internal_put",
         "umlp.backendrte.common.GemValueMapBuilder._internal_remove",
         "umlp.backendrte.common.GemValueMapBuilder._internal_putValue",
+        "umlp.backendrte.common.GemValueMapBuilder._internal_putKeyValue",
         "umlp.backendrte.common.GemValueMapBuilder._internal_removeValueID",
 
         "umlp.backendrte.common.GemEntryMap.build",
@@ -94,6 +96,7 @@
         "umlp.backendrte.common.GemEntryMap._internal_put",
         "umlp.backendrte.common.GemEntryMap._internal_remove",
         "umlp.backendrte.common.GemEntryMap._internal_putValue",
+        "umlp.backendrte.common.GemEntryMap._internal_putKeyValue",
         "umlp.backendrte.common.GemEntryMap._internal_putValueID",
         "umlp.backendrte.common.GemEntryMap._internal_removeValueID",
         "umlp.backendrte.common.GemEntryMap._internal_addValueIDs",
@@ -116,6 +119,7 @@
         "umlp.backendrte.common.GemEntryMapBuilder._internal_put",
         "umlp.backendrte.common.GemEntryMapBuilder._internal_remove",
         "umlp.backendrte.common.GemEntryMapBuilder._internal_putValue",
+        "umlp.backendrte.common.GemEntryMapBuilder._internal_putKeyValue",
         "umlp.backendrte.common.GemEntryMapBuilder._internal_removeValueID",
 
         "umlp.backendrte.common.Gem.loadIfRequired",

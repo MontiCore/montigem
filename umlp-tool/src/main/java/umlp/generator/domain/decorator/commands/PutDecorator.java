@@ -27,10 +27,10 @@ import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static umlp.generator.domain.decorator.commands.CommandDecorator.DE_SER;
 
 /**
- * Generates the command {@code <Owner>_put<Role>} of the GemMap of an attribute qualified association (instead of
- * {@code _add}, maps have no positions): puts a value under its key. The server derives the key from the value (a
- * key that does not match is replaced, warning 0xA7306/0xA7316), clients store the key the server sent without
- * loading the value.
+ * Generates the command {@code <Owner>_put<Role>} of the GemMap of a qualified association (instead of {@code _add},
+ * maps have no positions): puts a value under its key. Attribute qualified: the server derives the key from the value
+ * (a key that does not match is replaced, warning 0xA7306/0xA7316). Type qualified: the server takes the key sent.
+ * Clients store the key the server sent without loading the value.
  */
 public class PutDecorator extends AddDecorator {
 
@@ -51,7 +51,7 @@ public class PutDecorator extends AddDecorator {
   protected void decorateMapRoles(ASTCDCompilationUnit origCD, ASTCDPackage astcdPackage, ASTCDType domainType) {
     CDSymbolTables.getAssociations(domainType).stream()
         .filter(Predicate.not(GenService::isSymbolDerived))
-        .filter(GenService::isMap)
+        .filter(this::hasCommand)
         .forEach(a -> {
           ASTCDClass clazz = createCommand(origCD, a, domainType);
           astcdPackage.addCDElement(withOrigin(clazz));
@@ -62,6 +62,13 @@ public class PutDecorator extends AddDecorator {
 
   protected String getSuffix() {
     return PUT_SUFFIX;
+  }
+
+  /**
+   * @return whether the role gets the command: every GemMap role
+   */
+  protected boolean hasCommand(ASTCDAssocSide a) {
+    return GenService.isMap(a);
   }
 
   /**
@@ -116,9 +123,24 @@ public class PutDecorator extends AddDecorator {
   protected void addDoAction(ASTCDClass ast, ASTCDCompilationUnit origCD, ASTCDAssocSide a, ASTCDType domainType,
                              QualifierKey key) {
     String targetType = a.getSymbol().getType().print();
-    getCD4C().addMethod(ast, "umlp.commands.put.DoRun", domainType.getName(), getCorrectManager(domainType),
-        a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getStoredKeyType(),
-        key.isEntryKey() ? "0xA7316" : "0xA7306");
+    if (key.isDerived()) {
+      getCD4C().addMethod(ast, "umlp.commands.put.DoRun", domainType.getName(), getCorrectManager(domainType),
+          a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getStoredKeyType(),
+          key.isEntryKey() ? "0xA7316" : "0xA7306");
+      return;
+    }
+    String keyTypeManager = "";
+    if (key.isEntryKey()) {
+      // the server loads the key object to put through the owner
+      ASTCDType keyType = (ASTCDType) key.getKeySymbol().getAstNode();
+      ASTCDCompilationUnit keyCD = UMLPSymbolTables.getDiagramFor(keyType);
+      keyTypeManager = getCorrectManager(keyType);
+      getCD4C().addImport(ast, getPackageName(keyCD, DEFAULT_PACKAGE) + "." + keyType.getName());
+      getCD4C().addImport(ast, getPackageName(keyCD, DEFAULT_PACKAGE) + "." + keyTypeManager);
+    }
+    getCD4C().addMethod(ast, "umlp.commands.put.DoRunKey", domainType.getName(), getCorrectManager(domainType),
+        a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getKeyType(),
+        keyTypeManager);
   }
 
   protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType) {

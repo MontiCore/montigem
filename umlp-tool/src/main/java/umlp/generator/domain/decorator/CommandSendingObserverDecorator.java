@@ -113,12 +113,13 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
           SymTypeExpression oneType = e.getKey().getSymbol().getType();
           SymTypeExpression otherType = e.getKey().getSymbol().getOtherSide().getType();
           if (GenService.isMap(a)) {
-            // maps (always unidirectional): values are put under a key and rekeyed, there are no positions
+            // maps (always unidirectional): values are put under a key and rekeyed (derived keys only), there are
+            // no positions
             String keyType = QualifierKey.of(a).getStoredKeyType();
             String role = StringTransformations.capitalize(a.getName());
             setOverrideAnnotation(getCD4C().addMethod(ast, putAttributeTmplt(), a.getName(), keyType, otherType.print()));
             getCD4C().addImport(ast, getPackageName(cd, COMMAND_PACKAGE) + "." + otherType.print() + "_put" + role);
-            if (rekeyAttributeTmplt().isPresent()) {
+            if (rekeyAttributeTmplt().isPresent() && GenService.isKeyDerived(a)) {
               setOverrideAnnotation(getCD4C().addMethod(ast, rekeyAttributeTmplt().get(), a.getName(), keyType,
                   otherType.print()));
               getCD4C().addImport(ast, getPackageName(cd, COMMAND_PACKAGE) + "." + otherType.print() + "_rekey" + role);
