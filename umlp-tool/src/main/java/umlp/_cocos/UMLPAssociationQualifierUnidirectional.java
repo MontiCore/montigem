@@ -3,26 +3,27 @@ package umlp._cocos;
 
 import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
+import de.monticore.cdassociation._ast.ASTCDQualifier;
 import de.monticore.cdassociation._cocos.CDAssociationASTCDAssociationCoCo;
 
 /**
- * Attribute qualified associations are generated as GemMaps of the qualified side,
- * which is only supported if the association is navigable from the qualified side only.
+ * Qualified associations, by an attribute ({@code [[attr]]}) or a type ({@code [Type]}), are generated as GemMaps of
+ * the qualified side, which is only supported if the association is navigable from the qualified side only.
  */
 public class UMLPAssociationQualifierUnidirectional implements CDAssociationASTCDAssociationCoCo, CoCoTestable {
 
   public static final String ERROR_CODE = "0xCDC6A";
 
-  public static final String ERROR_MSG_FORMAT = " Association qualified by attribute %s must be " +
+  public static final String ERROR_MSG_FORMAT = " Association qualified by %s must be " +
       "navigable from the qualified class %s only; bidirectional qualified associations are not supported yet.";
 
   @Override
   public void check(ASTCDAssociation assoc) {
-    if (isAttributeQualified(assoc.getLeft())) {
+    if (isQualified(assoc.getLeft())) {
       check(assoc, assoc.getLeft(), assoc.getCDAssocDir().isDefinitiveNavigableRight()
           && !assoc.getCDAssocDir().isDefinitiveNavigableLeft());
     }
-    if (isAttributeQualified(assoc.getRight())) {
+    if (isQualified(assoc.getRight())) {
       check(assoc, assoc.getRight(), assoc.getCDAssocDir().isDefinitiveNavigableLeft()
           && !assoc.getCDAssocDir().isDefinitiveNavigableRight());
     }
@@ -30,13 +31,26 @@ public class UMLPAssociationQualifierUnidirectional implements CDAssociationASTC
 
   protected void check(ASTCDAssociation assoc, ASTCDAssocSide qualifiedSide, boolean onlyFromQualifiedSide) {
     if (!onlyFromQualifiedSide) {
-      logError(qualifiedSide.getCDQualifier(), qualifiedSide.getCDQualifier().getByAttributeName(),
+      logError(qualifiedSide.getCDQualifier(), printQualifier(qualifiedSide.getCDQualifier()),
           qualifiedSide.getMCQualifiedType().getMCQualifiedName().getQName());
     }
   }
 
-  protected static boolean isAttributeQualified(ASTCDAssocSide side) {
-    return side.isPresentCDQualifier() && side.getCDQualifier().isPresentByAttributeName();
+  /**
+   * whether the side is qualified by an attribute ({@code [[attr]]}) or a type ({@code [Type]}), i.e. a GemMap
+   */
+  public static boolean isQualified(ASTCDAssocSide side) {
+    return side.isPresentCDQualifier()
+        && (side.getCDQualifier().isPresentByAttributeName() || side.getCDQualifier().isPresentByType());
+  }
+
+  /**
+   * the qualifier as written in the model, {@code [[attr]]} or {@code [Type]}
+   */
+  public static String printQualifier(ASTCDQualifier qualifier) {
+    return qualifier.isPresentByAttributeName()
+        ? "[[" + qualifier.getByAttributeName() + "]]"
+        : "[" + qualifier.getByType().printType() + "]";
   }
 
   @Override

@@ -24,4 +24,10 @@ umlp UMLPAssocQualifierKeys {
 
   // the qualifier on the right side, navigable from right to left
   association [1] A (byNameFromRight) <- [[name]] B;
+
+  // type qualified: the key is chosen on put
+  association B [String] (byString) -> A [1];
+  association B [int] (byInt) -> A [1];
+  association B [C] (byCKey) -> A [1];
+  association [1] A (byLongFromRight) <- [long] B;
 }

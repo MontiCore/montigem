@@ -10,6 +10,13 @@ umlp UMLPAssocQualifierComplexType {
 
   class C;
 
-  association A [C] -> B [*];
-  association B [boolean] -> A [*];
+  enum E;
+
+  association B [boolean] -> A [1];
+  association B [E] -> A [1];
+
+  // valid: domain class, String and numeric keys
+  association A [C] -> B [1];
+  association A [String] -> (byName) B [1];
+  association A [int] -> (byNumber) B [1];
 }
