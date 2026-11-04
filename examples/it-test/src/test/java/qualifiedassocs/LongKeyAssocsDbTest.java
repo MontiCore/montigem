@@ -4,6 +4,7 @@ package qualifiedassocs;
 import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import qualifiedassocs.commands.Directory_putByBadgeCode;
 import qualifiedassocs.commands.Directory_putByPhone;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsNeo4JDBTestSetup;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsSQLDBTestSetup;
@@ -106,7 +107,10 @@ public interface LongKeyAssocsDbTest extends QualifiedAssocsTestSetup {
     assertEquals(0, load(directory).sizeByPhones());
   }
 
-  /** a value whose derived key is beyond the limits: the owner, the builder and the map refuse it */
+  /**
+   * a value whose derived key is beyond the limits: the owner, the builder and the map refuse it; the server rejects a
+   * put command with such a key (contract), so it is neither executed nor sent on
+   */
   @Test
   default void testUnsafeDerivedKeyIsRefused() {
     getBackend().activate();
@@ -117,6 +121,9 @@ public interface LongKeyAssocsDbTest extends QualifiedAssocsTestSetup {
     assertEquals(0, directory.sizeByBadgeCodes());
     assertLogsError("0xA7326", () -> directory.putByBadgeCode(unsafe));
     assertLogsError("0xA7309", () -> directory.getByBadgeCodeMap().put(MAX + 1, unsafe));
+    var result = CommandManager.executeCommand(new Directory_putByBadgeCode(directory.getGemId(), unsafe.getGemId(),
+        MAX + 1));
+    assertFalse(result.isSuccessful());
     assertEquals(0, directory.sizeByBadgeCodes());
     assertEquals(0, load(directory).sizeByBadgeCodes());
   }
