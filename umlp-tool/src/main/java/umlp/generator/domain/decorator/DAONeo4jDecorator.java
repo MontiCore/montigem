@@ -149,6 +149,22 @@ public class DAONeo4jDecorator extends DAODecorator {
   }
 
   @Override
+  protected void keyMethodsForAssocDAO(ASTCDType daoClass, ASTCDAssociation assoc, ASTCDAssocSide ownerSide,
+                                       ASTCDAssocSide mapSide, QualifierKey key) {
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutInitNeo4jForAssocDAO", assoc.getName(),
+        ownerSide.getSymbol().getType().print(), mapSide.getSymbol().getType().print(), mapSide.getName(),
+        key.getNeo4jPropertyName());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutForAssocDAONeo4j", assoc, key.getStoredKeyType(),
+        ownerSide.isLeft());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutManyForAssocDAONeo4j", assoc, ownerSide.getName(),
+        key.getStoredKeyType());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectInitNeo4jWithKeysForAssocDAO", ownerSide.getName(),
+        mapSide.getName(), CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), key.getNeo4jPropertyName());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectWithKeysForAssocDAONeo4j", ownerSide.getName(),
+        mapSide.getName(), key.getStoredKeyType(), key.getNeo4jKeyExpression("record.get(1)"));
+  }
+
+  @Override
   protected void selectInitMethodForListAssocDAO(ASTCDType daoClass, String assocName, ASTCDAssocSide start, ASTCDAssocSide end, String numerus) {
     getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectInitNeo4jForAssocDAO", start.getName(),
         end.getName(), CD4CodeMill.prettyPrint(start.getMCQualifiedType(), false), assocName, numerus);

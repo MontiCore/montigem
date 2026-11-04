@@ -418,6 +418,20 @@ public class GenService {
   }
 
   /**
+   * @return the target side (the GemMap role) of a type qualified association, if assoc is one: its keys are stored
+   * in the database, see {@link QualifierKey#getColumnName}
+   */
+  public static Optional<ASTCDAssocSide> getTypeQualifiedMapSide(ASTCDAssociation assoc) {
+    if (getQualifierType(assoc.getRight()).isPresent()) {
+      return Optional.of(assoc.getRight());
+    }
+    if (getQualifierType(assoc.getLeft()).isPresent()) {
+      return Optional.of(assoc.getLeft());
+    }
+    return Optional.empty();
+  }
+
+  /**
    * @return the opposite side of the target side assoc, if it carries a qualifier
    */
   protected static Optional<ASTCDAssocSide> getQualifiedSide(ASTCDAssocSide assoc) {

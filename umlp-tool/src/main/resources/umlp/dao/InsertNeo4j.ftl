@@ -25,6 +25,11 @@ ${cd4c.method("public void insert${typeName}(${typeName} o)")}
 
   List<Long> iDs;
   <#list listAssocs as assocSide, assoc>
+  <#if genService.isMap(assocSide) && !genService.isKeyDerived(assocSide)>
+  <#-- type qualified: the values with their keys -->
+  ${assocsToDefinitionDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().putMany${assoc.getName()?cap_first}(o.getGemId(), o._internal_get${assocSide.getName()?cap_first}GemMap().getIDMap());
+  <#continue>
+  </#if>
   <#if genService.isMap(assocSide)>
   iDs = new ArrayList<>(o._internal_get${assocSide.getName()?cap_first}GemMap().getValueIDs());
   <#else>

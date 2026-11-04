@@ -197,6 +197,45 @@ public class QualifierKey {
   }
 
   /**
+   * @return the column of the association table storing the key (type qualified associations only, attribute
+   * qualified ones derive their keys): qualifier_id holds the gemId of a key object, qualifier a value key
+   */
+  public String getColumnName() {
+    return isEntryKey ? "qualifier_id" : "qualifier";
+  }
+
+  /**
+   * @return the name of the relationship property storing the key on Neo4j (type qualified associations only)
+   */
+  public String getNeo4jPropertyName() {
+    return "qualifier";
+  }
+
+  /**
+   * @return the expression converting the Neo4j value in valueExpr (a relationship property, see
+   * {@link #getNeo4jPropertyName}) to the stored key type, see {@link #getStoredKeyType}
+   */
+  public String getNeo4jKeyExpression(String valueExpr) {
+    switch (getStoredKeyType()) {
+      case "String":
+        return valueExpr + ".asString()";
+      case "java.lang.Integer":
+        return valueExpr + ".asInt()";
+      case "java.lang.Short":
+        return "(short) " + valueExpr + ".asInt()";
+      case "java.lang.Byte":
+        return "(byte) " + valueExpr + ".asInt()";
+      case "java.lang.Float":
+        return valueExpr + ".asFloat()";
+      case "java.lang.Double":
+        return valueExpr + ".asDouble()";
+      default:
+        // Long: a long key or the gemId of a key object
+        return valueExpr + ".asLong()";
+    }
+  }
+
+  /**
    * @return GemValueMap or GemEntryMap
    */
   public String getMapType() {

@@ -181,10 +181,12 @@ public class BuilderDecorator extends AbstractDecorator {
           getCD4C().addMethod(builderClass, "umlp.builder.AssocMapPutKey", assoc.getName(),
               QualifierKey.of(assoc).getKeyType(), type, builder);
         }
-        // key/id pairs (DeSer), value ids only (database, the keys are derived)
+        // key/id pairs (DeSer, database for type qualified maps), value ids only (database, derived keys)
         getCD4C().addMethod(builderClass, "umlp.builder.AssocGemMapIds", assoc.getName(), type, builder,
             QualifierKey.of(assoc).getStoredKeyType());
-        getCD4C().addMethod(builderClass, "umlp.builder.AssocGemMapValueIds", assoc.getName(), type, builder);
+        if (GenService.isKeyDerived(assoc)) {
+          getCD4C().addMethod(builderClass, "umlp.builder.AssocGemMapValueIds", assoc.getName(), type, builder);
+        }
         getCD4C().addImport(builderClass, "java.util.Map");
       } else if (GenService.isList(assoc)) {
         if (!GenService.isSymbolDerived(assoc)) {
