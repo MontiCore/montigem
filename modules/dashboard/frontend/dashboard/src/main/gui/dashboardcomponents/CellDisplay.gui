@@ -9,6 +9,9 @@ import mc.fenix.charts.GemScatterPlot;
 import mc.fenix.charts.GemBoxPlot;
 import mc.fenix.charts.GemNetworkGraph;
 import mc.fenix.networkgraph.GemGraph;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
 import dashboardcomponents.GemFilterableTable;
 import DashboardModule.CellConfig;
 import DashboardModule.VizType.LINE;
@@ -19,6 +22,13 @@ import DashboardModule.VizType.NETWORK;
 import DashboardModule.VizType.FILTERABLE_TABLE;
 
 component CellDisplay(
+    CellConfig cell,
+    // set by the CellDialog while it interprets the data to check it (Save/Next)
+    boolean interpreting = false,
+    // set while the data of this display is interpreted
+    boolean loading = false,
+    // receives the local date and time the shown data was retrieved at (optional, e.g. not used by the CellDialog)
+    Event<String> dataRetrieved
     CellConfig cell,
     // why the last filter set in a FILTERABLE_TABLE was rejected, "" if it was applied
     String filterError = ""
@@ -64,5 +74,12 @@ component CellDisplay(
         } else {
          @GemBoxPlot(data = getBoxData(), min = cell.extra.boxextra.min, max = cell.extra.boxextra.max);
         };
+      };
+      //shown on top of the chart until the interpreter command is answered
+      @guard(showLoading()) {
+        loadingIndicator@GemRow(colGap = "5px", hAlign = "center", vAlign = "center", components = [
+          @GemIcon(name = "hourglass_empty"),
+          @GemText(value = "Loading...")
+        ]);
       };
     }
