@@ -38,13 +38,17 @@ public class CellDialog extends CellDialogTOP {
         this.setCellInternal(DashboardModuleManager.getCellConfigSure(this.dashboardcomponents_CellDialog_cellForEdit_RoutingId));
       } else {
         String dataExample = """
-          List<String> labels = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"];
+          List<String> labels = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5",
+              "Week 6", "Week 7", "Week 8"];
           List<Double> entrydata1 = [4.0, 7.0, 8.0, 3.0, 1.0, 5.0, 4.0, 5.0];
           List<Double> entrydata2 = [2.0, 5.0, 3.0, 3.0, 3.0, 8.0, 9.0, 4.0];
           List<Double> entrydata3 = [4.0, 4.0, 4.0, 5.0, 3.0, 4.0, 5.0, 2.0];
-          GemLineChartEntry entry1 = GemLineChartEntryBuilder().label("Team 1").data(entrydata1).build().get();
-          GemLineChartEntry entry2 = GemLineChartEntryBuilder().label("Team 2").data(entrydata2).build().get();
-          GemLineChartEntry entry3 = GemLineChartEntryBuilder().label("Team 3").data(entrydata3).build().get();
+          GemLineChartEntry entry1 = GemLineChartEntryBuilder().label("Team 1")
+              .data(entrydata1).build().get();
+          GemLineChartEntry entry2 = GemLineChartEntryBuilder().label("Team 2")
+              .data(entrydata2).build().get();
+          GemLineChartEntry entry3 = GemLineChartEntryBuilder().label("Team 3")
+              .data(entrydata3).build().get();
           List<GemLineChartEntry> entries = [entry1, entry2, entry3];
           return GemLineChartDataBuilder().entries(entries).labels(labels).build().get();
           """;
@@ -59,6 +63,7 @@ public class CellDialog extends CellDialogTOP {
         CellConfig cell = DashboardModuleManager.cellConfigBuilder()
             .viz(LINE)
             .name("New Cell")
+            .info("")
             .data(dataExample)
             .position(defaultPosition)
             .size(defaultSize);
@@ -111,9 +116,7 @@ public class CellDialog extends CellDialogTOP {
         cell.build().get();
         // the extra options get their defaults when the type of visualization is selected (MainCellOptions),
         // only set them if they are missing; empty builders would lack e.g. the axes of the scatter plot
-        if (!hasExtraOptions(cell)) {
-          MainCellOptions.setDefaultExtra(cell);
-        }
+        MainCellOptions.setDefaultExtraIfMissing(cell);
         unshowError();
         nextStep();
         //tutorial-only related
@@ -122,32 +125,6 @@ public class CellDialog extends CellDialogTOP {
         }
       }
     };
-  }
-
-  public boolean hasExtraOptions(CellConfig cell) {
-    if (!cell.isPresentExtra()) {
-      return false;
-    }
-    ExtraData extra = cell.getExtra();
-    switch (cell.getViz()) {
-      case LINE:
-        return extra.isPresentLinextra();
-      case BAR:
-        return extra.isPresentBarextra();
-      case SCATTER:
-        return extra.isPresentScatterextra();
-      case SPEED:
-        return extra.isPresentSpeedextra();
-      case BOX:
-        return extra.isPresentBoxextra();
-      case PIE:
-        return extra.isPresentPiextra();
-      case NETWORK:
-        return extra.isPresentGraphextra();
-      case FILTERABLE_TABLE:
-        return extra.isPresentTableextra();
-    }
-    return true;
   }
 
   //
@@ -172,6 +149,8 @@ public class CellDialog extends CellDialogTOP {
 
   public String checkInterpretation(CellConfig cell) {
     String result = "success";
+    // the preview shows that the data is interpreted until the command is answered
+    this.setInterpreting(true);
     switch (cell.getViz()) {
       case LINE:
         if (!CommandManager.executeCommand(new InterpretLineChart(cell.getData())).asSimpleResult().isSuccessful()) {
@@ -215,6 +194,7 @@ public class CellDialog extends CellDialogTOP {
         }
         break;
     }
+    this.setInterpreting(false);
     return result;
   }
 
@@ -414,8 +394,9 @@ public class CellDialog extends CellDialogTOP {
         showError(checked);
         return;
       }
-      if(cell.isPresentExtra()) {
-        if(!cell.getExtra().equals(cellForEdit.getExtra())) {
+      // cells without extra options (e.g. graphs created without them) get the ones of the dialog as well
+      if(cellForEdit.isPresentExtra()) {
+        if(!cell.isPresentExtra() || !cell.getExtra().equals(cellForEdit.getExtra())) {
           cell.setExtra(cellForEdit.getExtra().build().get());
         }
       }
@@ -428,6 +409,11 @@ public class CellDialog extends CellDialogTOP {
       }
       if(!cell.getName().equals(cellForEdit.getName())) {
         cell.setName(cellForEdit.getName());
+      }
+      // cells stored before the info attribute existed have none
+      String info = cellForEdit.getInfo() == null ? "" : cellForEdit.getInfo();
+      if(!info.equals(cell.getInfo())) {
+        cell.setInfo(info);
       }
 
       unshowError();

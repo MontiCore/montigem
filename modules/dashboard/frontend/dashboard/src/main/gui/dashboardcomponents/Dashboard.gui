@@ -19,6 +19,7 @@ import mc.fenix.input.GemTextInput;
 import dashboardcomponents.View;
 import dashboardcomponents.InfoDialog;
 import dashboardcomponents.ViewDialog;
+import dashboardcomponents.ViewInfoDialog;
 import dashboardcomponents.DeleteDialog;
 
 component Dashboard(
@@ -44,7 +45,9 @@ component Dashboard(
   //confirmation dialog for deleting the current view
   boolean confirmDeleteView = false,
   //tutorial
-  int tutorialStep = 0
+  int tutorialStep = 0,
+  //dialog with the info of the current view
+  boolean showViewInfo = false
   ) {
 
     @guard(info) {
@@ -57,6 +60,10 @@ component Dashboard(
     @guard(createView) {
        viewDialog@ViewDialog(createView = createNewView(), close = closeViewDialog(), tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep());
     }
+    @guard(showViewInfo) {
+      backdrop@GemText();
+      viewInfoDialog@ViewInfoDialog(view = getCurrentViewConfig(), edit = edit, close = closeViewInfo(), startTutorial = startTutorial());
+    };
     @guard(checkTutorial()) {
        @guard(checkIfTutorialHasBackdrop()) {
           backdrop@GemText();
@@ -163,10 +170,11 @@ component Dashboard(
           } else {
             createButton@GemButton(width = "50px", margin = "0px", height = "35px", leftClick = changeCreate(), disabled = checkIfDialogOpen(), content = [@GemIcon(name = "add")]);
           },
+          //ends a running tutorial, otherwise opens the info dialog of the current view (which starts the tutorial)
           @guard(checkTutorial()) {
-            endTutorial@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = switchTutorial(), content = [@GemIcon(color = "white", name = "info_outline")]);
+            endTutorial@GemButton(width = "50px", height = "35px", margin = "0px", leftClick = switchTutorial(), content = [@GemIcon(color = "white", name = "help_outline")]);
           } else {
-            @GemButton(width = "50px", margin = "0px", height = "35px", leftClick = switchTutorial(), disabled = checkIfDialogOpen(), content = [@GemIcon(color = "white", name = "info_outline")]);
+            viewInfoButton@GemButton(width = "50px", margin = "0px", height = "35px", leftClick = openViewInfo(), disabled = checkIfDialogOpen(), content = [@GemIcon(color = "white", name = "help_outline")]);
           },
           darkModeSwitch@GemDarkModeSwitch(width = "50px", height = "35px")
         ])

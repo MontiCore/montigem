@@ -2,6 +2,9 @@ package dashboardcomponents;
 
 import dashboardmodule.Axis;
 import dashboardmodule.CellConfig;
+import dashboardmodule.GraphComplexLayoutType;
+import dashboardmodule.GraphExtraData;
+import dashboardmodule.GraphInitialLayoutType;
 import dashboardmodule.ColumnScripts;
 import dashboardmodule.DashboardModuleManager;
 import dashboardmodule.ExtraData;
@@ -47,6 +50,11 @@ import mc.fenix.networkgraph.networkgraphtypes.Graph;
 import mc.fenix.table.gemtabletypes.GemFilterableTableData;
 import mc.fenix.table.gemtabletypes.GemFilterableTableFilter;
 import mc.fenix.networkgraph.networkgraphtypes.GraphBuilder;
+import mc.fenix.networkgraph.networkgraphtypes.HierarchicalLayoutDirection;
+import mc.fenix.networkgraph.networkgraphtypes.HierarchicalLayoutOptionsBuilder;
+import mc.fenix.networkgraph.networkgraphtypes.InitialGraphLayout;
+import mc.fenix.networkgraph.networkgraphtypes.InitialGraphLayoutBuilder;
+import mc.fenix.networkgraph.networkgraphtypes.InitialGraphLayoutMode;
 import mc.fenix.networkgraph.networkgraphtypes.GraphEdge;
 import mc.fenix.networkgraph.networkgraphtypes.GraphEdgeBuilder;
 import mc.fenix.networkgraph.networkgraphtypes.GraphNode;
@@ -54,12 +62,45 @@ import mc.fenix.networkgraph.networkgraphtypes.GraphNodeBuilder;
 import umlp.backendrte.command.CommandManager;
 import de.se_rwth.commons.logging.Log;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class CellDisplay extends CellDisplayTOP{
+
+  // number of interpreter commands of this display that are not answered yet (the data may be interpreted again
+  // before the previous command is answered, e.g., while typing); not a state variable, so that the data getters
+  // do not observe it and are not updated again when the loading indicator changes
+  protected int pendingInterpretations = 0;
+
+  public void startInterpretation() {
+    pendingInterpretations++;
+    this.setLoading(true);
+  }
+
+  // called once the interpreter command is answered, i.e., when the shown data was retrieved
+  public void finishInterpretation() {
+    pendingInterpretations--;
+    this.setLoading(pendingInterpretations > 0);
+    if (this.getDataRetrieved() != null) {
+      this.getDataRetrieved().accept(retrievalTime());
+    }
+  }
+
+  // the current local date and time, e.g. 2026-11-03 10:15:42
+  protected String retrievalTime() {
+    LocalDateTime now = LocalDateTime.now();
+    return now.getYear() + "-" + pad(now.getMonthValue()) + "-" + pad(now.getDayOfMonth())
+        + " " + pad(now.getHour()) + ":" + pad(now.getMinute()) + ":" + pad(now.getSecond());
+  }
+
+  protected String pad(int value) {
+    return value < 10 ? "0" + value : "" + value;
+  }
+
+  public Boolean showLoading() { return this.isLoading() || this.isInterpreting(); }
 
   public Boolean compareViz(VizType viz) { return this.getCell() != null && viz.equals(this.getCell().getViz()); }
 
@@ -102,19 +143,31 @@ public class CellDisplay extends CellDisplayTOP{
   }
 
   public GemBarChartData getBarData() {
-    return CommandManager.executeCommand(new InterpretBarChart(this.getCell().getData())).asSimpleResult().get();
+    startInterpretation();
+    GemBarChartData data = CommandManager.executeCommand(new InterpretBarChart(this.getCell().getData())).asSimpleResult().get();
+    finishInterpretation();
+    return data;
   }
 
   public GemPieChartData getPieData() {
-    return CommandManager.executeCommand(new InterpretPieChart(this.getCell().getData())).asSimpleResult().get();
+    startInterpretation();
+    GemPieChartData data = CommandManager.executeCommand(new InterpretPieChart(this.getCell().getData())).asSimpleResult().get();
+    finishInterpretation();
+    return data;
   }
 
   public GemLineChartData getLineData() {
-    return CommandManager.executeCommand(new InterpretLineChart(this.getCell().getData())).asSimpleResult().get();
+    startInterpretation();
+    GemLineChartData data = CommandManager.executeCommand(new InterpretLineChart(this.getCell().getData())).asSimpleResult().get();
+    finishInterpretation();
+    return data;
   }
 
   public Graph getNetworkData() {
-    return CommandManager.executeCommand(new InterpretNetworkGraph(this.getCell().getData())).asSimpleResult().get();
+    startInterpretation();
+    Graph data = CommandManager.executeCommand(new InterpretNetworkGraph(this.getCell().getData())).asSimpleResult().get();
+    finishInterpretation();
+    return data;
   }
 
   // cells without graph extra data would pass null and override GemGraph's default min height,
@@ -128,12 +181,75 @@ public class CellDisplay extends CellDisplayTOP{
     return this.getCell().getExtra().getGraphextra().getMinHeight();
   }
 
+  // the initial layout chosen in the graph options, null for NONE, which keeps the positions of the data
+  public InitialGraphLayout getGraphInitialLayout() {
+    GraphExtraData extra = getGraphExtra();
+    // cells stored before the layouts could be chosen have none, they get the layout used before
+    GraphInitialLayoutType type = extra == null || extra.getInitialLayout() == null
+        ? GraphInitialLayoutType.RANDOM : extra.getInitialLayout();
+    HierarchicalLayoutDirection direction = extra != null && extra.isHorizontalLayout()
+        ? HierarchicalLayoutDirection.HORIZONTAL : HierarchicalLayoutDirection.VERTICAL;
+    switch (type) {
+      case CIRCULAR:
+        return new InitialGraphLayoutBuilder().mode(InitialGraphLayoutMode.CIRCULAR).build().get();
+      case RANDOM:
+        return new InitialGraphLayoutBuilder().mode(InitialGraphLayoutMode.RANDOM).build().get();
+      case CIRCLE_PACK:
+        return new InitialGraphLayoutBuilder().mode(InitialGraphLayoutMode.CIRCLE_PACK).build().get();
+      case HIERARCHICAL:
+        return new InitialGraphLayoutBuilder().mode(InitialGraphLayoutMode.HIERARCHICAL)
+            .hierarchical(Optional.of(new HierarchicalLayoutOptionsBuilder()
+                .direction(Optional.of(direction)).build().get()))
+            .build().get();
+      case CHANNEL_HIERARCHICAL:
+        return new InitialGraphLayoutBuilder().mode(InitialGraphLayoutMode.CHANNEL_HIERARCHICAL)
+            .channelHierarchical(Optional.of(new ChannelHierarchicalLayoutOptionsBuilder()
+                .direction(Optional.of(direction)).build().get()))
+            .build().get();
+      default:
+        return null;
+    }
+  }
+
+  // the complex layout chosen in the graph options, null for NONE, which keeps the positions of the initial layout
+  public ComplexGraphLayout getGraphComplexLayout() {
+    GraphExtraData extra = getGraphExtra();
+    // cells stored before the layouts could be chosen have none, they get the layout used before
+    GraphComplexLayoutType type = extra == null || extra.getComplexLayout() == null
+        ? GraphComplexLayoutType.FORCEATLAS2 : extra.getComplexLayout();
+    Optional<Integer> maxIterations = extra == null || extra.getMaxLayoutIterations() == null
+        ? Optional.of(100) : extra.getMaxLayoutIterations();
+    switch (type) {
+      case FORCE:
+        return new ComplexGraphLayoutBuilder().mode(ComplexGraphLayoutMode.FORCE).maxIterations(maxIterations)
+            .build().get();
+      case FORCEATLAS2:
+        return new ComplexGraphLayoutBuilder().mode(ComplexGraphLayoutMode.FORCEATLAS2).maxIterations(maxIterations)
+            .build().get();
+      case NO_OVERLAP:
+        return new ComplexGraphLayoutBuilder().mode(ComplexGraphLayoutMode.NO_OVERLAP).maxIterations(maxIterations)
+            .build().get();
+      default:
+        return null;
+    }
+  }
+
+  protected GraphExtraData getGraphExtra() {
+    return this.getCell() == null || this.getCell().getExtra() == null ? null : this.getCell().getExtra().getGraphextra();
+  }
+
   public GemGaugeChartData getSpeedData() {
-    return CommandManager.executeCommand(new InterpretGaugeChart(this.getCell().getData())).asSimpleResult().get();
+    startInterpretation();
+    GemGaugeChartData data = CommandManager.executeCommand(new InterpretGaugeChart(this.getCell().getData())).asSimpleResult().get();
+    finishInterpretation();
+    return data;
   }
 
   public GemScatterPlotData getScatterData() {
-    return CommandManager.executeCommand(new InterpretScatterPlot(this.getCell().getData())).asSimpleResult().get();
+    startInterpretation();
+    GemScatterPlotData data = CommandManager.executeCommand(new InterpretScatterPlot(this.getCell().getData())).asSimpleResult().get();
+    finishInterpretation();
+    return data;
   }
 
   public GemFilterableTableData getFilterableTableData() {
@@ -202,7 +318,10 @@ public class CellDisplay extends CellDisplayTOP{
   }
 
   public GemBoxPlotData getBoxData() {
-    return CommandManager.executeCommand(new InterpretBoxPlot(this.getCell().getData())).asSimpleResult().get();
+    startInterpretation();
+    GemBoxPlotData data = CommandManager.executeCommand(new InterpretBoxPlot(this.getCell().getData())).asSimpleResult().get();
+    finishInterpretation();
+    return data;
   }
 
   //Constantin said known to not work so do not expect anything and ignore

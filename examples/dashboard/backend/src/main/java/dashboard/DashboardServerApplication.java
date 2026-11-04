@@ -5,6 +5,8 @@ import chatmodule.MessageSender;
 import dashboardmodule.CellConfig;
 import dashboardmodule.DashboardModuleConfig;
 import dashboardmodule.DashboardModuleManager;
+import dashboardmodule.GraphComplexLayoutType;
+import dashboardmodule.GraphInitialLayoutType;
 import dashboardmodule.ViewConfig;
 import dashboardmodule.commands.InterpreterWithErrorHandling;
 import jakarta.annotation.PostConstruct;
@@ -116,60 +118,94 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
       """;
 
   String defaultNetworkData = """
-      GraphNode node1 = GraphNodeBuilder().id("1").label("Frontend").fixed(Optional.of(true)).x(Optional.of(2.5)).y(Optional.of(2.5)).size(Optional.of(40)).build().get();
-      GraphNode node2 = GraphNodeBuilder().id("2").label("Team 1").fixed(Optional.of(true)).x(Optional.of(1.0)).y(Optional.of(1.0)).size(Optional.of(40)).build().get();
-      GraphNode node3 = GraphNodeBuilder().id("3").label("Team 2").fixed(Optional.of(true)).x(Optional.of(4.0)).y(Optional.of(1.0)).size(Optional.of(40)).build().get();
-      GraphNode node4 = GraphNodeBuilder().id("4").label("Team 3").fixed(Optional.of(true)).x(Optional.of(2.5)).y(Optional.of(4.0)).size(Optional.of(40)).build().get();
-      GraphNode node5 = GraphNodeBuilder().id("5").label("Marc").fixed(Optional.of(true)).x(Optional.of(1.0)).y(Optional.of(4.0)).size(Optional.of(40)).build().get();
-      GraphNode node6 = GraphNodeBuilder().id("6").label("Constantin").fixed(Optional.of(true)).x(Optional.of(4.0)).y(Optional.of(4.0)).size(Optional.of(40)).build().get();
-      GraphNode node7 = GraphNodeBuilder().id("7").label("Kelsi").fixed(Optional.of(true)).x(Optional.of(2.5)).y(Optional.of(5.5)).size(Optional.of(40)).build().get();
+      GraphNode node1 = GraphNodeBuilder().id("1").label("Frontend")
+          .x(Optional.of(2.5)).y(Optional.of(2.5))
+          .size(Optional.of(40)).build().get();
+      GraphNode node2 = GraphNodeBuilder().id("2").label("Team 1")
+          .x(Optional.of(1.0)).y(Optional.of(1.0))
+          .size(Optional.of(40)).build().get();
+      GraphNode node3 = GraphNodeBuilder().id("3").label("Team 2")
+          .x(Optional.of(4.0)).y(Optional.of(1.0))
+          .size(Optional.of(40)).build().get();
+      GraphNode node4 = GraphNodeBuilder().id("4").label("Team 3")
+          .x(Optional.of(2.5)).y(Optional.of(4.0))
+          .size(Optional.of(40)).build().get();
+      GraphNode node5 = GraphNodeBuilder().id("5").label("Marc")
+          .x(Optional.of(1.0)).y(Optional.of(4.0))
+          .size(Optional.of(40)).build().get();
+      GraphNode node6 = GraphNodeBuilder().id("6").label("Constantin")
+          .x(Optional.of(4.0)).y(Optional.of(4.0))
+          .size(Optional.of(40)).build().get();
+      GraphNode node7 = GraphNodeBuilder().id("7").label("Kelsi")
+          .x(Optional.of(2.5)).y(Optional.of(5.5))
+          .size(Optional.of(40)).build().get();
       List<GraphNode> nodes = [node1, node2, node3, node4, node5, node6, node7];
-      GraphEdge edge1 = GraphEdgeBuilder().id("1").source("1").target("2").size(Optional.of(5)).build().get();
-      GraphEdge edge2 = GraphEdgeBuilder().id("2").source("1").target("3").size(Optional.of(5)).build().get();
-      GraphEdge edge3 = GraphEdgeBuilder().id("3").source("1").target("4").size(Optional.of(5)).build().get();
-      GraphEdge edge4 = GraphEdgeBuilder().id("4").source("2").target("5").size(Optional.of(5)).build().get();
-      GraphEdge edge5 = GraphEdgeBuilder().id("5").source("2").target("6").size(Optional.of(5)).build().get();
-      GraphEdge edge6 = GraphEdgeBuilder().id("6").source("2").target("7").size(Optional.of(5)).build().get();
+      GraphEdge edge1 = GraphEdgeBuilder().id("1").source("1").target("2")
+          .size(Optional.of(5)).build().get();
+      GraphEdge edge2 = GraphEdgeBuilder().id("2").source("1").target("3")
+          .size(Optional.of(5)).build().get();
+      GraphEdge edge3 = GraphEdgeBuilder().id("3").source("1").target("4")
+          .size(Optional.of(5)).build().get();
+      GraphEdge edge4 = GraphEdgeBuilder().id("4").source("2").target("5")
+          .size(Optional.of(5)).build().get();
+      GraphEdge edge5 = GraphEdgeBuilder().id("5").source("2").target("6")
+          .size(Optional.of(5)).build().get();
+      GraphEdge edge6 = GraphEdgeBuilder().id("6").source("2").target("7")
+          .size(Optional.of(5)).build().get();
       List<GraphEdge> edges = [edge1, edge2, edge3, edge4, edge5, edge6];
       return GraphBuilder().nodes(nodes).edges(edges).build().get();
       """;
 
   String defaultBoxData = """
       List<Double> points1 = [4.0, 7.0, 8.0, 3.0, 1.0, 5.0, 4.0, 5.0];
-      GemBoxPlotBox box1 = GemBoxPlotBoxBuilder().median(4.5).lowerQuantile(3.0).upperQuantile(7.0).lowerExtreme(1.0).upperExtreme(8.0).build().get();
+      GemBoxPlotBox box1 = GemBoxPlotBoxBuilder().median(4.5).lowerQuantile(3.0)
+          .upperQuantile(7.0).lowerExtreme(1.0).upperExtreme(8.0).build().get();
       List<Double> points2 = [2.0, 5.0, 3.0, 3.0, 3.0, 8.0, 9.0, 4.0];
-      GemBoxPlotBox box2 = GemBoxPlotBoxBuilder().median(3.5).lowerQuantile(3.0).upperQuantile(8.0).lowerExtreme(2.0).upperExtreme(9.0).build().get();
+      GemBoxPlotBox box2 = GemBoxPlotBoxBuilder().median(3.5).lowerQuantile(3.0)
+          .upperQuantile(8.0).lowerExtreme(2.0).upperExtreme(9.0).build().get();
       List<Double> points3 = [4.0, 4.0, 4.0, 5.0, 3.0, 4.0, 5.0, 2.0];
-      GemBoxPlotBox box3 = GemBoxPlotBoxBuilder().median(4.0).lowerQuantile(3.0).upperQuantile(5.0).lowerExtreme(2.0).upperExtreme(5.0).build().get();
-      GemBoxPlotEntry entry1 = GemBoxPlotEntryBuilder().group("Team 1").color(Optional.of("red")).points(points1).box(box1).build().get();
-      GemBoxPlotEntry entry2 = GemBoxPlotEntryBuilder().group("Team 2").color(Optional.of("green")).points(points2).box(box2).build().get();
-      GemBoxPlotEntry entry3 = GemBoxPlotEntryBuilder().group("Team 3").color(Optional.of("blue")).points(points3).box(box3).build().get();
+      GemBoxPlotBox box3 = GemBoxPlotBoxBuilder().median(4.0).lowerQuantile(3.0)
+          .upperQuantile(5.0).lowerExtreme(2.0).upperExtreme(5.0).build().get();
+      GemBoxPlotEntry entry1 = GemBoxPlotEntryBuilder().group("Team 1")
+          .color(Optional.of("red")).points(points1).box(box1).build().get();
+      GemBoxPlotEntry entry2 = GemBoxPlotEntryBuilder().group("Team 2")
+          .color(Optional.of("green")).points(points2).box(box2).build().get();
+      GemBoxPlotEntry entry3 = GemBoxPlotEntryBuilder().group("Team 3")
+          .color(Optional.of("blue")).points(points3).box(box3).build().get();
       List<GemBoxPlotEntry> entries = [entry1, entry2, entry3];
       return GemBoxPlotDataBuilder().entries(entries).build().get();
       """;
 
   String defaultPieData = """
-     GemPieChartEntry entry1 = GemPieChartEntryBuilder().value(30).label("Team 1").build().get();
-     GemPieChartEntry entry2 = GemPieChartEntryBuilder().value(60).label("Team 2").build().get();
-     GemPieChartEntry entry3 = GemPieChartEntryBuilder().value(10).label("Team 3").build().get();
+     GemPieChartEntry entry1 = GemPieChartEntryBuilder().value(30).label("Team 1")
+         .build().get();
+     GemPieChartEntry entry2 = GemPieChartEntryBuilder().value(60).label("Team 2")
+         .build().get();
+     GemPieChartEntry entry3 = GemPieChartEntryBuilder().value(10).label("Team 3")
+         .build().get();
      List<GemPieChartEntry> entries = [entry1, entry2, entry3];
      return GemPieChartDataBuilder().entries(entries).build().get();
      """;
 
   String defaultSpeedData = """
-      GemGaugeChartEntry entry1 = GemGaugeChartEntryBuilder().type("#friends").name("Avg Performance Score").value(8).build().get();
+      GemGaugeChartEntry entry1 = GemGaugeChartEntryBuilder().type("#friends")
+          .name("Avg Performance Score").value(8).build().get();
       List<GemGaugeChartEntry> entries = [entry1];
       return GemGaugeChartDataBuilder().entries(entries).build().get();
       """;
 
   String defaultLineData = """
-      List<String> labels = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"];
+      List<String> labels = ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5",
+          "Week 6", "Week 7", "Week 8"];
       List<Double> entrydata1 = [4.0, 7.0, 8.0, 3.0, 1.0, 5.0, 4.0, 5.0];
       List<Double> entrydata2 = [2.0, 5.0, 3.0, 3.0, 3.0, 8.0, 9.0, 4.0];
       List<Double> entrydata3 = [4.0, 4.0, 4.0, 5.0, 3.0, 4.0, 5.0, 2.0];
-      GemLineChartEntry entry1 = GemLineChartEntryBuilder().label("Team 1").data(entrydata1).build().get();
-      GemLineChartEntry entry2 = GemLineChartEntryBuilder().label("Team 2").data(entrydata2).build().get();
-      GemLineChartEntry entry3 = GemLineChartEntryBuilder().label("Team 3").data(entrydata3).build().get();
+      GemLineChartEntry entry1 = GemLineChartEntryBuilder().label("Team 1")
+          .data(entrydata1).build().get();
+      GemLineChartEntry entry2 = GemLineChartEntryBuilder().label("Team 2")
+          .data(entrydata2).build().get();
+      GemLineChartEntry entry3 = GemLineChartEntryBuilder().label("Team 3")
+          .data(entrydata3).build().get();
       List<GemLineChartEntry> entries = [entry1, entry2, entry3];
       return GemLineChartDataBuilder().entries(entries).labels(labels).build().get();
       """;
@@ -179,20 +215,50 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
       List<Integer> numbers1 = [576];
       List<Integer> numbers2 = [455];
       List<Integer> numbers3 = [505];
-      GemBarChartEntry entry1 = GemBarChartEntryBuilder().data(numbers1).label(Optional.of("Team 1")).build().get();
-      GemBarChartEntry entry2 = GemBarChartEntryBuilder().data(numbers2).label(Optional.of("Team 2")).build().get();
-      GemBarChartEntry entry3 = GemBarChartEntryBuilder().data(numbers3).label(Optional.of("Team 3")).build().get();
+      GemBarChartEntry entry1 = GemBarChartEntryBuilder().data(numbers1)
+          .label(Optional.of("Team 1")).build().get();
+      GemBarChartEntry entry2 = GemBarChartEntryBuilder().data(numbers2)
+          .label(Optional.of("Team 2")).build().get();
+      GemBarChartEntry entry3 = GemBarChartEntryBuilder().data(numbers3)
+          .label(Optional.of("Team 3")).build().get();
       List<GemBarChartEntry> entries = [entry1, entry2, entry3];
       return GemBarChartDataBuilder().entries(entries).labels(labels).build().get();
       """;
 
   String defaultScatterData = """
-     List<GemScatterPlotPoint> points1 = [GemScatterPlotPoint(1.0, 4.0, "", Optional.of(8)), GemScatterPlotPoint(2.0, 7.0, "", Optional.of(8)), GemScatterPlotPoint(3.0, 8.0, "", Optional.of(8)), GemScatterPlotPoint(4.0, 3.0, "", Optional.of(8)), GemScatterPlotPoint(5.0, 1.0, "", Optional.of(8)), GemScatterPlotPoint(6.0, 5.0, "", Optional.of(8)), GemScatterPlotPoint(7.0, 4.0, "", Optional.of(8)), GemScatterPlotPoint(8.0, 5.0, "", Optional.of(8))];
-     List<GemScatterPlotPoint> points2 = [GemScatterPlotPoint(1.0, 2.0, "", Optional.of(8)), GemScatterPlotPoint(2.0, 5.0, "", Optional.of(8)), GemScatterPlotPoint(3.0, 3.0, "", Optional.of(8)), GemScatterPlotPoint(4.0, 3.0, "", Optional.of(8)), GemScatterPlotPoint(5.0, 3.0, "", Optional.of(8)), GemScatterPlotPoint(6.0, 8.0, "", Optional.of(8)), GemScatterPlotPoint(7.0, 9.0, "", Optional.of(8)), GemScatterPlotPoint(8.0, 4.0, "", Optional.of(8))];
-     List<GemScatterPlotPoint> points3 = [GemScatterPlotPoint(1.0, 4.0, "", Optional.of(8)), GemScatterPlotPoint(2.0, 4.0, "", Optional.of(8)), GemScatterPlotPoint(3.0, 4.0, "", Optional.of(8)), GemScatterPlotPoint(4.0, 5.0, "", Optional.of(8)), GemScatterPlotPoint(5.0, 3.0, "", Optional.of(8)), GemScatterPlotPoint(6.0, 4.0, "", Optional.of(8)), GemScatterPlotPoint(7.0, 5.0, "", Optional.of(8)), GemScatterPlotPoint(8.0, 2.0, "", Optional.of(8))];
-     GemScatterPlotSet set1 = GemScatterPlotSetBuilder().label("Team 1").points(points1).build().get();
-     GemScatterPlotSet set2 = GemScatterPlotSetBuilder().label("Team 2").points(points2).build().get();
-     GemScatterPlotSet set3 = GemScatterPlotSetBuilder().label("Team 3").points(points3).build().get();
+     List<GemScatterPlotPoint> points1 = [
+         GemScatterPlotPoint(1.0, 4.0, "", Optional.of(8)),
+         GemScatterPlotPoint(2.0, 7.0, "", Optional.of(8)),
+         GemScatterPlotPoint(3.0, 8.0, "", Optional.of(8)),
+         GemScatterPlotPoint(4.0, 3.0, "", Optional.of(8)),
+         GemScatterPlotPoint(5.0, 1.0, "", Optional.of(8)),
+         GemScatterPlotPoint(6.0, 5.0, "", Optional.of(8)),
+         GemScatterPlotPoint(7.0, 4.0, "", Optional.of(8)),
+         GemScatterPlotPoint(8.0, 5.0, "", Optional.of(8))];
+     List<GemScatterPlotPoint> points2 = [
+         GemScatterPlotPoint(1.0, 2.0, "", Optional.of(8)),
+         GemScatterPlotPoint(2.0, 5.0, "", Optional.of(8)),
+         GemScatterPlotPoint(3.0, 3.0, "", Optional.of(8)),
+         GemScatterPlotPoint(4.0, 3.0, "", Optional.of(8)),
+         GemScatterPlotPoint(5.0, 3.0, "", Optional.of(8)),
+         GemScatterPlotPoint(6.0, 8.0, "", Optional.of(8)),
+         GemScatterPlotPoint(7.0, 9.0, "", Optional.of(8)),
+         GemScatterPlotPoint(8.0, 4.0, "", Optional.of(8))];
+     List<GemScatterPlotPoint> points3 = [
+         GemScatterPlotPoint(1.0, 4.0, "", Optional.of(8)),
+         GemScatterPlotPoint(2.0, 4.0, "", Optional.of(8)),
+         GemScatterPlotPoint(3.0, 4.0, "", Optional.of(8)),
+         GemScatterPlotPoint(4.0, 5.0, "", Optional.of(8)),
+         GemScatterPlotPoint(5.0, 3.0, "", Optional.of(8)),
+         GemScatterPlotPoint(6.0, 4.0, "", Optional.of(8)),
+         GemScatterPlotPoint(7.0, 5.0, "", Optional.of(8)),
+         GemScatterPlotPoint(8.0, 2.0, "", Optional.of(8))];
+     GemScatterPlotSet set1 = GemScatterPlotSetBuilder().label("Team 1")
+         .points(points1).build().get();
+     GemScatterPlotSet set2 = GemScatterPlotSetBuilder().label("Team 2")
+         .points(points2).build().get();
+     GemScatterPlotSet set3 = GemScatterPlotSetBuilder().label("Team 3")
+         .points(points3).build().get();
      List<GemScatterPlotSet> sets = [set1, set2, set3];
      return GemScatterPlotDataBuilder().sets(sets).build().get();
      """;
@@ -377,6 +443,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
     Set<CellConfig> cells2 = createCellConfigForRealisticDashboard();
     ViewConfig view1 = DashboardModuleManager.viewConfigBuilder()
         .name("View 1")
+        .info("Overview of the development of the teams: structure of the frontend team, lines of code, commits and closed issues.")
         .vid(0)
         .cells(cells1)
         .build()
@@ -384,6 +451,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
     Set<ViewConfig> views = new HashSet<ViewConfig>();
     ViewConfig view2 = DashboardModuleManager.viewConfigBuilder()
         .name("View 2")
+        .info("Statistics of the organization: completed tasks, closed issues and age distribution of the members.")
         .vid(1)
         .cells(cells2)
         .build()
@@ -405,6 +473,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(1)
         .data(realisticBarData)
         .name("Tasks Completed Per Teams")
+        .info("Number of tasks each team of the organization completed.")
         .viz(BAR)
         .extra(DashboardModuleManager.extraDataBuilder()
             .barextra(DashboardModuleManager.barExtraDataBuilder()
@@ -433,6 +502,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(2)
         .data(realisticLineData)
         .name("Avg No. Of Issues Closed")
+        .info("Average number of issues the members of each team closed per week.")
         .viz(LINE)
         .extra(DashboardModuleManager.extraDataBuilder()
             .linextra(DashboardModuleManager.lineExtraDataBuilder()
@@ -459,6 +529,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(3)
         .data(realisticPieData)
         .name("Age Distribution Of Organization")
+        .info("Members of the organization grouped by age (below 25, 25 to 35, above 35).")
         .viz(PIE)
         .extra(DashboardModuleManager.extraDataBuilder()
             .piextra(DashboardModuleManager.pieExtraDataBuilder()
@@ -484,6 +555,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(4)
         .data(realisticScatterData)
         .name("Issues Closed")
+        .info("Issues each member of the first team closed per week.")
         .viz(SCATTER)
         .extra(DashboardModuleManager.extraDataBuilder()
             .scatterextra(DashboardModuleManager.scatterExtraDataBuilder()
@@ -589,7 +661,23 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(1)
         .data(defaultNetworkData)
         .name("Group Structure")
+        .info("Teams working on the frontend and the members of Team 1.")
         .viz(NETWORK)
+        .extra(DashboardModuleManager.extraDataBuilder()
+            .graphextra(DashboardModuleManager.graphExtraDataBuilder()
+                .minHeight("50vH")
+                .showFilterGroup(false)
+                .showSearchNode(false)
+                .showControlButtons(false)
+                .showInformation(false)
+                .initialLayout(GraphInitialLayoutType.RANDOM)
+                .horizontalLayout(false)
+                .complexLayout(GraphComplexLayoutType.FORCEATLAS2)
+                .maxLayoutIterations(Optional.of(100))
+                .build()
+                .get())
+            .build()
+            .get())
         .size(DashboardModuleManager.dashboardModuleSizeBuilder()
             .height(8.0)
             .width(6.0)
@@ -606,6 +694,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(2)
         .data(defaultBarData)
         .name("Lines of Code")
+        .info("Lines of code written by each team.")
         .viz(BAR)
         .extra(DashboardModuleManager.extraDataBuilder()
             .barextra(DashboardModuleManager.barExtraDataBuilder()
@@ -635,6 +724,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(3)
         .data(defaultLineData)
         .name("No. of Issues Closed")
+        .info("Number of issues each team closed per week.")
         .viz(LINE)
         .extra(DashboardModuleManager.extraDataBuilder()
             .linextra(DashboardModuleManager.lineExtraDataBuilder()
@@ -662,6 +752,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(4)
         .data(defaultPieData)
         .name("No. of Commits")
+        .info("Share of the commits per team.")
         .viz(PIE)
         .extra(DashboardModuleManager.extraDataBuilder()
             .piextra(DashboardModuleManager.pieExtraDataBuilder()
@@ -686,6 +777,7 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         //.cid(5)
         .data(defaultScatterData)
         .name("No. of issues closed")
+        .info("Issues closed by each team per week.")
         .viz(SCATTER)
         .extra(DashboardModuleManager.extraDataBuilder()
             .scatterextra(DashboardModuleManager.scatterExtraDataBuilder()
