@@ -14,6 +14,7 @@ import dashboardmodule.GraphComplexLayoutType;
 import dashboardmodule.GraphInitialLayoutType;
 import dashboardmodule.ViewConfig;
 import dashboardmodule.TutorialStep;
+import dashboardmodule.TutorialStepBuilder;
 import de.se_rwth.commons.logging.Log;
 
 import static dashboardmodule.VizType.BAR;
@@ -545,6 +546,12 @@ public class Dashboard extends DashboardTOP {
     return true;
   }
 
+  // The tutorial steps are only shown, they are not stored: the builders are used without build(), which would
+  // create them in the backend, and get an id the backend does not assign, as they are found by their step id
+  protected TutorialStepBuilder tutorialStepBuilder(int stepId) {
+    return new TutorialStepBuilder(-stepId).stepId(stepId);
+  }
+
   public List<TutorialStep> tutorialSteps;
 
   @Override
@@ -552,19 +559,16 @@ public class Dashboard extends DashboardTOP {
     if(tutorialSteps == null) {
         tutorialSteps = new ArrayList<>();
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(1)
+            tutorialStepBuilder(1)
                 .instruction("Welcome to the tutorial of the dashboard component.")
                 .section("1. Introduction")
                 .hasButton(true)
                 .hasBackdrop(true)
                 .bottom(false)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(2)
+            tutorialStepBuilder(2)
                 .instruction(
                     "In this tutorial I will show you the main functionalities and parts of\n" +
                         "this component and familiarize you with navigating through its layout.\n" +
@@ -575,12 +579,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(true)
                 .bottom(false)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(3)
+            tutorialStepBuilder(3)
                 .instruction(
                     "First main part of the dashboard is the cell.\n" +
                         "Any visualization you are seeing on screen now from graphs to charts is\n" +
@@ -591,23 +593,19 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(4)
+            tutorialStepBuilder(4)
                 .instruction("Next part of the dashboard are the views.")
                 .section("2. Views")
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(5)
+            tutorialStepBuilder(5)
                 .instruction(
                     "Each of them represents a container of cells, where you can group them\n" +
                         "up together, according to whatever criteria you want. Maybe they are\n" +
@@ -618,12 +616,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(6)
+            tutorialStepBuilder(6)
                 .instruction(
                     "For the moment you can ignore the default set of views that are already\n" +
                         "there and you can try creating a fresh new one yourself. To do that click\n" +
@@ -633,12 +629,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(28)
+            tutorialStepBuilder(28)
                 .instruction(
                     "In this dialog you can choose from one of the presets to get started\n" +
                         "already with some configuration of visualizations. Otherwise you can start\n" +
@@ -649,12 +643,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(29)
+            tutorialStepBuilder(29)
                 .instruction(
                     "To make the tutorial easier for you select the empty preset and press the now\n" +
                         "highlighted \"Create\" button to continue"
@@ -663,12 +655,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(false)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(7)
+            tutorialStepBuilder(7)
                 .instruction(
                     "Your new view is now created and selected. Views can be renamed and\n" +
                         "deleted in the edit mode of the dashboard, we will come back to that\n" +
@@ -678,12 +668,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(8)
+            tutorialStepBuilder(8)
                 .instruction(
                     "Now we can try to fill our new view with some cells. To start creating a\n" +
                         "new cell click the highlighted plus button on the top right."
@@ -692,12 +680,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(9)
+            tutorialStepBuilder(9)
                 .instruction(
                     "In this dialog we can start configuring details about our new cell. These\n" +
                         "details are divided into 2 parts: the main options and the extra options."
@@ -706,12 +692,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(10)
+            tutorialStepBuilder(10)
                 .instruction(
                     "What you are looking at now are the main options. For all visualizations\n" +
                         "this step will look the same. You have fields where you can set the name,\n" +
@@ -721,12 +705,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(11)
+            tutorialStepBuilder(11)
                 .instruction(
                     "This last data field is the most important field, but also the most\n" +
                         "difficult to familiarize yourself with. In short here you write code\n" +
@@ -737,12 +719,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(12)
+            tutorialStepBuilder(12)
                 .instruction(
                     "Do not worry on figuring everything out from the start yourself as\n" +
                         "whenever you will try to create a cell, these fields will be filled out\n" +
@@ -754,13 +734,11 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(13)
+            tutorialStepBuilder(13)
                 .instruction(
                     "Last thing, you can terminate the creation anytime using the abort button\n" +
                         "below. Now if everything is clear so far, you can click the other button\n" +
@@ -770,12 +748,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(14)
+            tutorialStepBuilder(14)
                 .instruction(
                     "What you are viewing now are the extra options of the cell. On the left\n" +
                         "you have some new fields that depend on the type of visualization you\n" +
@@ -786,12 +762,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(15)
+            tutorialStepBuilder(15)
                 .instruction(
                     "Meanwhile on the right you can see a nice preview of the visualization\n" +
                         "you are creating. Every change you make to the fields will be also\n" +
@@ -801,12 +775,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(16)
+            tutorialStepBuilder(16)
                 .instruction(
                     "Now we have gone through the whole creation process of a cell. You can\n" +
                         "click on create to see the new cell appear on your view."
@@ -815,12 +787,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(17)
+            tutorialStepBuilder(17)
                 .instruction(
                     "The last step of this tutorial will be regarding editing cells. We can\n" +
                         "try out on our newly created cell."
@@ -829,12 +799,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(false)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(18)
+            tutorialStepBuilder(18)
                 .instruction(
                     "First, click on the now highlighted edit button."
                 )
@@ -842,12 +810,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(false)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(19)
+            tutorialStepBuilder(19)
                 .instruction(
                     "Great, now we have new functionalities available to us."
                 )
@@ -855,12 +821,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(20)
+            tutorialStepBuilder(20)
                 .instruction(
                     "Repositioning: You can click and hold on a cell and then move it to a\n" +
                         "new position of your choosing."
@@ -869,12 +833,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(21)
+            tutorialStepBuilder(21)
                 .instruction(
                     "Resizing: You can click and hold at the bottom right of a cell and by\n" +
                         "moving you are able to resize the cell how you want."
@@ -883,12 +845,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(22)
+            tutorialStepBuilder(22)
                 .instruction(
                     "Downloading: You can download the data of the visualization in a json\n" +
                         "format or the visualization itself as a png or svg"
@@ -897,12 +857,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(23)
+            tutorialStepBuilder(23)
                 .instruction(
                     "Reconfiguring: You can change all options of a cell set in creation or\n" +
                         "in a previous reconfiguration. To look at that now click on the\n" +
@@ -912,12 +870,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(24)
+            tutorialStepBuilder(24)
                 .instruction(
                     "You can see the popped up window is really similar to previous one we\n" +
                         "saw during creation. The only difference is that here you can switch\n" +
@@ -927,12 +883,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(25)
+            tutorialStepBuilder(25)
                 .instruction(
                     "Error messages will still pop up if you make mistakes when changing\n" +
                         "fields. Also the abort button continues to be present if you want to\n" +
@@ -942,12 +896,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(26)
+            tutorialStepBuilder(26)
                 .instruction(
                     "When you are finished with changes, you can click on the save button to\n" +
                         "save those changes and continue."
@@ -956,12 +908,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(30)
+            tutorialStepBuilder(30)
                 .instruction(
                     "The edit mode also lets you edit the views. To rename a view, click on\n" +
                         "the name in its tab and type a new one. Try it with your new view and\n" +
@@ -971,12 +921,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(31)
+            tutorialStepBuilder(31)
                 .instruction(
                     "To delete a view, select it and click on the X in its tab. As the view\n" +
                         "and all of its cells are deleted, you have to confirm it first. The X is\n" +
@@ -986,12 +934,10 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(true)
                 .hasBackdrop(false)
                 .bottom(true)
-                .build().get()
         );
 
         tutorialSteps.add(
-            DashboardModuleManager.tutorialStepBuilder()
-                .stepId(27)
+            tutorialStepBuilder(27)
                 .instruction(
                     "Congratulations! You have completed the tutorial.\n" +
                         "Click on the tutorial button to continue to explore and experiment with\n" +
@@ -1001,7 +947,6 @@ public class Dashboard extends DashboardTOP {
                 .hasButton(false)
                 .hasBackdrop(false)
                 .bottom(false)
-                .build().get()
         );
     }
     return tutorialSteps;
