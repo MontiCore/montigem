@@ -34,4 +34,10 @@ umlp QualifiedAssocs {
   /* GemValueMap with the qualifier on the right side: navigable from right to left, so the owner Directory is the
      right side of the association (and of its table) */
   association [1] Person (byLoginFromRight) <- (rightDirectory) [[login]] Directory;
+
+  /* type qualified: the key is chosen on put and stored in the association table */
+  association Directory [String] (codeDirectory) -> (byCode) Person [1];
+  association Directory [int] (seatDirectory) -> (bySeat) Person [1];
+  association Directory [Department] (headDirectory) -> (headByDepartment) Person [1];
+  association [1] Person (byAliasFromRight) <- (aliasDirectory) [String] Directory;
 }

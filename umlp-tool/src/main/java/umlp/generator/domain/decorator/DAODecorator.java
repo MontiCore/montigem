@@ -127,6 +127,14 @@ public class DAODecorator extends DAOInterfaceDecorator {
     attributesList.add(createQueryForSelect(association.getLeft().getName(), association.getRight().getName(), idNumerusLeft));
     attributesList.add(createQueryForSelect(association.getRight().getName(), association.getLeft().getName(), idNumerusRight));
 
+    // type qualified association: put with key, select of the values with their keys
+    GenService.getTypeQualifiedMapSide(association).ifPresent(mapSide -> {
+      ASTCDAssocSide ownerSide = mapSide.isLeft() ? association.getRight() : association.getLeft();
+      attributesList.add(createQueryAttrForMethod("put", association));
+      attributesList.add(createQueryAttr("select" + StringTransformations.capitalize(mapSide.getName())
+          + "IdsWithKeysFor" + StringTransformations.capitalize(ownerSide.getName())));
+    });
+
     return attributesList;
   }
 
@@ -179,6 +187,23 @@ public class DAODecorator extends DAOInterfaceDecorator {
         SQLSchemaGenerator.convertAssocName(assoc.getName()));
     getCD4C().addMethod(daoClass, "umlp.dao.associations.AddForAssocDAO", assoc);
     getCD4C().addMethod(daoClass, "umlp.dao.associations.AddManyForAssocDAO", assoc);
+  }
+
+  @Override
+  protected void keyMethodsForAssocDAO(ASTCDType daoClass, ASTCDAssociation assoc, ASTCDAssocSide ownerSide,
+                                       ASTCDAssocSide mapSide, QualifierKey key) {
+    String sqlTable = SQLSchemaGenerator.convertAssocName(assoc.getName());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutInitForAssocDAO", assoc.getName(),
+        SQLSchemaGenerator.convertAssociationRollName(assoc.getLeft().getName()),
+        SQLSchemaGenerator.convertAssociationRollName(assoc.getRight().getName()), sqlTable, key.getColumnName());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutForAssocDAO", assoc, key.getStoredKeyType());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutManyForAssocDAO", assoc, ownerSide.getName(),
+        key.getStoredKeyType(), ownerSide.isLeft());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectInitWithKeysForAssocDAO", ownerSide.getName(),
+        mapSide.getName(), SQLSchemaGenerator.convertAssociationRollName(ownerSide.getName()),
+        SQLSchemaGenerator.convertAssociationRollName(mapSide.getName()), sqlTable, key.getColumnName());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectWithKeysForAssocDAO", ownerSide.getName(),
+        mapSide.getName(), key.getStoredKeyType());
   }
 
   @Override

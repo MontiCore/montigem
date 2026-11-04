@@ -31,11 +31,14 @@ ${cd4c.method("public Optional<${typeName}> unpack${typeName}(ResultSet res) thr
     <#else>
         <#assign otherSide=assoc.getLeft().getName()>
     </#if>
-    <#if genService.isMap(assocSide)>
+  <#if genService.isMap(assocSide) && !genService.isKeyDerived(assocSide)>
+  <#-- type qualified: the keys are stored with the ids -->
+  builder.${assocSide.getName()}GemMapIds(${assocToDAOFactoryDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().select${assocSide.getName()?cap_first}IdsWithKeysFor${otherSide?cap_first}(gemId));
+  <#elseif genService.isMap(assocSide)>
   builder.${assocSide.getName()}GemMapValueIds(${assocToDAOFactoryDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().select${assocSide.getName()?cap_first}IdsFor${otherSide?cap_first}(gemId));
-    <#else>
+  <#else>
   builder.${assocSide.getName()}GemListIds(${assocToDAOFactoryDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().select${assocSide.getName()?cap_first}IdsFor${otherSide?cap_first}(gemId));
-    </#if>
+  </#if>
 </#list>
 <#list gemAssocs as assocSide, assoc><#assign assocType = assocSide.getSymbol().getType().print()>
   <#if assocSide.isLeft()>
