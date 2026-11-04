@@ -175,7 +175,12 @@ public class BuilderDecorator extends AbstractDecorator {
       if (GenService.isMap(assoc)) {
         String type = GenService.getType(assoc.getSymbol().getType());
         String builder = getClassName(domainClass.getName());
-        getCD4C().addMethod(builderClass, "umlp.builder.AssocMapPut", assoc.getName(), type, builder);
+        if (GenService.isKeyDerived(assoc)) {
+          getCD4C().addMethod(builderClass, "umlp.builder.AssocMapPut", assoc.getName(), type, builder);
+        } else {
+          getCD4C().addMethod(builderClass, "umlp.builder.AssocMapPutKey", assoc.getName(),
+              QualifierKey.of(assoc).getKeyType(), type, builder);
+        }
         // key/id pairs (DeSer), value ids only (database, the keys are derived)
         getCD4C().addMethod(builderClass, "umlp.builder.AssocGemMapIds", assoc.getName(), type, builder,
             QualifierKey.of(assoc).getStoredKeyType());

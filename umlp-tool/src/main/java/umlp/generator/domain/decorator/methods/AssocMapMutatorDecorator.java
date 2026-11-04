@@ -13,8 +13,9 @@ import umlp.generator.util.PathUtil;
 import java.util.List;
 
 /**
- * Mutators of a GemMap of an attribute qualified association, see GenService#isMap.
- * The key of a value is derived from its qualifying attribute, so values are put without a key.
+ * Mutators of a GemMap of a qualified association, see GenService#isMap.
+ * Attribute qualified: the key of a value is derived from its qualifying attribute, so values are put without a key
+ * and rekeyed. Type qualified: values are put under a chosen key and never rekeyed.
  */
 public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
 
@@ -36,9 +37,15 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     boolean isEntry = GenService.isGemEntryMap(ast);
     String storedKeyType = GenService.getGemMapStoredKeyType(ast);
 
-    // the server reports a put that replaces a value deriving the same key
-    methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
-        isEntry ? "0xA7317" : "0xA7307"));
+    boolean isKeyDerived = GenService.isKeyDerivedGemMap(ast);
+    if (isKeyDerived) {
+      // the server reports a put that replaces a value deriving the same key
+      methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
+          isEntry ? "0xA7317" : "0xA7307"));
+    } else {
+      methodList.add(createMethod("umlp.methods.gemmap.PutKey", name, keyType, targetName, sourceName, isEntry,
+          storedKeyType));
+    }
     cd4c.addImport(this.ast, PathUtil.getBackendRTECommandPath("CommandManager"));
     methodList.add(createMethod("umlp.methods.gemmap.Remove", name, keyType, isEntry));
     // put/remove without scope
@@ -47,7 +54,9 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName));
     // synchronization of keys: put as sent by the server without loading the value (command _put), rekeying
     methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType));
-    methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
+    if (isKeyDerived) {
+      methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
+    }
     methodList.add(createMethod("umlp.methods.gemmap.RemoveByIdSure", name));
     methodList.add(createMethod("umlp.methods.assocs.RemoveByIdSureNoScope", name, ast.getModifier().isLocal() ? "LOCAL" : "ALL"));
     return methodList;

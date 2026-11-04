@@ -105,18 +105,6 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     }
   }
 
-  override async put(key: K, value: V): Promise<V> {
-    if (this.buildFinished || this.isKeyDerived()) {
-      return super.put(key, value);
-    } else {
-      // Map might contain builders, which a normal GemMap will not
-      // Thus, the elements themselves are stored, not only their ids
-      await this.ensureKeyed();
-      const old = await this.storeEntry(new IDOrBuilder<K>(key), new IDOrBuilder<V>(value));
-      return old == null ? null : this.resolveValue(old[1]);
-    }
-  }
-
   override async get(key: any): Promise<V> {
     if (this.buildFinished) {
       return super.get(key);
@@ -197,6 +185,23 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
       await this.storeEntry(new IDOrBuilder<K>(keyGemID), new IDOrBuilder<V>(value));
       this.valuesPutBeforeBuild.set(value.getGemId(), value);
       await this.onValueKeyed(value);
+    }
+  }
+
+  public override async _internal_putKeyValue(key: K, value: V): Promise<void> {
+    if (this.buildFinished) {
+      await super._internal_putKeyValue(key, value);
+    } else {
+      await this.ensureKeyed();
+      // stored under one key only, see _internal_putValueID
+      for (const [otherKeyGemID, entry] of Array.from(this.builderElemStorage.entries())) {
+        if (otherKeyGemID !== key.getGemId() && entry[1].getGemId() === value.getGemId()) {
+          this.builderElemStorage.delete(otherKeyGemID);
+        }
+      }
+      // Map might contain builders, which a normal GemMap will not
+      // Thus, key and value themselves are stored, not only their ids
+      await this.storeEntry(new IDOrBuilder<K>(key), new IDOrBuilder<V>(value));
     }
   }
 

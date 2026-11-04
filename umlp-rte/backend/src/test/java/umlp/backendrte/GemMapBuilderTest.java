@@ -528,6 +528,60 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
     assertNoErrors();
   }
 
+  /**
+   * chosen keys (type qualified associations): put goes through _internal_putAndSync, which a generated map
+   * delegates to its owner; a value is stored under one key only, like with derived keys
+   */
+  @Test
+  public void testValueMapChosenKeyStoresValueUnderOneKeyOnly() {
+    Node a = new Node();
+    Node b = new Node();
+    NodeValueMap map = new NodeValueMap(null);
+
+    // before build: the builders themselves are stored
+    assertNull(map.put("x", a));
+    assertNull(map.put("y", a));
+    assertEquals(List.of("y"), new ArrayList<>(map.keySet()));
+    assertSame(a, map.get("y"));
+    assertEquals(List.of("x", "y"), map.putKeys);
+
+    map.build();
+    assertTrue(a.isBuildFinished());
+    assertEquals(Map.of("y", a.getGemId()), map.getIDMap());
+
+    // after build: moving a to another key, then replacing it by b
+    assertNull(map.put("z", a));
+    assertEquals(Map.of("z", a.getGemId()), map.getIDMap());
+    b.build();
+    assertSame(a, map.put("z", b));
+    assertEquals(Map.of("z", b.getGemId()), map.getIDMap());
+    assertEquals(List.of("x", "y", "z", "z"), map.putKeys);
+    assertNoErrors();
+  }
+
+  @Test
+  public void testEntryMapChosenKeyStoresValueUnderOneKeyOnly() {
+    Node keyA = new Node();
+    Node keyB = new Node();
+    Node a = new Node();
+    NodeEntryMap map = new NodeEntryMap(null);
+
+    // before build: key and value builders are stored and built with the map
+    assertNull(map.put(keyA, a));
+    assertNull(map.put(keyB, a));
+    assertSame(a, map.get(keyB));
+    assertFalse(map.containsKey(keyA));
+    map.build();
+    assertTrue(keyB.isBuildFinished());
+    assertTrue(a.isBuildFinished());
+    assertEquals(Map.of(keyB.getGemId(), a.getGemId()), map.getIDMap());
+
+    keyA.build();
+    assertNull(map.put(keyA, a));
+    assertEquals(Map.of(keyA.getGemId(), a.getGemId()), map.getIDMap());
+    assertNoErrors();
+  }
+
   /** derivesKey tells a value that really has a key from a stale entry, whose value derives another key by now */
   @Test
   public void testDerivesKeyTellsStaleEntries() {
@@ -625,6 +679,15 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
     @Override
     protected List<LoadResult<Node>> loadValueObjects(List<Long> gemIDs) {
       return load(gemIDs);
+    }
+
+    // records the synchronized puts, like a generated GemMap delegating to its owner
+    List<String> putKeys = new java.util.ArrayList<>();
+
+    @Override
+    protected void _internal_putAndSync(String key, Node value) {
+      putKeys.add(key);
+      super._internal_putAndSync(key, value);
     }
   }
 

@@ -217,7 +217,7 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
       return oldElem;
     }
     final V oldElem = get(key);
-    _internal_putAndSync(key, value.getGemId());
+    _internal_putAndSync(key, value);
     return oldElem;
   }
 
@@ -229,10 +229,20 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
 
 
   /**
+   * puts a value under a chosen key (type qualified associations, see {@link #_internal_putKeyValue});
    * to be overridden by a subclass to add synchronization
    */
-  protected void _internal_putAndSync(K key, long valueGemID) {
-    _internal_put(key, valueGemID);
+  protected void _internal_putAndSync(K key, V value) {
+    _internal_putKeyValue(key, value);
+  }
+
+  /**
+   * stores a value under a chosen key, without synchronization, replacing the value stored for key
+   * (type qualified associations, whose keys are not derived from the values); like a derived key, a value is
+   * stored under one key only: an entry it has under another key is moved to key, see {@link #_internal_putValueID}
+   */
+  public void _internal_putKeyValue(K key, V value) {
+    _internal_putValueID(key, value.getGemId());
   }
 
   public void _internal_put(K key, long valueGemID) {
