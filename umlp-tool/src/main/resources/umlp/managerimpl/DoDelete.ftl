@@ -1,6 +1,7 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-<#-- mapRoles: the map roles of loaded owners that may hold the deleted object (GemMapOwnerRole) -->
-${tc.signature("cdName","name", "managerName", "mapRoles")}
+<#-- mapRoles: the map roles of loaded owners that may hold the deleted object (GemMapOwnerRole);
+     keyRoles: the map roles of loaded owners that may use the deleted object as a key (GemMapOwnerRole#keyedBy) -->
+${tc.signature("cdName","name", "managerName", "mapRoles", "keyRoles")}
 ${cd4c.method("protected boolean _doDelete${name}(Long gemId, NotificationScope scope)")}
   if(!(known${name}s.containsKey(gemId) || ${cdName}DAOFactory.get${name?cap_first}DAO().select${name}(gemId).isPresent())) {
     return false;
@@ -19,6 +20,26 @@ ${cd4c.method("protected boolean _doDelete${name}(Long gemId, NotificationScope 
   for (${r.owner} owner : new java.util.ArrayList<>(known${r.owner}s.values())) {
     if (owner != null && owner._internal_get${r.role?cap_first}GemMap().containsValueID(gemId)) {
       owner.remove${r.role?cap_first}ByIdSure(gemId, NotificationScope.ALL);
+    }
+  }
+  </#if>
+</#list>
+<#if keyRoles?has_content>
+  // the entries whose key is the deleted object leave the maps of the loaded owners the same way, by their values
+</#if>
+<#list keyRoles as r>
+  <#if r.singleton>
+  if (${r.owner?uncap_first}Instance != null) {
+    Long ${r.role}ValueID = ${r.owner?uncap_first}Instance._internal_get${r.role?cap_first}GemMap().getID(gemId);
+    if (${r.role}ValueID != null) {
+      ${r.owner?uncap_first}Instance.remove${r.role?cap_first}ByIdSure(${r.role}ValueID, NotificationScope.ALL);
+    }
+  }
+  <#else>
+  for (${r.owner} owner : new java.util.ArrayList<>(known${r.owner}s.values())) {
+    Long valueID = owner == null ? null : owner._internal_get${r.role?cap_first}GemMap().getID(gemId);
+    if (valueID != null) {
+      owner.remove${r.role?cap_first}ByIdSure(valueID, NotificationScope.ALL);
     }
   }
   </#if>
