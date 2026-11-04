@@ -66,6 +66,8 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertLogsError("0xA7323", () -> builder.byCodePut(null, anna));
     var directory = builder.build().get();
     assertLogsError("0xA7323", () -> directory.putByCode(null, anna));
+    // GemEntryMap: the owner puts by the gemId of the key object, a null key object has none
+    assertLogsError("0xA7323", () -> directory.putHeadByDepartment(null, anna));
     assertLogsError("0xA7308", () -> directory.getByCodeMap().put(null, anna));
     assertLogsError("0xA7318", () -> directory.getHeadByDepartmentMap().put(null, anna));
 
@@ -73,6 +75,8 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertFalse(result.isSuccessful());
     assertEquals(0, directory.sizeByCodes());
     assertEquals(0, load(directory).sizeByCodes());
+    assertEquals(0, directory.sizeHeadByDepartments());
+    assertEquals(0, load(directory).sizeHeadByDepartments());
   }
 
   @Test

@@ -43,8 +43,7 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
       methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
           isEntry ? "0xA7317" : "0xA7307"));
     } else {
-      methodList.add(createMethod("umlp.methods.gemmap.PutKey", name, keyType, targetName, sourceName, isEntry,
-          storedKeyType));
+      methodList.add(createMethod("umlp.methods.gemmap.PutKey", name, keyType, targetName, isEntry));
     }
     cd4c.addImport(this.ast, PathUtil.getBackendRTECommandPath("CommandManager"));
     methodList.add(createMethod("umlp.methods.gemmap.Remove", name, keyType, isEntry));
@@ -52,8 +51,10 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     methodList.addAll(createNotifyMethods(methodList, ast.getModifier().isLocal()));
 
     methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName));
-    // synchronization of keys: put as sent by the server without loading the value (command _put), rekeying
-    methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType));
+    // put by id: as sent by the server without loading the value (command _put), and the owner put of a type
+    // qualified association (chosen keys); rekeying
+    methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType, isEntry,
+        !isKeyDerived));
     if (isKeyDerived) {
       methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
     }
