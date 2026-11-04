@@ -204,6 +204,10 @@ public class DAODecorator extends DAOInterfaceDecorator {
         SQLSchemaGenerator.convertAssociationRollName(mapSide.getName()), sqlTable, key.getColumnName());
     getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectWithKeysForAssocDAO", ownerSide.getName(),
         mapSide.getName(), key.getStoredKeyType());
+    if (key.isEntryKey()) {
+      getCD4C().addMethod(daoClass, "umlp.dao.associations.RemoveAllWithKeyForAssocDAO", assoc, sqlTable,
+          key.getColumnName());
+    }
   }
 
   @Override
@@ -266,7 +270,8 @@ public class DAODecorator extends DAOInterfaceDecorator {
   @Override
   protected void deleteMethod(ASTCDType daoClass, ASTCDClass domainClass, Map<ASTCDAssocSide, ASTCDAssociation> assocSideToAssoc) {
     getCD4C().addMethod(daoClass, "umlp.dao.Delete", cdName, SQLSchemaGenerator.convertClassName(domainClass.getName(), SQLSchemaGenerator.AttributeType.ESCAPED_QUOTED),
-        domainClass.getName(), assocSideToAssoc, getAssocToSourceDefinitionCD(assocSideToAssoc.values().stream()));
+        domainClass.getName(), assocSideToAssoc, getAssocToSourceDefinitionCD(assocSideToAssoc.values().stream()),
+        GemMapOwnerRole.typeQualifiedKeyedBy(origCD, domainClass));
   }
 
   @Override

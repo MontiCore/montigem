@@ -162,6 +162,11 @@ public class DAONeo4jDecorator extends DAODecorator {
         mapSide.getName(), CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), key.getNeo4jPropertyName());
     getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectWithKeysForAssocDAONeo4j", ownerSide.getName(),
         mapSide.getName(), key.getStoredKeyType(), key.getNeo4jKeyExpression("record.get(1)"));
+    if (key.isEntryKey()) {
+      getCD4C().addMethod(daoClass, "umlp.dao.associations.RemoveAllWithKeyForAssocDAONeo4j", assoc,
+          CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), mapSide.getName(),
+          key.getNeo4jPropertyName());
+    }
   }
 
   @Override
@@ -172,7 +177,8 @@ public class DAONeo4jDecorator extends DAODecorator {
 
   @Override
   protected void deleteMethod(ASTCDType daoClass, ASTCDClass domainClass, Map<ASTCDAssocSide, ASTCDAssociation> assocSideToAssoc) {
-    getCD4C().addMethod(daoClass, "umlp.dao.DeleteNeo4j", domainClass.getName(), assocSideToAssoc);
+    getCD4C().addMethod(daoClass, "umlp.dao.DeleteNeo4j", cdName, domainClass.getName(), assocSideToAssoc,
+        GemMapOwnerRole.typeQualifiedKeyedBy(origCD, domainClass));
   }
 
   @Override
