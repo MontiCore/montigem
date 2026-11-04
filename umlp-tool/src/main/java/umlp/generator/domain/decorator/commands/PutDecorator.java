@@ -141,6 +141,8 @@ public class PutDecorator extends AddDecorator {
     getCD4C().addMethod(ast, "umlp.commands.put.DoRunKey", domainType.getName(), getCorrectManager(domainType),
         a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getKeyType(),
         keyTypeManager);
+    // the chosen key is a precondition: a put with a null key is neither executed nor sent on
+    getCD4C().addMethod(ast, "umlp.commands.put.CheckContractKey");
   }
 
   protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType) {

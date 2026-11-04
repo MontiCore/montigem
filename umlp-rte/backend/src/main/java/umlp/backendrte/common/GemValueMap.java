@@ -216,6 +216,11 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
       _internal_putValueAndSync(value);
       return oldElem;
     }
+    if (key == null) {
+      // a chosen key must be present (type qualified associations; the database stores it NOT NULL)
+      Log.error("0xA7308 The object with id " + value.getGemId() + " cannot be put under the key null");
+      return null;
+    }
     final V oldElem = get(key);
     _internal_putAndSync(key, value);
     return oldElem;

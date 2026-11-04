@@ -1,11 +1,14 @@
 /* (c) https://github.com/MontiCore/monticore */
 package qualifiedassocs;
 
+import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsNeo4JDBTestSetup;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsSQLDBTestSetup;
+import qualifiedassocs.commands.Directory_putByCode;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsTestSetup;
+import umlp.backendrte.command.CommandManager;
 
 import java.util.Map;
 
@@ -36,6 +39,40 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
 
   default Directory load(Directory directory) {
     return QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
+  }
+
+  /** runs an action that is expected to log an error starting with message */
+  default void assertLogsError(String message, Runnable action) {
+    boolean failQuick = Log.isFailQuickEnabled();
+    Log.enableFailQuick(false);
+    try {
+      action.run();
+      // removed before fail quick is enabled again: enabling it terminates if errors were logged
+      assertTrue(Log.getFindings().removeIf(f -> f.getMsg().startsWith(message)));
+    } finally {
+      Log.enableFailQuick(failQuick);
+    }
+  }
+
+  /**
+   * a chosen key must be present: the owner, the builder and the map reject a null key; the server rejects a put
+   * command with a null key (contract), so it is neither executed nor sent on
+   */
+  @Test
+  default void testNullKeyIsRejected() {
+    getBackend().activate();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    var builder = QualifiedAssocsManager.directoryBuilder();
+    assertLogsError("0xA7323", () -> builder.byCodePut(null, anna));
+    var directory = builder.build().get();
+    assertLogsError("0xA7323", () -> directory.putByCode(null, anna));
+    assertLogsError("0xA7308", () -> directory.getByCodeMap().put(null, anna));
+    assertLogsError("0xA7318", () -> directory.getHeadByDepartmentMap().put(null, anna));
+
+    var result = CommandManager.executeCommand(new Directory_putByCode(directory.getGemId(), anna.getGemId(), null));
+    assertFalse(result.isSuccessful());
+    assertEquals(0, directory.sizeByCodes());
+    assertEquals(0, load(directory).sizeByCodes());
   }
 
   @Test
