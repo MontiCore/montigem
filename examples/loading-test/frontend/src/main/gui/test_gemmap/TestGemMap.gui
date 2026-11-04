@@ -9,7 +9,7 @@ import LoadingTests.Student;
 import LoadingTests.Tutor;
 import LoadingTests.Enrollment;
 
-// Attribute qualified associations (GemMaps) cannot be accessed in GUI models (CoCo 0x00032):
+// Qualified associations (GemMaps) cannot be accessed in GUI models (CoCo 0x00032):
 // the buttons run the scenarios in the hwc, which shows what it read in the browser in result
 page TestGemMap(Course c, Student s, Tutor t, Enrollment e, String result = "loaded") {
   resultText@GemText(value = result);
@@ -26,4 +26,10 @@ page TestGemMap(Course c, Student s, Tutor t, Enrollment e, String result = "loa
   putEnrollment@GemButton(label = "Put Enrollment", leftClick = putEnrollment(c, e, s));
   buildCourse@GemButton(label = "Build Course", leftClick = buildCourse(s));
   clear@GemButton(label = "Clear", leftClick = clear(c));
+
+  // type qualified associations: the key is chosen on put
+  putSeat@GemButton(label = "Put Seat", leftClick = putSeat(c, s));
+  moveSeat@GemButton(label = "Move Seat", leftClick = moveSeat(c, s));
+  readSeats@GemButton(label = "Read Seats", leftClick = readSeats(c));
+  putMentee@GemButton(label = "Put Mentee", leftClick = putMentee(c, t, s));
 }
