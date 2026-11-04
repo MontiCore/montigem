@@ -14,8 +14,8 @@ import umlp.generator.gui.GUIGeneratorUtil;
 import umlp.generator.util.TagLookUp;
 
 /**
- * Attribute qualified associations ({@code Owner [[attr]] -> (role) Target}) are GemMaps,
- * which GUI models do not support yet: the GUI would treat the role as a list or a single object.
+ * Qualified associations ({@code Owner [[attr]] -> (role) Target}, {@code Owner [Type] -> (role) Target}) are
+ * GemMaps, which GUI models do not support yet: the GUI would treat the role as a list or a single object.
  * Hand-written code can use the map, e.g. {@code owner.getRoleMap()}.
  */
 public class GuiNoAttributeQualifiedRoleCoCo implements GUIDSLASTGUICompilationUnitCoCo, CommonExpressionsVisitor2 {
@@ -34,10 +34,10 @@ public class GuiNoAttributeQualifiedRoleCoCo implements GUIDSLASTGUICompilationU
     SymTypeExpression type = GUIGeneratorUtil.getInstance().getType(node);
     if (type.getSourceInfo().getSourceSymbol().isPresent()) {
       ISymbol symbol = type.getSourceInfo().getSourceSymbol().get();
-      if (TagLookUp.isAttributeQualified(symbol)) {
+      if (TagLookUp.isQualifiedMap(symbol)) {
         String role = node.getName();
         String getter = "get" + Character.toUpperCase(role.charAt(0)) + role.substring(1) + "Map()";
-        Log.error(ERROR_CODE + " The association role '" + role + "' is qualified by an attribute, i.e. a map,"
+        Log.error(ERROR_CODE + " The association role '" + role + "' is qualified, i.e. a map,"
                 + " which GUI models do not support yet. Use it in hand-written code instead, e.g. via "
                 + getter + ".",
             node.get_SourcePositionStart(), node.get_SourcePositionEnd());

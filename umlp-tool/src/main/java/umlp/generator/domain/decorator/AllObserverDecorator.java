@@ -102,14 +102,16 @@ public class AllObserverDecorator extends AbstractDecorator {
 
         String cdDefinitionOfAssoc = UMLPSymbolTables.getDiagramFor(e.getValue()).getCDDefinition().getName();
         if (GenService.isMap(e.getKey())) {
-          // maps: values are put under a key and rekeyed, there are no positions (no set at index)
+          // maps: values are put under a key and rekeyed (derived keys only), there are no positions (no set at index)
           String keyType = QualifierKey.of(e.getKey()).getStoredKeyType();
           glex.replaceTemplate("cd2java.Annotations", getCD4C().addMethod(observerClass,
               "umlp.allobserver.assocs.AllObserverPutNotify", cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(),
               otherTypeName, keyType), new StringHookPoint("@Override"));
-          glex.replaceTemplate("cd2java.Annotations", getCD4C().addMethod(observerClass,
-              "umlp.allobserver.assocs.AllObserverRekeyNotify", cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(),
-              otherTypeName, keyType), new StringHookPoint("@Override"));
+          if (GenService.isKeyDerived(e.getKey())) {
+            glex.replaceTemplate("cd2java.Annotations", getCD4C().addMethod(observerClass,
+                "umlp.allobserver.assocs.AllObserverRekeyNotify", cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(),
+                otherTypeName, keyType), new StringHookPoint("@Override"));
+          }
           glex.replaceTemplate("cd2java.Annotations", getCD4C().addMethod(observerClass,
               "umlp.allobserver.assocs.AllObserverRemoveNotify", cdDefinitionOfAssoc, className, e.getValue().getName(), e.getKey(),
               otherTypeName), new StringHookPoint("@Override"));

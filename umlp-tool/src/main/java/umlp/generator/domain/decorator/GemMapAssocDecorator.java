@@ -33,9 +33,10 @@ import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static umlp.generator.domain.decorator.ManagerDecorator.SUFFIX;
 
 /**
- * Generates the GemMap classes of attribute qualified associations ({@code Owner [[attr]] -> Target}),
- * see {@link GenService#isMap}: a GemValueMapBuilder keyed by the value of attr, or a GemEntryMapBuilder
- * if attr references a domain object, see {@link QualifierKey}.
+ * Generates the GemMap classes of qualified associations, see {@link GenService#isMap}: a GemValueMapBuilder keyed
+ * by values, or a GemEntryMapBuilder keyed by domain objects, see {@link QualifierKey}. Attribute qualified
+ * associations ({@code Owner [[attr]] -> Target}) derive the key of a value from attr and get key observers that
+ * rekey the values; type qualified associations ({@code Owner [Type] -> Target}) take the key on put.
  */
 public class GemMapAssocDecorator extends AbstractDecorator {
 
@@ -61,6 +62,8 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     List<ASTCDClass> retList = Lists.newArrayList();
     if (GenService.isMap(assoc)) {
       retList.add(createGemMapClass(origCD, assoc, clazz));
+    }
+    if (GenService.isMap(assoc) && GenService.isKeyDerived(assoc)) {
       // one key observer per type of values, as subclasses notify their own observers only;
       // the managers attach them to the values, see GemMapKeyRole
       CDTypeSymbol targetSymbol = (CDTypeSymbol) UMLPSymbolTables.getTypeSymbol(assoc.getMCQualifiedType()).get();
@@ -98,17 +101,22 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     getCD4C().addMethod(ast, "umlp.gemmap.LoadObjects", "loadValueObjects", targetName,
         getCorrectManager(targetSymbol.getAstNode()));
     if (key.isEntryKey()) {
-      CDTypeSymbol keySymbol = getKeySymbol(targetSymbol, key);
+      CDTypeSymbol keySymbol = key.getKeySymbol();
       getCD4C().addMethod(ast, "umlp.gemmap.LoadObjects", "loadKeyObjects", keySymbol.getName(),
           getCorrectManager(keySymbol.getAstNode()));
     }
-    getCD4C().addMethod(ast, "umlp.gemmap.DeriveKey", key.getKeyType(), targetName,
-        key.getKeyExpression("value"), key.isEntryKey());
     // modifications through the map itself are synchronized via the owner, like GemList
     String managerName = origCD.getCDDefinition().getName() + ManagerDecorator.SUFFIX;
     getCD4C().addMethod(ast, "umlp.gemlist.assocs.GetOwner", domainClass.getName(), managerName);
-    getCD4C().addMethod(ast, "umlp.gemmap.IsKeyDerived");
-    getCD4C().addMethod(ast, "umlp.gemmap.PutValueAndSync", targetName, assoc.getName());
+    if (key.isDerived()) {
+      getCD4C().addMethod(ast, "umlp.gemmap.DeriveKey", key.getKeyType(), targetName,
+          key.getKeyExpression("value"), key.isEntryKey());
+      getCD4C().addMethod(ast, "umlp.gemmap.IsKeyDerived");
+      getCD4C().addMethod(ast, "umlp.gemmap.PutValueAndSync", targetName, assoc.getName());
+    } else {
+      // the key is chosen on put (RTE: not derived by default)
+      getCD4C().addMethod(ast, "umlp.gemmap.PutAndSync", key.getKeyType(), targetName, assoc.getName());
+    }
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveValueIDAndSync", assoc.getName());
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveAndSync", key.getKeyType(), key.isEntryKey());
     addDomainImports(ast, domainClass);
@@ -138,7 +146,7 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     addDomainImports(ast, observedType.getAstNode());
     addDomainImports(ast, key.getDeclaringType().getAstNode());
     if (key.isEntryKey()) {
-      addDomainImports(ast, getKeySymbol(targetSymbol, key).getAstNode());
+      addDomainImports(ast, key.getKeySymbol().getAstNode());
     }
     getCD4C().addImport(ast, Joiners.DOT.join(getPackageName(UMLPSymbolTables.getDiagramFor(observedType.getAstNode()), DEFAULT_PACKAGE),
         observedType.getName() + "Observer"));
@@ -188,17 +196,13 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     return best;
   }
 
-  protected CDTypeSymbol getKeySymbol(CDTypeSymbol targetSymbol, QualifierKey key) {
-    return (CDTypeSymbol) CDSymbolTables.getAssociationsInHierarchy(targetSymbol.getAstNode()).stream()
-        .filter(a -> a.getName().equals(key.getAttrName())).findFirst().get()
-        .getSymbol().getType().getTypeInfo();
-  }
-
   protected void addImports(ASTCDCompilationUnit origCD, CDTypeSymbol targetSymbol, QualifierKey key, ASTCDClass ast) {
     addDomainImports(ast, targetSymbol.getAstNode());
-    addDomainImports(ast, key.getDeclaringType().getAstNode());
+    if (key.isDerived()) {
+      addDomainImports(ast, key.getDeclaringType().getAstNode());
+    }
     if (key.isEntryKey()) {
-      addDomainImports(ast, getKeySymbol(targetSymbol, key).getAstNode());
+      addDomainImports(ast, key.getKeySymbol().getAstNode());
     }
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath(key.getMapType() + "Builder"));
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("NotificationScope"));

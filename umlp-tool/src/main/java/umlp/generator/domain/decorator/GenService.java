@@ -265,6 +265,16 @@ public class GenService {
 
   /**
    * @param attr an attribute holding a GemMap, see {@link #isGemMap}
+   * @return whether its keys are derived from its values (attribute qualified association), see
+   * {@link #isKeyDerived(ASTCDAssocSide)}; marked by {@link DomainTypeDecorator#STEREOTYPE_KEY_DERIVED}
+   */
+  public static boolean isKeyDerivedGemMap(ASTCDAttribute attr) {
+    return attr.getModifier().isPresentStereotype()
+        && attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_KEY_DERIVED);
+  }
+
+  /**
+   * @param attr an attribute holding a GemMap, see {@link #isGemMap}
    * @return the type its keys are stored and synchronized as: the key type of a GemValueMap,
    * the gemId of the key object (Long) for a GemEntryMap
    */
@@ -367,13 +377,22 @@ public class GenService {
   }
 
   /**
-   * The target side of an association qualified by an attribute of the target class
-   * ({@code Owner [[attr]] -> Target}) is a GemMap of the qualified side, keyed by attr.
-   * Type qualifiers ({@code [Type]}) are not supported yet and ignored.
+   * The target side of a qualified association is a GemMap of the qualified side: qualified by an attribute of the
+   * target class ({@code Owner [[attr]] -> Target}), the key of a value is derived from attr (see
+   * {@link #isKeyDerived}); qualified by a type ({@code Owner [Type] -> Target}), the key is chosen on put.
    *
    * @param assoc the target side, as returned by e.g. CDSymbolTables.getAssociations(owner)
    */
   public static boolean isMap(ASTCDAssocSide assoc) {
+    return getQualifierAttributeName(assoc).isPresent() || getQualifierType(assoc).isPresent();
+  }
+
+  /**
+   * whether the keys of the GemMap of the target side are derived from its values, i.e. the association is qualified
+   * by an attribute of the target ({@code [[attr]]}): the values are rekeyed when attr changes. The keys of a type
+   * qualified association ({@code [Type]}) are chosen on put and never rekeyed.
+   */
+  public static boolean isKeyDerived(ASTCDAssocSide assoc) {
     return getQualifierAttributeName(assoc).isPresent();
   }
 
@@ -382,15 +401,31 @@ public class GenService {
    * @return the name of the target attribute qualifying the association, if any
    */
   public static Optional<String> getQualifierAttributeName(ASTCDAssocSide assoc) {
+    // the qualifier stands on the qualified (opposite) side, but names an attribute of the target
+    return getQualifiedSide(assoc)
+        .filter(side -> side.getCDQualifier().isPresentByAttributeName())
+        .map(side -> side.getCDQualifier().getByAttributeName());
+  }
+
+  /**
+   * @param assoc the target side of an association
+   * @return the type qualifying the association (the key type), if any
+   */
+  public static Optional<ASTMCType> getQualifierType(ASTCDAssocSide assoc) {
+    return getQualifiedSide(assoc)
+        .filter(side -> side.getCDQualifier().isPresentByType())
+        .map(side -> side.getCDQualifier().getByType());
+  }
+
+  /**
+   * @return the opposite side of the target side assoc, if it carries a qualifier
+   */
+  protected static Optional<ASTCDAssocSide> getQualifiedSide(ASTCDAssocSide assoc) {
     if (!assoc.isPresentSymbol() || !assoc.getSymbol().getOtherSide().isPresentAssocSide()) {
       return Optional.empty();
     }
-    // the qualifier stands on the qualified (opposite) side, but names an attribute of the target
     ASTCDAssocSide qualifiedSide = assoc.getSymbol().getOtherSide().getAssocSide();
-    if (qualifiedSide.isPresentCDQualifier() && qualifiedSide.getCDQualifier().isPresentByAttributeName()) {
-      return Optional.of(qualifiedSide.getCDQualifier().getByAttributeName());
-    }
-    return Optional.empty();
+    return qualifiedSide.isPresentCDQualifier() ? Optional.of(qualifiedSide) : Optional.empty();
   }
 
   /**

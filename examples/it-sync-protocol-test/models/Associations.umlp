@@ -203,4 +203,79 @@ umlp Associations {
   class RoleAbstractValue extends RoleAbstractBase;
   association roleAbstractKey RoleAbstractBase -> (key) MapKey [1];
   association roleAbstractMap RoleAbstractOwner [[key]] -> (byKey) RoleAbstractBase [1];
+
+  // Type qualified associations (GemMaps): the key is chosen on put, the values have no key attribute.
+  // Names: Typ<Key><Value>, Value as above (Super: the value has a superclass <Case>Base).
+  //   Key:   Str  [String] (GemValueMap)
+  //          Num  [int]    (GemValueMap)
+  //          Obj  [MapKey] (GemEntryMap)
+
+  // TypStrPlain
+  class TypStrPlainOwner;
+  class TypStrPlainValue;
+  association typStrPlainMap TypStrPlainOwner [String] -> (byKey) TypStrPlainValue [1];
+
+  // TypStrSuper
+  class TypStrSuperOwner;
+  class TypStrSuperBase;
+  class TypStrSuperValue extends TypStrSuperBase;
+  association typStrSuperMap TypStrSuperOwner [String] -> (byKey) TypStrSuperValue [1];
+
+  // TypStrSub
+  class TypStrSubOwner;
+  class TypStrSubBase;
+  class TypStrSubValue extends TypStrSubBase;
+  association typStrSubMap TypStrSubOwner [String] -> (byKey) TypStrSubBase [1];
+
+  // TypStrAbstract
+  class TypStrAbstractOwner;
+  abstract class TypStrAbstractBase;
+  class TypStrAbstractValue extends TypStrAbstractBase;
+  association typStrAbstractMap TypStrAbstractOwner [String] -> (byKey) TypStrAbstractBase [1];
+
+  // TypNumPlain
+  class TypNumPlainOwner;
+  class TypNumPlainValue;
+  association typNumPlainMap TypNumPlainOwner [int] -> (byKey) TypNumPlainValue [1];
+
+  // TypNumSuper
+  class TypNumSuperOwner;
+  class TypNumSuperBase;
+  class TypNumSuperValue extends TypNumSuperBase;
+  association typNumSuperMap TypNumSuperOwner [int] -> (byKey) TypNumSuperValue [1];
+
+  // TypNumSub
+  class TypNumSubOwner;
+  class TypNumSubBase;
+  class TypNumSubValue extends TypNumSubBase;
+  association typNumSubMap TypNumSubOwner [int] -> (byKey) TypNumSubBase [1];
+
+  // TypNumAbstract
+  class TypNumAbstractOwner;
+  abstract class TypNumAbstractBase;
+  class TypNumAbstractValue extends TypNumAbstractBase;
+  association typNumAbstractMap TypNumAbstractOwner [int] -> (byKey) TypNumAbstractBase [1];
+
+  // TypObjPlain
+  class TypObjPlainOwner;
+  class TypObjPlainValue;
+  association typObjPlainMap TypObjPlainOwner [MapKey] -> (byKey) TypObjPlainValue [1];
+
+  // TypObjSuper
+  class TypObjSuperOwner;
+  class TypObjSuperBase;
+  class TypObjSuperValue extends TypObjSuperBase;
+  association typObjSuperMap TypObjSuperOwner [MapKey] -> (byKey) TypObjSuperValue [1];
+
+  // TypObjSub
+  class TypObjSubOwner;
+  class TypObjSubBase;
+  class TypObjSubValue extends TypObjSubBase;
+  association typObjSubMap TypObjSubOwner [MapKey] -> (byKey) TypObjSubBase [1];
+
+  // TypObjAbstract
+  class TypObjAbstractOwner;
+  abstract class TypObjAbstractBase;
+  class TypObjAbstractValue extends TypObjAbstractBase;
+  association typObjAbstractMap TypObjAbstractOwner [MapKey] -> (byKey) TypObjAbstractBase [1];
 }

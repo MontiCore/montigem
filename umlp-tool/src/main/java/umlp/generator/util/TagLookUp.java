@@ -24,8 +24,8 @@ public class TagLookUp {
   private final static String COMMAND = "command";
   private final static String DERIVED = "derived";
   private final static String POJO = "pojo";
-  // target role of an attribute qualified association (a GemMap), see TagRelated.AttributeQualifiedRoleTagVisitor
-  public final static String ATTRIBUTE_QUALIFIED = "attributeQualified";
+  // target role of a qualified association (a GemMap), see TagRelated.QualifiedMapRoleTagVisitor
+  public final static String QUALIFIED_MAP = "qualifiedMap";
   private final static String DOMAIN_VALIDATION_ENTRY = "domainValidationEntry";
   private final static String DOMAIN_VALIDATION_TARGET = "domainValidationTarget";
 
@@ -111,10 +111,10 @@ public class TagLookUp {
   }
 
   /**
-   * @return whether the role is the target of an attribute qualified association, i.e. a GemMap
+   * @return whether the role is the target of a qualified association ([[attr]] or [Type]), i.e. a GemMap
    */
-  public static boolean isAttributeQualified(ISymbol roleSymbol) {
-    return hasSimpleTag(roleSymbol, ATTRIBUTE_QUALIFIED);
+  public static boolean isQualifiedMap(ISymbol roleSymbol) {
+    return hasSimpleTag(roleSymbol, QUALIFIED_MAP);
   }
 
   public static boolean isDomainValidationEntry(ISymbol symbol) {

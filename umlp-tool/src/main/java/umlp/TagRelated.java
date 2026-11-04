@@ -92,7 +92,7 @@ public class TagRelated {
     SimpleSymbolTagger tagger = new SimpleSymbolTagger(() -> Collections.singleton(tagUnit));
     traverser.add4CDBasis(new DomainModelTagVisitor(tagger, hasTags));
     traverser.add4CDBasis(new PojoTaggerVisitor(tagger, hasTags, isPojoCD));
-    traverser.add4CDAssociation(new AttributeQualifiedRoleTagVisitor(tagger, hasTags));
+    traverser.add4CDAssociation(new QualifiedMapRoleTagVisitor(tagger, hasTags));
     ast.accept(traverser);
 
     if (tagPath != null) {
@@ -248,15 +248,15 @@ public class TagRelated {
   }
 
   /**
-   * Tags the target roles of attribute qualified associations ({@code Owner [[attr]] -> (role) Target}),
-   * which are GemMaps, with 'attributeQualified', so the GUI generation can reject them
-   * (GUI models do not support GemMaps yet)
+   * Tags the target roles of qualified associations ({@code Owner [[attr]] -> (role) Target},
+   * {@code Owner [Type] -> (role) Target}), which are GemMaps, with 'qualifiedMap', so the GUI generation can reject
+   * them (GUI models do not support GemMaps yet)
    */
-  public static class AttributeQualifiedRoleTagVisitor implements CDAssociationVisitor2 {
+  public static class QualifiedMapRoleTagVisitor implements CDAssociationVisitor2 {
     SimpleSymbolTagger tagger;
     boolean[] hasTags;
 
-    protected AttributeQualifiedRoleTagVisitor(SimpleSymbolTagger tagger, boolean[] hasTags) {
+    protected QualifiedMapRoleTagVisitor(SimpleSymbolTagger tagger, boolean[] hasTags) {
       this.tagger = tagger;
       this.hasTags = hasTags;
     }
@@ -265,7 +265,7 @@ public class TagRelated {
     public void visit(ASTCDAssociation node) {
       for (ASTCDAssocSide side : List.of(node.getLeft(), node.getRight())) {
         if (side.isPresentSymbol() && GenService.isMap(side)) {
-          ASTTag astTag = TagsMill.simpleTagBuilder().setName(TagLookUp.ATTRIBUTE_QUALIFIED).build();
+          ASTTag astTag = TagsMill.simpleTagBuilder().setName(TagLookUp.QUALIFIED_MAP).build();
           hasTags[0] = true;
           tagger.addTag(side.getSymbol(), astTag);
         }

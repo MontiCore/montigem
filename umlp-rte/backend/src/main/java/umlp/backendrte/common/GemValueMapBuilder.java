@@ -100,20 +100,6 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
   }
 
   @Override
-  public V put(K key, V value) {
-    if(buildFinished || isKeyDerived()) {
-      return super.put(key, value);
-    } else {
-      // Map might contain builders, which a normal GemMap will not
-      // Thus, the elements themselves are stored, not only their ids
-      ensureKeyed();
-      IDOrBuilder<V> old = builderElemStorage.put(key, new IDOrBuilder<>(value));
-      valueLeft(old, value.getGemId());
-      return old == null ? null : resolveValue(old);
-    }
-  }
-
-  @Override
   public V get(Object key) {
     if(buildFinished) {
       return super.get(key);
@@ -178,6 +164,21 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       valueLeft(builderElemStorage.put(key, new IDOrBuilder<>(value)), value.getGemId());
       valuesPutBeforeBuild.put(value.getGemId(), value);
       onValueKeyed(value);
+    }
+  }
+
+  @Override
+  public void _internal_putKeyValue(K key, V value) {
+    if(buildFinished) {
+      super._internal_putKeyValue(key, value);
+    } else {
+      ensureKeyed();
+      // stored under one key only, see _internal_putValueID
+      builderElemStorage.entrySet().removeIf(e -> e.getValue().getGemId() == value.getGemId()
+          && !Objects.equals(e.getKey(), key));
+      // Map might contain builders, which a normal GemMap will not
+      // Thus, the elements themselves are stored, not only their ids
+      valueLeft(builderElemStorage.put(key, new IDOrBuilder<>(value)), value.getGemId());
     }
   }
 

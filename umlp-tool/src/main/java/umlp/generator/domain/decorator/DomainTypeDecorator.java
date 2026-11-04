@@ -45,6 +45,8 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
   public static final String STEREOTYPE_OTHERSIDE = "otherSide";
   public static final String STEREOTYPE_MANAGER = "manager";
   public static final String STEREOTYPE_OTHERSIDE_ISLIST = "isList";
+  // a GemMap whose keys are derived from its values (attribute qualified association), see GenService#isKeyDerived
+  public static final String STEREOTYPE_KEY_DERIVED = "keyDerived";
 
   public DomainTypeDecorator(GlobalExtensionManagement glex) {
     super(glex);
@@ -233,6 +235,9 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
         }
       }
       addStereotype(attribute.getModifier(), STEREOTYPE_MANAGER, getCorrectManager(assocSide));
+      if (GenService.isKeyDerived(assocSide)) {
+        addStereotype(attribute.getModifier(), STEREOTYPE_KEY_DERIVED, "");
+      }
 
       if(GenService.isOptional(assocSide)){
         addStereotype(attribute.getModifier(), "Optional", "");
