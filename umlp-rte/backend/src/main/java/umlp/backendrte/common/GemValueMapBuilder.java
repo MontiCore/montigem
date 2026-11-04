@@ -166,6 +166,9 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       super._internal_putValue(value);
     } else {
       K key = deriveKey(value);
+      if (refusesKey(key, value.getGemId())) {
+        return;
+      }
       // stored under one key only, see _internal_putValueID
       builderElemStorage.entrySet().removeIf(e -> e.getValue().getGemId() == value.getGemId()
           && !Objects.equals(e.getKey(), key));
@@ -181,6 +184,9 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if(buildFinished) {
       super._internal_putKeyValue(key, value);
     } else {
+      if (refusesKey(key, value.getGemId())) {
+        return;
+      }
       ensureKeyed();
       // stored under one key only, see _internal_putValueID
       builderElemStorage.entrySet().removeIf(e -> e.getValue().getGemId() == value.getGemId()

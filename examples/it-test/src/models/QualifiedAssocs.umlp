@@ -40,4 +40,11 @@ umlp QualifiedAssocs {
   association Directory [int] (seatDirectory) -> (bySeat) Person [1];
   association Directory [Department] (headDirectory) -> (headByDepartment) Person [1];
   association [1] Person (byAliasFromRight) <- (aliasDirectory) [String] Directory;
+
+  /* long keys: a browser represents only the integers within -(2^53-1) and 2^53-1 exactly, larger keys are refused */
+  class Badge {
+    long code;
+  }
+  association Directory [[code]] (badgeDirectory) -> (byBadgeCode) Badge [1];
+  association Directory [long] (phoneDirectory) -> (byPhone) Person [1];
 }
