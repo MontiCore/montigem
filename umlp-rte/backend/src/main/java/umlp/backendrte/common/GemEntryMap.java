@@ -255,6 +255,12 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
    */
   protected abstract List<LoadResult<V>> loadValueObjects(List<Long> gemIDs);
 
+  /**
+   * puts value under key and returns the value stored for key before, like {@link java.util.Map#put}, but a value
+   * is stored under one key only: an entry the value has under another key moves to key. The key of an attribute
+   * qualified association is derived from the value, so a key that does not match is rejected; a null key is
+   * rejected as well.
+   */
   @Override
   public V put(K key, V value) {
     if (isKeyDerived()) {
