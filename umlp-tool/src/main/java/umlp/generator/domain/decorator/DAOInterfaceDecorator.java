@@ -188,6 +188,25 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
       removeAllMethodForAssocDAO(daoInterface,association, association.getRight(), association.getLeft());
       updateMethodForAssocDAO(daoInterface, association, association.getRight(), association.getLeft());
     }
+    // a type qualified association (unidirectional from the owner) stores the key of each value
+    GenService.getTypeQualifiedMapSide(association).ifPresent(mapSide -> keyMethodsForAssocDAO(daoInterface,
+        association, mapSide.isLeft() ? association.getRight() : association.getLeft(), mapSide,
+        QualifierKey.of(mapSide)));
+  }
+
+  /**
+   * put, putMany and the select of the values with their keys of a type qualified association
+   *
+   * @param ownerSide the qualified side, mapSide the side of the values (the GemMap role)
+   */
+  protected void keyMethodsForAssocDAO(ASTCDType daoInterface, ASTCDAssociation assoc, ASTCDAssocSide ownerSide,
+                                       ASTCDAssocSide mapSide, QualifierKey key) {
+    getCD4C().addMethod(daoInterface, "umlp.daointerface.associations.PutForAssocDAO", assoc,
+        key.getStoredKeyType());
+    getCD4C().addMethod(daoInterface, "umlp.daointerface.associations.PutManyForAssocDAO", assoc,
+        ownerSide.getName(), key.getStoredKeyType());
+    getCD4C().addMethod(daoInterface, "umlp.daointerface.associations.SelectWithKeysForAssocDAO",
+        ownerSide.getName(), mapSide.getName(), key.getStoredKeyType());
   }
 
   protected void removeAllMethodForAssocDAO(ASTCDType daoInterface, ASTCDAssociation assoc,
