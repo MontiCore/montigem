@@ -11,30 +11,39 @@ import java.util.Locale;
 import java.util.stream.Stream;
 
 /**
- * Generates the sync protocol tests of attribute qualified associations (GemMaps), like
+ * Generates the sync protocol tests of qualified associations (GemMaps), attribute qualified ones ([[attr]], the key
+ * is derived from the value) and type qualified ones ([T], the key is chosen on put), like
  * {@link SyncProtocolTestGenerator} does for list associations: one test interface per map of the model
  * (examples/it-sync-protocol-test/models/Associations.umlp, classes named <Key><Value>), with a test method per
- * build state, context pair, operation and load state, and the support that is specific to the map.
+ * build state, context pair, operation (the ones that apply to the key, see {@link Operation#appliesTo}) and load
+ * state, and the support that is specific to the map.
  */
 public final class GemMapSyncTestGenerator {
   private GemMapSyncTestGenerator() {
   }
 
   enum Key {
-    STR("Str", "String", false),
-    NUM("Num", "int", false),
-    OBJ("Obj", "MapKey", true),
-    ROLE("Role", "MapKey", true);
+    STR("Str", "String", false, false),
+    NUM("Num", "int", false, false),
+    OBJ("Obj", "MapKey", true, false),
+    ROLE("Role", "MapKey", true, false),
+    // type qualified associations ([T]): the key is chosen on put
+    TYP_STR("TypStr", "String", false, true),
+    TYP_NUM("TypNum", "int", false, true),
+    TYP_OBJ("TypObj", "MapKey", true, true);
 
     final String namePart;
     final String type;
     // the key is a domain object (GemEntryMap), stored by its gemId
     final boolean entry;
+    // the key is chosen on put (type qualified association), not derived from the value
+    final boolean chosen;
 
-    Key(String namePart, String type, boolean entry) {
+    Key(String namePart, String type, boolean entry, boolean chosen) {
       this.namePart = namePart;
       this.type = type;
       this.entry = entry;
+      this.chosen = chosen;
     }
   }
 
@@ -96,18 +105,33 @@ public final class GemMapSyncTestGenerator {
     PUT("Put"),
     PUT_BY_MAP("PutByMap"),
     GET("Get"),
+    // derived keys: the qualifying attribute of a value changes
     REKEY("Rekey"),
+    // chosen keys: a value is put under another key, it is stored under one key only, so its entry moves
+    MOVE("Move"),
     REMOVE("Remove"),
     REMOVE_BY_KEY_SET("RemoveByKeySet"),
     REPLACE("Replace"),
     DELETE_OBJECT("DeleteObject"),
     // deleting the owner removes its map, the values and the maps of other owners stay
-    DELETE_OWNER("DeleteOwner");
+    DELETE_OWNER("DeleteOwner"),
+    // chosen keys that are objects: deleting the key object removes its entry, the value stays
+    DELETE_KEY("DeleteKey");
 
     final String namePart;
 
     Operation(String namePart) {
       this.namePart = namePart;
+    }
+
+    boolean appliesTo(Key key) {
+      return switch (this) {
+        case REKEY -> !key.chosen;
+        case MOVE -> key.chosen;
+        // the entries of a derived key object are not removed on its deletion yet (known bug)
+        case DELETE_KEY -> key.chosen && key.entry;
+        default -> true;
+      };
     }
   }
 
@@ -180,6 +204,7 @@ public final class GemMapSyncTestGenerator {
     content.append("import util.GemMapSyncProtocolTestSupport;\n\n");
     content.append("import static org.junit.jupiter.api.Assertions.assertEquals;\n");
     content.append("import static org.junit.jupiter.api.Assertions.assertFalse;\n");
+    content.append("import static org.junit.jupiter.api.Assertions.assertNull;\n");
     content.append("import static org.junit.jupiter.api.Assertions.assertTrue;\n\n");
 
     content.append("""
@@ -213,6 +238,9 @@ public final class GemMapSyncTestGenerator {
     for (BuildState buildState : BuildState.values()) {
       for (ContextPair contextPair : ContextPair.values()) {
         for (Operation operation : Operation.values()) {
+          if (!operation.appliesTo(gemMap.key())) {
+            continue;
+          }
           for (LoadState loadState : LoadState.values()) {
             if (isSensible(buildState, contextPair, loadState)) {
               appendTestMethod(content, buildState, contextPair, operation, loadState, gemMap);
@@ -255,7 +283,7 @@ public final class GemMapSyncTestGenerator {
       content.append("    assertValuesNotLoaded(scenario);\n");
     }
     appendExpectedAssertion(content, operation, gemMap, "");
-    if (operation == Operation.REPLACE) {
+    if (operation == Operation.REPLACE && !gemMap.key().chosen) {
       content.append("    // the replaced value derives the same key: the server reports it, the value is replaced\n");
       content.append("    assertLogged(\"").append(gemMap.key().entry ? "0xA7317" : "0xA7307").append("\");\n");
     }
@@ -297,7 +325,7 @@ public final class GemMapSyncTestGenerator {
   private static int initialValueCount(Operation operation) {
     return switch (operation) {
       case BUILD_OBJECT, PUT, PUT_BY_MAP, REPLACE -> 1;
-      case GET, REKEY, REMOVE, REMOVE_BY_KEY_SET, DELETE_OBJECT, DELETE_OWNER -> 2;
+      case GET, REKEY, MOVE, REMOVE, REMOVE_BY_KEY_SET, DELETE_OBJECT, DELETE_OWNER, DELETE_KEY -> 2;
     };
   }
 
@@ -339,7 +367,7 @@ public final class GemMapSyncTestGenerator {
         content.append(present).append("1, scenario.value1Id);\n");
         content.append(present).append("0, scenario.value0Id);\n");
       }
-      case REKEY -> {
+      case REKEY, MOVE -> {
         content.append(present).append("3, scenario.value0Id);\n");
         content.append(absent).append("0);\n");
         content.append(present).append("1, scenario.value1Id);\n");
@@ -377,6 +405,18 @@ public final class GemMapSyncTestGenerator {
           content.append("    assertPersistedValuePresent(scenario.value1Id);\n");
         }
         content.append("    assert").append(persisted).append("OtherOwnerEntryPresent(scenario, 0, scenario.value0Id);\n");
+      }
+      case DELETE_KEY -> {
+        // key 0 is deleted: its entry is checked by the gemId of the key object
+        content.append("    assert").append(persisted).append("StoredKeyAbsent(scenario, 0);\n");
+        content.append(present).append("1, scenario.value1Id);\n");
+        content.append(size).append("1);\n");
+        if (persisted.isEmpty()) {
+          content.append("    assertTrue(isValueKnown(scenario.targetValueId));\n");
+        }
+        else {
+          content.append("    assertPersistedValuePresent(scenario.targetValueId);\n");
+        }
       }
     }
   }
@@ -432,9 +472,9 @@ public final class GemMapSyncTestGenerator {
     content.append("  // the key with index in the active context\n");
     content.append("  private ").append(gemMap.key().type).append(" key(GemMapSyncProtocolTestScenario scenario, int index) {\n");
     switch (gemMap.key()) {
-      case STR -> content.append("    return \"key\" + index;\n");
-      case NUM -> content.append("    return 1000 + index;\n");
-      case OBJ, ROLE -> content.append("    return AssociationsManager.getMapKeySure(scenario.keyIds[index]);\n");
+      case STR, TYP_STR -> content.append("    return \"key\" + index;\n");
+      case NUM, TYP_NUM -> content.append("    return 1000 + index;\n");
+      case OBJ, ROLE, TYP_OBJ -> content.append("    return AssociationsManager.getMapKeySure(scenario.keyIds[index]);\n");
     }
     content.append("  }\n\n");
 
@@ -465,7 +505,7 @@ public final class GemMapSyncTestGenerator {
       content.append("      ").append(valueType).append(" value").append(index)
           .append(" = newValue(scenario, ").append(index).append(");\n");
       content.append("      scenario.value").append(index).append("Id = value").append(index).append(".getGemId();\n");
-      content.append("      owner.putByKey(value").append(index).append(");\n");
+      content.append("      owner.putByKey(").append(putArgs(gemMap, index, "value" + index)).append(");\n");
       content.append("    }\n");
     }
     content.append("    return scenario;\n");
@@ -480,7 +520,7 @@ public final class GemMapSyncTestGenerator {
       content.append("      ").append(valueType).append(" value").append(index)
           .append(" = newValue(scenario, ").append(index).append(");\n");
       content.append("      scenario.value").append(index).append("Id = value").append(index).append(".getGemId();\n");
-      content.append("      ownerBuilder.byKeyPut(value").append(index).append(");\n");
+      content.append("      ownerBuilder.byKeyPut(").append(putArgs(gemMap, index, "value" + index)).append(");\n");
       content.append("    }\n");
     }
     content.append("    scenario.ownerId = ownerBuilder.build().orElseThrow().getGemId();\n");
@@ -496,7 +536,8 @@ public final class GemMapSyncTestGenerator {
       content.append("    if (valueCount > ").append(index).append(") {\n");
       content.append("      value").append(index).append("Builder = newValueBuilder(scenario, ").append(index).append(");\n");
       content.append("      scenario.value").append(index).append("Id = value").append(index).append("Builder.getGemId();\n");
-      content.append("      ownerBuilder.byKeyPut(value").append(index).append("Builder);\n");
+      content.append("      ownerBuilder.byKeyPut(").append(putArgs(gemMap, index, "value" + index + "Builder"))
+          .append(");\n");
       content.append("    }\n");
     }
     content.append("    scenario.ownerId = ownerBuilder.build().orElseThrow().getGemId();\n");
@@ -522,7 +563,7 @@ public final class GemMapSyncTestGenerator {
     content.append("      case PUT -> {\n");
     content.append("        ").append(valueType).append(" value = newValue(scenario, 1);\n");
     content.append("        scenario.targetValueId = value.getGemId();\n");
-    content.append("        owner.putByKey(value);\n");
+    content.append("        owner.putByKey(").append(putArgs(gemMap, 1, "value")).append(");\n");
     content.append("      }\n");
 
     content.append("      case PUT_BY_MAP -> {\n");
@@ -533,10 +574,20 @@ public final class GemMapSyncTestGenerator {
 
     content.append("      case GET -> scenario.targetValueId = scenario.value1Id;\n");
 
-    content.append("      case REKEY -> {\n");
-    content.append("        scenario.targetValueId = scenario.value0Id;\n");
-    content.append("        AssociationsManager.get").append(valueType).append("Sure(scenario.value0Id).setKey(key(scenario, 3));\n");
-    content.append("      }\n");
+    if (Operation.REKEY.appliesTo(gemMap.key())) {
+      content.append("      case REKEY -> {\n");
+      content.append("        scenario.targetValueId = scenario.value0Id;\n");
+      content.append("        AssociationsManager.get").append(valueType).append("Sure(scenario.value0Id).setKey(key(scenario, 3));\n");
+      content.append("      }\n");
+    }
+
+    if (Operation.MOVE.appliesTo(gemMap.key())) {
+      content.append("      case MOVE -> {\n");
+      content.append("        scenario.targetValueId = scenario.value0Id;\n");
+      content.append("        owner.putByKey(key(scenario, 3), AssociationsManager.get").append(valueType)
+          .append("Sure(scenario.value0Id));\n");
+      content.append("      }\n");
+    }
 
     content.append("      case REMOVE -> {\n");
     content.append("        scenario.targetValueId = scenario.value0Id;\n");
@@ -552,7 +603,7 @@ public final class GemMapSyncTestGenerator {
     content.append("        ").append(valueType).append(" value = newValue(scenario, 0);\n");
     content.append("        scenario.oldValueId = scenario.value0Id;\n");
     content.append("        scenario.targetValueId = value.getGemId();\n");
-    content.append("        owner.putByKey(value);\n");
+    content.append("        owner.putByKey(").append(putArgs(gemMap, 0, "value")).append(");\n");
     content.append("      }\n");
 
     content.append("      case DELETE_OBJECT -> {\n");
@@ -563,9 +614,17 @@ public final class GemMapSyncTestGenerator {
     content.append("      case DELETE_OWNER -> {\n");
     content.append("        ").append(ownerType).append(" otherOwner = newBareOwner();\n");
     content.append("        scenario.otherOwnerId = otherOwner.getGemId();\n");
-    content.append("        otherOwner.putByKey(AssociationsManager.get").append(valueType).append("Sure(scenario.value0Id));\n");
+    content.append("        otherOwner.putByKey(")
+        .append(putArgs(gemMap, 0, "AssociationsManager.get" + valueType + "Sure(scenario.value0Id)")).append(");\n");
     content.append("        assertTrue(AssociationsManager.delete").append(ownerType).append("(scenario.ownerId));\n");
     content.append("      }\n");
+
+    if (Operation.DELETE_KEY.appliesTo(gemMap.key())) {
+      content.append("      case DELETE_KEY -> {\n");
+      content.append("        scenario.targetValueId = scenario.value0Id;\n");
+      content.append("        assertTrue(AssociationsManager.deleteMapKey(scenario.keyIds[0]));\n");
+      content.append("      }\n");
+    }
     content.append("    }\n");
     content.append("  }\n\n");
   }
@@ -650,6 +709,13 @@ public final class GemMapSyncTestGenerator {
     content.append("    assertFalse(owner.containsKeyByKey(key(scenario, keyIndex)));\n");
     content.append("  }\n\n");
 
+    // by the stored key: the key object of a GemEntryMap may be deleted
+    content.append("  default void assert").append(persisted)
+        .append("StoredKeyAbsent(GemMapSyncProtocolTestScenario scenario, int keyIndex) {\n");
+    content.append("    ").append(ownerType).append(" owner = ").append(owner).append(";\n");
+    content.append("    assertNull(owner._internal_getByKeyGemMap().getID(storedKey(scenario, keyIndex)));\n");
+    content.append("  }\n\n");
+
     content.append("  default void assert").append(persisted)
         .append("MapSize(GemMapSyncProtocolTestScenario scenario, int size) {\n");
     content.append("    ").append(ownerType).append(" owner = ").append(owner).append(";\n");
@@ -690,12 +756,25 @@ public final class GemMapSyncTestGenerator {
     content.append("  }\n\n");
 
     content.append("  private ").append(valueType).append("Builder newValueBuilder(GemMapSyncProtocolTestScenario scenario, int keyIndex) {\n");
-    content.append("    return AssociationsManager.").append(lowerFirst(valueType)).append("Builder().key(key(scenario, keyIndex));\n");
+    if (gemMap.key().chosen) {
+      // the key is chosen on put, the value has no key attribute
+      content.append("    return AssociationsManager.").append(lowerFirst(valueType)).append("Builder();\n");
+    }
+    else {
+      content.append("    return AssociationsManager.").append(lowerFirst(valueType)).append("Builder().key(key(scenario, keyIndex));\n");
+    }
     content.append("  }\n\n");
 
     content.append("  private ").append(valueType).append(" newValue(GemMapSyncProtocolTestScenario scenario, int keyIndex) {\n");
     content.append("    return newValueBuilder(scenario, keyIndex).build().orElseThrow();\n");
     content.append("  }\n");
+  }
+
+  /**
+   * the arguments of a put: the value, whose key is derived from it, or the chosen key with index and the value
+   */
+  private static String putArgs(GemMap gemMap, int keyIndex, String value) {
+    return gemMap.key().chosen ? "key(scenario, " + keyIndex + "), " + value : value;
   }
 
   private static String lowerFirst(String value) {
