@@ -204,7 +204,8 @@ umlp Associations {
   association roleAbstractKey RoleAbstractBase -> (key) MapKey [1];
   association roleAbstractMap RoleAbstractOwner [[key]] -> (byKey) RoleAbstractBase [1];
 
-  // Type qualified associations (GemMaps): the key is chosen on put, the values have no key attribute.
+  // Type qualified associations (GemMaps), see GemMapSyncTestGenerator: the key is chosen on put, the values have no
+  // key attribute.
   // Names: Typ<Key><Value>, Value as above (Super: the value has a superclass <Case>Base).
   //   Key:   Str  [String] (GemValueMap)
   //          Num  [int]    (GemValueMap)

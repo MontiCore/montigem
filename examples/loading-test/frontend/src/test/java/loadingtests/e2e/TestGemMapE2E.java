@@ -19,7 +19,7 @@ import static umlp.test_rte.playwright.ComponentKind.GemButton;
 import static umlp.test_rte.playwright.ComponentKind.GemText;
 
 /**
- * Attribute qualified associations in the browser: the page test_gemmap/TestGemMap runs the scenarios
+ * Qualified associations in the browser: the page test_gemmap/TestGemMap runs the scenarios
  * against the TypeScript RTE GemMaps, the test checks the backend after synchronization and/or what the
  * page read in the browser
  */
@@ -175,5 +175,47 @@ public class TestGemMapE2E extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Clear");
     assertEquals(0, course.sizeParticipantByMatNrs());
+  }
+
+  /** type qualified association: the key chosen in the browser reaches the backend */
+  @Test
+  public void testTypeQualifiedPut(Page page) {
+    open(page, anna);
+    click(page, "Put Seat");
+    assertThat(result(page)).hasText("seat=true");
+    assertTrue(course.containsKeyStudentBySeat("A1"));
+    assertEquals(anna.getGemId(), course.getStudentBySeat("A1").getGemId());
+  }
+
+  /** a value put under another key moves, in the browser and, after synchronization, in the backend */
+  @Test
+  public void testTypeQualifiedMove(Page page) {
+    course.putStudentBySeat("A1", anna);
+    open(page, anna);
+    click(page, "Move Seat");
+    assertThat(result(page)).hasText("A1=false;B2=true;size=1");
+    assertFalse(course.containsKeyStudentBySeat("A1"));
+    assertEquals(anna.getGemId(), course.getStudentBySeat("B2").getGemId());
+    assertEquals(1, course.sizeStudentBySeats());
+  }
+
+  /** the browser loads the map from the backend with the keys and the value ids */
+  @Test
+  public void testTypeQualifiedRead(Page page) {
+    course.putStudentBySeat("A1", anna);
+    course.putStudentBySeat("B2", ben);
+    open(page, anna);
+    click(page, "Read Seats");
+    assertThat(result(page)).hasText("size=2;A1=Anna;B2=Ben");
+  }
+
+  /** type qualified GemEntryMap: the key is the Tutor chosen in the browser */
+  @Test
+  public void testTypeQualifiedEntryMap(Page page) {
+    open(page, anna);
+    click(page, "Put Mentee");
+    assertThat(result(page)).hasText("mentee=Anna");
+    assertTrue(course.containsKeyMenteeByTutor(tutor));
+    assertEquals(anna.getGemId(), course.getMenteeByTutor(tutor).getGemId());
   }
 }

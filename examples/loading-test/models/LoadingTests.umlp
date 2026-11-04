@@ -186,4 +186,10 @@ classdiagram LoadingTests {
 
   // GemEntryMap, keyed by the referenced Student
   association Course [[student]] (enrollmentCourse) -> (enrollmentByStudent) Enrollment [1];
+
+  // GemValueMap, type qualified: the String key (a seat) is chosen on put
+  association Course [String] (seatCourse) -> (studentBySeat) Student [1];
+
+  // GemEntryMap, type qualified: the key is a Tutor chosen on put
+  association Course [Tutor] (mentoredCourse) -> (menteeByTutor) Student [1];
 }
