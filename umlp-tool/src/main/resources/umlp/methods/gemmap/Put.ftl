@@ -3,7 +3,7 @@
      keyType: the stored key type (the key, or the gemId of the key object for GemEntryMaps).
      Replacing a stale entry (its value derives another key by now) is a repair; replacing a value that derives the
      same key means the qualifying attribute is not unique, which the server (participant 0) reports with errorCode -->
-${tc.signature("name", "targetName", "sourceName", "isEntry", "keyType", "errorCode", "hasMirror")}
+${tc.signature("name", "targetName", "sourceName", "isEntry", "keyType", "errorCode", "hasMirror", "moves")}
 
 ${cd4c.method("public void put${name?cap_first}(${targetName} o, NotificationScope scope)")}
 ${keyType} key = this._${name}.<#if isEntry>deriveKeyID<#else>deriveKey</#if>(o);
@@ -23,6 +23,10 @@ if (oldID != null && CommandManager.getParticipantId() == 0
   Log.error("${errorCode} The object with id " + o.getGemId() + " replaces the object with id " + oldID
       + " under the key " + key + ", which both objects derive: the qualifying attribute is not unique");
 }
+<#if moves>
+// a single owner: the value leaves its old owner's map
+_internal_moveFromOldOwner${name?cap_first}(o.getGemId());
+</#if>
 this._${name}._internal_putValue(o);
 check${name?cap_first}();
 <#if hasMirror>

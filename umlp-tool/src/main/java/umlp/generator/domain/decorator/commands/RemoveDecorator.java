@@ -132,7 +132,8 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
     addConstructor(ast, classname, getPackageName(origCD, COMMAND_PACKAGE),
         attrName, isGem ? "long" : type.print());
 
-    getCD4C().addMethod(ast, getDoRunTemplate(), name, domainClass.getName(), getCorrectManager(domainClass), isGem, name, hasOCL);
+    getCD4C().addMethod(ast, getDoRunTemplate(), name, domainClass.getName(), getCorrectManager(domainClass), isGem, name, hasOCL,
+        isMap);
     getCD4C().addMethod(ast, getCheckAccessPolicyTemplate(), domainClass.getName(), "Delete");
     if (isGem && !isMap) {
       getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("getGemId()", name + "GemId"));

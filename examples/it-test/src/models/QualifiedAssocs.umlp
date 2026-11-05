@@ -59,4 +59,5 @@ umlp QualifiedAssocs {
   association [0..1] Club [String] (club) <-> (memberByCode) Person [1];
   association [1] Club [Department] (ledClub) <-> (leaderByDepartment) Person [1];
   association [*] Club [[login]] (clubs) <-> (memberByLogin) Person [1];
+  association [0..1] Club [[number]] (numberClub) <-> (memberByNumber) Person [1];
 }

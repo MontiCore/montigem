@@ -11,6 +11,7 @@ import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.se_rwth.commons.StringTransformations;
 import umlp.UMLPMill;
 import umlp.generator.domain.decorator.DeSerDecorator;
+import umlp.generator.domain.decorator.GenService;
 import umlp.generator.util.PathUtil;
 
 import static de.monticore.cd.facade.CDModifier.PUBLIC;
@@ -47,7 +48,9 @@ public class CreateDecorator extends AbstractDeSerDecorator {
     ASTCDAttribute attr = addDomainAttr(ast, classname);
 
     addConstructor(ast, classname, packageName);
-    getCD4C().addMethod(ast, getDoRunTemplate(), classname, getCorrectManager(domainClass), domainPackage, hasOCL);
+    getCD4C().addMethod(ast, getDoRunTemplate(), classname, getCorrectManager(domainClass), domainPackage, hasOCL,
+        GenService.getMirroredMapRoles(domainClass), GenService.getSingleOwnerMapRoles(domainClass));
+    getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandManager"));
     getCD4C().addMethod(ast, getGeneralCheckAccessPolicyTemplate(), domainClass.getName(), "Create");
     getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList(StringTransformations.uncapitalize(classname) + ".getGemId()"));
     AccessorDecorator accessor = new AccessorDecorator(glex);

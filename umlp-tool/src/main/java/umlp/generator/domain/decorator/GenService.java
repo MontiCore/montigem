@@ -8,6 +8,7 @@ import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdassociation._ast.ASTCDCardinality;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
+import de.monticore.cd._symboltable.CDSymbolTables;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.cdbasis._symboltable.CDTypeSymbol;
 import de.monticore.class2mc.adapters.JClass2OOTypeSymbolAdapter;
@@ -513,6 +514,28 @@ public class GenService {
       return false;
     }
     return isMap(assoc.getSymbol().getOtherSide().getAssocSide());
+  }
+
+  /**
+   * @return the roles of the GemMaps of type (declared in it or a supertype) whose association is bidirectional: their
+   * values refer to the owner, see {@link #isMapMirror}
+   */
+  public static List<String> getMirroredMapRoles(ASTCDType type) {
+    return CDSymbolTables.getAssociationsInHierarchy(type).stream()
+        .filter(side -> getMapMirror(side).isPresent())
+        .map(ASTCDAssocSide::getName)
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * @return the roles of the GemMaps of type (declared in it or a supertype) whose association is bidirectional with
+   * a single owner ([1]/[0..1] owner side): a value put into such a map leaves its old owner's map
+   */
+  public static List<String> getSingleOwnerMapRoles(ASTCDType type) {
+    return CDSymbolTables.getAssociationsInHierarchy(type).stream()
+        .filter(side -> getMapMirror(side).isPresent() && !isList(getMapMirror(side).get()))
+        .map(ASTCDAssocSide::getName)
+        .collect(Collectors.toList());
   }
 
   /**

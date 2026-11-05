@@ -6,7 +6,7 @@
      type qualified association (chosen key): put<Role>(key, o) and a put through the map (PutAndSync) delegate to it.
      keyType: the stored key type (the key, or the gemId of the key object for GemEntryMaps);
      chosen: the key is chosen on put (type qualified association), so it must be present -->
-${tc.signature("name", "sourceName", "keyType", "isEntry", "chosen", "hasMirror")}
+${tc.signature("name", "sourceName", "keyType", "isEntry", "chosen", "hasMirror", "moves")}
 
 ${cd4c.method("public void _internal_put${name?cap_first}Id(${keyType} key, long gemID, NotificationScope scope)")}
 <#if chosen>
@@ -26,6 +26,10 @@ Long oldID = this._${name}.getID(key);
 if (oldID != null && oldID == gemID) {
   return;
 }
+<#if moves>
+// a single owner: the value leaves its old owner's map
+_internal_moveFromOldOwner${name?cap_first}(gemID);
+</#if>
 this._${name}._internal_putValueID(key, gemID);
 check${name?cap_first}();
 <#if hasMirror>
