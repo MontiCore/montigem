@@ -36,12 +36,6 @@ if (!buildFinished) {
     </#if>
 
 <#list assocList as assoc>
-  <#if genService.isMap(assoc) && genService.getMapMirror(assoc).isPresent()>
-      // bidirectional qualified association: the values put before building refer to this owner now
-      for (long valueID : this._${assoc.getName()}.getValueIDs()) {
-        _internal_mirrorPut${assoc.getName()?cap_first}(valueID);
-      }
-  </#if>
   <#if genService.isList(assoc)>
     <#if genService.isBidirectional(assoc)>
       <#assign otherSide=assoc.getSymbol().getOtherSide().getAssocSide()>
@@ -70,6 +64,21 @@ if (!buildFinished) {
     </#if>
 </#list>
 }
+<#list assocList as assoc>
+  <#if genService.isMap(assoc) && genService.getMapMirror(assoc).isPresent()>
+// bidirectional qualified association: the values put before building refer to this owner now (a single owner: they
+// leave their old owner's map). Not for a deserialized object: loaded ones are consistent, for one created elsewhere
+// its create command does so (it knows whether the object is new)
+if (!INTERNAL_deser_mode) {
+  for (long valueID : this._${assoc.getName()}.getValueIDs()) {
+    <#if !genService.isList(genService.getMapMirror(assoc).get())>
+    _internal_moveFromOldOwner${assoc.getName()?cap_first}(valueID);
+    </#if>
+    _internal_mirrorPut${assoc.getName()?cap_first}(valueID);
+  }
+}
+  </#if>
+</#list>
 ${name?uncap_first}Observers.forEach(obs -> obs.notifyBuild(this)); //+ an initial notification
 }
 return Optional.of(this);

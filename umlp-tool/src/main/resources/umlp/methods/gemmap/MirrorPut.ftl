@@ -5,7 +5,7 @@
      mirror: the role of the mirror; mirrorIsList: the owner side is [*]; targetName/targetManager: the value type -->
 ${tc.signature("name", "mirror", "mirrorIsList", "targetName", "targetManager")}
 
-${cd4c.method("protected void _internal_mirrorPut${name?cap_first}(long gemID)")}
+${cd4c.method("public void _internal_mirrorPut${name?cap_first}(long gemID)")}
 if (!${targetManager}.isLoaded${targetName}(gemID)) {
   return;
 }

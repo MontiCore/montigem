@@ -54,6 +54,10 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
   // and whether the mirror is a list (owner side [*]), see GenService#getMapMirror
   public static final String STEREOTYPE_MIRROR = "mirror";
   public static final String STEREOTYPE_MIRROR_ISLIST = "mirrorIsList";
+  // on such a GemMap: the owner type the mirror refers to (declares the map) and its manager, to reach a value's old
+  // owner when a put moves it (single owner)
+  public static final String STEREOTYPE_MIRROR_OWNER = "mirrorOwner";
+  public static final String STEREOTYPE_MIRROR_OWNER_MANAGER = "mirrorOwnerManager";
 
   public DomainTypeDecorator(GlobalExtensionManagement glex) {
     super(glex);
@@ -253,6 +257,8 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
         if (GenService.isList(mirror)) {
           addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR_ISLIST, "");
         }
+        addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR_OWNER, mirror.getSymbol().getType().print());
+        addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR_OWNER_MANAGER, getCorrectManager(mirror));
       });
 
       if(GenService.isOptional(assocSide)){

@@ -42,10 +42,12 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     boolean isKeyDerived = GenService.isKeyDerivedGemMap(ast);
     // bidirectional: the role of the mirror on the value side, which the map's changes update
     Optional<String> mirror = GenService.getMirrorOfGemMap(ast);
+    // a single owner ([1]/[0..1] owner side): a put moves the value out of its old owner's map
+    boolean moves = mirror.isPresent() && !GenService.isMirrorOfGemMapList(ast);
     if (isKeyDerived) {
       // the server reports a put that replaces a value deriving the same key
       methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
-          isEntry ? "0xA7317" : "0xA7307", mirror.isPresent()));
+          isEntry ? "0xA7317" : "0xA7307", mirror.isPresent(), moves));
     } else {
       methodList.add(createMethod("umlp.methods.gemmap.PutKey", name, keyType, targetName, isEntry));
     }
@@ -58,7 +60,7 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     // put by id: as sent by the server without loading the value (command _put), and the owner put of a type
     // qualified association (chosen keys); rekeying
     methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType, isEntry,
-        !isKeyDerived, mirror.isPresent()));
+        !isKeyDerived, mirror.isPresent(), moves));
     if (mirror.isPresent()) {
       String targetManager = ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MANAGER);
       boolean mirrorIsList = GenService.isMirrorOfGemMapList(ast);
@@ -67,6 +69,13 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
       methodList.add(createMethod("umlp.methods.gemmap.MirrorRemove", name, mirror.get(), mirrorIsList, targetName,
           targetManager));
       cd4c.addImport(this.ast, "java.util.Collections");
+    }
+    if (moves) {
+      methodList.add(createMethod("umlp.methods.gemmap.MirrorMove", name, mirror.get(), targetName,
+          ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MANAGER),
+          ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MIRROR_OWNER),
+          ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MIRROR_OWNER_MANAGER)));
+      cd4c.addImport(this.ast, "java.util.Optional");
     }
     if (isKeyDerived) {
       methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
