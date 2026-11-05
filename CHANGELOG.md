@@ -36,6 +36,11 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-11-05: 7.10.0-SNAPSHOT
+* New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`
+  for AI chats.
+* Integration of the chat module into the dashboard module and example.
+
 ## 2026-10-28: 7.10.0-SNAPSHOT
 * The domain model can be copied into the assets of the app, where it is served as
   `assets/models/<Name>.umlp`. It is off by default. 

@@ -1,6 +1,6 @@
 import { CellConfig } from '../../../../build/umlpJava2ts/dashboardmodule/CellConfig';
 import { Component, ViewChild, ChangeDetectionStrategy } from '@angular/core';
-import { ComponentObserverManager } from '@umlp/commonj2ts';
+import { ComponentObserverManager, GemIdentifiable } from '@umlp/commonj2ts';
 import { Cell } from '../../../../build/gui2java2ts/dashboardcomponents/Cell';
 import { GridstackCompComponent, config } from '../../../../build/gui2java2ts/dashboardcomponents/GridstackCompComponent';
 import { OnDestroy, Input , OnChanges, OnInit} from '@angular/core';
@@ -9,6 +9,8 @@ import { ComponentRef } from '@angular/core';
 import { GemListUtil } from '@umlp/commonj2ts';
 import { GemIcon } from '@umlp/basic';
 import {NgGridStackWidget, GridstackComponent, BaseWidget, NgCompInputs, NgGridStackOptions} from "gridstack/dist/angular"
+
+type TileGeometry = { id: string; x: number; y: number; w: number; h: number };
 
 @Component({
   standalone: true,
@@ -36,12 +38,14 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
   //save previous states
   private wrappers = new Map<number, ComponentRef<CellWrapper>>();
   private currentWidgets = new Map<number, HTMLElement & { gridstackNode?: any }>();
-  private prevCells: CellConfig[] = [];
-  private prevEdit = false;
-  private prevCreate = false;
+  private geometryObserverKey = '';
+  private geometryUpdateTimer?: number;
+  private gestureActive = false;
+  private destroyed = false;
 
   public gridOptions: NgGridStackOptions = {
     margin: 4,
+    float: true,
     minRow: GridstackComp.ROWS_PER_PAGE,
     children: []
   };
@@ -170,11 +174,7 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
     this.wrappers.set(id, compRef);
     this.currentWidgets.set(id, widget);
     //widget delete function
-    const deleteWidget = () => {
-      this.currentWidgets.delete(Number(widget.id));
-      this.gridComp.grid.removeWidget(widget);
-      compRef.destroy();
-    };
+    const deleteWidget = () => this.removeWidget(id);
     //pass down arguments
     compRef.instance.cell = cell;
     compRef.instance.edit = this.isEdit();
@@ -204,6 +204,18 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
     container.appendChild(compRef.location.nativeElement);
   }
 
+  private removeWidget(id: number): void {
+    const widget = this.currentWidgets.get(id);
+    const compRef = this.wrappers.get(id);
+    this.currentWidgets.delete(id);
+    this.wrappers.delete(id);
+    if (widget) this.gridComp.grid.removeWidget(widget);
+    if (compRef) {
+      this.appRef.detachView(compRef.hostView);
+      compRef.destroy();
+    }
+  }
+
   public async synchronizeWidgetToCell(cell: CellConfig): Promise<void> {
 
     const widget = this.currentWidgets.get(cell.getGemId());
@@ -225,12 +237,12 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
 
     //if there was any changes to the cells parameters update them
     if (sizeW != safeW || sizeH != safeH) {
-      size.setWidth(safeW);
-      size.setHeight(safeH);
+      await size.setWidth(safeW);
+      await size.setHeight(safeH);
     }
     if (safeX !== posX || safeY !== posY) {
-      pos.setX(safeX);
-      pos.setY(safeY);
+      await pos.setX(safeX);
+      await pos.setY(safeY);
     }
   }
 
@@ -260,14 +272,8 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
     compRef.instance.viewGemId = this.getView().getGemId();
 
   }
-  //-------------------------------------------------------------------------------------
-  //Function synchronizes considering 3 main cases/critical points:
-  //1) first time opening the current view
-  //2) creating a new cell (specifically create boolean flag changing true -> false)
-  //3) finishing editing cells (specifically edit boolean flag changing true -> false)
-  //--------------------------------------------------------------------------------------
-  // Inputs now arrive in several steps (undefined -> null -> value), each triggering an observer call.
-  // Serialize the calls so concurrent runs do not see an empty prevCells and create widgets twice.
+  // Inputs and domain notifications can arrive in several steps. Serialize synchronization
+  // so concurrent runs cannot create the same widget twice.
   private syncQueue: Promise<void> = Promise.resolve();
 
   public reactOnViewInputChange() : Promise<void> {
@@ -279,7 +285,7 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
 
   private async doReactOnViewInputChange() : Promise<void> {
     // view not yet passed down or grid not yet created -> a later input change / ngAfterViewInit retriggers
-    if (!this.getView() || !this.gridComp?.grid) {
+    if (this.destroyed || !this.getView() || !this.gridComp?.grid) {
       return;
     }
     this.changeRunning.emit(true);
@@ -292,13 +298,87 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
 
   ngAfterViewInit() {
     this.reactOnViewInputChange();
+    this.gridComp.grid.on('dragstart resizestart', () => { this.gestureActive = true; });
+    // Persist all affected tiles, including those pushed by a drag.
+    this.gridComp.grid.on('dragstop resizestop', () => {
+      this.gestureActive = false;
+      const view = this.getView();
+      this.syncQueue = this.syncQueue.then(async () => {
+        if (this.destroyed || !view || view !== this.getView()) return;
+        const cells = await GemListUtil.toArraySync(view.getCellsList());
+        for (const cell of cells) {
+          await this.synchronizeWidgetToCell(cell);
+        }
+        this.scheduleGeometryUpdate();
+      }).catch(e => console.error('GridstackComp layout save failed', e));
+    });
     this.hostResizeObserver = new ResizeObserver(() => this.fitCellHeightToPage());
     this.hostResizeObserver.observe(this.host.nativeElement);
   }
 
   override ngOnDestroy() {
+    this.destroyed = true;
+    window.clearTimeout(this.geometryUpdateTimer);
+    ComponentObserverManager.removeObservers(this.geometryObserverOwner);
     this.hostResizeObserver?.disconnect();
     super.ngOnDestroy();
+  }
+
+  private get geometryObserverOwner(): string {
+    return 'dashboardcomponents.GridstackComp.geometry' + this.uniqueIdentifier;
+  }
+
+  private scheduleGeometryUpdate(): void {
+    if (this.destroyed) return;
+    window.clearTimeout(this.geometryUpdateTimer);
+    // A layout arrives as several attribute updates. Coalesce them before loading the whole grid.
+    this.geometryUpdateTimer = window.setTimeout(() => {
+      this.geometryUpdateTimer = undefined;
+      void this.reactOnViewInputChange();
+    }, 40);
+  }
+
+  private async observeGeometry(cells: CellConfig[]): Promise<void> {
+    // Observe membership too: backend tools can add cells without opening the creation dialog.
+    const objects: GemIdentifiable[] = [this.getView()];
+    for (const cell of cells) {
+      objects.push(cell, await cell.getPosition(), await cell.getSize());
+    }
+    if (this.destroyed) return;
+    const key = objects.map(object => object.getGemId()).join(',');
+    if (key === this.geometryObserverKey) return;
+    ComponentObserverManager.removeObservers(this.geometryObserverOwner);
+    this.geometryObserverKey = key;
+    for (const object of objects) {
+      ComponentObserverManager.addDomainObjectObserver(object, () => this.scheduleGeometryUpdate(),
+        'geometry', this.geometryObserverOwner);
+    }
+  }
+
+  private async applyModelGeometry(cells: CellConfig[]): Promise<void> {
+    if (this.destroyed || this.gestureActive) return;
+    const layout: TileGeometry[] = [];
+    for (const cell of cells) {
+      const position = await cell.getPosition();
+      const size = await cell.getSize();
+      layout.push({id: String(cell.getGemId()), x: position.getX(), y: position.getY(),
+        w: size.getWidth(), h: size.getHeight()});
+    }
+    // Attribute notifications can span frames. Do not let GridStack resolve a temporary overlap
+    // halfway through a swap; a later geometry notification will supply the remaining positions.
+    for (let i = 0; i < layout.length; i++) {
+      const a = layout[i];
+      for (let j = i + 1; j < layout.length; j++) {
+        const b = layout[j];
+        if (a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h) return;
+      }
+    }
+    if (this.destroyed || this.gestureActive) return;
+    const changed = layout.some(item => {
+      const node = this.currentWidgets.get(Number(item.id))?.gridstackNode;
+      return node && (node.x !== item.x || node.y !== item.y || node.w !== item.w || node.h !== item.h);
+    });
+    if (changed) this.gridComp.grid.load(layout, false);
   }
 
   // the host gets the remaining page height from the layout (not from the grid content), so this only runs when
@@ -317,34 +397,25 @@ export class GridstackComp extends GridstackCompComponent implements OnDestroy {
 
   private async synchronize() : Promise<void> {
     const cells : CellConfig[] = await GemListUtil.toArraySync(this.getView().getCellsList());
-    if (this.prevCells.length == 0) {
-      for (const cell of cells ) {
+    const cellIds = new Set(cells.map(cell => cell.getGemId()));
+    for (const id of this.currentWidgets.keys()) {
+      if (!cellIds.has(id)) this.removeWidget(id);
+    }
+    for (const cell of cells) {
+      if (!this.currentWidgets.has(cell.getGemId())) {
         await this.createWidget(cell);
       }
-    } else {
-      if (this.prevCreate && !this.create) {
-       const prevCellsSet = new Set(this.prevCells.map(c => c.getGemId()));
-       const extra: CellConfig = cells.find(c => !prevCellsSet.has(c.getGemId()));
-       if (extra != undefined) {
-         await this.createWidget(extra);
-       }
-      } else if (this.prevEdit && !this.isEdit()) {
-        for (const cell of cells) {
-          await this.synchronizeWidgetToCell(cell);
-        }
-      }
-      const grid = this.gridComp.grid.save() as NgGridStackWidget[];
-      for (const widget of grid) {
-        await this.updateWidget(Number(widget.id));
-      }
     }
+    const grid = this.gridComp.grid.save() as NgGridStackWidget[];
+    for (const widget of grid) {
+      await this.updateWidget(Number(widget.id));
+    }
+    await this.observeGeometry(cells);
+    await this.applyModelGeometry(cells);
     this.gridComp.grid.disable();
     if (this.isEdit()) {
       this.gridComp.grid.enable();
     }
-    this.prevCells = [...cells];
-    this.prevCreate = this.create;
-    this.prevEdit = this.isEdit();
     // the first resize notification can arrive before the page layout is final
     this.fitCellHeightToPage();
   }

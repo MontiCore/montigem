@@ -18,6 +18,8 @@ import dashboardmodule.GaugeExtraData;
 import dashboardmodule.BoxExtraData;
 import dashboardmodule.PieExtraData;
 import dashboardmodule.GraphExtraData;
+import dashboardmodule.TableExtraData;
+import dashboardmodule.ColumnScripts;
 import dashboardmodule.Axis;
 import umlp.backendrte.common.NotificationScope;
 
@@ -94,6 +96,9 @@ public class View extends ViewTOP{
           break;
         case NETWORK:
           initialExtra = extraBuilder.graphextra(copyPasteGraphExtra(cell));
+          break;
+        case FILTERABLE_TABLE:
+          initialExtra = extraBuilder.tableextra(copyPasteTableExtra(cell));
           break;
       }
     }
@@ -197,6 +202,25 @@ public class View extends ViewTOP{
 
     return DashboardModuleManager.pieExtraDataBuilder()
         .innerRadius(original.getInnerRadius());
+  }
+
+  public TableExtraData copyPasteTableExtra(CellConfig cell) {
+    if (cell.getExtra().getTableextra() == null) {
+      return null;
+    }
+
+    // a built copy, as the dialog adds and removes columns (ExtraTableOptions): the list of a builder references its
+    // elements by ID, and reading it while elements are added left it empty
+    TableExtraData copy = DashboardModuleManager.tableExtraDataBuilder().build().get();
+    for (ColumnScripts original : cell.getExtra().getTableextra().getColumnsList()) {
+      copy.addColumns(DashboardModuleManager.columnScriptsBuilder()
+          .column(original.getColumn())
+          .filter(original.getFilter())
+          .render(original.getRender())
+          .build()
+          .get());
+    }
+    return copy;
   }
 
   public GraphExtraData copyPasteGraphExtra(CellConfig cell) {

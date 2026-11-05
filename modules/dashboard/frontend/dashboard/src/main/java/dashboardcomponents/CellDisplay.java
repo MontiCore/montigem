@@ -2,6 +2,10 @@ package dashboardcomponents;
 
 import dashboardmodule.Axis;
 import dashboardmodule.CellConfig;
+import dashboardmodule.ColumnScripts;
+import dashboardmodule.DashboardModuleManager;
+import dashboardmodule.ExtraData;
+import dashboardmodule.TableExtraData;
 import dashboardmodule.VizType;
 import dashboardmodule.commands.InterpretPieChart;
 import dashboardmodule.commands.InterpretLineChart;
@@ -40,6 +44,8 @@ import mc.fenix.charts.gemscatterplottypes.GemScatterPlotPoint;
 import mc.fenix.charts.gemscatterplottypes.GemScatterPlotSet;
 import mc.fenix.charts.gemscatterplottypes.GemScatterPlotSetBuilder;
 import mc.fenix.networkgraph.networkgraphtypes.Graph;
+import mc.fenix.table.gemtabletypes.GemFilterableTableData;
+import mc.fenix.table.gemtabletypes.GemFilterableTableFilter;
 import mc.fenix.networkgraph.networkgraphtypes.GraphBuilder;
 import mc.fenix.networkgraph.networkgraphtypes.GraphEdge;
 import mc.fenix.networkgraph.networkgraphtypes.GraphEdgeBuilder;
@@ -51,6 +57,7 @@ import de.se_rwth.commons.logging.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class CellDisplay extends CellDisplayTOP{
 
@@ -127,6 +134,71 @@ public class CellDisplay extends CellDisplayTOP{
 
   public GemScatterPlotData getScatterData() {
     return CommandManager.executeCommand(new InterpretScatterPlot(this.getCell().getData())).asSimpleResult().get();
+  }
+
+  public GemFilterableTableData getFilterableTableData() {
+    // Read both scripts here so the table observes filter and render changes.
+    CellConfig cell = this.getCell();
+    if (cell.isPresentExtra() && cell.getExtra().isPresentTableextra()) {
+      TableExtraData extra = cell.getExtra().getTableextra();
+      // by index, as only the results of calls are observed, not the elements of a for-each loop
+      for (int i = 0; i < extra.getColumnsList().size(); i++) {
+        extra.getColumns(i).getFilter();
+        extra.getColumns(i).getRender();
+      }
+    }
+    return CommandManager.executeCommand(FilterableTableCommand.of(cell)).asSimpleResult().get();
+  }
+
+  // checks the new filter with the scripts of the cell first, such that a cell is never left with a failing filter
+  public Consumer<GemFilterableTableFilter> changeFilter() {
+    return change -> {
+      String column = change.getColumn().getHeader();
+      if (!CommandManager.executeCommand(FilterableTableCommand.withFilter(this.getCell(), column, change.getFilter()))
+          .asSimpleResult().isSuccessful()) {
+        this.setFilterError("Filter \"" + change.getFilter() + "\" of column \"" + column + "\" was not applied: "
+            + DashboardModuleManager.getDashboardModuleApp().getError());
+        restoreFilter(this.getCell(), change);
+        return;
+      }
+      this.setFilterError("");
+      setFilter(this.getCell(), column, change.getFilter());
+    };
+  }
+
+  protected void restoreFilter(CellConfig cell, GemFilterableTableFilter change) {
+    String filter = "";
+    if (cell.isPresentExtra() && cell.getExtra().isPresentTableextra()) {
+      for (ColumnScripts scripts : cell.getExtra().getTableextra().getColumnsList()) {
+        if (scripts.getColumn().equals(change.getColumn().getHeader())) {
+          filter = scripts.getFilter().trim();
+          break;
+        }
+      }
+    }
+    if (filter.isEmpty()) {
+      change.getColumn().setGemFilterableTableFilter(Optional.empty());
+    } else {
+      change.setFilter(filter);
+    }
+  }
+
+  protected void setFilter(CellConfig cell, String column, String filter) {
+    if (!cell.isPresentExtra()) {
+      cell.setExtra(DashboardModuleManager.extraDataBuilder().build().get());
+    }
+    ExtraData extra = cell.getExtra();
+    if (!extra.isPresentTableextra()) {
+      extra.setTableextra(DashboardModuleManager.tableExtraDataBuilder().build().get());
+    }
+    for (ColumnScripts scripts : extra.getTableextra().getColumnsList()) {
+      if (scripts.getColumn().equals(column)) {
+        scripts.setFilter(filter);
+        return;
+      }
+    }
+    extra.getTableextra().addColumns(DashboardModuleManager.columnScriptsBuilder()
+        .column(column).filter(filter).render("").build().get());
   }
 
   public GemBoxPlotData getBoxData() {

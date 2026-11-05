@@ -1,7 +1,7 @@
 # Dashboard module
 
 A module providing a configurable dashboard: views consisting of cells (bar/line/pie/box/scatter/gauge charts,
-network graphs, ...), arranged via [gridstack](https://gridstackjs.com/).
+network graphs, filterable tables, ...), arranged via [gridstack](https://gridstackjs.com/).
 The data of a cell is described by a small script, which is interpreted in the backend (see [lang](lang)).
 
 The example application [examples/dashboard](../../examples/dashboard) uses this module.
@@ -64,13 +64,49 @@ The module originates from a master thesis, which describes its design in more d
 - `lang`: make the data classes of the chart available to the data scripts
   (`addAvailableClassesToGlobalScope()` in `MGScriptInterpreter.java`)
 - `backend`: implement the `Interpret*` command of the new type (cf. `InterpretLineChart`)
+- `frontend/dashboard/index.ts`: export the generated `Interpret*` command (and its `DeSer` and `TOP`)
 - `frontend/dashboard`:
   - `CellDialog.java`: call the new command when validating the data script, initialize and check the extra data;
     add an example data script for the new type (also in `MainCellOptions.java`)
   - `CellDisplay.gui`: display the chart; `ExtraCellOptions.gui`: show the options component for its extra data
 
+## Filterable tables
+A `FILTERABLE_TABLE` cell is computed from separate scripts (`FilterableTableInterpreter` in the backend):
+the data script of the cell returns typed columns (`GemFilterableTableData`), and each column can have a filter and a
+render function (`ColumnScripts` of the `TableExtraData`). Both are expressions over the value `v` of their column,
+e.g., `>= 3` (short for `v >= 3`) and `Math.round(v) + " %"`, from which the backend builds a script returning a lambda,
+e.g., `return (Double v) -> v >= 3;`; a script containing `return` is used as it is. The lambda is applied to every value;
+the table shows only the rows accepted by all filters. `GemFilterableTable` sorts the rows by the values (not the rendered
+texts) of the column whose header was clicked, and edits the filter of a column in its header (`changeFilter`, stored by
+`CellDisplay`); the render functions are edited in the cell dialog.
+The interpreter can return lambdas, but not pass them to Java code or store them in objects, so the functions of the
+columns cannot be part of the data script.
+
 ## Notes for maintainers
 - The error messages of the interpreter can be empty or misleading, so debugging data scripts can be difficult.
+- The interpreter sets up global state (the global scope of the `MGScriptMill`, the findings of the `Log`),
+  so `InterpreterWithErrorHandling` interprets one script at a time; interpret scripts only via this class.
 - gridstack widgets are plain HTML elements and do not update the `CellConfig`s when they are moved, resized,
   added, or removed. `GridstackComp.ts` therefore wraps each `Cell` in a `CellWrapper` and synchronizes the widgets
   and the cells of the `ViewConfig` by hand (`reactOnViewInputChange()`); keep this in mind when changing it.
+
+## AI Assistant tools
+
+The backend includes LangChain4j tool implementations that operate on the module's dashboard model:
+
+- `LayoutTools(view)` reads and applies the current view's complete layout, validating all placements
+  before changing geometry.
+- `CellTools(view)` validates scripts and creates, reads, edits, duplicates, removes, and previews cells,
+  including their chart options and filterable-table column scripts.
+- `DomainModelTools(classLoader, resource)` exposes an application's packaged UMLP model. The application
+  supplies the resource path, for example `models/Inventory.umlp`. A constructor taking just the resource
+  path uses the tool class's classloader.
+
+Pass these objects to a LangChain4j AI service or to `chatmodule.ChatService.send(history, tools...)`.
+The dashboard module does not depend on the chat module or construct a model provider.
+`CellOptions` is the internal chart-option conversion and validation helper used by `CellTools`.
+
+The matching instruction resources are packaged as `skills/dashboard-operations/SKILL.md` and
+`skills/dashboard-chart-data/SKILL.md`. Add them to the application's instruction manifest.
+Applications still register their domain managers with `InterpreterWithErrorHandling.addDomain(...)`
+and package the model resource supplied to `DomainModelTools`.

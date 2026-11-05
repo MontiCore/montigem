@@ -20,7 +20,17 @@ import static dashboardmodule.VizType.NETWORK;
 import static dashboardmodule.VizType.PIE;
 import static dashboardmodule.VizType.SCATTER;
 
+@umlp.jsweet.extension.annotation.Component
 public class Dashboard extends DashboardTOP {
+
+  @Override
+  public void setCurrentView(Integer value) {
+    Integer previous = getCurrentView();
+    super.setCurrentView(value);
+    if (value != null && (previous == null || !previous.equals(value)) && getCurrentViewChanged() != null) {
+      getCurrentViewChanged().accept(value);
+    }
+  }
 
   //------------------------------------
   //left side view tabs related

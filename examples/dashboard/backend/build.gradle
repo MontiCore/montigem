@@ -23,6 +23,7 @@ dependencies {
   }
   implementation group: 'org.postgresql', name: 'postgresql', version: '42.5.1'
   implementation 'com.h2database:h2:2.1.214'
+  implementation 'dev.langchain4j:langchain4j-open-ai:1.22.0'
 
   // Spring Boot Dependencies
   compileOnly group: 'org.springframework.boot', name: 'spring-boot-devtools', version: spring_version, withoutSpringLogging
@@ -42,6 +43,8 @@ dependencies {
   // The dashboard module (domain, hand-written backend code, and interpreter)
   montigemModule project(':modules:dashboard')
   montigemModuleUMLPModels project(':modules:dashboard')
+  montigemModule project(':modules:chat')
+  montigemModuleUMLPModels project(':modules:chat')
 }
 
 tasks.named("umlp2java", UMLP2JavaTask) {
@@ -51,4 +54,12 @@ tasks.named("umlp2java", UMLP2JavaTask) {
 
 tasks.named("generateTestInfrastructure", UMLP2TestInfrastructureTask) {
   usePlaywright.set(true)
+}
+
+// Package the same source model that the frontend publishes, without maintaining a copy.
+processResources {
+  from(project.parent.layout.projectDirectory.dir("models")) {
+    include "Dashboard.umlp"
+    into "models"
+  }
 }

@@ -1,0 +1,32 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.table;
+import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+<<pojoCD>>
+classdiagram GemTableTypes {
+
+  // Typed data of a table, which can be sorted by the values of a column (instead of their texts)
+  public class GemFilterableTableData {
+    public List<GemFilterableTableColumn> columns;
+  }
+
+  // A column uses exactly one value list; all columns have the same number of values
+  public class GemFilterableTableColumn {
+    public String header;
+    public List<Double> numbers;
+    public List<String> texts;
+    public List<Boolean> booleans;
+    public List<LocalDate> dates;
+    public List<LocalDateTime> dateTimes;
+    // Displayed text of each value, e.g., computed by a render function of the column
+    public List<String> rendered;
+  }
+
+  // A new filter of a column of a table
+  public class GemFilterableTableFilter {
+    public String filter;
+  }
+  association [0..1] GemFilterableTableFilter <-> (column) GemFilterableTableColumn [1];
+}
