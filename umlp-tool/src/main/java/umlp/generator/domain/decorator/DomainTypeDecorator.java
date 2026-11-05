@@ -50,6 +50,9 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
   // the other side of a GemMap (value side of a bidirectional qualified association, see GenService#isOtherSideOfMap);
   // value: the role of the map
   public static final String STEREOTYPE_OTHERSIDE_OF_MAP = "otherSideOfMap";
+  // on such an other side: it can be changed, its internal mutators put into / remove from the owners' maps (attribute
+  // qualified: the key is derived from the value); without it (type qualified) it is read-only, there is no key
+  public static final String STEREOTYPE_OTHERSIDE_OF_MAP_SETTABLE = "otherSideOfMapSettable";
   // on a GemMap of a bidirectional qualified association (besides otherSide and isList): the owner type its other side
   // refers to (it declares the map) and its manager, to reach a value's old owner when a put moves it (single owner)
   public static final String STEREOTYPE_MAP_OWNER = "mapOwner";
@@ -246,8 +249,11 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
         addStereotype(attribute.getModifier(), STEREOTYPE_KEY_DERIVED, "");
       }
       if (GenService.isOtherSideOfMap(assocSide)) {
-        addStereotype(attribute.getModifier(), STEREOTYPE_OTHERSIDE_OF_MAP,
-            assocSide.getSymbol().getOtherSide().getName());
+        ASTCDAssocSide map = assocSide.getSymbol().getOtherSide().getAssocSide();
+        addStereotype(attribute.getModifier(), STEREOTYPE_OTHERSIDE_OF_MAP, map.getName());
+        if (GenService.isKeyDerived(map)) {
+          addStereotype(attribute.getModifier(), STEREOTYPE_OTHERSIDE_OF_MAP_SETTABLE, "");
+        }
       }
       // a bidirectional GemMap knows its other side like a bidirectional list (otherSide, isList); it is not
       // isBidirectional, as the map alone synchronizes the association (see GenService#isBidirectional)

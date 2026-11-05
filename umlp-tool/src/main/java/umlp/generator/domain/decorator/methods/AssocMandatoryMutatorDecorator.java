@@ -49,9 +49,10 @@ public class AssocMandatoryMutatorDecorator extends UMLPMandatoryMutatorDecorato
       getter = (isList ? "add" : "set") + StringTransformations.capitalize(otherSide);
     }
 
-    // the other side of a GemMap (bidirectional qualified association) is read-only: only its map sets it, by the internal
-    // setters below
-    if (!GenService.isOtherSideOfMapAttribute(ast)) {
+    // the other side of a GemMap (bidirectional qualified association): the internal setters below put into / remove
+    // from the owner's map (attribute qualified, map is its role); a type qualified one is read-only, no public setters
+    String map = GenService.getMapOfSettableOtherSide(ast);
+    if (!GenService.isOtherSideOfMapAttribute(ast) || !map.isEmpty()) {
       // Generate setX-Methods
       ASTCDMethod method = createSetter(ast);
       method.getCDParameter(0).setMCType(simpleType);
@@ -73,12 +74,15 @@ public class AssocMandatoryMutatorDecorator extends UMLPMandatoryMutatorDecorato
     }
 
     ASTCDMethod method5 = (ASTCDMethod) cd4c.createMethod(this.ast, getInternalSetOneTemplate(),
-            service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName).get();
+            service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName, map).get();
     methodList.add(method5);
 
     ASTCDMethod method6 = (ASTCDMethod) cd4c.createMethod(this.ast, getInternalSetOneTemplateGemId(),
-        service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName).get();
+        service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName, map).get();
     methodList.add(method6);
+    if (!map.isEmpty()) {
+      cd4c.addImport(this.ast, "java.util.Optional");
+    }
 
     return methodList;
   }

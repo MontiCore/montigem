@@ -284,6 +284,20 @@ public class GenService {
   }
 
   /**
+   * @param attr an association attribute
+   * @return the role of the map whose other side attr is, if attr can be changed through it (attribute qualified
+   * association: the key is derived from the value, see {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE_OF_MAP_SETTABLE});
+   * empty for any other attribute, also for the read-only other side of a type qualified map
+   */
+  public static String getMapOfSettableOtherSide(ASTCDAttribute attr) {
+    if (!attr.getModifier().isPresentStereotype()
+        || !attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_OF_MAP_SETTABLE)) {
+      return "";
+    }
+    return attr.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_OF_MAP);
+  }
+
+  /**
    * @param attr an attribute holding a GemMap
    * @return the role of the map's other side (bidirectional qualified association), see {@link #getOtherSideOfMap};
    * marked by {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE}, as for a bidirectional list

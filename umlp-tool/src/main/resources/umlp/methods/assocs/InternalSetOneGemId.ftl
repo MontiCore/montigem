@@ -1,7 +1,15 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("name", "otherSideName", "targetName", "sourceName", "managerName")}
+<#-- map: if this is the other side of the GemMap of an attribute qualified association, the map's role (see
+     InternalSetOne) -->
+${tc.signature("name", "otherSideName", "targetName", "sourceName", "managerName", "map")}
 
 ${cd4c.method("public void _internal_set${name?cap_first}(long gemID, NotificationScope scope)")}
+<#if map?has_content>
+if (scope.contains(NotificationScope.LOCAL)) {
+  _internal_set${name?cap_first}(gemID == -1 ? null : ${managerName}.get${targetName}Sure(gemID), scope);
+  return;
+}
+</#if>
 
 long oldValue = this._${name}.isPresent()?this._${name}.getGemId():-1;
 if(oldValue == gemID){

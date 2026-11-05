@@ -1,7 +1,25 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("name", "otherSideName", "targetName", "sourceName", "managerName")}
+<#-- map: if this is the other side of the GemMap of an attribute qualified association, the map's role -->
+${tc.signature("name", "otherSideName", "targetName", "sourceName", "managerName", "map")}
 
 ${cd4c.method("public void _internal_set${name?cap_first}(${targetName} o, NotificationScope scope)")}
+<#if map?has_content>
+if (scope.contains(NotificationScope.LOCAL)) {
+  // the other side of a map: the owner's map is the source of truth, o puts this value under the key derived from it
+  // (taking it out of its old owner's map), null removes it from its owner's map; the map updates this side (MINIMAL),
+  // like a bidirectional list updates its other side
+  if (o != null) {
+    o.put${map?cap_first}((${sourceName}) this, scope);
+  }
+  else if (this._${name}.getGemId() != -1) {
+    Optional<${targetName}> owner = ${managerName}.${targetName?uncap_first}Opt(this._${name}.getGemId());
+    if (owner.isPresent()) {
+      owner.get()._internal_remove${map?cap_first}Id(this.getGemId(), scope);
+    }
+  }
+  return;
+}
+</#if>
 
 long oldValue = this._${name}.isPresent()?this._${name}.getGemId():-1;
 if(oldValue == o.getGemId()){
