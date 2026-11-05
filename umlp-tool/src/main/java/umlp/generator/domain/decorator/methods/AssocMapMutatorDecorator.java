@@ -7,10 +7,12 @@ import de.monticore.cd4codebasis._ast.ASTCDMethod;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
+import umlp.generator.domain.decorator.DomainTypeDecorator;
 import umlp.generator.domain.decorator.GenService;
 import umlp.generator.util.PathUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Mutators of a GemMap of a qualified association, see GenService#isMap.
@@ -38,10 +40,12 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     String storedKeyType = GenService.getGemMapStoredKeyType(ast);
 
     boolean isKeyDerived = GenService.isKeyDerivedGemMap(ast);
+    // bidirectional: the role of the mirror on the value side, which the map's changes update
+    Optional<String> mirror = GenService.getMirrorOfGemMap(ast);
     if (isKeyDerived) {
       // the server reports a put that replaces a value deriving the same key
       methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
-          isEntry ? "0xA7317" : "0xA7307"));
+          isEntry ? "0xA7317" : "0xA7307", mirror.isPresent()));
     } else {
       methodList.add(createMethod("umlp.methods.gemmap.PutKey", name, keyType, targetName, isEntry));
     }
@@ -50,11 +54,20 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     // put/remove without scope
     methodList.addAll(createNotifyMethods(methodList, ast.getModifier().isLocal()));
 
-    methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName));
+    methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName, mirror.isPresent()));
     // put by id: as sent by the server without loading the value (command _put), and the owner put of a type
     // qualified association (chosen keys); rekeying
     methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType, isEntry,
-        !isKeyDerived));
+        !isKeyDerived, mirror.isPresent()));
+    if (mirror.isPresent()) {
+      String targetManager = ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MANAGER);
+      boolean mirrorIsList = GenService.isMirrorOfGemMapList(ast);
+      methodList.add(createMethod("umlp.methods.gemmap.MirrorPut", name, mirror.get(), mirrorIsList, targetName,
+          targetManager));
+      methodList.add(createMethod("umlp.methods.gemmap.MirrorRemove", name, mirror.get(), mirrorIsList, targetName,
+          targetManager));
+      cd4c.addImport(this.ast, "java.util.Collections");
+    }
     if (isKeyDerived) {
       methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
     }

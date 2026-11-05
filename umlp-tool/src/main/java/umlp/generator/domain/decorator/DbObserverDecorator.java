@@ -83,7 +83,8 @@ public class DbObserverDecorator extends AbstractDecorator {
         });
 
     for (Map.Entry<ASTCDAssocSide, ASTCDAssociation> e : UMLPSymbolTables.getOppositeSideToAssociationMap(domainClass).entrySet()) {
-      if (!e.getValue().getModifier().isDerived()) {
+      // the mirror of a GemMap has no rows of its own: the map stores the pairs
+      if (!e.getValue().getModifier().isDerived() && !GenService.isMapMirror(e.getKey())) {
         CDRoleSymbol cdRollSymbol = e.getKey().getSymbol();
 
         SymTypeExpression type = cdRollSymbol.getType();

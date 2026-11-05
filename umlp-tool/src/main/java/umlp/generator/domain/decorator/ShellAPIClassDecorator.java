@@ -87,6 +87,9 @@ public class ShellAPIClassDecorator extends DomainClassDecorator {
     assocs.stream()
         .filter(Predicate.not(GenService::isList))
         .filter(Predicate.not(GenService::isBidirectional))
+        // GemMaps have put/remove commands, which the shell API does not offer; their mirrors cannot be changed
+        .filter(Predicate.not(GenService::isMap))
+        .filter(Predicate.not(GenService::isMapMirror))
         .forEach(a -> {
           addAssocImport(origCD, shellapiClass, a);
           addAssociationSetMethod(cdName, originalClassName, shellapiClass, a);
@@ -94,6 +97,7 @@ public class ShellAPIClassDecorator extends DomainClassDecorator {
     assocs.stream()
         .filter(GenService::isList)
         .filter(Predicate.not(GenService::isBidirectional))
+        .filter(Predicate.not(GenService::isMapMirror))
         .forEach(a -> {
           addAssocImport(origCD, shellapiClass, a);
           addAssociationAddMethod(cdName, originalClassName, shellapiClass, a);

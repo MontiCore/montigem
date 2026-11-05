@@ -89,9 +89,21 @@ public class GemListAssocDecorator extends AbstractDecorator {
     // methods
     getCD4C().addMethod(ast, getLoadObjectsTemplate(), targetName, getCorrectManager(targetSymbol.getAstNode()));
     getCD4C().addMethod(ast, getGetOwnerTemplate(), sourceName, managerName);
-    getCD4C().addMethod(ast, getInternalAddTemplate(), assocName);
-    getCD4C().addMethod(ast, getInternalSetTemplate(), assocName);
-    getCD4C().addMethod(ast, getInternalRemoveTemplate(), assocName);
+    if (GenService.isMapMirror(assoc)) {
+      // the mirror of a GemMap (bidirectional qualified association) is read-only: its map changes it
+      getCD4C().addMethod(ast, "umlp.gemlist.assocs.ReadOnly",
+          "protected void _internal_addAndSync(int idx, List<Long> gemIDs)", assocName, targetName);
+      getCD4C().addMethod(ast, "umlp.gemlist.assocs.ReadOnly",
+          "protected void _internal_setAndSync(int idx, long gemID)", assocName, targetName);
+      getCD4C().addMethod(ast, "umlp.gemlist.assocs.ReadOnly",
+          "protected void _internal_removeAndSync(Set<Integer> idxs)", assocName, targetName);
+      getCD4C().addImport(ast, "de.se_rwth.commons.logging.Log");
+    }
+    else {
+      getCD4C().addMethod(ast, getInternalAddTemplate(), assocName);
+      getCD4C().addMethod(ast, getInternalSetTemplate(), assocName);
+      getCD4C().addMethod(ast, getInternalRemoveTemplate(), assocName);
+    }
     ASTCDMethodSignature m = getCD4C().addMethod(ast, getDeepEqualsTemplate(), targetName);
     markDeepEqualsBackendOnly(ast, m);
 

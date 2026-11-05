@@ -6,7 +6,7 @@
      type qualified association (chosen key): put<Role>(key, o) and a put through the map (PutAndSync) delegate to it.
      keyType: the stored key type (the key, or the gemId of the key object for GemEntryMaps);
      chosen: the key is chosen on put (type qualified association), so it must be present -->
-${tc.signature("name", "sourceName", "keyType", "isEntry", "chosen")}
+${tc.signature("name", "sourceName", "keyType", "isEntry", "chosen", "hasMirror")}
 
 ${cd4c.method("public void _internal_put${name?cap_first}Id(${keyType} key, long gemID, NotificationScope scope)")}
 <#if chosen>
@@ -28,6 +28,12 @@ if (oldID != null && oldID == gemID) {
 }
 this._${name}._internal_putValueID(key, gemID);
 check${name?cap_first}();
+<#if hasMirror>
+if (oldID != null) {
+  _internal_mirrorRemove${name?cap_first}(oldID);
+}
+_internal_mirrorPut${name?cap_first}(gemID);
+</#if>
 // a replaced value leaves with the put: every participant replaces it itself, so its removal is not sent as a command
 // of its own and the server sees the replacement
 NotificationScope removeScope = scope.contains(NotificationScope.LOCAL) ? NotificationScope.LOCAL : scope;
