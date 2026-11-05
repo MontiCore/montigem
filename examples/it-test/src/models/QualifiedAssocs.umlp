@@ -47,4 +47,10 @@ umlp QualifiedAssocs {
   }
   association Directory [[code]] (badgeDirectory) -> (byBadgeCode) Badge [1];
   association Directory [long] (phoneDirectory) -> (byPhone) Person [1];
+
+  /* a singleton owner of type qualified maps: deleting a value or a key object removes its entries there as well */
+  <<singleton>>
+  class Registry;
+  association Registry [String] (codeRegistry) -> (byCode) Person [1];
+  association Registry [Department] (headRegistry) -> (headByDepartment) Person [1];
 }
