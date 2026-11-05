@@ -49,24 +49,28 @@ public class AssocMandatoryMutatorDecorator extends UMLPMandatoryMutatorDecorato
       getter = (isList ? "add" : "set") + StringTransformations.capitalize(otherSide);
     }
 
-    // Generate setX-Methods
-    ASTCDMethod method = createSetter(ast);
-    method.getCDParameter(0).setMCType(simpleType);
-    methodList.add(method);
+    // the mirror of a GemMap (bidirectional qualified association) is read-only: only its map sets it, by the internal
+    // setters below
+    if (!GenService.isMapMirrorAttribute(ast)) {
+      // Generate setX-Methods
+      ASTCDMethod method = createSetter(ast);
+      method.getCDParameter(0).setMCType(simpleType);
+      methodList.add(method);
 
-    ASTCDMethod method2 = createNotificationSetter(ast, false);
-    method2.getCDParameter(0).setMCType(simpleType);
-    glex.replaceTemplate(EMPTY_BODY, method2, new TemplateHookPoint(getGemNotificationSetterTemplate(),
-            this.ast.getName(), GenService.getNativeName(ast.getName()), new CdUtilsPrinter().printType(ast.getMCType())));
-    methodList.add(method2);
+      ASTCDMethod method2 = createNotificationSetter(ast, false);
+      method2.getCDParameter(0).setMCType(simpleType);
+      glex.replaceTemplate(EMPTY_BODY, method2, new TemplateHookPoint(getGemNotificationSetterTemplate(),
+          this.ast.getName(), GenService.getNativeName(ast.getName()), new CdUtilsPrinter().printType(ast.getMCType())));
+      methodList.add(method2);
 
-    // Generate setXGem-Methods
-    ASTCDMethod method3 = createGemSetter(ast);
-    methodList.add(method3);
+      // Generate setXGem-Methods
+      ASTCDMethod method3 = createGemSetter(ast);
+      methodList.add(method3);
 
-    ASTCDMethod method4 = createNotificationSetter(ast, true);
-    method4.setName(method4.getName()+"Gem");
-    methodList.add(method4);
+      ASTCDMethod method4 = createNotificationSetter(ast, true);
+      method4.setName(method4.getName()+"Gem");
+      methodList.add(method4);
+    }
 
     ASTCDMethod method5 = (ASTCDMethod) cd4c.createMethod(this.ast, getInternalSetOneTemplate(),
             service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName).get();

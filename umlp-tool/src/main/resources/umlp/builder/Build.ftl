@@ -36,6 +36,12 @@ if (!buildFinished) {
     </#if>
 
 <#list assocList as assoc>
+  <#if genService.isMap(assoc) && genService.getMapMirror(assoc).isPresent()>
+      // bidirectional qualified association: the values put before building refer to this owner now
+      for (long valueID : this._${assoc.getName()}.getValueIDs()) {
+        _internal_mirrorPut${assoc.getName()?cap_first}(valueID);
+      }
+  </#if>
   <#if genService.isList(assoc)>
     <#if genService.isBidirectional(assoc)>
       <#assign otherSide=assoc.getSymbol().getOtherSide().getAssocSide()>

@@ -3,7 +3,7 @@
      keyType: the stored key type (the key, or the gemId of the key object for GemEntryMaps).
      Replacing a stale entry (its value derives another key by now) is a repair; replacing a value that derives the
      same key means the qualifying attribute is not unique, which the server (participant 0) reports with errorCode -->
-${tc.signature("name", "targetName", "sourceName", "isEntry", "keyType", "errorCode")}
+${tc.signature("name", "targetName", "sourceName", "isEntry", "keyType", "errorCode", "hasMirror")}
 
 ${cd4c.method("public void put${name?cap_first}(${targetName} o, NotificationScope scope)")}
 ${keyType} key = this._${name}.<#if isEntry>deriveKeyID<#else>deriveKey</#if>(o);
@@ -25,6 +25,12 @@ if (oldID != null && CommandManager.getParticipantId() == 0
 }
 this._${name}._internal_putValue(o);
 check${name?cap_first}();
+<#if hasMirror>
+if (oldID != null) {
+  _internal_mirrorRemove${name?cap_first}(oldID);
+}
+_internal_mirrorPut${name?cap_first}(o.getGemId());
+</#if>
 // a replaced value leaves with the put: every participant replaces it itself (see _internal_put${name?cap_first}Id),
 // so its removal is not sent as a command of its own and the server sees the replacement
 NotificationScope removeScope = scope.contains(NotificationScope.LOCAL) ? NotificationScope.LOCAL : scope;

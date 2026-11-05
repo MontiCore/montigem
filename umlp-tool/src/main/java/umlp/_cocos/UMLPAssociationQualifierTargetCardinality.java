@@ -19,10 +19,10 @@ public class UMLPAssociationQualifierTargetCardinality implements CDAssociationA
 
   @Override
   public void check(ASTCDAssociation assoc) {
-    if (UMLPAssociationQualifierUnidirectional.isQualified(assoc.getLeft())) {
+    if (UMLPAssociationQualifierNavigability.isQualified(assoc.getLeft())) {
       check(assoc.getLeft(), assoc.getRight());
     }
-    if (UMLPAssociationQualifierUnidirectional.isQualified(assoc.getRight())) {
+    if (UMLPAssociationQualifierNavigability.isQualified(assoc.getRight())) {
       check(assoc.getRight(), assoc.getLeft());
     }
   }
@@ -30,7 +30,7 @@ public class UMLPAssociationQualifierTargetCardinality implements CDAssociationA
   protected void check(ASTCDAssocSide qualifiedSide, ASTCDAssocSide targetSide) {
     if (!targetSide.isPresentCDCardinality() || !targetSide.getCDCardinality().isOne()) {
       logError(qualifiedSide.getCDQualifier(), targetSide.getMCQualifiedType().getMCQualifiedName(),
-          UMLPAssociationQualifierUnidirectional.printQualifier(qualifiedSide.getCDQualifier()));
+          UMLPAssociationQualifierNavigability.printQualifier(qualifiedSide.getCDQualifier()));
     }
   }
 
