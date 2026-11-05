@@ -103,8 +103,8 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
         // TODO @CBU, @AHe how to handle association inherited from superclass from imported CD?
         .filter(e -> UMLPSymbolTables.getDiagramFor(e.getKey()).getCDDefinition().getName().equals(origCD.getCDDefinition().getName()))
         .filter(e -> !(e.getValue().getModifier().isDerived() || e.getValue().getModifier().isReadonly()))
-        // the mirror of a GemMap sends nothing: its map's commands change it on every participant
-        .filter(e -> !GenService.isMapMirror(e.getKey()))
+        // the other side of a GemMap sends nothing: its map's commands change it on every participant
+        .filter(e -> !GenService.isOtherSideOfMap(e.getKey()))
         .forEach(e -> {
           ASTCDAssocSide a = e.getKey();
           ASTCDCompilationUnit cd = UMLPSymbolTables.getDiagramFor(a);

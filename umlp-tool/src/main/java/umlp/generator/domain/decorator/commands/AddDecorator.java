@@ -67,7 +67,7 @@ public class AddDecorator extends AbstractDeSerDecorator {
           .stream()
           .filter(Predicate.not(GenService::isSymbolDerived))
           .filter(Predicate.not(GenService::isBidirectional))
-          .filter(Predicate.not(GenService::isMapMirror))
+          .filter(Predicate.not(GenService::isOtherSideOfMap))
           .filter(GenService::isMultiValued)
           // maps have no positions: their values are put, see PutDecorator
           .filter(Predicate.not(GenService::isMap))
@@ -98,7 +98,7 @@ public class AddDecorator extends AbstractDeSerDecorator {
           .stream()
           .filter(Predicate.not(GenService::isSymbolDerived))
           .filter(Predicate.not(GenService::isBidirectional))
-          .filter(Predicate.not(GenService::isMapMirror))
+          .filter(Predicate.not(GenService::isOtherSideOfMap))
           .filter(GenService::isMultiValued)
           // maps have no positions: their values are put, see PutDecorator
           .filter(Predicate.not(GenService::isMap))

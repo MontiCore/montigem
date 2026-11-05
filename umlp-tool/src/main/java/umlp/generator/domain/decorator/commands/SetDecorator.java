@@ -69,7 +69,7 @@ public class SetDecorator extends AbstractDeSerDecorator {
           .stream()
           .filter(Predicate.not(GenService::isSymbolDerived))
           .filter(a -> !GenService.isBidirectional(a))
-          .filter(a -> !GenService.isMapMirror(a))
+          .filter(a -> !GenService.isOtherSideOfMap(a))
           .filter(a -> !GenService.isMultiValued(a))
           .forEach(a -> {
             astcdPackage.addCDElement(withOrigin(createClass(origCD,
@@ -96,7 +96,7 @@ public class SetDecorator extends AbstractDeSerDecorator {
           .stream()
           .filter(Predicate.not(GenService::isSymbolDerived))
           .filter(a -> !GenService.isBidirectional(a))
-          .filter(a -> !GenService.isMapMirror(a))
+          .filter(a -> !GenService.isOtherSideOfMap(a))
           .filter(a -> !GenService.isMultiValued(a))
           .forEach(a -> {
             astcdPackage.addCDElement(withOrigin(createClass(origCD, a.getName(), a.getSymbol().getType(), c, getCorrectManagerOfTargetType(a), true, astcdPackage.getName())));

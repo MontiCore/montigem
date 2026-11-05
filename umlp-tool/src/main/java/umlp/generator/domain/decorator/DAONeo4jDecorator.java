@@ -152,10 +152,10 @@ public class DAONeo4jDecorator extends DAODecorator {
   protected void keyMethodsForAssocDAO(ASTCDType daoClass, ASTCDAssociation assoc, ASTCDAssocSide ownerSide,
                                        ASTCDAssocSide mapSide, QualifierKey key) {
     // bidirectional: the relationship from the value to the owner is stored as well, the value side reads it
-    String mirrorRole = GenService.getMapMirror(mapSide).map(ASTCDAssocSide::getName).orElse("");
+    String otherSideRole = GenService.getOtherSideOfMap(mapSide).map(ASTCDAssocSide::getName).orElse("");
     getCD4C().addMethod(daoClass, "umlp.dao.associations.PutInitNeo4jForAssocDAO", assoc.getName(),
         ownerSide.getSymbol().getType().print(), mapSide.getSymbol().getType().print(), mapSide.getName(),
-        key.getNeo4jPropertyName(), mirrorRole);
+        key.getNeo4jPropertyName(), otherSideRole);
     getCD4C().addMethod(daoClass, "umlp.dao.associations.PutForAssocDAONeo4j", assoc, key.getStoredKeyType(),
         ownerSide.isLeft());
     getCD4C().addMethod(daoClass, "umlp.dao.associations.PutManyForAssocDAONeo4j", assoc, ownerSide.getName(),
@@ -167,7 +167,7 @@ public class DAONeo4jDecorator extends DAODecorator {
     if (key.isEntryKey()) {
       getCD4C().addMethod(daoClass, "umlp.dao.associations.RemoveAllWithKeyForAssocDAONeo4j", assoc,
           CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), mapSide.getName(),
-          key.getNeo4jPropertyName(), mirrorRole);
+          key.getNeo4jPropertyName(), otherSideRole);
     }
   }
 

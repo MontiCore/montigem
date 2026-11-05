@@ -65,16 +65,41 @@ if (!buildFinished) {
 </#list>
 }
 <#list assocList as assoc>
-  <#if genService.isMap(assoc) && genService.getMapMirror(assoc).isPresent()>
-// bidirectional qualified association: the values put before building refer to this owner now (a single owner: they
-// leave their old owner's map). Not for a deserialized object: loaded ones are consistent, for one created elsewhere
-// its create command does so (it knows whether the object is new)
+  <#if genService.isMap(assoc) && genService.getOtherSideOfMap(assoc).isPresent()>
+    <#assign otherSide=genService.getOtherSideOfMap(assoc).get()>
+    <#assign valueType=assoc.getSymbol().getType().print()>
+    <#assign valueManager=genService.getManagerOfType(assoc)>
+    <#assign ownerType=otherSide.getSymbol().getType().print()>
+    <#assign ownerManager=genService.getManagerOfType(otherSide)>
+// bidirectional qualified association: the other side of the values put before building refers to this owner now,
+// like for a bidirectional list (a single owner: they leave their old owner's map, see _internal_put${assoc.getName()?cap_first}Id).
+// Not for a deserialized object: loaded ones are consistent, for one created elsewhere its create command does so
 if (!INTERNAL_deser_mode) {
+  boolean server = CommandManager.getParticipantId() == 0;
   for (long valueID : this._${assoc.getName()}.getValueIDs()) {
-    <#if !genService.isList(genService.getMapMirror(assoc).get())>
-    _internal_moveFromOldOwner${assoc.getName()?cap_first}(valueID);
+    if (!server && !${valueManager}.isLoaded${valueType}(valueID)) {
+      continue;
+    }
+    Optional<${valueType}> value = ${valueManager}.${valueType?uncap_first}Opt(valueID);
+    if (value.isEmpty()) {
+      continue;
+    }
+    <#if genService.isList(otherSide)>
+    if (value.get()._internal_get${otherSide.getName()?cap_first}GemList().indexOfId(this.getGemId()) == -1) {
+      value.get()._internal_add${otherSide.getName()?cap_first}(value.get()._internal_get${otherSide.getName()?cap_first}GemList().getIDs().size(),
+          Collections.singletonList(this.getGemId()), NotificationScope.MINIMAL);
+    }
+    <#else>
+    long oldOwnerID = value.get().get${otherSide.getName()?cap_first}Gem().getGemId();
+    if (oldOwnerID != -1 && oldOwnerID != this.getGemId()
+        && (server || ${ownerManager}.isLoaded${ownerType}(oldOwnerID))) {
+      Optional<${ownerType}> oldOwner = ${ownerManager}.${ownerType?uncap_first}Opt(oldOwnerID);
+      if (oldOwner.isPresent()) {
+        oldOwner.get()._internal_remove${assoc.getName()?cap_first}Id(valueID, server ? NotificationScope.ALL : NotificationScope.LOCAL);
+      }
+    }
+    value.get()._internal_set${otherSide.getName()?cap_first}(this.getGemId(), NotificationScope.MINIMAL);
     </#if>
-    _internal_mirrorPut${assoc.getName()?cap_first}(valueID);
   }
 }
   </#if>

@@ -120,6 +120,15 @@ public class BuilderDecorator extends AbstractDecorator {
     addImports(domainClass, builderClass);
     attrAssocLists.forEach(assocSide -> addCorrectMangerImportForTargetType(origCD.getCDDefinition(), builderClass, assocSide.getSymbol().getType()));
     attrAssocMaps.forEach(assocSide -> getCD4C().addImport(builderClass, getGemMapClass(assocSide)));
+    // build() updates the other side of a bidirectional map (Build.ftl): the managers of the values and of the owners
+    attrAssocMaps.stream().filter(assocSide -> GenService.getOtherSideOfMap(assocSide).isPresent()).forEach(assocSide -> {
+      addCorrectMangerImportForTargetType(origCD.getCDDefinition(), builderClass, assocSide.getSymbol().getType());
+      addCorrectMangerImportForTargetType(origCD.getCDDefinition(), builderClass,
+          GenService.getOtherSideOfMap(assocSide).get().getSymbol().getType());
+      getCD4C().addImport(builderClass, PathUtil.getBackendRTECommandPath("CommandManager"));
+      getCD4C().addImport(builderClass, "java.util.Optional");
+      getCD4C().addImport(builderClass, "java.util.Collections");
+    });
 
     return builderClass;
   }
@@ -169,13 +178,13 @@ public class BuilderDecorator extends AbstractDecorator {
           !GenService.isList(attribute) && !GenService.isOptional(attribute));
     }
     for (ASTCDAssocSide assoc : assocList) {
-      // the mirror of a GemMap is never mandatory (a value need not be in a map) and is set by ids only (loading),
+      // the other side of a GemMap is never mandatory (a value need not be in a map) and is set by ids only (loading),
       // its map sets it otherwise
-      boolean mirror = GenService.isMapMirror(assoc);
+      boolean otherSideOfMap = GenService.isOtherSideOfMap(assoc);
       getCD4C().addMethod(builderClass, "umlp.builder.CheckAssoc",
           assoc.getName(), domainClass.getName(),
-          !(mirror || GenService.isOptional(assoc) || GenService.isMultiValued(assoc)), GenService.isMultiValued(assoc));
-      if (mirror) {
+          !(otherSideOfMap || GenService.isOptional(assoc) || GenService.isMultiValued(assoc)), GenService.isMultiValued(assoc));
+      if (otherSideOfMap) {
         getCD4C().addMethod(builderClass, GenService.isList(assoc) ? "umlp.builder.AssocGemList"
                 : "umlp.builder.AssocOneGem",
             assoc.getName(), GenService.getType(assoc.getSymbol().getType()), getClassName(domainClass.getName()));

@@ -275,33 +275,34 @@ public class GenService {
   }
 
   /**
-   * @return whether the association attribute is the read-only mirror of a GemMap, see {@link #isMapMirror};
-   * marked by {@link DomainTypeDecorator#STEREOTYPE_MAP_MIRROR}
+   * @return whether the association attribute is the other side of a GemMap, see {@link #isOtherSideOfMap};
+   * marked by {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE_OF_MAP}
    */
-  public static boolean isMapMirrorAttribute(ASTCDAttribute attr) {
+  public static boolean isOtherSideOfMapAttribute(ASTCDAttribute attr) {
     return attr.getModifier().isPresentStereotype()
-        && attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_MAP_MIRROR);
+        && attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_OF_MAP);
   }
 
   /**
    * @param attr an attribute holding a GemMap
-   * @return the role of the map's mirror on the value side (bidirectional qualified association), see
-   * {@link #getMapMirror}; marked by {@link DomainTypeDecorator#STEREOTYPE_MIRROR}
+   * @return the role of the map's other side (bidirectional qualified association), see {@link #getOtherSideOfMap};
+   * marked by {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE}, as for a bidirectional list
    */
-  public static Optional<String> getMirrorOfGemMap(ASTCDAttribute attr) {
+  public static Optional<String> getOtherSideOfGemMap(ASTCDAttribute attr) {
     if (!attr.getModifier().isPresentStereotype()
-        || !attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_MIRROR)) {
+        || !attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE)) {
       return Optional.empty();
     }
-    return Optional.of(attr.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MIRROR));
+    return Optional.of(attr.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_OTHERSIDE));
   }
 
   /**
-   * @return whether the mirror of the GemMap attr is a list (owner side [*]), see {@link #getMirrorOfGemMap}
+   * @return whether the other side of the GemMap attr is a list (owner side [*]), see {@link #getOtherSideOfGemMap};
+   * marked by {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE_ISLIST}
    */
-  public static boolean isMirrorOfGemMapList(ASTCDAttribute attr) {
+  public static boolean isOtherSideOfGemMapList(ASTCDAttribute attr) {
     return attr.getModifier().isPresentStereotype()
-        && attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_MIRROR_ISLIST);
+        && attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_ISLIST);
   }
 
   /**
@@ -494,21 +495,22 @@ public class GenService {
 
   /**
    * whether both sides are navigable and kept consistent by the association's own commands (Assoc_add/_set/_remove).
-   * Not for qualified associations: a bidirectional one consists of the owner's GemMap, the only source of truth,
-   * and its mirror on the value side (see {@link #isMapMirror}), each generated like a unidirectional side.
+   * Not for qualified associations: the owner's GemMap alone synchronizes a bidirectional one (its put/remove/rekey
+   * commands, index based association commands do not fit a map) and updates its other side (see
+   * {@link #isOtherSideOfMap}), which sends nothing itself.
    */
   public static boolean isBidirectional(ASTCDAssocSide assoc) {
     return assoc.getSymbol().isIsDefinitiveNavigable() && assoc.getSymbol().getOtherSide().isIsDefinitiveNavigable()
-        && !isMap(assoc) && !isMapMirror(assoc);
+        && !isMap(assoc) && !isOtherSideOfMap(assoc);
   }
 
   /**
-   * whether the side is the value side of a bidirectional qualified association: it navigates from a value to its
-   * owner ([1]/[0..1]: a single reference, [*]: a list, see UMLPAssociationQualifierNavigability). It mirrors the
-   * owner's GemMap: the map updates it on every participant (MINIMAL scope), it has no commands and no database rows
-   * of its own and cannot be changed itself.
+   * whether the side is the other side of a GemMap, the value side of a bidirectional qualified association: it
+   * navigates from a value to its owner ([1]/[0..1]: a single reference, [*]: a list, see
+   * UMLPAssociationQualifierNavigability). The map updates it on every participant (MINIMAL scope), as a bidirectional
+   * list updates its other side; it has no commands and no database rows of its own.
    */
-  public static boolean isMapMirror(ASTCDAssocSide assoc) {
+  public static boolean isOtherSideOfMap(ASTCDAssocSide assoc) {
     if (!assoc.isPresentSymbol() || !assoc.getSymbol().isIsDefinitiveNavigable()
         || !assoc.getSymbol().getOtherSide().isPresentAssocSide()) {
       return false;
@@ -517,31 +519,27 @@ public class GenService {
   }
 
   /**
-   * @return the roles of the GemMaps of type (declared in it or a supertype) whose association is bidirectional: their
-   * values refer to the owner, see {@link #isMapMirror}
+   * @return the manager of the type the side refers to, for templates (see AbstractDecorator#getCorrectManager)
    */
-  public static List<String> getMirroredMapRoles(ASTCDType type) {
+  public static String getManagerOfType(ASTCDAssocSide side) {
+    return umlp.generator.AbstractDecorator.getCorrectManager(side);
+  }
+
+  /**
+   * @return the GemMap sides of type (declared in it or a supertype) whose association is bidirectional, i.e. that have
+   * an other side, see {@link #getOtherSideOfMap}
+   */
+  public static List<ASTCDAssocSide> getBidirectionalMaps(ASTCDType type) {
     return CDSymbolTables.getAssociationsInHierarchy(type).stream()
-        .filter(side -> getMapMirror(side).isPresent())
-        .map(ASTCDAssocSide::getName)
+        .filter(side -> getOtherSideOfMap(side).isPresent())
         .collect(Collectors.toList());
   }
 
   /**
-   * @return the roles of the GemMaps of type (declared in it or a supertype) whose association is bidirectional with
-   * a single owner ([1]/[0..1] owner side): a value put into such a map leaves its old owner's map
+   * the other side of the GemMap side map, on the value side (see {@link #isOtherSideOfMap}), if the association is
+   * bidirectional
    */
-  public static List<String> getSingleOwnerMapRoles(ASTCDType type) {
-    return CDSymbolTables.getAssociationsInHierarchy(type).stream()
-        .filter(side -> getMapMirror(side).isPresent() && !isList(getMapMirror(side).get()))
-        .map(ASTCDAssocSide::getName)
-        .collect(Collectors.toList());
-  }
-
-  /**
-   * the mirror of the GemMap side map on the value side (see {@link #isMapMirror}), if the association is bidirectional
-   */
-  public static Optional<ASTCDAssocSide> getMapMirror(ASTCDAssocSide map) {
+  public static Optional<ASTCDAssocSide> getOtherSideOfMap(ASTCDAssocSide map) {
     if (!isMap(map) || !map.getSymbol().getOtherSide().isIsDefinitiveNavigable()) {
       return Optional.empty();
     }
