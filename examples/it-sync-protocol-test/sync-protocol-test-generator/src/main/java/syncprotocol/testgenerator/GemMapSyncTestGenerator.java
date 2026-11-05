@@ -28,12 +28,12 @@ public final class GemMapSyncTestGenerator {
     OBJ("Obj", "MapKey", true, false),
     ROLE("Role", "MapKey", true, false),
     // type qualified associations ([T]): the key is chosen on put
-    TYP_STR("TypStr", "String", false, true),
-    TYP_NUM("TypNum", "int", false, true),
-    TYP_OBJ("TypObj", "MapKey", true, true),
+    TYPE_STR("TypeStr", "String", false, true),
+    TYPE_NUM("TypeNum", "int", false, true),
+    TYPE_OBJ("TypeObj", "MapKey", true, true),
     // long keys close to the largest integer a browser represents exactly; Plain values only
     LONG("Long", "long", false, false),
-    TYP_LONG("TypLong", "long", false, true);
+    TYPE_LONG("TypeLong", "long", false, true);
 
     final String namePart;
     final String type;
@@ -51,7 +51,7 @@ public final class GemMapSyncTestGenerator {
 
     // the value shapes of the model: all for most keys, Plain only for long keys
     boolean hasValue(Value value) {
-      return value == Value.PLAIN || (this != LONG && this != TYP_LONG);
+      return value == Value.PLAIN || (this != LONG && this != TYPE_LONG);
     }
   }
 
@@ -483,11 +483,11 @@ public final class GemMapSyncTestGenerator {
     content.append("  // the key with index in the active context\n");
     content.append("  private ").append(gemMap.key().type).append(" key(GemMapSyncProtocolTestScenario scenario, int index) {\n");
     switch (gemMap.key()) {
-      case STR, TYP_STR -> content.append("    return \"key\" + index;\n");
-      case NUM, TYP_NUM -> content.append("    return 1000 + index;\n");
+      case STR, TYPE_STR -> content.append("    return \"key\" + index;\n");
+      case NUM, TYPE_NUM -> content.append("    return 1000 + index;\n");
       // 2^53 - 1 - 10 + index: within the keys a browser represents exactly, see GemValueMap#isSafeKey
-      case LONG, TYP_LONG -> content.append("    return 9007199254740981L + index;\n");
-      case OBJ, ROLE, TYP_OBJ -> content.append("    return AssociationsManager.getMapKeySure(scenario.keyIds[index]);\n");
+      case LONG, TYPE_LONG -> content.append("    return 9007199254740981L + index;\n");
+      case OBJ, ROLE, TYPE_OBJ -> content.append("    return AssociationsManager.getMapKeySure(scenario.keyIds[index]);\n");
     }
     content.append("  }\n\n");
 
