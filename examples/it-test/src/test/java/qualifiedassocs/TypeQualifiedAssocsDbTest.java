@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsNeo4JDBTestSetup;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsSQLDBTestSetup;
 import qualifiedassocs.commands.Directory_putByCode;
+import qualifiedassocs.commands.Directory_putHeadByDepartment;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsTestSetup;
 import umlp.backendrte.command.CommandManager;
 
@@ -77,6 +78,34 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertEquals(0, load(directory).sizeByCodes());
     assertEquals(0, directory.sizeHeadByDepartments());
     assertEquals(0, load(directory).sizeHeadByDepartments());
+  }
+
+  /**
+   * a put command for a value or a key object that does not exist: the server rejects it, and a participant that
+   * loaded the owner (and puts by id, without loading) stores nothing either
+   */
+  @Test
+  default void testPutOfMissingObjectIsRejected() {
+    getBackend().activate();
+    var directory = QualifiedAssocsManager.directoryBuilder().build().get();
+    var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
+    getClients(0).activate();
+    var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
+    assertEquals(0, clientDirectory.sizeByCodes());
+
+    getBackend().activate();
+    long missing = 999_999_999L;
+    assertFalse(CommandManager.executeCommand(new Directory_putByCode(directory.getGemId(), missing, "a1"))
+        .isSuccessful());
+    assertFalse(CommandManager.executeCommand(new Directory_putHeadByDepartment(directory.getGemId(),
+        anna.getGemId(), missing)).isSuccessful());
+    assertEquals(0, directory.sizeByCodes());
+    assertEquals(0, directory.sizeHeadByDepartments());
+    assertEquals(0, load(directory).sizeByCodes());
+    assertEquals(0, load(directory).sizeHeadByDepartments());
+    getClients(0).activate();
+    assertEquals(0, clientDirectory.sizeByCodes());
+    assertEquals(0, clientDirectory.sizeHeadByDepartments());
   }
 
   @Test

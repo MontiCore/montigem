@@ -127,15 +127,15 @@ public class PutDecorator extends AddDecorator {
       getCD4C().addMethod(ast, "umlp.commands.put.DoRun", domainType.getName(), getCorrectManager(domainType),
           a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getStoredKeyType(),
           key.isEntryKey() ? "0xA7316" : "0xA7306");
-      if (key.isLongKey()) {
-        // a long key the browser cannot represent is neither executed nor sent on
-        getCD4C().addMethod(ast, "umlp.commands.put.CheckContractKey", false, true);
-      }
+      // preconditions: the value exists, a long key is within what a browser represents (neither executed nor sent
+      // on otherwise)
+      getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", false, key.isLongKey(), a.getName(), targetType,
+          getCorrectManagerOfTargetType(a), "", "");
       return;
     }
     String keyTypeManager = "";
     if (key.isEntryKey()) {
-      // the server loads the key object to put through the owner
+      // the server checks that the key object exists
       ASTCDType keyType = (ASTCDType) key.getKeySymbol().getAstNode();
       ASTCDCompilationUnit keyCD = UMLPSymbolTables.getDiagramFor(keyType);
       keyTypeManager = getCorrectManager(keyType);
@@ -145,9 +145,10 @@ public class PutDecorator extends AddDecorator {
     getCD4C().addMethod(ast, "umlp.commands.put.DoRunKey", domainType.getName(), getCorrectManager(domainType),
         a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getKeyType(),
         keyTypeManager);
-    // the chosen key is a precondition: a put with a null key (or a long key the browser cannot represent) is neither
-    // executed nor sent on
-    getCD4C().addMethod(ast, "umlp.commands.put.CheckContractKey", true, key.isLongKey());
+    // preconditions: the chosen key is present (and a long key within what a browser represents), the value and the
+    // key object exist; a put that fails them is neither executed nor sent on
+    getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", true, key.isLongKey(), a.getName(), targetType,
+        getCorrectManagerOfTargetType(a), key.getKeyType(), keyTypeManager);
   }
 
   protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType) {
