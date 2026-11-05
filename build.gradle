@@ -145,7 +145,8 @@ subprojects {
 
   sourceSets.named("main").configure { main ->
     tasks.named("jar").configure { jar ->
-      jar.onlyIf { !main.allSource.files.isEmpty() }
+      // Published Java components require their main jar, including model-only modules.
+      jar.onlyIf { project.plugins.hasPlugin('maven-publish') || !main.allSource.files.isEmpty() }
     }
   }
 
