@@ -47,6 +47,13 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
   public static final String STEREOTYPE_OTHERSIDE_ISLIST = "isList";
   // a GemMap whose keys are derived from its values (attribute qualified association), see GenService#isKeyDerived
   public static final String STEREOTYPE_KEY_DERIVED = "keyDerived";
+  // the value side of a bidirectional qualified association, a read-only mirror of the owner's GemMap, see
+  // GenService#isMapMirror
+  public static final String STEREOTYPE_MAP_MIRROR = "mapMirror";
+  // on a GemMap of a bidirectional qualified association: the role of its mirror on the value side (value: the name)
+  // and whether the mirror is a list (owner side [*]), see GenService#getMapMirror
+  public static final String STEREOTYPE_MIRROR = "mirror";
+  public static final String STEREOTYPE_MIRROR_ISLIST = "mirrorIsList";
 
   public DomainTypeDecorator(GlobalExtensionManagement glex) {
     super(glex);
@@ -238,6 +245,15 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
       if (GenService.isKeyDerived(assocSide)) {
         addStereotype(attribute.getModifier(), STEREOTYPE_KEY_DERIVED, "");
       }
+      if (GenService.isMapMirror(assocSide)) {
+        addStereotype(attribute.getModifier(), STEREOTYPE_MAP_MIRROR, "");
+      }
+      GenService.getMapMirror(assocSide).ifPresent(mirror -> {
+        addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR, mirror.getName());
+        if (GenService.isList(mirror)) {
+          addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR_ISLIST, "");
+        }
+      });
 
       if(GenService.isOptional(assocSide)){
         addStereotype(attribute.getModifier(), "Optional", "");
