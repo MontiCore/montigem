@@ -40,14 +40,23 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     String storedKeyType = GenService.getGemMapStoredKeyType(ast);
 
     boolean isKeyDerived = GenService.isKeyDerivedGemMap(ast);
-    // bidirectional: the role of the mirror on the value side, which the map's changes update
-    Optional<String> mirror = GenService.getMirrorOfGemMap(ast);
-    // a single owner ([1]/[0..1] owner side): a put moves the value out of its old owner's map
-    boolean moves = mirror.isPresent() && !GenService.isMirrorOfGemMapList(ast);
+    // bidirectional: the map's put/remove update its other side, like a bidirectional list (empty if unidirectional);
+    // [*] owner side: the other side is a list; otherwise a single owner, a put moves the value
+    String otherSide = GenService.getOtherSideOfGemMap(ast).orElse("");
+    boolean otherSideIsList = GenService.isOtherSideOfGemMapList(ast);
+    String targetManager = ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MANAGER);
+    String ownerType = otherSide.isEmpty() ? ""
+        : ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MAP_OWNER);
+    String ownerManager = otherSide.isEmpty() ? ""
+        : ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MAP_OWNER_MANAGER);
+    if (!otherSide.isEmpty()) {
+      cd4c.addImport(this.ast, "java.util.Collections");
+      cd4c.addImport(this.ast, "java.util.Optional");
+    }
     if (isKeyDerived) {
       // the server reports a put that replaces a value deriving the same key
       methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
-          isEntry ? "0xA7317" : "0xA7307", mirror.isPresent(), moves));
+          isEntry ? "0xA7317" : "0xA7307", otherSide, otherSideIsList, targetManager, ownerType, ownerManager));
     } else {
       methodList.add(createMethod("umlp.methods.gemmap.PutKey", name, keyType, targetName, isEntry));
     }
@@ -56,27 +65,12 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     // put/remove without scope
     methodList.addAll(createNotifyMethods(methodList, ast.getModifier().isLocal()));
 
-    methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName, mirror.isPresent()));
+    methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName, otherSide, otherSideIsList,
+        targetName, targetManager));
     // put by id: as sent by the server without loading the value (command _put), and the owner put of a type
     // qualified association (chosen keys); rekeying
     methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType, isEntry,
-        !isKeyDerived, mirror.isPresent(), moves));
-    if (mirror.isPresent()) {
-      String targetManager = ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MANAGER);
-      boolean mirrorIsList = GenService.isMirrorOfGemMapList(ast);
-      methodList.add(createMethod("umlp.methods.gemmap.MirrorPut", name, mirror.get(), mirrorIsList, targetName,
-          targetManager));
-      methodList.add(createMethod("umlp.methods.gemmap.MirrorRemove", name, mirror.get(), mirrorIsList, targetName,
-          targetManager));
-      cd4c.addImport(this.ast, "java.util.Collections");
-    }
-    if (moves) {
-      methodList.add(createMethod("umlp.methods.gemmap.MirrorMove", name, mirror.get(), targetName,
-          ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MANAGER),
-          ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MIRROR_OWNER),
-          ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MIRROR_OWNER_MANAGER)));
-      cd4c.addImport(this.ast, "java.util.Optional");
-    }
+        !isKeyDerived, otherSide, otherSideIsList, targetName, targetManager, ownerType, ownerManager));
     if (isKeyDerived) {
       methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
     }
