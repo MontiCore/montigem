@@ -36,6 +36,11 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-11-05: 7.10.0-SNAPSHOT
+* New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`
+  for AI chats.
+* Integration of the chat module into the dashboard module and example.
+
 ## 2026-10-28: 7.10.0-SNAPSHOT
 * The domain model can be copied into the assets of the app, where it is served as
   `assets/models/<Name>.umlp`. It is off by default. 
@@ -53,10 +58,6 @@ For MontiGem users:
   run `gradle :frontend:clean :frontend:npmInstall` (or `npm update`) to get the current ones
 * `*.override.json` files can use Gradle properties, e.g. `"@umlp/editor": "g-${mg_version}"`
   in `package.override.json` (preferred way to add further `@umlp/*` or `@montigem/*` libraries)
-
-## 2026-10-26: 7.9.3-SNAPSHOT
-* New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`
-  for AI chats.
 
 ## 2026-10-23: 7.10.0-SNAPSHOT
 * MontiCore (and CD4A, GUIDSL, CD2GUI, MontiArc, MCLSG) updated to 7.10.0-SNAPSHOT
