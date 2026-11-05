@@ -192,4 +192,7 @@ classdiagram LoadingTests {
 
   // GemEntryMap, type qualified: the key is a Tutor chosen on put
   association Course [Tutor] (mentoredCourse) -> (menteeByTutor) Student [1];
+
+  // GemValueMap, type qualified with long keys: the browser represents them exactly only up to 2^53-1
+  association Course [long] (phoneCourse) -> (studentByPhone) Student [1];
 }

@@ -296,4 +296,22 @@ umlp Associations {
   class TypeLongPlainOwner;
   class TypeLongPlainValue;
   association typeLongPlainMap TypeLongPlainOwner [long] -> (byKey) TypeLongPlainValue [1];
+
+  // key types, Plain only:
+  //   TypeSubKeyPlain  [MapKeyBase], abstract; the keys are instances of its subclass MapSubKey (GemEntryMap)
+  //   TypeBoxedPlain   [Long], boxed, keys close to the largest integer a browser represents exactly (GemValueMap)
+  abstract class MapKeyBase {
+    String name;
+  }
+  class MapSubKey extends MapKeyBase;
+
+  // TypeSubKeyPlain
+  class TypeSubKeyPlainOwner;
+  class TypeSubKeyPlainValue;
+  association typeSubKeyPlainMap TypeSubKeyPlainOwner [MapKeyBase] -> (byKey) TypeSubKeyPlainValue [1];
+
+  // TypeBoxedPlain
+  class TypeBoxedPlainOwner;
+  class TypeBoxedPlainValue;
+  association typeBoxedPlainMap TypeBoxedPlainOwner [Long] -> (byKey) TypeBoxedPlainValue [1];
 }

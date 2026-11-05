@@ -32,4 +32,9 @@ page TestGemMap(Course c, Student s, Tutor t, Enrollment e, String result = "loa
   moveSeat@GemButton(label = "Move Seat", leftClick = moveSeat(c, s));
   readSeats@GemButton(label = "Read Seats", leftClick = readSeats(c));
   putMentee@GemButton(label = "Put Mentee", leftClick = putMentee(c, t, s));
+  readMentees@GemButton(label = "Read Mentees", leftClick = readMentees(c));
+  removeSeat@GemButton(label = "Remove Seat", leftClick = removeSeat(c));
+  removeSeatByMap@GemButton(label = "Remove Seat By Map", leftClick = removeSeatByMap(c));
+  putMaxPhone@GemButton(label = "Put Max Phone", leftClick = putMaxPhone(c, s));
+  putUnsafePhone@GemButton(label = "Put Unsafe Phone", leftClick = putUnsafePhone(c, s));
 }

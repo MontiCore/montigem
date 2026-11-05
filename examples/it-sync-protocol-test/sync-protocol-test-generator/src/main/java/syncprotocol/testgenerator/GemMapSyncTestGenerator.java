@@ -33,7 +33,11 @@ public final class GemMapSyncTestGenerator {
     TYPE_OBJ("TypeObj", "MapKey", true, true),
     // long keys close to the largest integer a browser represents exactly; Plain values only
     LONG("Long", "long", false, false),
-    TYPE_LONG("TypeLong", "long", false, true);
+    TYPE_LONG("TypeLong", "long", false, true),
+    // the declared key class MapKeyBase is abstract, the keys are instances of its subclass MapSubKey; Plain only
+    TYPE_SUB_KEY("TypeSubKey", "MapKeyBase", true, true),
+    // boxed long keys ([Long]) close to the largest integer a browser represents exactly; Plain only
+    TYPE_BOXED("TypeBoxed", "Long", false, true);
 
     final String namePart;
     final String type;
@@ -49,9 +53,14 @@ public final class GemMapSyncTestGenerator {
       this.chosen = chosen;
     }
 
-    // the value shapes of the model: all for most keys, Plain only for long keys
+    // the value shapes of the model: all for most keys, Plain only for the keys added for their key type
     boolean hasValue(Value value) {
-      return value == Value.PLAIN || (this != LONG && this != TYPE_LONG);
+      return value == Value.PLAIN || (this != LONG && this != TYPE_LONG && this != TYPE_SUB_KEY && this != TYPE_BOXED);
+    }
+
+    // the class of the key objects (GemEntryMap): MapKey, or the subclass MapSubKey of the declared key class
+    String keyClass() {
+      return this == TYPE_SUB_KEY ? "MapSubKey" : "MapKey";
     }
   }
 
@@ -486,8 +495,9 @@ public final class GemMapSyncTestGenerator {
       case STR, TYPE_STR -> content.append("    return \"key\" + index;\n");
       case NUM, TYPE_NUM -> content.append("    return 1000 + index;\n");
       // 2^53 - 1 - 10 + index: within the keys a browser represents exactly, see GemValueMap#isSafeKey
-      case LONG, TYPE_LONG -> content.append("    return 9007199254740981L + index;\n");
-      case OBJ, ROLE, TYPE_OBJ -> content.append("    return AssociationsManager.getMapKeySure(scenario.keyIds[index]);\n");
+      case LONG, TYPE_LONG, TYPE_BOXED -> content.append("    return 9007199254740981L + index;\n");
+      case OBJ, ROLE, TYPE_OBJ, TYPE_SUB_KEY -> content.append("    return AssociationsManager.get")
+          .append(gemMap.key().keyClass()).append("Sure(scenario.keyIds[index]);\n");
     }
     content.append("  }\n\n");
 
@@ -635,7 +645,8 @@ public final class GemMapSyncTestGenerator {
     if (Operation.DELETE_KEY.appliesTo(gemMap.key())) {
       content.append("      case DELETE_KEY -> {\n");
       content.append("        scenario.targetValueId = scenario.value0Id;\n");
-      content.append("        assertTrue(AssociationsManager.deleteMapKey(scenario.keyIds[0]));\n");
+      content.append("        assertTrue(AssociationsManager.delete").append(gemMap.key().keyClass())
+          .append("(scenario.keyIds[0]));\n");
       content.append("      }\n");
     }
     content.append("    }\n");
@@ -757,7 +768,8 @@ public final class GemMapSyncTestGenerator {
     content.append("    GemMapSyncProtocolTestScenario scenario = new GemMapSyncProtocolTestScenario();\n");
     if (gemMap.key().entry) {
       content.append("    for (int index = 0; index < scenario.keyIds.length; index++) {\n");
-      content.append("      scenario.keyIds[index] = AssociationsManager.mapKeyBuilder().name(\"key\" + index).build()\n");
+      content.append("      scenario.keyIds[index] = AssociationsManager.").append(lowerFirst(gemMap.key().keyClass()))
+          .append("Builder().name(\"key\" + index).build()\n");
       content.append("          .orElseThrow().getGemId();\n");
       content.append("    }\n");
     }
