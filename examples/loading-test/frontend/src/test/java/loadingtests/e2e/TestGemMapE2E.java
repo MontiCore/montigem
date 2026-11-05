@@ -209,6 +209,71 @@ public class TestGemMapE2E extends AbstractLoadingTestsE2ETest {
     assertThat(result(page)).hasText("size=2;A1=Anna;B2=Ben");
   }
 
+  /** a remove by the owner in the browser reaches the backend */
+  @Test
+  public void testTypeQualifiedRemove(Page page) {
+    course.putStudentBySeat("A1", anna);
+    open(page, anna);
+    click(page, "Remove Seat");
+    assertFalse(course.containsKeyStudentBySeat("A1"));
+  }
+
+  /** a remove through the map in the browser reaches the backend */
+  @Test
+  public void testTypeQualifiedRemoveByMap(Page page) {
+    course.putStudentBySeat("A1", anna);
+    open(page, anna);
+    click(page, "Remove Seat By Map");
+    assertFalse(course.containsKeyStudentBySeat("A1"));
+  }
+
+  /** a put in the backend reaches the type qualified map in the browser */
+  @Test
+  public void testTypeQualifiedIncomingSync(Page page) {
+    open(page, anna);
+    click(page, "Read Seats");
+    assertThat(result(page)).hasText("size=0;A1=-;B2=-");
+
+    course.putStudentBySeat("A1", anna);
+    waitRdy(page);
+    click(page, "Read Seats");
+    assertThat(result(page)).hasText("size=1;A1=Anna;B2=-");
+  }
+
+  /** deleting a key object in the backend removes its entry from the map in the browser */
+  @Test
+  public void testTypeQualifiedKeyObjectDeleted(Page page) {
+    Tutor mentor = LoadingTestsManager.tutorBuilder().staffId("T2").weeklyHours(5).build().get();
+    course.putMenteeByTutor(mentor, anna);
+    open(page, anna);
+    click(page, "Read Mentees");
+    assertThat(result(page)).hasText("mentees=1");
+
+    assertTrue(LoadingTestsManager.deleteTutor(mentor.getGemId()));
+    waitRdy(page);
+    click(page, "Read Mentees");
+    assertThat(result(page)).hasText("mentees=0");
+    assertEquals(0, course.sizeMenteeByTutors());
+  }
+
+  /** the largest long key the browser represents exactly arrives in the backend unchanged */
+  @Test
+  public void testLongKeyAtTheLimit(Page page) {
+    open(page, anna);
+    click(page, "Put Max Phone");
+    assertThat(result(page)).hasText("max=true");
+    assertEquals(anna.getGemId(), course.getStudentByPhone(9007199254740991L).getGemId());
+  }
+
+  /** a long key beyond the limit is refused in the browser, nothing reaches the backend */
+  @Test
+  public void testUnsafeLongKeyIsRefused(Page page) {
+    open(page, anna);
+    click(page, "Put Unsafe Phone");
+    assertThat(result(page)).hasText("unsafe=false;size=0");
+    assertEquals(0, course.sizeStudentByPhones());
+  }
+
   /** type qualified GemEntryMap: the key is the Tutor chosen in the browser */
   @Test
   public void testTypeQualifiedEntryMap(Page page) {

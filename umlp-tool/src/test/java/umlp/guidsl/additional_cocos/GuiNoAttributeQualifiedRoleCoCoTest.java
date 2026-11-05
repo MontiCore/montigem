@@ -58,6 +58,16 @@ public class GuiNoAttributeQualifiedRoleCoCoTest extends DomainGUITest {
     assertTrue(errors.get(0).getMsg().contains("getByNumberMap()"));
   }
 
+  /** a type qualified role ([String]) is a map as well */
+  @Test
+  public void testTypeQualifiedMapRole() {
+    List<Finding> errors = check("gui/coco/GuiNoAttributeQualifiedRoleCoCo4.gui");
+    assertEquals(1, errors.size());
+    assertTrue(errors.get(0).getMsg().startsWith(GuiNoAttributeQualifiedRoleCoCo.ERROR_CODE));
+    assertTrue(errors.get(0).getMsg().contains("'byCode' is qualified, i.e. a map"));
+    assertTrue(errors.get(0).getMsg().contains("getByCodeMap()"));
+  }
+
   @Test
   public void testMultiMapRole() {
     List<Finding> errors = check("gui/coco/GuiNoAttributeQualifiedRoleCoCo3.gui");
