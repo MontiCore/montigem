@@ -47,17 +47,13 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
   public static final String STEREOTYPE_OTHERSIDE_ISLIST = "isList";
   // a GemMap whose keys are derived from its values (attribute qualified association), see GenService#isKeyDerived
   public static final String STEREOTYPE_KEY_DERIVED = "keyDerived";
-  // the value side of a bidirectional qualified association, a read-only mirror of the owner's GemMap, see
-  // GenService#isMapMirror
-  public static final String STEREOTYPE_MAP_MIRROR = "mapMirror";
-  // on a GemMap of a bidirectional qualified association: the role of its mirror on the value side (value: the name)
-  // and whether the mirror is a list (owner side [*]), see GenService#getMapMirror
-  public static final String STEREOTYPE_MIRROR = "mirror";
-  public static final String STEREOTYPE_MIRROR_ISLIST = "mirrorIsList";
-  // on such a GemMap: the owner type the mirror refers to (declares the map) and its manager, to reach a value's old
-  // owner when a put moves it (single owner)
-  public static final String STEREOTYPE_MIRROR_OWNER = "mirrorOwner";
-  public static final String STEREOTYPE_MIRROR_OWNER_MANAGER = "mirrorOwnerManager";
+  // the other side of a GemMap (value side of a bidirectional qualified association, see GenService#isOtherSideOfMap);
+  // value: the role of the map
+  public static final String STEREOTYPE_OTHERSIDE_OF_MAP = "otherSideOfMap";
+  // on a GemMap of a bidirectional qualified association (besides otherSide and isList): the owner type its other side
+  // refers to (it declares the map) and its manager, to reach a value's old owner when a put moves it (single owner)
+  public static final String STEREOTYPE_MAP_OWNER = "mapOwner";
+  public static final String STEREOTYPE_MAP_OWNER_MANAGER = "mapOwnerManager";
 
   public DomainTypeDecorator(GlobalExtensionManagement glex) {
     super(glex);
@@ -249,16 +245,19 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
       if (GenService.isKeyDerived(assocSide)) {
         addStereotype(attribute.getModifier(), STEREOTYPE_KEY_DERIVED, "");
       }
-      if (GenService.isMapMirror(assocSide)) {
-        addStereotype(attribute.getModifier(), STEREOTYPE_MAP_MIRROR, "");
+      if (GenService.isOtherSideOfMap(assocSide)) {
+        addStereotype(attribute.getModifier(), STEREOTYPE_OTHERSIDE_OF_MAP,
+            assocSide.getSymbol().getOtherSide().getName());
       }
-      GenService.getMapMirror(assocSide).ifPresent(mirror -> {
-        addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR, mirror.getName());
-        if (GenService.isList(mirror)) {
-          addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR_ISLIST, "");
+      // a bidirectional GemMap knows its other side like a bidirectional list (otherSide, isList); it is not
+      // isBidirectional, as the map alone synchronizes the association (see GenService#isBidirectional)
+      GenService.getOtherSideOfMap(assocSide).ifPresent(otherSide -> {
+        addStereotype(attribute.getModifier(), STEREOTYPE_OTHERSIDE, otherSide.getName());
+        if (GenService.isList(otherSide)) {
+          addStereotype(attribute.getModifier(), STEREOTYPE_OTHERSIDE_ISLIST, "");
         }
-        addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR_OWNER, mirror.getSymbol().getType().print());
-        addStereotype(attribute.getModifier(), STEREOTYPE_MIRROR_OWNER_MANAGER, getCorrectManager(mirror));
+        addStereotype(attribute.getModifier(), STEREOTYPE_MAP_OWNER, otherSide.getSymbol().getType().print());
+        addStereotype(attribute.getModifier(), STEREOTYPE_MAP_OWNER_MANAGER, getCorrectManager(otherSide));
       });
 
       if(GenService.isOptional(assocSide)){

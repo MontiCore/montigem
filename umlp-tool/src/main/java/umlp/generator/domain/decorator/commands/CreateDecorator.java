@@ -3,16 +3,21 @@ package umlp.generator.domain.decorator.commands;
 
 import com.google.common.collect.Lists;
 import de.monticore.cd.codegen.methods.AccessorDecorator;
+import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._ast.ASTCDPackage;
+import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.se_rwth.commons.StringTransformations;
 import umlp.UMLPMill;
 import umlp.generator.domain.decorator.DeSerDecorator;
 import umlp.generator.domain.decorator.GenService;
 import umlp.generator.util.PathUtil;
+import umlp.generator.util.UMLPSymbolTables;
+
+import java.util.List;
 
 import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static umlp.generator.domain.decorator.commands.CommandDecorator.DE_SER;
@@ -48,9 +53,26 @@ public class CreateDecorator extends AbstractDeSerDecorator {
     ASTCDAttribute attr = addDomainAttr(ast, classname);
 
     addConstructor(ast, classname, packageName);
+    List<ASTCDAssocSide> bidirectionalMaps = GenService.getBidirectionalMaps(domainClass);
     getCD4C().addMethod(ast, getDoRunTemplate(), classname, getCorrectManager(domainClass), domainPackage, hasOCL,
-        GenService.getMirroredMapRoles(domainClass), GenService.getSingleOwnerMapRoles(domainClass));
-    getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandManager"));
+        bidirectionalMaps);
+    if (!bidirectionalMaps.isEmpty()) {
+      // the create command updates the other side of these maps (create/DoRun.ftl)
+      getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandManager"));
+      getCD4C().addImport(ast, "java.util.Optional");
+      getCD4C().addImport(ast, "java.util.Collections");
+      for (ASTCDAssocSide map : bidirectionalMaps) {
+        addCorrectMangerImportForTargetType(origCD.getCDDefinition(), ast, map.getSymbol().getType());
+        addCorrectMangerImportForTargetType(origCD.getCDDefinition(), ast,
+            GenService.getOtherSideOfMap(map).get().getSymbol().getType());
+        // the value and the owner type
+        for (ASTCDAssocSide side : List.of(map, GenService.getOtherSideOfMap(map).get())) {
+          ASTCDType type = (ASTCDType) side.getSymbol().getType().getTypeInfo().getAstNode();
+          getCD4C().addImport(ast, getPackageName(UMLPSymbolTables.getDiagramFor(type), DEFAULT_PACKAGE) + "."
+              + type.getName());
+        }
+      }
+    }
     getCD4C().addMethod(ast, getGeneralCheckAccessPolicyTemplate(), domainClass.getName(), "Create");
     getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList(StringTransformations.uncapitalize(classname) + ".getGemId()"));
     AccessorDecorator accessor = new AccessorDecorator(glex);

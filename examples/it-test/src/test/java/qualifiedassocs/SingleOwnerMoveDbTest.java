@@ -56,7 +56,7 @@ public interface SingleOwnerMoveDbTest extends QualifiedAssocsTestSetup {
     return QualifiedAssocsManager.departmentBuilder().name(name).build().get();
   }
 
-  /** a put into another owner's map moves the value: the old owner's map and its row lose it, the mirror follows */
+  /** a put into another owner's map moves the value: the old owner's map and its row lose it, the other side follows */
   @Test
   default void testPutMovesTheValue() {
     getBackend().activate();

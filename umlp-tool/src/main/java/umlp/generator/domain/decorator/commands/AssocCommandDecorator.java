@@ -42,7 +42,7 @@ public class AssocCommandDecorator extends AbstractDeSerDecorator {
     origCD.getCDDefinition().getCDAssociationsList().stream()
             .filter(a -> !a.getModifier().isDerived())
             .filter(a -> a.getCDAssocDir() instanceof ASTCDBiDir)
-            // a bidirectional qualified association is synchronized by its GemMap's commands, the value side mirrors it
+            // a bidirectional qualified association is synchronized by its GemMap's commands, which update its other side
             .filter(a -> !GenService.isMap(a.getLeft()) && !GenService.isMap(a.getRight())).
             forEach(a -> astcdPackage.addAllCDElements(withOrigin(createClass(origCD, a, astcdPackage.getName()))));
   }

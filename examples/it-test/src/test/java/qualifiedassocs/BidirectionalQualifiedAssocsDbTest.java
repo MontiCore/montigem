@@ -14,8 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Bidirectional qualified associations: the owner's GemMap is the source of truth, the value side mirrors it (read
- * only) on every participant and is loaded from the map's rows.
+ * Bidirectional qualified associations: the owner's GemMap is the source of truth and updates its other side (the
+ * value side, read only) on every participant, like a bidirectional list; the other side is loaded from the map's
+ * rows.
  * <ul>
  *   <li>[0..1] Club [String] (club) &lt;-&gt; (memberByCode) Person [1]: a single reference</li>
  *   <li>[1] Club [Department] (ledClub) &lt;-&gt; (leaderByDepartment) Person [1]: a single reference, entry map</li>
@@ -73,9 +74,9 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     return p._internal_getClubsGemList().getIDs();
   }
 
-  /** a put sets the mirror, a remove clears it; a value replaced under its key leaves the mirror as well */
+  /** a put sets the other side, a remove clears it; a value replaced under its key is cleared as well */
   @Test
-  default void testMirrorFollowsPutAndRemove() {
+  default void testOtherSideFollowsPutAndRemove() {
     getBackend().activate();
     var club = club();
     var other = club();
@@ -104,7 +105,7 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
 
   /** a value loaded later reads its owner(s) from the map's rows */
   @Test
-  default void testMirrorIsLoadedFromDb() {
+  default void testOtherSideIsLoadedFromDb() {
     getBackend().activate();
     var club = club();
     var other = club();
@@ -123,9 +124,9 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     assertTrue(clubsIds(loaded).containsAll(List.of(club.getGemId(), other.getGemId())));
   }
 
-  /** a participant that loaded the value updates its mirror when the map's commands arrive, in both directions */
+  /** a participant that loaded the value updates its other side when the map's commands arrive, in both directions */
   @Test
-  default void testMirrorIsSynchronized() {
+  default void testOtherSideIsSynchronized() {
     getBackend().activate();
     var club = club();
     var anna = person("anna", 1);
@@ -152,7 +153,7 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
 
   /** deleting the key object removes its entry, and with it the value's reference to the owner */
   @Test
-  default void testMirrorAfterKeyObjectDeletion() {
+  default void testOtherSideAfterKeyObjectDeletion() {
     getBackend().activate();
     var club = club();
     var anna = person("anna", 1);
@@ -167,7 +168,7 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
 
   /** values put while the owner is a builder refer to it once it is built */
   @Test
-  default void testMirrorAfterBuild() {
+  default void testOtherSideAfterBuild() {
     getBackend().activate();
     var anna = person("anna", 1);
     var club = QualifiedAssocsManager.clubBuilder().memberByCodePut("a1", anna).memberByLoginPut(anna).build().get();
@@ -175,9 +176,9 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     assertEquals(List.of(club.getGemId()), clubsIds(anna));
   }
 
-  /** the mirror cannot be changed itself (no setters; its list refuses changes): the owner's map changes it */
+  /** the other side cannot be changed itself (no setters; its list refuses changes): the owner's map changes it */
   @Test
-  default void testMirrorIsReadOnly() {
+  default void testOtherSideIsReadOnly() {
     getBackend().activate();
     var club = club();
     var anna = person("anna", 1);

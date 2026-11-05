@@ -49,9 +49,9 @@ public class AssocMandatoryMutatorDecorator extends UMLPMandatoryMutatorDecorato
       getter = (isList ? "add" : "set") + StringTransformations.capitalize(otherSide);
     }
 
-    // the mirror of a GemMap (bidirectional qualified association) is read-only: only its map sets it, by the internal
+    // the other side of a GemMap (bidirectional qualified association) is read-only: only its map sets it, by the internal
     // setters below
-    if (!GenService.isMapMirrorAttribute(ast)) {
+    if (!GenService.isOtherSideOfMapAttribute(ast)) {
       // Generate setX-Methods
       ASTCDMethod method = createSetter(ast);
       method.getCDParameter(0).setMCType(simpleType);
