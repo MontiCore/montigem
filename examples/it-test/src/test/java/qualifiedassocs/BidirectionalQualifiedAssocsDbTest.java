@@ -176,14 +176,17 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     assertEquals(List.of(club.getGemId()), clubsIds(anna));
   }
 
-  /** the other side cannot be changed itself (no setters; its list refuses changes): the owner's map changes it */
+  /**
+   * the other side of a type qualified map cannot be changed itself (no setters; its list refuses changes): there is no
+   * key to put the value under, the owner's map changes it
+   */
   @Test
-  default void testOtherSideIsReadOnly() {
+  default void testTypeQualifiedOtherSideIsReadOnly() {
     getBackend().activate();
     var club = club();
     var anna = person("anna", 1);
-    assertLogsError("0xA7330", () -> anna._internal_getClubsGemList().add(club));
-    assertEquals(List.of(), clubsIds(anna));
-    assertEquals(0, club.sizeMemberByLogins());
+    assertLogsError("0xA7330", () -> anna._internal_getSponsoredClubsGemList().add(club));
+    assertEquals(List.of(), anna._internal_getSponsoredClubsGemList().getIDs());
+    assertEquals(0, club.sizeSponsorByDepartments());
   }
 }

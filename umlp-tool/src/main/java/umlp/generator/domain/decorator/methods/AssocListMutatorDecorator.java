@@ -45,10 +45,11 @@ public class AssocListMutatorDecorator extends UMLPMandatoryMutatorDecorator {
         "";
     boolean isList = ast.getModifier().isPresentStereotype() && ast.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_ISLIST);
 
-    // the other side of a GemMap (bidirectional qualified association) is read-only: only its map changes it, by the
-    // internal methods
-    boolean otherSideOfMap = GenService.isOtherSideOfMapAttribute(ast);
-    if (!otherSideOfMap) {
+    // the other side of a GemMap (bidirectional qualified association): the internal methods put into / remove from the
+    // owners' maps (attribute qualified, map is its role); a type qualified one is read-only, no public mutators
+    String map = GenService.getMapOfSettableOtherSide(ast);
+    boolean readOnlyOtherSide = GenService.isOtherSideOfMapAttribute(ast) && map.isEmpty();
+    if (!readOnlyOtherSide) {
       methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.Add", service.getNativeAttributeName(ast.getName()), targetName).get());
       methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.AddId", service.getNativeAttributeName(ast.getName()), targetName).get());
       methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.AddAll", service.getNativeAttributeName(ast.getName()), targetName).get());
@@ -58,10 +59,10 @@ public class AssocListMutatorDecorator extends UMLPMandatoryMutatorDecorator {
     if (!otherSide.isEmpty()) {
        getter = (isList ? "add" : "set") + StringTransformations.capitalize(otherSide);
     }
-    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalAdd", service.getNativeAttributeName(ast.getName()), getter, targetName, sourceName, managerName).get());
-    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalAddId", service.getNativeAttributeName(ast.getName()), targetName, sourceName).get());
-    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalSet", service.getNativeAttributeName(ast.getName()), targetName, sourceName).get());
-    if (!otherSideOfMap) {
+    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalAdd", service.getNativeAttributeName(ast.getName()), getter, targetName, sourceName, managerName, map).get());
+    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalAddId", service.getNativeAttributeName(ast.getName()), targetName, sourceName, map, managerName).get());
+    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalSet", service.getNativeAttributeName(ast.getName()), targetName, sourceName, map, managerName).get());
+    if (!readOnlyOtherSide) {
       methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.Remove", service.getNativeAttributeName(ast.getName()), targetName, sourceName).get());
       methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.Remove_Id", service.getNativeAttributeName(ast.getName()), targetName, sourceName).get());
     }
@@ -70,14 +71,14 @@ public class AssocListMutatorDecorator extends UMLPMandatoryMutatorDecorator {
       remove = (isList ? "remove" : "set") + StringTransformations.capitalize(otherSide);
     }
 
-    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalRemove", service.getNativeAttributeName(ast.getName()), remove, targetName, sourceName, managerName).get());
+    methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.InternalRemove", service.getNativeAttributeName(ast.getName()), remove, targetName, sourceName, managerName, map).get());
     List<ASTCDMethod> notifyMethods = createNotifyMethods(methodList, ast.getModifier().isLocal());
 
     methodList.addAll(notifyMethods);
     methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.RemoveByIdSure", service.getNativeAttributeName(ast.getName())).get());
     methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.RemoveByIdSureNoScope", service.getNativeAttributeName(ast.getName()), ast.getModifier().isLocal()?"LOCAL":"ALL").get());
 
-    if (!otherSideOfMap) {
+    if (!readOnlyOtherSide) {
       methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.Clear", service.getNativeAttributeName(ast.getName()), targetName).get());
       methodList.add((ASTCDMethod) cd4c.createMethod(this.ast, "umlp.methods.assocs.RetainAll", service.getNativeAttributeName(ast.getName()), targetName).get());
     }
