@@ -28,7 +28,6 @@ import umlp.generator.domain.UMLSetDefaultsTrafo;
 import umlp.generator.util.UMLPSymbolTables;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -67,36 +66,22 @@ public abstract class AbstractUMLPTest {
   public ASTCDCompilationUnit parse(String testPath, String model) {
     Path m = Paths.get(testPath, model);
     assertTrue(m.toFile().exists());
-    try {
-      Optional<ASTCDCompilationUnit> ast = UMLPMill.parser().parse(m.toString());
-      assertTrue(ast.isPresent());
-      return ast.get();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-      fail();
-    }
-    return null;
+    Optional<ASTCDCompilationUnit> ast = UMLPMill.parser().parse(m.toString());
+    assertTrue(ast.isPresent());
+    return ast.get();
   }
 
   public ASTOCLCompilationUnit parseOCL(String testPath, String model, ASTCDCompilationUnit cdAst) {
     Path m = Paths.get(testPath, model);
     assertTrue(m.toFile().exists());
     OCLMill.init();
-    try {
-      Optional<ASTOCLCompilationUnit> ast = OCLMill.parser().parse(m.toString());
-      assertTrue(ast.isPresent());
-      SymbolTableUtil.prepareMill();
-      UMLPSymbolTables.addCd4cSymbols();
-      SymbolTableUtil.runSymTabGenitor(ast.get());
-      SymbolTableUtil.runSymTabCompleter(ast.get());
-      return ast.get();
-    }
-    catch (IOException e) {
-      e.printStackTrace();
-      fail();
-    }
-    return null;
+    Optional<ASTOCLCompilationUnit> ast = OCLMill.parser().parse(m.toString());
+    assertTrue(ast.isPresent());
+    SymbolTableUtil.prepareMill();
+    UMLPSymbolTables.addCd4cSymbols();
+    SymbolTableUtil.runSymTabGenitor(ast.get());
+    SymbolTableUtil.runSymTabCompleter(ast.get());
+    return ast.get();
   }
 
   public IUMLPArtifactScope createSymTab(ASTCDCompilationUnit ast) {

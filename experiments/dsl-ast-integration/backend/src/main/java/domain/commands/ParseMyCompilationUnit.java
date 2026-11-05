@@ -10,7 +10,6 @@ import mydsl.mydsl.MyDSLMill;
 import umlp.backendrte.command.SimpleResult;
 import umlp.backendrte.common.LoadingState;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,11 +28,7 @@ public class ParseMyCompilationUnit extends ParseMyCompilationUnitTOP {
     var parser = MyDSLMill.parser();
 
     Optional<mydsl.mydsl._ast.ASTMyCompilationUnit> opt = null;
-    try {
-      opt = parser.parse_StringMyCompilationUnit(getInput());
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    opt = parser.parse_StringMyCompilationUnit(getInput());
 
     if (parser.hasErrors() || !opt.isPresent()) {
 

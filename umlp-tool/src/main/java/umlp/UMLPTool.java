@@ -139,7 +139,7 @@ public class UMLPTool extends UMLPToolTOP {
       }
       Log.error("0xA1050x72114 Model could not be parsed.");
     }
-    catch (NullPointerException | java.io.IOException e) {
+    catch (NullPointerException e) {
       Log.error("0xA1051x37376 Failed to parse " + model, e);
     }
     // should never be reached (unless failquick is off)
@@ -162,7 +162,7 @@ public class UMLPTool extends UMLPToolTOP {
       }
       Log.error("0xA1050x72114 Model could not be parsed.");
     }
-    catch (NullPointerException | java.io.IOException e) {
+    catch (NullPointerException e) {
       Log.error("0xA1051x37376 Failed to parse " + model, e);
     }
     // should never be reached (unless failquick is off)

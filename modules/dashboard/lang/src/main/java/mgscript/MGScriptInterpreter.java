@@ -78,7 +78,6 @@ import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartEntry;
 import mc.fenix.charts.gemgaugecharttypes.GemGaugeChartEntryBuilder;
 import mgscript.interpreter.MGScriptInterpreterVisitor;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -215,11 +214,7 @@ public class MGScriptInterpreter {
 
   public ASTInterpreterCompilationUnit parse(String input) {
     Optional<ASTInterpreterCompilationUnit> astOpt = Optional.empty();
-    try {
-      astOpt = MGScriptMill.parser().parse_String(input);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    astOpt = MGScriptMill.parser().parse_String(input);
 
     return astOpt.get();
   }

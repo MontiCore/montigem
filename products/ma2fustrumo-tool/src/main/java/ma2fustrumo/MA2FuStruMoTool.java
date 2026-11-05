@@ -12,7 +12,6 @@ import montiarc._ast.ASTMACompilationUnit;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Optional;
@@ -226,13 +225,9 @@ public class MA2FuStruMoTool extends MontiArcTool {
     try {
       TagLoader.load(new String[]{symbolDir.toString()});
       Set<ASTMACompilationUnit> compilationUnits;
-      try {
-        ASTMACompilationUnit compilationUnit = MontiArcMill.parser().parse_String(source)
-            .orElseThrow(() -> new IllegalArgumentException("Failed to parse MontiArc source."));
-        compilationUnits = Set.of(compilationUnit);
-      } catch (IOException e) {
-        throw new IllegalArgumentException("Failed to parse MontiArc source.", e);
-      }
+      ASTMACompilationUnit compilationUnit = MontiArcMill.parser().parse_String(source)
+          .orElseThrow(() -> new IllegalArgumentException("Failed to parse MontiArc source."));
+      compilationUnits = Set.of(compilationUnit);
       this.runAfterParserCoCos(compilationUnits);
       this.defaultImportTrafo(compilationUnits, useClass2MC);
       this.runAfterParsingTrafos(compilationUnits);

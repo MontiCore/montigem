@@ -170,11 +170,7 @@ public class CD2GUIPipeline extends Pipeline<UMLPPipelineData> {
             File oclFile = new File(modelUrl.toURI());
             // Use OCLWithErrorMessagesMill to parse so we don't lose error messages
             Optional<ASTOCLCompilationUnit> oclCompilationUnit;
-            try {
-              oclCompilationUnit = OCLWithErrorMessagesMill.parser().parse(oclFile.getAbsolutePath());
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
+            oclCompilationUnit = OCLWithErrorMessagesMill.parser().parse(oclFile.getAbsolutePath());
             if (oclCompilationUnit.isEmpty()) {
               Log.error("0xE0001 Could not parse OCL file");
             }
