@@ -76,7 +76,7 @@ class ChatServiceTest extends DashboardMockTestSetup {
     assertEquals(List.of(UserMessage.from("Show the teams"), AiMessage.from("Two teams"),
         UserMessage.from("Who leads them?")), request.getValue().messages().subList(1, 4));
     assertInstanceOf(SystemMessage.class, request.getValue().messages().get(0));
-    assertEquals(11, request.getValue().parameters().toolSpecifications().size());
+    assertEquals(12, request.getValue().parameters().toolSpecifications().size());
     String instructions = ((SystemMessage) request.getValue().messages().get(0)).text();
     assertTrue(instructions.contains("# Dashboard assistant"));
     assertTrue(instructions.contains("# Dashboard operations"));
@@ -88,6 +88,8 @@ class ChatServiceTest extends DashboardMockTestSetup {
         .anyMatch(tool -> tool.name().equals("checkInterpreterCode")));
     assertTrue(request.getValue().parameters().toolSpecifications().stream()
         .anyMatch(tool -> tool.name().equals("createCell")));
+    assertTrue(request.getValue().parameters().toolSpecifications().stream()
+        .anyMatch(tool -> tool.name().equals("setViewInfo")));
     assertEquals(4, history.getMessagesList().size());
     Message reply = history.getMessages(3);
     assertFalse(reply.isUser());
@@ -137,7 +139,7 @@ class ChatServiceTest extends DashboardMockTestSetup {
   @Test
   void retainsToolCallsAndResultsAcrossRequestsWithoutDuplicatingVisibleMessages() {
     dashboardmodule.ViewConfig view = dashboardmodule.DashboardModuleManager.viewConfigBuilder()
-        .vid(1).name("Overview").build().get();
+        .vid(1).name("Overview").info("").build().get();
     when(model.chat(any(ChatRequest.class))).thenReturn(ChatResponse.builder()
         .aiMessage(AiMessage.from(toolCall("getCurrentLayout"))).build(),
         response("The Overview view is empty."), response("You are welcome."));
@@ -274,7 +276,7 @@ class ChatServiceTest extends DashboardMockTestSetup {
       assertEquals("system", request.getArrayMember("messages").get(0).getAsJsonObject().getStringMember("role"));
       assertEquals("user", request.getArrayMember("messages").get(1).getAsJsonObject().getStringMember("role"));
       assertEquals("Show the teams", request.getArrayMember("messages").get(1).getAsJsonObject().getStringMember("content"));
-      assertEquals(11, request.getArrayMember("tools").size());
+      assertEquals(12, request.getArrayMember("tools").size());
       assertEquals("**Two teams**", history.getMessages(1).getContent());
     } finally {
       server.stop(0);
