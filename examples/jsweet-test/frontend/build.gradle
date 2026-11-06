@@ -2,6 +2,7 @@
 plugins {
   id 'java'
   id 'de.rwth.se.montigem-frontend'
+  id 'jacoco'
 }
 
 dependencies {
@@ -56,3 +57,126 @@ tasks.register("slowtest", Test) {
   dependsOn npmInstall
 }
 
+tasks.register('relativizeCoveragePaths') {
+  group 'verification'
+  dependsOn generateC8Report
+  description 'Relativizes the coverage paths in the coverage report'
+
+  doLast {
+    def rootDir = rootProject.projectDir
+    def coverageFile = file("${projectDir}/build/app/coverage/coverage-final.json")
+    def tempFile = file("${projectDir}/build/app/coverage/coverage-final-temp.json")
+    if (coverageFile.exists()) {
+      def winPathEscaped = java.util.regex.Pattern.quote(rootDir.absolutePath.replace('\\', '\\\\'))
+      def unixPathEscaped = java.util.regex.Pattern.quote(rootDir.absolutePath.replace('\\', '/'))
+
+      def pathRegex = ~/(?i)("${winPathEscaped}(\\\\+|\/)|\/|${unixPathEscaped}[\/\\])/
+
+      tempFile.withWriter("UTF-8") { writer ->
+        coverageFile.eachLine("UTF-8") { line ->
+          def updatedLine = line.replaceAll(pathRegex, '"./').replaceAll('\\\\\\\\', '/')
+          writer.println(updatedLine)
+        }
+      }
+      if (tempFile.exists()) {
+        coverageFile.delete()
+        tempFile.renameTo(coverageFile)
+      }
+    } else {
+      println "Coverage file not found at ${coverageFile.absolutePath}"
+    }
+  }
+}
+
+tasks.register('generateC8Report', NpxTask){
+  dependsOn tasks.named('test')
+  finalizedBy relativizeCoveragePaths
+  group 'verification'
+  description 'Generates ts-coverage report using c8'
+
+  workingDir = file("${projectDir}/build/app")
+  def tempDir = file("${projectDir}/build/reports/coverage")
+  command = 'c8'
+  args = [
+      'report',
+      "--temp-directory=${tempDir}",
+      '--reporter=json',
+      '--include=**/gui2java2ts/**',
+      '--include=**/umlpJava2ts/**',
+      '--exclude-after-remap=true'
+  ]
+}
+
+if(project.hasProperty('coverage')){
+  def agentPath = configurations.detachedConfiguration(
+      dependencies.create("org.jacoco:org.jacoco.agent:${jacoco.toolVersion}:runtime")
+  ).singleFile.absolutePath
+  def destFileUmlpJava2ts = "${layout.buildDirectory.get()}/jacoco/umlpJava2ts.exec"
+  def destFileGui2java2ts = "${layout.buildDirectory.get()}/jacoco/gui2java2ts.exec"
+
+  tasks.named('umlpJava2ts'){
+    jacocoAgentArg.set("-javaagent:${agentPath}=destfile=${destFileUmlpJava2ts},append=true,includes=umlp.jsweet.extension.*")
+    createSourceMaps.set(true)
+  }
+
+  tasks.named('guiJava2ts'){
+    jacocoAgentArg.set("-javaagent:${agentPath}=destfile=${destFileGui2java2ts},append=true,includes=umlp.jsweet.extension.*")
+    createSourceMaps.set(true)
+  }
+
+  tasks.register('jacocoUmlpJava2ts', JacocoReport){
+    dependsOn test
+    executionData.setFrom(file("$destFileUmlpJava2ts"))
+    reports {
+      xml.required = true
+      xml.outputLocation = layout.buildDirectory.file("reports/jacoco/umlpJava2ts/umlpJava2ts.xml")
+    }
+
+    classDirectories.setFrom(files(
+        project(':umlp-jsweet').sourceSets.main.output.classesDirs
+    ))
+
+    sourceDirectories.setFrom(files(
+        project(':umlp-jsweet').sourceSets.main.allSource.srcDirs
+    ))
+  }
+
+  tasks.register('jacocoGui2java2ts', JacocoReport){
+    dependsOn test
+    executionData.setFrom(file("$destFileGui2java2ts"))
+    reports {
+      xml.required = true
+      xml.outputLocation = layout.buildDirectory.file("reports/jacoco/gui2java2ts/gui2java2ts.xml")
+    }
+
+    classDirectories.setFrom(files(
+        project(':umlp-jsweet').sourceSets.main.output.classesDirs
+    ))
+
+    sourceDirectories.setFrom(files(
+        project(':umlp-jsweet').sourceSets.main.allSource.srcDirs
+    ))
+  }
+
+  tasks.register('jacocoAggregated', JacocoReport){
+    dependsOn(
+        'jacocoUmlpJava2ts',
+        'jacocoGui2java2ts'
+    )
+    executionData.setFrom(files(
+        "$destFileUmlpJava2ts",
+        "$destFileGui2java2ts"))
+    reports {
+      xml.required = true
+      html.required = true
+    }
+
+    classDirectories.setFrom(files(
+        project(':umlp-jsweet').sourceSets.main.output.classesDirs
+    ))
+
+    sourceDirectories.setFrom(files(
+        project(':umlp-jsweet').sourceSets.main.allSource.srcDirs
+    ))
+  }
+}

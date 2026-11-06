@@ -128,6 +128,14 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
   @Classpath
   public abstract ConfigurableFileCollection getClassPath();
 
+  @Input
+  @Optional
+  public abstract Property<String> getJacocoAgentArg();
+
+  @Input
+  @Optional
+  public abstract Property<Boolean> getCreateSourceMaps();
+
   @TaskAction
   public void run() {
     WorkQueue workQueue = getWorkerExecutor().classLoaderIsolation(spec ->
@@ -175,8 +183,8 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
     List<String> classPath = new ArrayList<>();
     classPath.add(getJSweetRuntimeClassPath().getAsPath());
 
-    // JSweet runs in a class loader that stays open between builds, see Java2TSAction
-    WorkQueue workQueue = getWorkerExecutor().noIsolation();
+    // Get correct work queue (based on JacocoAgentArg)
+    WorkQueue workQueue = createWorkQueue(getJSweetClassPath());
 
     // collect all .java files
     Set<Path> individualInputPaths = walkAndCollectJavaFiles(getInput().getFiles());
@@ -221,6 +229,7 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
       // the UMLP adapters run the same rule in their merged async scanner
       params.getAutoPropagateAsync().set(false);
       params.getOutputList().set(outputList);
+      params.getCreateSourceMaps().set(getCreateSourceMaps().orElse(false));
     });
 
     // Block until jsweet finishes
@@ -254,5 +263,50 @@ public abstract class UMLPJava2TSTask extends DefaultTask {
       }
     }
     return individualInputPaths;
+  }
+
+  /**
+   * Creates and configures a {@link WorkQueue} for executing tasks based on the provided classpath.
+   * Depending on whether JaCoCo coverage is requested for this build, the method sets up either
+   * a process-isolated or class-loader-isolated work queue.
+   *
+   * @param targetClassPath the classpath that will be assigned to the worker specification.
+   *                        This classpath determines the dependencies available to the worker.
+   * @return the configured {@link WorkQueue}, which can be used to execute tasks.
+   */
+  private WorkQueue createWorkQueue(ConfigurableFileCollection targetClassPath){
+    // Check if JaCoCo is requested for this build to get the coverage during invocation of the
+    // generator. To attach JaCoCo, spawn a separate JVM just for this step and attach
+    // JaCoCo
+    if(getJacocoAgentArg().isPresent() && !getJacocoAgentArg().get().isEmpty()) {
+      getLogger().info("Spawning separate JVM with JaCoCo attached for internal coverage");
+      return getWorkerExecutor().processIsolation(spec ->{
+        spec.getClasspath().from(targetClassPath);
+        // Set working directory of new JVM to project dir to match gradle behavior
+        spec.getForkOptions().setWorkingDir(getProject().getProjectDir());
+        // Inject the current environment to match behavior of Gradle-worker
+        spec.getForkOptions().environment(System.getenv());
+        // Bypass Java JPMS strong encapsulation (--add-opens) to allow JSweet
+        // to access internal JDK compiler packages (com.sun.tools.javac.*)
+        // and java.net via reflection, which are otherwise blocked in Java 21+.
+        // (see https://github.com/cincheo/jsweet/issues/710#issuecomment-1048061355)
+        spec.getForkOptions().jvmArgs(
+            getJacocoAgentArg().get(),
+            "--add-opens", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+            "--add-opens", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+            "--add-opens", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+            "--add-opens", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+            "--add-opens", "jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED",
+            "--add-opens", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+            "--add-opens", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+            "--add-opens", "java.base/java.net=ALL-UNNAMED"
+        );
+      });
+    }else{
+      // JSweet runs in a class loader that stays open between builds, see Java2TSAction
+      return getWorkerExecutor().classLoaderIsolation(spec ->{
+        spec.getClasspath().from(targetClassPath);
+      });
+    }
   }
 }
