@@ -16,7 +16,7 @@ class CellOptionsValidationTest {
   @Test
   void preservesEscapedStringsUnicodeAndExplicitDefaultsInOptions() {
     DashboardModuleMock.init();
-    var cell = DashboardModuleManager.cellConfigBuilder().name("Gauge").viz(VizType.SPEED).data("")
+    var cell = DashboardModuleManager.cellConfigBuilder().name("Gauge").info("").viz(VizType.SPEED).data("")
         .position(DashboardModuleManager.dashboardModulePositionBuilder().x(0.0).y(0.0).build().get())
         .size(DashboardModuleManager.dashboardModuleSizeBuilder().width(3.0).height(3.0).build().get())
         .extra(CellOptions.build(VizType.SPEED, CellOptions.defaults(VizType.SPEED))).build().get();

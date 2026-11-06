@@ -57,7 +57,7 @@ component CellDisplay(
          pieChart@GemPieChart(data = getPieData(), innerRadius = cell.extra.piextra.innerRadius);
       };
       @guard(compareViz(VizType.NETWORK)) {
-         @GemGraph(graph = getNetworkData(), minHeight = getGraphMinHeight(), showInformation = cell.extra.graphextra.showInformation, showSearchNode = cell.extra.graphextra.showSearchNode, showFilterGroup = cell.extra.graphextra.showFilterGroup);
+         @GemGraph(graph = getNetworkData(), minHeight = getGraphMinHeight(), showInformation = cell.extra.graphextra.showInformation, showSearchNode = cell.extra.graphextra.showSearchNode, showFilterGroup = cell.extra.graphextra.showFilterGroup, showControlButtons = cell.extra.graphextra.showControlButtons, initialLayout = getGraphInitialLayout(), complexLayout = getGraphComplexLayout());
       };
       @guard(compareViz(VizType.SCATTER)) {
          @GemScatterPlot(data = getScatterData(), xAxis = defaultAxisTranslate(cell.extra.scatterextra.xAxis), yAxis = defaultAxisTranslate(cell.extra.scatterextra.yAxis));
