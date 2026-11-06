@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+umlp UMLPSingletonClassParameters {
+
+    enum RentableStatus {
+        AVAILABLE;
+    }
+
+
+    <<singleton>>
+    class RentalService {
+        void car(int[] array);
+        void colors(Map<String, Integer> map);
+        void rentCar(RentableStatus wowenum);
+    }
+}
