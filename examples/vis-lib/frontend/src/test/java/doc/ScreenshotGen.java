@@ -53,7 +53,7 @@ public class ScreenshotGen extends AbstractDomainE2ETest {
         new Screenshot("/example_input/GemTextareaInputExample", "gem-textarea-input-example", "../../../docs/gendoc_img/GemTextareaInputExample.png"),
         new Screenshot("/example_input/GemTextInputExample", "gem-text-input-example", "../../../docs/gendoc_img/GemTextInputExample.png"),
         new Screenshot("/example_input/GemNumberInputExample", "gem-number-input-example", "../../../docs/gendoc_img/GemNumberInputExample.png"),
-        new Screenshot("/example_network/NetworkChartExample", "network-chart-example", "../../../docs/gendoc_img/NetworkChartExample.png"),
+        new Screenshot("/example_network/GemGraphExample", "gem-graph-example", "../../../docs/gendoc_img/GemGraphExample.png"),
         new Screenshot("/example_table/GemTableExample", "gem-table-example", "../../../docs/gendoc_img/GemTableExample.png"),
         new Screenshot("/fischertechnik/FischertechnikExample", "fischertechnik-example", "../../../docs/gendoc_img/FischertechnikExample.png")
     );
