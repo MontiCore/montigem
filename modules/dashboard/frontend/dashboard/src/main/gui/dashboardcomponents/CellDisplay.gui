@@ -7,7 +7,6 @@ import mc.fenix.charts.GemBarChart;
 import mc.fenix.charts.GemPieChart;
 import mc.fenix.charts.GemScatterPlot;
 import mc.fenix.charts.GemBoxPlot;
-import mc.fenix.charts.GemNetworkGraph;
 import mc.fenix.networkgraph.GemGraph;
 import dashboardcomponents.GemFilterableTable;
 import DashboardModule.CellConfig;

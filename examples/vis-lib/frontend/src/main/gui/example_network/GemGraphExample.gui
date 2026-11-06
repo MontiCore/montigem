@@ -1,13 +1,12 @@
 /* (c) https://github.com/MontiCore/monticore */
 package example_network;
 
-import example_input.GemChat;
 import mc.fenix.arrange.GemColumn;
 import common.ExamplePage;
 import mc.fenix.networkgraph.GemGraph;
 import mc.fenix.basic.GemText;
 
-page NetworkChartExample(String lastClickedNodeName = "None") {
+page GemGraphExample(String lastClickedNodeName = "None") {
   @ExamplePage(
     component = @GemColumn(width = "100%", components = [
       @GemText(value="Last Clicked Node: " + lastClickedNodeName),
@@ -24,6 +23,6 @@ page NetworkChartExample(String lastClickedNodeName = "None") {
       )
     ]),
     basePath = "example_network",
-    componentName = "NetworkChartExample"
+    componentName = "GemGraphExample"
   );
 }

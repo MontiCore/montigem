@@ -20,7 +20,7 @@ import de.se_rwth.commons.logging.Log;
     imports = {"...config.imports", "GemGraph"},
     tsImports = {"GemGraph, @umlp/networkgraph"}
 )
-public class NetworkChartExample extends NetworkChartExampleTOP {
+public class GemGraphExample extends GemGraphExampleTOP {
 
   protected List<GraphNode> nodes = new ArrayList<>();
   protected List<GraphEdge> edges = new ArrayList<>();
@@ -169,7 +169,7 @@ public class NetworkChartExample extends NetworkChartExampleTOP {
   public Consumer<GraphNode> updateClickedNode() {
     return (node) -> {
       this.setLastClickedNodeName(node.getLabel());
-      Log.info("NetworkChartExample", "Clicked on node: " + node.getId() + " (" + node.getLabel() + ")");
+      Log.info("GemGraphExample", "Clicked on node: " + node.getId() + " (" + node.getLabel() + ")");
     };
   }
 
