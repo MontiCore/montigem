@@ -4,6 +4,18 @@ import mc.fenix.charts.GemBarChartTypes.GemBarChartData;
 import mc.fenix.charts.GemPieChartTypes.GemPieChartData;
 
 classdiagram Domain {
+  class PersonPersonPersonPersonPersonPersonPersonPersonPersonPersonPersonPerson {
+    String namenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamename;
+    String aboutMe;
+  }
+
+  class AddressAddressAddressAddressAddressAddressAddressAddressAddressAddress {
+    String street;
+    int house;
+  }
+
+  association [1] PersonPersonPersonPersonPersonPersonPersonPersonPersonPersonPersonPerson -> (addressaddressaddressaddressaddressaddressaddressaddressaddressaddress) AddressAddressAddressAddressAddressAddressAddressAddressAddressAddress [0..1];
+
 
   class Data {
     /Optional<GemBarChartData> bcData;
