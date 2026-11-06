@@ -37,6 +37,27 @@ public class CellTools {
     this.view = view;
   }
 
+  // explains the info attribute to the model, used by the tool descriptions of cells and views
+  private static final String INFO = "info captures the intent of the diagram concisely, "
+      + "usually one sentence on what it shows and which question it answers "
+      + "(e.g., Number of issues each team closed per week.); it is shown to users as a tooltip of the cell. ";
+
+  @Tool("Sets the info of the current dashboard view: a concise description of the intent of the view as a whole, "
+      + "usually one sentence summarizing what its cells show together; it is shown to users in the info dialog of the view. "
+      + "Update it when cells are created, changed, or removed such that the purpose of the view changes. "
+      + "The current info is returned by getCurrentLayout.")
+  public String setViewInfo(@P("Concise description of the intent of the current view") String info) {
+    if (view == null) {
+      return "No current dashboard view is available.";
+    }
+    if (info == null || info.isBlank()) {
+      return "Invalid view info: a nonempty description is required. No changes made.";
+    }
+    String previous = view.getInfo();
+    view.setInfo(info.trim());
+    return "Updated info of view \"" + view.getName() + "\" from \"" + previous + "\" to \"" + view.getInfo() + "\".";
+  }
+
   @Tool("Executes a dashboard cell data script and checks its returned chart or table type. "
       + "Returns success or interpreter errors to repair before creating a cell. "
       + "Use the dashboard-chart-data skill. Scripts should only read domain data and construct chart payloads; "
@@ -52,9 +73,12 @@ public class CellTools {
       + "Call checkInterpreterCode first and fix any errors. This tool validates the script again before creation. "
       + "The cell is placed below existing cells, with size 6 columns by 4 rows and default chart options. "
       + "For FILTERABLE_TABLE, set column filters and render scripts afterwards with setCellOptions. "
-      + "Use getCurrentLayout and setCurrentLayout afterwards if a different placement is needed.")
+      + "Use getCurrentLayout and setCurrentLayout afterwards if a different placement is needed. "
+      + "The " + INFO
+      + "Consider updating the view info with setViewInfo afterwards.")
   public String createCell(
       @P("Display name of the new cell") String name,
+      @P("Concise description of the intent of the cell, usually one sentence") String info,
       @P("Visualization: BAR, LINE, PIE, SCATTER, BOX, SPEED, NETWORK or FILTERABLE_TABLE") String viz,
       @P("Complete validated interpreter script to store as the cell data") String data) {
     if (view == null) {
@@ -62,6 +86,9 @@ public class CellTools {
     }
     if (name == null || name.isBlank()) {
       return "Invalid cell: a name is required.";
+    }
+    if (info == null || info.isBlank()) {
+      return "Invalid cell: an info describing the intent of the cell is required.";
     }
     double bottom = 0;
     for (CellConfig cell : view.getCellsList()) {
@@ -77,7 +104,7 @@ public class CellTools {
     }
     VizType type = VizType.valueOf(viz.trim().toUpperCase(Locale.ROOT));
     CellConfig cell = DashboardModuleManager.cellConfigBuilder()
-        .name(name.trim()).viz(type).data(data).extra(CellOptions.build(type, CellOptions.defaults(type)))
+        .name(name.trim()).info(info.trim()).viz(type).data(data).extra(CellOptions.build(type, CellOptions.defaults(type)))
         .position(DashboardModuleManager.dashboardModulePositionBuilder().x(0.0).y(y).build().get())
         .size(DashboardModuleManager.dashboardModuleSizeBuilder().width(6.0).height(4.0).build().get())
         .build().get();
@@ -86,18 +113,19 @@ public class CellTools {
         + " in view \"" + view.getName() + "\" at x=0, y=" + (int) y + ", width=6, height=4.";
   }
 
-  @Tool("Returns a current-view cell as JSON: id, name, viz, complete data script, options, and geometry. "
+  @Tool("Returns a current-view cell as JSON: id, name, info, viz, complete data script, options, and geometry. "
       + "Use IDs from getCurrentLayout; call before editing an existing cell.")
   public String getCell(@P("Cell ID from the current view") long cellId) {
     CellConfig cell = find(cellId);
     return cell == null ? missing() : describe(cell);
   }
 
-  @Tool("Updates an existing current-view cell. patchJson is a JSON object containing any of name, viz, data. "
+  @Tool("Updates an existing current-view cell. patchJson is a JSON object containing any of name, info, viz, data. "
       + "Omitted fields are preserved. Geometry is preserved. A visualization change resets chart options to defaults. "
-      + "Changed scripts/types are executed and checked before applying any changes. Read getCell first.")
+      + "Changed scripts/types are executed and checked before applying any changes. Read getCell first. "
+      + "The " + INFO + "Update the info as well if a change alters what the cell shows.")
   public String updateCell(@P("Cell ID from the current view") long cellId,
-      @P("JSON object with optional name, viz, data fields; provide only fields to change") String patchJson) {
+      @P("JSON object with optional name, info, viz, data fields; provide only fields to change") String patchJson) {
     CellConfig cell = find(cellId);
     if (cell == null) return missing();
     try {
@@ -118,12 +146,16 @@ public class CellTools {
       var fields = patch.getMembers().entrySet().iterator();
       while (fields.hasNext()) {
         var field = fields.next();
-        if (!List.of("name", "viz", "data").contains(field.getKey()) || !field.getValue().isJsonString()) {
-          return "Invalid cell: only string fields name, viz, data are supported. No changes made.";
+        if (!List.of("name", "info", "viz", "data").contains(field.getKey()) || !field.getValue().isJsonString()) {
+          return "Invalid cell: only string fields name, info, viz, data are supported. No changes made.";
         }
       }
       String name = patch.hasMember("name") ? patch.getStringMember("name").trim() : cell.getName();
       if (name.isBlank()) return "Invalid cell: a name is required. No changes made.";
+      String info = patch.hasMember("info") ? patch.getStringMember("info").trim() : cell.getInfo();
+      if (patch.hasMember("info") && info.isBlank()) {
+        return "Invalid cell: an info describing the intent of the cell is required. No changes made.";
+      }
       String viz = patch.hasMember("viz") ? patch.getStringMember("viz") : cell.getViz().name();
       String data = patch.hasMember("data") ? patch.getStringMember("data") : cell.getData();
       if (patch.hasMember("viz") || patch.hasMember("data")) {
@@ -139,6 +171,7 @@ public class CellTools {
       }
       if (patch.hasMember("data")) cell.setData(data);
       if (patch.hasMember("name")) cell.setName(name);
+      if (patch.hasMember("info")) cell.setInfo(info);
       return "Updated cell: " + describe(cell);
     } catch (IllegalArgumentException e) {
       return "Invalid cell: patch must be valid JSON. No changes made.";
@@ -148,7 +181,10 @@ public class CellTools {
   @Tool("Patches chart options of a current-view cell; omitted options are preserved. Read getCell first. "
       + "optionsJson is a JSON object. BAR: stacked, overlapping, minValue, maxValue; LINE: minValue, maxValue; "
       + "PIE: innerRadius (0..100); BOX: min, max; SPEED: min, max, unit, textValue, textPosition; "
-      + "NETWORK: minHeight, showFilterGroup, showSearchNode, showControlButtons, showInformation; "
+      + "NETWORK: minHeight, showFilterGroup, showSearchNode, showControlButtons, showInformation, "
+      + "initialLayout (NONE, CIRCULAR, RANDOM, CIRCLE_PACK, HIERARCHICAL, CHANNEL_HIERARCHICAL), "
+      + "horizontalLayout (hierarchical layers left to right), complexLayout (NONE, FORCE, FORCEATLAS2, NO_OVERLAP), "
+      + "maxLayoutIterations (positive, null for no limit); "
       + "SCATTER: xAxis/yAxis objects with label, minValue, maxValue, stepWidth. "
       + "Set max/maxValue to null for automatic maximum. "
       + "FILTERABLE_TABLE: columns, an array of {column, filter, render} objects replacing all previous column scripts; "
@@ -174,8 +210,9 @@ public class CellTools {
   }
 
   @Tool("Duplicates a current-view chart or table cell with an independent copy of its options and geometry. "
-      + "Preserves the script, visualization and size; places the copy below existing cells. "
-      + "Does not execute the script. Returns the new cell ID.")
+      + "Preserves the script, info, visualization and size; places the copy below existing cells. "
+      + "Does not execute the script. Returns the new cell ID. "
+      + "Update the info of the copy with updateCell once its script is changed to show something else.")
   public String duplicateCell(@P("Source cell ID from the current view") long cellId,
       @P("Display name for the copy") String name) {
     CellConfig source = find(cellId);
@@ -198,7 +235,7 @@ public class CellTools {
         || !Double.isFinite(height) || height != Math.rint(height) || height < 3 || y + height > Integer.MAX_VALUE) {
       return "Cannot duplicate cell: geometry is outside the grid bounds.";
     }
-    CellConfig copy = DashboardModuleManager.cellConfigBuilder().name(name.trim())
+    CellConfig copy = DashboardModuleManager.cellConfigBuilder().name(name.trim()).info(source.getInfo())
         .viz(source.getViz()).data(source.getData()).extra(CellOptions.build(source.getViz(), options))
         .position(DashboardModuleManager.dashboardModulePositionBuilder().x(0.0).y(y).build().get())
         .size(DashboardModuleManager.dashboardModuleSizeBuilder().width(width).height(height).build().get())
@@ -320,6 +357,7 @@ public class CellTools {
     printer.beginObject();
     printer.member("id", cell.getGemId());
     printer.member("name", cell.getName());
+    printer.member("info", cell.getInfo());
     printer.member("viz", cell.getViz().name());
     printer.member("data", cell.getData());
     // TILE cells can be inspected, although interpreter tools currently do not support them.
