@@ -27,8 +27,7 @@ component CellDisplay(
     // set while the data of this display is interpreted
     boolean loading = false,
     // receives the local date and time the shown data was retrieved at (optional, e.g. not used by the CellDialog)
-    Event<String> dataRetrieved
-    CellConfig cell,
+    Event<String> dataRetrieved,
     // why the last filter set in a FILTERABLE_TABLE was rejected, "" if it was applied
     String filterError = ""
     ){
