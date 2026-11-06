@@ -11,13 +11,17 @@ public class UMLPAssociationNameLenghtTest extends AbstractUMLPTest {
   @Test
   public void testInvalid() {
     UMLPCoCoChecker checker = new UMLPCoCoChecker();
-    checker.addCoCo(new UMLPAssociationNameLength());
-    ASTCDCompilationUnit ast = parse("cocoinvalid/CDAssociationNameLengthToLongCase.umlp");
+    checker.addCoCo(new PostgresTableNameLengthCoCo());
+    ASTCDCompilationUnit ast = parse("cocoinvalid/CDNameLengthToLongCase.umlp");
     runAfterParseTrafo(ast);
-    runDefaultTrafos(ast);
     createSymTab(ast);
+    runDefaultTrafos(ast);
+    recreateSymbolTable(ast);
+
     checker.checkAll(ast);
 
-    assertTrue(Log.getFindings().getFirst().getMsg().startsWith(UMLPAssociationNameLength.ERROR_CODE));
+    System.out.println(Log.getFindings());
+
+    assertTrue(Log.getFindings().getFirst().getMsg().startsWith(PostgresTableNameLengthCoCo.ERROR_CODE));
   }
 }
