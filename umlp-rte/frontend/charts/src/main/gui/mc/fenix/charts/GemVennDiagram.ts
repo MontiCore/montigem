@@ -2,6 +2,8 @@
 
 import { Component, ChangeDetectionStrategy,EventEmitter, Input, Output } from '@angular/core';
 import { config, GemVennDiagramComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemVennDiagramComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import * as d3 from 'd3';
 import * as venn from 'venn.js';
 import { GemVennDiagramData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemvenndiagramtypes/GemVennDiagramData';
@@ -36,7 +38,7 @@ export class GemVennDiagram extends GemVennDiagramComponent {
   public legendColors: string[] = [];
 
   /** defines the position of the legend */
-  public legendPosition: string;
+  public legendSide: LegendSide = 'right';
 
   /**variable that enables or disables the legend */
   public displayLegend = true;
@@ -158,13 +160,15 @@ export class GemVennDiagram extends GemVennDiagramComponent {
     this.onClick.emit(intersection.sets);
   }
 
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    super.setLegendPosition(toLegendPosition(legendPosition));
+    this.legendSide = legendPosition;
   }
 
   /** changes container style depending on legend position */
   public changeContainer() {
-    switch (this.legendPosition) {
+    switch (this.legendSide) {
       case 'left':
         return 'wholeChartWithLegendLeftContainer';
       case 'top':

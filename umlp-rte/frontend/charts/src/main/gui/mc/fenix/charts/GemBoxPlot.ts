@@ -14,6 +14,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemBoxPlotComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemBoxPlotComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemBoxPlotData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemboxplottypes/GemBoxPlotData';
 import { autoColors } from './colors';
 import { GemChartOptions } from './GemChartOptions';
@@ -56,7 +58,7 @@ export class GemBoxPlot extends GemBoxPlotComponent implements OnInit, AfterView
   public labels: string[] = [];
   public displayLegend = true;
 
-  public legendPosition: string = 'right';
+  public legendSide: LegendSide = 'right';
   private resizeObserver!: ResizeObserver;
   private lastWidth: number = 0;
   private lastHeight: number = 0;
@@ -346,8 +348,10 @@ export class GemBoxPlot extends GemBoxPlotComponent implements OnInit, AfterView
     };
   }
 
-  public setLegendPosition(legendPosition: any) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    super.setLegendPosition(toLegendPosition(legendPosition));
+    this.legendSide = legendPosition;
     this._layout.showlegend = this.displayLegend;
     const baseMargin = { t: this.topMargin, b: this.bottomMargin, l: this.leftMargin, r: this.rightMargin };
 

@@ -13,6 +13,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemSunburstChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemSunburstChartComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemSunburstData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemsunburstcharttypes/GemSunburstData';
 import { GemSunburstDataBuilder } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemsunburstcharttypes/GemSunburstDataBuilder';
 import { GemSunburstEntry } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemsunburstcharttypes/GemSunburstEntry';
@@ -51,7 +53,7 @@ export class GemSunburstChart extends GemSunburstChartComponent implements OnIni
   public subEntries: GemSunburstData[] = [];
   public scaler = 1;
 
-  public legendPosition: string = 'bottom';
+  public legendSide: LegendSide = 'bottom';
   public displayLegend = true;
   @Input() public showInChartLabels: boolean = false;
   @Input() public showMainPageInChartLabels: boolean = false;
@@ -326,14 +328,16 @@ export class GemSunburstChart extends GemSunburstChartComponent implements OnIni
     }
   }
 
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    super.setLegendPosition(toLegendPosition(legendPosition));
+    this.legendSide = legendPosition;
     this.updatePlot();
     this.cdr.detectChanges();
   }
 
   public changeContainer() {
-    switch (this.legendPosition) {
+    switch (this.legendSide) {
       case 'left':
         return 'wholeChartWithLegendLeftContainer';
       case 'top':

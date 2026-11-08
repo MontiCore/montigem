@@ -3,6 +3,7 @@ package mc.fenix.charts;
 
 import mc.fenix.charts.GemRadarChartTypes.GemRadarChartData;
 import java.util.Optional;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   A radar chart is a way of showing multiple data points and the variation between them.
@@ -64,5 +65,7 @@ component GemRadarChart(
     /**
       Opacity of the fill color (0.0 to 1.0).
     */
-    Optional<Double> opacity
+    Optional<Double> opacity,
+    /** Position of the legend relative to the plot (default: BOTTOM). */
+    LegendPosition legendPosition
 )

@@ -6,10 +6,12 @@ import mc.fenix.charts.GemPieChart;
 
 import Domain.App;
 import Domain.Person;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemBarChartFromCommandCopy(List<Person> persons, App app, String myStringValue = "default")
 {
   barchart@GemBarChart(
+    legendPosition = LegendPosition.RIGHT,
     data = app.getBarChart(persons, myStringValue),
     stacked = false,
     maxValue = 10,
@@ -17,6 +19,7 @@ page GemBarChartFromCommandCopy(List<Person> persons, App app, String myStringVa
     showConfig = true
   );
   piechart@GemPieChart(
+    legendPosition = LegendPosition.BOTTOM,
     data = app.getPieChart(persons, myStringValue),
     showConfig = true
   );

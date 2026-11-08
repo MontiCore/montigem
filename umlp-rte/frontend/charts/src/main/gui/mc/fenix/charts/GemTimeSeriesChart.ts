@@ -1,6 +1,8 @@
 /* (c) https://github.com/MontiCore/monticore */
 import {Component, ChangeDetectionStrategy,ElementRef, ViewChild, AfterViewInit, OnDestroy, HostBinding, Input} from '@angular/core';
 import {GemTimeSeriesChartComponent, config} from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemTimeSeriesChartComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import ApexCharts from 'apexcharts';
 import { TimeSeriesData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeriesData';
 import { TimeSeries } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeries';
@@ -42,7 +44,7 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
 
   // chosen in the settings menu
   public chartStyle: 'area' | 'line' = null;
-  public legendPosition: 'top' | 'right' | 'bottom' | 'left' = 'bottom';
+  public legendSide: LegendSide = 'bottom';
 
   constructor(private hostElement: ElementRef) {
     super();
@@ -89,7 +91,7 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
       // distinguishable (a full-opacity area fill turns them into one blob)
       stroke: { curve: 'smooth', width: 2 },
       fill: this.fillFor(chartType),
-      legend: { position: this.legendPosition },
+      legend: { position: this.legendSide },
       chart: {
         id: this.chartId,
         type: chartType,
@@ -469,8 +471,10 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
     this.chart.updateOptions({ chart: { type: chartType }, fill: this.options.fill }, false, false);
   }
 
-  public setLegendPosition(legendPosition: 'top' | 'right' | 'bottom' | 'left') {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    super.setLegendPosition(toLegendPosition(legendPosition));
+    this.legendSide = legendPosition;
     if (!this.chart) return;
     this.options.legend = { position: legendPosition };
     this.chart.updateOptions({ legend: { position: legendPosition } }, false, false);

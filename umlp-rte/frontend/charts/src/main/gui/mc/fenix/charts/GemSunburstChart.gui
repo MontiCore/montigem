@@ -3,6 +3,7 @@ package mc.fenix.charts;
 
 import mc.fenix.charts.GemSunburstChartTypes.GemSunburstData;
 import mc.fenix.charts.GemSunburstChartTypes.GemSDNshort;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   Sunburst charts look like pie charts with multiple layers. Each of them refines
@@ -28,6 +29,8 @@ component GemSunburstChart (
   /** Whether errors in the input data are ignored instead of raised. */
   Boolean ignoreError,
   /** Whether the chart's configuration panel is shown. */
-  boolean showConfig = false
+  boolean showConfig = false,
+  /** Position of the legend relative to the plot (default: BOTTOM). */
+  LegendPosition legendPosition
 )
 

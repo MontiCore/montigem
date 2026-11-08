@@ -3,6 +3,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemLineChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemLineChartComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemLineChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemlinecharttypes/GemLineChartData';
 import { autoColors } from './colors';
 import { GemChartOptions } from './GemChartOptions';
@@ -41,7 +43,7 @@ export class GemLineChart extends GemLineChartComponent implements OnInit, After
   public labels: string[] = [];
   public plotlyData: any[] = [];
   public displayLegend = true;
-  public legendPosition: string = 'right';
+  public legendSide: LegendSide = 'right';
   public _enableBackgroundColor = false;
 
   public _maxValue: number | undefined = undefined;
@@ -175,7 +177,7 @@ export class GemLineChart extends GemLineChartComponent implements OnInit, After
 
   public ngOnInit(): void {
     super.ngOnInit();
-    this.applyLegendPosition(this.legendPosition);
+    this.applyLegendPosition(this.legendSide);
     this.updateAxisBounds();
   }
 
@@ -189,8 +191,10 @@ export class GemLineChart extends GemLineChartComponent implements OnInit, After
     }
   }
 
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    super.setLegendPosition(toLegendPosition(legendPosition));
+    this.legendSide = legendPosition;
     this.applyLegendPosition(legendPosition);
     this.updatePlot();
     this.cdr.detectChanges();

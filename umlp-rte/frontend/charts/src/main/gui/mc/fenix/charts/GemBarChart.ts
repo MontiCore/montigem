@@ -3,13 +3,14 @@
 import { Component, Input, OnInit, ChangeDetectionStrategy, ElementRef, AfterViewInit, OnDestroy, ChangeDetectorRef, ViewChild, HostBinding } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemBarChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemBarChartComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
 import { GemBarChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gembarcharttypes/GemBarChartData';
 import { autoColors } from './colors';
 import { GemChartOptions } from './GemChartOptions';
 import { PlotlyModule } from 'angular-plotly.js';
 import * as Plotly from 'plotly.js-dist-min';
 import { setupResizeObserver } from './ResizeObserverUtil';
-import { fitsSideLegend, topLegendFallback } from './LegendLayout';
+import { fitsSideLegend, topLegendFallback, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemListUtil } from '@umlp/commonj2ts';
 
 PlotlyModule.plotlyjs = Plotly;
@@ -35,7 +36,7 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
   @ViewChild('innerContainer') innerContainer!: ElementRef;
   @ViewChild('outerContainer') outerContainer!: ElementRef;
 
-  public legendPosition: string = 'right';
+  public legendSide: LegendSide = 'right';
   private resizeObserver!: ResizeObserver;
   private lastWidth: number = 0;
   // true while a side legend is shown above the plot because the chart is too narrow
@@ -323,8 +324,10 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
     };
   }
 
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    super.setLegendPosition(toLegendPosition(legendPosition));
+    this.legendSide = legendPosition;
     this.legendFallback = false;
     this.applyLegendPosition(legendPosition);
     if (this.lastWidth > 0) {
@@ -340,7 +343,7 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
    */
   private applyLegendFallback(width: number) {
     const names = this.plotlyData.map(trace => trace.name);
-    const sideLegend = this.legendPosition === 'left' || this.legendPosition === 'right';
+    const sideLegend = this.legendSide === 'left' || this.legendSide === 'right';
     if (this.displayLegend && sideLegend && names.length > 0 && !fitsSideLegend(names, width)) {
       const fallback = topLegendFallback(names, width, this._layout.margin.l, this._layout.margin.r);
       this._layout.legend = fallback.legend;
@@ -348,7 +351,7 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
       this.legendFallback = true;
     } else if (this.legendFallback) {
       this.legendFallback = false;
-      this.applyLegendPosition(this.legendPosition);
+      this.applyLegendPosition(this.legendSide);
     }
   }
 

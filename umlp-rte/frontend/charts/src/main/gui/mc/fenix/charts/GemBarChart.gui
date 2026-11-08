@@ -2,6 +2,7 @@
 package mc.fenix.charts;
 
 import mc.fenix.charts.GemBarChartTypes.GemBarChartData;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   A bar chart displays a value for each category as a rectangular bar, either
@@ -29,5 +30,7 @@ component GemBarChart(
   /** Minimum value shown on the value axis. */
   Integer minValue,
   /** Whether the chart's configuration panel is shown. */
-  boolean showConfig = false
+  boolean showConfig = false,
+  /** Position of the legend relative to the plot (default: RIGHT). */
+  LegendPosition legendPosition
 )

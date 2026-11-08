@@ -7,6 +7,7 @@ import mc.fenix.charts.GemTimelineChartTypes.Timeline;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   A timeline chart visualizes one or more series of time-bound blocks (e.g. tasks or
@@ -33,5 +34,7 @@ component GemTimelineChart (
   /** Height of the component in `px`, `%`, `vh`, etc. */
   String height = "350px",
   /** Whether the chart's configuration panel is shown. */
-  boolean showConfig = false
+  boolean showConfig = false,
+  /** Position of the legend relative to the plot (default: RIGHT). LEFT is shown as RIGHT, since the lane labels occupy the left side. */
+  LegendPosition legendPosition
 )

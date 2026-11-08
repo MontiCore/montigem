@@ -1,0 +1,17 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.charts;
+
+/**
+ * Types shared by several chart components.
+ */
+<<pojoCD>>
+classdiagram GemChartTypes {
+
+  /**
+   * Position of a chart's legend relative to the plot.
+   */
+  public enum LegendPosition {
+    LEFT, TOP, RIGHT, BOTTOM;
+  }
+
+}

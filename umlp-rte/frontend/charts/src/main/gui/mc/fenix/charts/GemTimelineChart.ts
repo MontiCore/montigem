@@ -13,12 +13,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemTimelineChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemTimelineChartComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
 import { TimelineData } from "../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimelinecharttypes/TimelineData";
 import { Timeline } from "../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimelinecharttypes/Timeline";
 import { GemListUtil } from '@umlp/commonj2ts';
 import { autoColors } from './colors';
 import { GemChartOptions } from './GemChartOptions';
-import { fitsSideLegend, topLegendFallback } from './LegendLayout';
+import { fitsSideLegend, topLegendFallback, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { PlotlyModule } from 'angular-plotly.js';
 import * as Plotly from 'plotly.js-dist-min';
 import { setupResizeObserver } from './ResizeObserverUtil';
@@ -96,7 +97,7 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
   private traceBlockMap: Map<number, any[]> = new Map();
 
   public displayLegend: boolean = true;
-  public legendPosition: string = 'right';
+  public legendSide: LegendSide = 'right';
   private lastWidth: number = 0;
   // true while the right legend is shown above the plot because the chart is too narrow
   private legendFallback: boolean = false;
@@ -242,7 +243,7 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
   public set hideLegend(hideLegend: boolean) {
     this.setHideLegend(hideLegend);
     this.displayLegend = hideLegend !== true;
-    this.applyLegendPosition(this.legendPosition);
+    this.applyLegendPosition(this.legendSide);
     this.updatePlot();
   }
 
@@ -250,8 +251,12 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
     this.hideLegend = this.displayLegend;
   }
 
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const requested = toLegendSide(position, this.legendSide);
+    // no 'left' position: the lane labels of the y-axis occupy that side
+    const legendPosition: LegendSide = requested === 'left' ? 'right' : requested;
+    super.setLegendPosition(toLegendPosition(legendPosition));
+    this.legendSide = legendPosition;
     this.legendFallback = false;
     this.applyLegendPosition(legendPosition);
     if (this.lastWidth > 0) {
@@ -266,7 +271,7 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
    */
   private applyLegendFallback(width: number) {
     const names = this.plotlyData.map(trace => trace.name);
-    if (this.displayLegend && this.legendPosition === 'right' && names.length > 0 && !fitsSideLegend(names, width)) {
+    if (this.displayLegend && this.legendSide === 'right' && names.length > 0 && !fitsSideLegend(names, width)) {
       const margin = { t: 30, b: 60, l: 80, r: 30 };
       const fallback = topLegendFallback(names, width, margin.l, margin.r);
       margin.t += fallback.height;
@@ -276,7 +281,7 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
       this.legendFallback = true;
     } else if (this.legendFallback) {
       this.legendFallback = false;
-      this.applyLegendPosition(this.legendPosition);
+      this.applyLegendPosition(this.legendSide);
     }
   }
 
