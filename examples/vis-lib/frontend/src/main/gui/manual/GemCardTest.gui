@@ -1,0 +1,88 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import mc.fenix.arrange.GemCard;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemText;
+import mc.fenix.charts.GemPieChart;
+
+/**
+  Test page for the size and collapse behaviour of GemCard, used by
+  domain.e2e.GemCardE2ETest.
+*/
+page GemCardTest() {
+  @GemColumn(rowGap = "10px", components = [
+
+    // fixed sizes and collapsing: cards below a collapsed card move up
+    @GemRow(colGap = "10px", hAlign = "space-evenly", vAlign = "top", components = [
+      @GemColumn(width = "45%", rowGap = "10px", components = [
+        fixedCard@GemCard(
+          height = "250px",
+          title = "Fixed size (45% x 250px)",
+          component = @GemColumn(height = "100%", vAlign = "space-between", components = [
+            @GemText(value = "Top of the card body."),
+            @GemText(value = "Bottom of the card body: the content fills the height set on the card.")
+          ])
+        ),
+        @GemCard(
+          height = "120px",
+          title = "Fixed size (120px)",
+          component = @GemText(value = "Stays in place, the card above is not collapsible.")
+        )
+      ]),
+      @GemColumn(width = "45%", rowGap = "10px", components = [
+        collapsibleCard@GemCard(
+          height = "250px",
+          title = "Fixed size, collapsible",
+          collapsible = true,
+          component = @GemColumn(height = "100%", vAlign = "space-between", components = [
+            @GemText(value = "Top of the card body."),
+            @GemText(value = "The height applies when expanded. Collapsed, only the header is shown.")
+          ])
+        ),
+        cardBelow@GemCard(
+          height = "120px",
+          title = "Card below",
+          component = @GemText(value = "Moves up when the card above is collapsed.")
+        ),
+        @GemCard(
+          title = "Another card below",
+          collapsible = true,
+          component = @GemText(value = "Moves up as well. This one can be collapsed too.")
+        )
+      ])
+    ]),
+
+    // relative size: the card fills its parent container
+    @GemColumn(height = "300px", components = [
+      percentCard@GemCard(
+        width = "100%",
+        height = "100%",
+        title = "Relative size (100% x 100% of a 300px container)",
+        collapsible = true,
+        component = @GemColumn(height = "100%", vAlign = "space-between", components = [
+          @GemText(value = "Top of the card body."),
+          @GemText(value = "Bottom of the card body: the card fills the 300px of its parent container. Collapsed, only the header is shown.")
+        ])
+      )
+    ]),
+
+    // charts: the chart takes the size of its card
+    @GemRow(colGap = "10px", hAlign = "space-evenly", vAlign = "top", components = [
+      chartCard@GemCard(
+        width = "45%",
+        height = "400px",
+        title = "Chart in a card (45% x 400px)",
+        component = @GemPieChart(data = getPieChartData())
+      ),
+      @GemCard(
+        width = "45%",
+        height = "400px",
+        title = "Chart in a collapsible card (45% x 400px)",
+        collapsible = true,
+        component = @GemPieChart(data = getPieChartData())
+      )
+    ])
+  ]);
+}
