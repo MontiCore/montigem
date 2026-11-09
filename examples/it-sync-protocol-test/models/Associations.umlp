@@ -314,4 +314,106 @@ umlp Associations {
   class TypeBoxedPlainOwner;
   class TypeBoxedPlainValue;
   association typeBoxedPlainMap TypeBoxedPlainOwner [Long] -> (byKey) TypeBoxedPlainValue [1];
+
+  // Bidirectional qualified associations, Plain only, see GemMapSyncTestGenerator. Names: <Key><Owner>Plain.
+  //   Owner: One  [1] owner side: a value is in one owner's map, a put into another owner's map moves it
+  //          Opt  [0..1] owner side, the same as [1] (one [[attr]] and one [T] case)
+  //          Many [*] owner side: a value may be in several owners' maps
+  //   The value side is the map's other side, role owner ([1]/[0..1]) or owners ([*]).
+
+  // StrOnePlain
+  class StrOnePlainOwner;
+  class StrOnePlainValue {
+    String key;
+  }
+  association strOnePlainMap [1] StrOnePlainOwner [[key]] (owner) <-> (byKey) StrOnePlainValue [1];
+
+  // StrOptPlain
+  class StrOptPlainOwner;
+  class StrOptPlainValue {
+    String key;
+  }
+  association strOptPlainMap [0..1] StrOptPlainOwner [[key]] (owner) <-> (byKey) StrOptPlainValue [1];
+
+  // StrManyPlain
+  class StrManyPlainOwner;
+  class StrManyPlainValue {
+    String key;
+  }
+  association strManyPlainMap [*] StrManyPlainOwner [[key]] (owners) <-> (byKey) StrManyPlainValue [1];
+
+  // NumOnePlain
+  class NumOnePlainOwner;
+  class NumOnePlainValue {
+    int key;
+  }
+  association numOnePlainMap [1] NumOnePlainOwner [[key]] (owner) <-> (byKey) NumOnePlainValue [1];
+
+  // NumManyPlain
+  class NumManyPlainOwner;
+  class NumManyPlainValue {
+    int key;
+  }
+  association numManyPlainMap [*] NumManyPlainOwner [[key]] (owners) <-> (byKey) NumManyPlainValue [1];
+
+  // ObjOnePlain
+  class ObjOnePlainOwner;
+  class ObjOnePlainValue {
+    MapKey key;
+  }
+  association objOnePlainMap [1] ObjOnePlainOwner [[key]] (owner) <-> (byKey) ObjOnePlainValue [1];
+
+  // ObjManyPlain
+  class ObjManyPlainOwner;
+  class ObjManyPlainValue {
+    MapKey key;
+  }
+  association objManyPlainMap [*] ObjManyPlainOwner [[key]] (owners) <-> (byKey) ObjManyPlainValue [1];
+
+  // RoleOnePlain
+  class RoleOnePlainOwner;
+  class RoleOnePlainValue;
+  association roleOnePlainKey RoleOnePlainValue -> (key) MapKey [1];
+  association roleOnePlainMap [1] RoleOnePlainOwner [[key]] (owner) <-> (byKey) RoleOnePlainValue [1];
+
+  // RoleManyPlain
+  class RoleManyPlainOwner;
+  class RoleManyPlainValue;
+  association roleManyPlainKey RoleManyPlainValue -> (key) MapKey [1];
+  association roleManyPlainMap [*] RoleManyPlainOwner [[key]] (owners) <-> (byKey) RoleManyPlainValue [1];
+
+  // TypeStrOnePlain
+  class TypeStrOnePlainOwner;
+  class TypeStrOnePlainValue;
+  association typeStrOnePlainMap [1] TypeStrOnePlainOwner [String] (owner) <-> (byKey) TypeStrOnePlainValue [1];
+
+  // TypeStrManyPlain
+  class TypeStrManyPlainOwner;
+  class TypeStrManyPlainValue;
+  association typeStrManyPlainMap [*] TypeStrManyPlainOwner [String] (owners) <-> (byKey) TypeStrManyPlainValue [1];
+
+  // TypeNumOnePlain
+  class TypeNumOnePlainOwner;
+  class TypeNumOnePlainValue;
+  association typeNumOnePlainMap [1] TypeNumOnePlainOwner [int] (owner) <-> (byKey) TypeNumOnePlainValue [1];
+
+  // TypeNumManyPlain
+  class TypeNumManyPlainOwner;
+  class TypeNumManyPlainValue;
+  association typeNumManyPlainMap [*] TypeNumManyPlainOwner [int] (owners) <-> (byKey) TypeNumManyPlainValue [1];
+
+  // TypeObjOnePlain
+  class TypeObjOnePlainOwner;
+  class TypeObjOnePlainValue;
+  association typeObjOnePlainMap [1] TypeObjOnePlainOwner [MapKey] (owner) <-> (byKey) TypeObjOnePlainValue [1];
+
+  // TypeObjOptPlain
+  class TypeObjOptPlainOwner;
+  class TypeObjOptPlainValue;
+  association typeObjOptPlainMap [0..1] TypeObjOptPlainOwner [MapKey] (owner) <-> (byKey) TypeObjOptPlainValue [1];
+
+  // TypeObjManyPlain
+  class TypeObjManyPlainOwner;
+  class TypeObjManyPlainValue;
+  association typeObjManyPlainMap [*] TypeObjManyPlainOwner [MapKey] (owners) <-> (byKey) TypeObjManyPlainValue [1];
 }

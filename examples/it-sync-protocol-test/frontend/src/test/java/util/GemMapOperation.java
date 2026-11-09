@@ -15,5 +15,7 @@ public enum GemMapOperation {
   REPLACE,
   DELETE_OBJECT,
   DELETE_OWNER,
-  DELETE_KEY
+  DELETE_KEY,
+  MOVE_OWNER,
+  SET_OWNER
 }
