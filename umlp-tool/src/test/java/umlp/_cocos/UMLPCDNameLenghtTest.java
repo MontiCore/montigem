@@ -29,8 +29,6 @@ public class UMLPCDNameLenghtTest extends AbstractUMLPTest {
 
     checker.checkAll(ast);
 
-    System.out.println(Log.getFindings());
-
     assertTrue(Log.getFindings().getFirst().getMsg().startsWith(PostgresTableNameLengthCoCo.ERROR_CODE));
   }
 }
