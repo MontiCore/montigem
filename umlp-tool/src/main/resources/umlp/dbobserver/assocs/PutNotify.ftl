@@ -3,7 +3,7 @@
      (keyDerived) do not store the key, it is derived from the value when loading; type qualified ones store it with
      the pair (a value moved to another key of the owner updates the key of its pair) -->
 ${tc.signature("cdName","className","assocName","assocSide", "otherClassName", "keyType", "keyDerived")}
-${cd4c.method("public void notifyPut${assocSide.getName()?cap_first}(${otherClassName} ${otherClassName?uncap_first}, ${keyType} key, long valueGemId)")}
+${cd4c.method("public void notifyPut${assocSide.getName()?cap_first}(${otherClassName} ${otherClassName?uncap_first}, ${keyType} key, long valueGemId, long oldOwnerGemId)")}
 <#assign method><#if keyDerived>add<#else>put</#if></#assign>
 <#assign keyArg><#if keyDerived>-1<#else>key</#if></#assign>
 <#if assocSide.isLeft()>
