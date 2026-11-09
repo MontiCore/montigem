@@ -112,7 +112,8 @@ public class PutDecorator extends AddDecorator {
         getPackageName(origCD, COMMAND_PACKAGE), valueIdName, key.getStoredKeyType(), getKeyFields(), hasOldValue(a), hasOldOwner(a));
     addDoAction(ast, origCD, a, domainType, key);
     addCheckAccessPolicy(ast, domainType, a);
-    getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), getEffectedGemIds(a));
+    getCD4C().addMethod(ast, "umlp.commands.put.GetEffectedGemIds", getEffectedGemIds(a),
+        getOptionalEffectedGemIds(a));
 
     addImports(origCD, domainType, ast);
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandManager"));
@@ -142,15 +143,23 @@ public class PutDecorator extends AddDecorator {
   /**
    * @return the effected objects. Unidirectional: the owner only, only the participants that loaded the owner have
    * the map. The value must not be included: sending the command subscribes the receivers to the effected objects, so
-   * they would receive (and load) the value with its next setter command. Bidirectional: the value and the replaced
-   * value as well, their other side changes, and the old owner of a single owner, whose map loses the value (like a
-   * bidirectional association, whose commands name both sides)
+   * they would receive (and load) the value with its next setter command. Bidirectional: the value as well, its other
+   * side changes (like a bidirectional association, whose commands name both sides); see also
+   * {@link #getOptionalEffectedGemIds}
    */
   protected List<String> getEffectedGemIds(ASTCDAssocSide a) {
     if (GenService.getOtherSideOfMap(a).isEmpty()) {
       return Lists.newArrayList("gemId");
     }
-    List<String> ids = Lists.newArrayList("gemId", a.getName() + "GemId");
+    return Lists.newArrayList("gemId", a.getName() + "GemId");
+  }
+
+  /**
+   * @return the effected objects that may be absent (-1), included only if present (put/GetEffectedGemIds): the
+   * replaced value, whose other side changes, and the old owner of a single owner, whose map loses the value
+   */
+  protected List<String> getOptionalEffectedGemIds(ASTCDAssocSide a) {
+    List<String> ids = Lists.newArrayList();
     if (hasOldValue(a)) {
       ids.add("oldValueGemId");
     }
