@@ -195,4 +195,20 @@ classdiagram LoadingTests {
 
   // GemValueMap, type qualified with long keys: the browser represents them exactly only up to 2^53-1
   association Course [long] (phoneCourse) -> (studentByPhone) Student [1];
+
+  // Bidirectional qualified associations: the value side is the map's other side
+  class Club {
+    String label;
+  }
+
+  class Member {
+    String code;
+    String label;
+  }
+
+  // one club per member: a put into another club's map moves the member; the member side can be set
+  association [0..1] Club [[code]] (club) <-> (memberByCode) Member [1];
+
+  // several clubs per member, each with its own key (a role); the member side is read-only
+  association [*] Club [String] (clubs) <-> (memberByRole) Member [1];
 }
