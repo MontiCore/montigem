@@ -13,6 +13,7 @@ import resources.exectests.NestedFlatMapElement;
 import resources.exectests.NestedFlatMapElementSource;
 import resources.exectests.NestedFlatMapRuntimeCheck;
 import resources.exectests.OptionalAdapterRuntimeCheck;
+import resources.exectests.StaticCollectionConstructorRuntimeCheck;
 import resources.exectests.StringSplitRuntimeCheck;
 import resources.exectests.UtilArraysRuntimeCheck;
 import util.ExecTestRunner;
@@ -67,6 +68,12 @@ public class ExecutionTests {
   @Test
   public void testMap() {
     ExecTestRunner.runExecutionTest(MapRuntimeCheck.class);
+  }
+
+  /** a method whose only async call is the constructor of a JDK collection becomes async */
+  @Test
+  public void testStaticCollectionConstructor() {
+    ExecTestRunner.runExecutionTest(StaticCollectionConstructorRuntimeCheck.class);
   }
 
   @Test
