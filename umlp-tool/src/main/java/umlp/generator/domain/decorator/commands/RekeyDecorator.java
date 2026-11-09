@@ -46,6 +46,14 @@ public class RekeyDecorator extends PutDecorator {
   }
 
   /**
+   * a rekey moves a value within its owner's map: nothing is replaced (a taken key refuses it)
+   */
+  @Override
+  protected boolean hasOldValue(ASTCDAssocSide a) {
+    return false;
+  }
+
+  /**
    * a rekey moves a value within its owner's map: no other owner is involved
    */
   @Override
