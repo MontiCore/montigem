@@ -54,5 +54,5 @@ for (${sourceName}Observer obs : ${sourceName?uncap_first}Observers) {
   if (oldID != null) {
     obs.maybeNotifyRemove${name?cap_first}((${sourceName}) this, oldID, -1, removeScope);
   }
-  obs.maybeNotifyPut${name?cap_first}((${sourceName}) this, key, o.getGemId(), oldOwnerID, scope);
+  obs.maybeNotifyPut${name?cap_first}((${sourceName}) this, key, o.getGemId(), oldID != null ? oldID : -1, oldOwnerID, scope);
 }

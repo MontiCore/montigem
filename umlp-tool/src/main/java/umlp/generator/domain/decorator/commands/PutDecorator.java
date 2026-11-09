@@ -100,13 +100,16 @@ public class PutDecorator extends AddDecorator {
     for (String keyField : getKeyFields()) {
       fields.add(getCD4C().addAttribute(ast, "protected " + key.getStoredKeyType() + " " + keyField));
     }
+    if (hasOldValue(a)) {
+      fields.add(getCD4C().addAttribute(ast, "protected long oldValueGemId"));
+    }
     if (hasOldOwner(a)) {
       fields.add(getCD4C().addAttribute(ast, "protected long oldOwnerGemId"));
     }
     fields.forEach(f -> ast.addAllCDMembers(accessor.decorate(f)));
 
     getCD4C().addConstructor(ast, "umlp.commands.put.Constructor", classname,
-        getPackageName(origCD, COMMAND_PACKAGE), valueIdName, key.getStoredKeyType(), getKeyFields(), hasOldOwner(a));
+        getPackageName(origCD, COMMAND_PACKAGE), valueIdName, key.getStoredKeyType(), getKeyFields(), hasOldValue(a), hasOldOwner(a));
     addDoAction(ast, origCD, a, domainType, key);
     addCheckAccessPolicy(ast, domainType, a);
     getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), getEffectedGemIds(a));
@@ -121,6 +124,14 @@ public class PutDecorator extends AddDecorator {
   }
 
   /**
+   * @return whether the command names the value the put replaced: a put of a bidirectional association changes the
+   * replaced value's other side
+   */
+  protected boolean hasOldValue(ASTCDAssocSide a) {
+    return GenService.getOtherSideOfMap(a).isPresent();
+  }
+
+  /**
    * @return whether the command names the owner the value left: a put of a bidirectional association with a single
    * owner moves the value (see GenService#hasSingleOwner)
    */
@@ -131,15 +142,18 @@ public class PutDecorator extends AddDecorator {
   /**
    * @return the effected objects. Unidirectional: the owner only, only the participants that loaded the owner have
    * the map. The value must not be included: sending the command subscribes the receivers to the effected objects, so
-   * they would receive (and load) the value with its next setter command. Bidirectional: the value as well, its other
-   * side changes, and the old owner of a single owner, whose map loses the value (like a bidirectional association,
-   * whose commands name both sides)
+   * they would receive (and load) the value with its next setter command. Bidirectional: the value and the replaced
+   * value as well, their other side changes, and the old owner of a single owner, whose map loses the value (like a
+   * bidirectional association, whose commands name both sides)
    */
   protected List<String> getEffectedGemIds(ASTCDAssocSide a) {
     if (GenService.getOtherSideOfMap(a).isEmpty()) {
       return Lists.newArrayList("gemId");
     }
     List<String> ids = Lists.newArrayList("gemId", a.getName() + "GemId");
+    if (hasOldValue(a)) {
+      ids.add("oldValueGemId");
+    }
     if (hasOldOwner(a)) {
       ids.add("oldOwnerGemId");
     }
@@ -208,9 +222,9 @@ public class PutDecorator extends AddDecorator {
         .setName(cmdName + DE_SER)
         .build();
     getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_FromJsonObject", cmdName, valueIdName,
-        getKeyFields(), QualifierKey.of(a).getStoredKeyJson(), hasOldOwner(a));
+        getKeyFields(), QualifierKey.of(a).getStoredKeyJson(), hasOldValue(a), hasOldOwner(a));
     getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_BuildJson", cmdName, valueIdName, getKeyFields(),
-        hasOldOwner(a));
+        hasOldValue(a), hasOldOwner(a));
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.JsonPrinter");
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.json.JsonObject");
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandDeSer"));

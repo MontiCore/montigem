@@ -173,7 +173,7 @@ public interface OtherSideRoutingDbTest extends QualifiedAssocsTestSetup {
 
     getClients(1).activate();
     assertTrue(CommandManager.executeCommand(
-        new Club_putMemberByCode(club2.getGemId(), anna.getGemId(), "b1", -1)).isSuccessful());
+        new Club_putMemberByCode(club2.getGemId(), anna.getGemId(), "b1", -1, -1)).isSuccessful());
     assertFalse(QualifiedAssocsManager.isLoadedPerson(anna.getGemId()));
     getClients(0).activate();
     assertEquals(0, club1OfClient0.sizeMemberByCodes());
