@@ -265,4 +265,85 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     assertEquals(List.of(), anna._internal_getSponsoredClubsGemList().getIDs());
     assertEquals(0, club.sizeSponsorByDepartments());
   }
+
+  /**
+   * a value of a subclass (Admin extends Person): its inherited other side follows a move, also on a participant that
+   * loaded only the value, and in the database
+   */
+  @Test
+  default void testOtherSideOfSubclassValue() {
+    getBackend().activate();
+    var club = club();
+    var other = club();
+    var admin = QualifiedAssocsManager.adminBuilder().login("root").number(7).build().get();
+    club.putMemberByCode("a1", admin);
+    assertEquals(club.getGemId(), clubId(admin));
+    getClients(0).activate();
+    var clientAdmin = QualifiedAssocsManager.getAdminSure(admin.getGemId());
+    assertEquals(club.getGemId(), clubId(clientAdmin));
+
+    getBackend().activate();
+    other.putMemberByCode("b1", admin);
+    assertEquals(0, club.sizeMemberByCodes());
+    assertEquals(other.getGemId(), clubId(admin));
+    getClients(0).activate();
+    assertEquals(other.getGemId(), clubId(clientAdmin));
+
+    getBackend().activate();
+    QualifiedAssocsManager.TESTING_clearCache();
+    assertEquals(other.getGemId(), clubId(QualifiedAssocsManager.getAdminSure(admin.getGemId())));
+  }
+
+  /**
+   * an owner of a subclass (Team extends Club) has the inherited maps: a put into a club's map takes the value out of
+   * the team's, deleting the team clears the other side of its values
+   */
+  @Test
+  default void testOtherSideOfSubclassOwner() {
+    getBackend().activate();
+    var club = club();
+    var team = QualifiedAssocsManager.teamBuilder().build().get();
+    var anna = person("anna", 1);
+    team.putMemberByCode("t1", anna);
+    assertEquals(team.getGemId(), clubId(anna));
+
+    club.putMemberByCode("c1", anna);
+    assertEquals(0, team.sizeMemberByCodes());
+    assertEquals(club.getGemId(), clubId(anna));
+
+    team.putMemberByCode("t1", anna);
+    assertEquals(0, club.sizeMemberByCodes());
+    assertTrue(QualifiedAssocsManager.deleteTeam(team.getGemId()));
+    assertEquals(-1, clubId(anna));
+
+    QualifiedAssocsManager.TESTING_clearCache();
+    assertEquals(-1, clubId(QualifiedAssocsManager.getPersonSure(anna.getGemId())));
+  }
+
+  /**
+   * a club that is not loaded holds a person as a key and as a value (the key type is the value type): deleting the
+   * person loads the club before both entries are removed, the value's other side of the first entry follows
+   */
+  @Test
+  default void testDeletionAsKeyAndValueWithOwnerNotLoaded() {
+    getBackend().activate();
+    var club = club();
+    var anna = person("anna", 1);
+    var bob = person("bob", 2);
+    var carl = person("carl", 3);
+    club.putMenteeByMentor(anna, bob);
+    club.putMenteeByMentor(carl, anna);
+    QualifiedAssocsManager.TESTING_clearCache();
+    var loadedBob = QualifiedAssocsManager.getPersonSure(bob.getGemId());
+    assertEquals(club.getGemId(), loadedBob.getMentorClubGem().getGemId());
+    assertFalse(QualifiedAssocsManager.isLoadedClub(club.getGemId()));
+
+    assertTrue(QualifiedAssocsManager.deletePerson(anna.getGemId()));
+    var loadedClub = QualifiedAssocsManager.getClubSure(club.getGemId());
+    assertEquals(0, loadedClub.sizeMenteeByMentors());
+    assertEquals(-1, loadedBob.getMentorClubGem().getGemId());
+
+    QualifiedAssocsManager.TESTING_clearCache();
+    assertEquals(0, QualifiedAssocsManager.getClubSure(club.getGemId()).sizeMenteeByMentors());
+  }
 }
