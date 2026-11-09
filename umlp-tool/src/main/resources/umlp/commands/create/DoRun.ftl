@@ -3,7 +3,8 @@
      (GenService#getBidirectionalMaps). The object arrives deserialized, so build() left their other side alone: the
      other side of the values loaded here refers to the new object now, like for a bidirectional list; with a single
      owner the server takes the values out of their old owners' maps (with ALL, for the database and the old owners'
-     subscribers, see _internal_put<Role>Id); the participant that built the object did both itself -->
+     subscribers: unlike a put command, the create command does not reach them); the participant that built the object
+     did both itself -->
 ${tc.signature("classname", "managerName", "packagename", "hasOCL", "bidirectionalMaps")}
 ${cd4c.method("public StatusResult doAction()")}
 
@@ -18,7 +19,8 @@ for (long valueID : ${classname?uncap_first}._internal_get${assoc.getName()?cap_
   <#if !genService.isList(otherSide)>
   if (CommandManager.getParticipantId() == 0) {
     ${tc.includeArgs("umlp.methods.gemmap.OtherSideMove", ["valueID", classname?uncap_first + ".getGemId()",
-        assoc.getName(), otherSide.getName(), valueType, valueManager, ownerType, ownerManager, "NotificationScope.ALL"])}
+        assoc.getName(), otherSide.getName(), valueType, valueManager, ownerType, ownerManager, "NotificationScope.ALL",
+        ""])}
   }
   </#if>
   if (${valueManager}.isLoaded${valueType}(valueID)) {

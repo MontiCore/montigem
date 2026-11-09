@@ -560,6 +560,14 @@ public class GenService {
     return Optional.of(map.getSymbol().getOtherSide().getAssocSide());
   }
 
+  /**
+   * whether the GemMap side map belongs to a bidirectional association with a single owner ([1]/[0..1] owner side):
+   * a put moves the value from its old owner's map, so the put command names the old owner as well
+   */
+  public static boolean hasSingleOwner(ASTCDAssocSide map) {
+    return getOtherSideOfMap(map).filter(otherSide -> !isList(otherSide)).isPresent();
+  }
+
   public static boolean isSymbolDerived(ASTCDAssocSide side) {
     return side.getSymbol().getAssoc().getAssociation().getAstNode().getModifier().isDerived();
   }

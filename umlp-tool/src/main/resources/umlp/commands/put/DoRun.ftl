@@ -1,7 +1,16 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-<#-- puts a value into the GemMap of an attribute qualified association under its key -->
-${tc.signature("classname", "managerName", "name", "targettype", "targetTypeManager", "isEntry", "keyType", "warnCode")}
+<#-- puts a value into the GemMap of an attribute qualified association under its key;
+     otherSide: the role of the other side of a bidirectional association (empty otherwise), see OtherSideDoRun -->
+${tc.signature("classname", "managerName", "name", "targettype", "targetTypeManager", "isEntry", "keyType", "warnCode",
+    "otherSide", "otherSideIsList")}
 ${cd4c.method("public StatusResult doAction()")}
+<#if otherSide?has_content>
+${tc.includeArgs("umlp.commands.put.OtherSideDoRun", [classname, managerName, name, otherSide, otherSideIsList, targettype,
+    targetTypeManager])}
+  <#if !otherSideIsList>
+${tc.includeArgs("umlp.commands.put.OldOwner", [name, otherSide, targettype, targetTypeManager])}
+  </#if>
+</#if>
 Optional<${classname}> ${classname?uncap_first}Opt = ${managerName}.${classname?uncap_first}Opt(gemId);
 if (${classname?uncap_first}Opt.isEmpty()) {
   GeneralErrorCollector.reportSyncError();

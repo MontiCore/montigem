@@ -26,12 +26,13 @@ if (oldID != null && CommandManager.getParticipantId() == 0
   Log.error("${errorCode} The object with id " + o.getGemId() + " replaces the object with id " + oldID
       + " under the key " + key + ", which both objects derive: the qualifying attribute is not unique");
 }
+// the value's other owner before this put, -1 if none
+long oldOwnerID = -1;
 <#if otherSideName?has_content && !otherSideIsList>
 if (scope.contains(NotificationScope.LOCAL)) {
-  // a single owner: the value leaves its old owner's map (see _internal_put${name?cap_first}Id)
+  // a single owner: the value leaves its old owner's map, locally (see _internal_put${name?cap_first}Id)
   ${tc.includeArgs("umlp.methods.gemmap.OtherSideMove", ["o.getGemId()", "this.getGemId()", name, otherSideName,
-      targetName, targetManager, ownerType, ownerManager,
-      "CommandManager.getParticipantId() == 0 ? NotificationScope.ALL : NotificationScope.LOCAL"])}
+      targetName, targetManager, ownerType, ownerManager, "NotificationScope.LOCAL", "oldOwnerID"])}
 }
 </#if>
 this._${name}._internal_putValue(o);
@@ -53,5 +54,5 @@ for (${sourceName}Observer obs : ${sourceName?uncap_first}Observers) {
   if (oldID != null) {
     obs.maybeNotifyRemove${name?cap_first}((${sourceName}) this, oldID, -1, removeScope);
   }
-  obs.maybeNotifyPut${name?cap_first}((${sourceName}) this, key, o.getGemId(), scope);
+  obs.maybeNotifyPut${name?cap_first}((${sourceName}) this, key, o.getGemId(), oldOwnerID, scope);
 }

@@ -65,6 +65,10 @@ For MontiGem users:
   `qualifier` (`qualifier_id` for domain class keys), `NOT NULL`; in Neo4j it is the property
   `qualifier` of the relationship. There is no migration: existing tables of type qualified
   associations have to be recreated.
+* **Breaking:** the put notification of a GemMap gets the value's old owner, like a set
+  notification gets the old value: `notifyPut<Role>(owner, key, valueGemId, oldOwnerGemId)`
+  (`-1` unless a bidirectional association with a single owner moved the value). Handwritten
+  observers have to add the parameter.
 
 ## 2026-11-03: 7.10.0-SNAPSHOT
 * Attribute qualified associations become maps (GemMaps), keyed by an attribute or a to-one

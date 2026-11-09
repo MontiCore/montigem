@@ -4,6 +4,7 @@ package umlp.generator.domain.decorator.commands;/* (c) https://github.com/Monti
 import com.google.common.collect.Lists;
 import de.monticore.cd._symboltable.CDSymbolTables;
 import de.monticore.cd.codegen.methods.AccessorDecorator;
+import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
@@ -74,7 +75,7 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
                                                                        a.getSymbol().getType(),
                                                                        c,
                                                                        true,
-                                                                       GenService.isMap(a))));
+                                                                       mapOf(a))));
                       astcdPackage.addCDElement(withOrigin(createDeSer(origCD, a.getName(), getSymType("long"), c, true)));
                     });
     });
@@ -96,7 +97,7 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
               .filter(GenService::isMultiValued)
               .forEach(a -> {
                 astcdPackage.addCDElement(withOrigin(createClass(origCD, a.getName(), a.getSymbol().getType(), c, true,
-                    GenService.isMap(a))));
+                    mapOf(a))));
                 astcdPackage.addCDElement(withOrigin(createDeSer(origCD, a.getName(), getSymType("long"), c, true)));
               });
         });
@@ -104,17 +105,27 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
 
 
   protected ASTCDClass createClass(ASTCDCompilationUnit origCD, String name, SymTypeExpression type, ASTCDType domainClass, boolean isGem) {
-    return createClass(origCD, name, type, domainClass, isGem, false);
+    return createClass(origCD, name, type, domainClass, isGem, Optional.empty());
   }
 
   /**
-   * @param isMap the command removes from the GemMap of an attribute qualified association: it effects the owner only.
-   *              Maps are unidirectional, only the participants that loaded the owner have the map; with the value,
-   *              sending the command would subscribe the receivers to it, so they would receive (and load) the value
-   *              with its next setter command.
+   * @return the side if it is a GemMap
+   */
+  protected Optional<ASTCDAssocSide> mapOf(ASTCDAssocSide a) {
+    return GenService.isMap(a) ? Optional.of(a) : Optional.empty();
+  }
+
+  /**
+   * @param map the GemMap side if the command removes from a GemMap. Unidirectional: it effects the owner only, only
+   *            the participants that loaded the owner have the map; with the value, sending the command would subscribe
+   *            the receivers to it, so they would receive (and load) the value with its next setter command.
+   *            Bidirectional: it effects the value as well, whose other side changes (like a bidirectional
+   *            association, whose commands name both sides).
    */
   protected ASTCDClass createClass(ASTCDCompilationUnit origCD, String name, SymTypeExpression type, ASTCDType domainClass,
-                                   boolean isGem, boolean isMap) {
+                                   boolean isGem, Optional<ASTCDAssocSide> map) {
+    boolean isMap = map.isPresent();
+    Optional<ASTCDAssocSide> otherSide = map.flatMap(GenService::getOtherSideOfMap);
     String classname = domainClass.getName() + SUFFIX
         + StringTransformations.capitalize(name);
     String attrName = isGem ? name + "GemId" : name;
@@ -132,10 +143,12 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
     addConstructor(ast, classname, getPackageName(origCD, COMMAND_PACKAGE),
         attrName, isGem ? "long" : type.print());
 
+    String valueType = isMap ? map.get().getSymbol().getType().print() : "";
     getCD4C().addMethod(ast, getDoRunTemplate(), name, domainClass.getName(), getCorrectManager(domainClass), isGem, name, hasOCL,
-        isMap);
+        isMap, otherSide.map(ASTCDAssocSide::getName).orElse(""), otherSide.map(GenService::isList).orElse(false),
+        valueType, isMap ? GenService.getManagerOfType(map.get()) : "");
     getCD4C().addMethod(ast, getCheckAccessPolicyTemplate(), domainClass.getName(), "Delete");
-    if (isGem && !isMap) {
+    if (isGem && (!isMap || otherSide.isPresent())) {
       getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("getGemId()", name + "GemId"));
     } else {
       getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("getGemId()"));
@@ -146,6 +159,15 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
     ast.addAllCDMembers(accessor.decorate(attrIndex));
 
     addImports(origCD, domainClass, ast);
+    if (otherSide.isPresent()) {
+      // a client changes the loaded value's other side (remove/DoRun)
+      getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandManager"));
+      getCD4C().addImport(ast, "java.util.Collections");
+      addCorrectMangerImportForTargetType(origCD.getCDDefinition(), ast, map.get().getSymbol().getType());
+      ASTCDType valueClass = (ASTCDType) map.get().getSymbol().getType().getTypeInfo().getAstNode();
+      getCD4C().addImport(ast, getPackageName(UMLPSymbolTables.getDiagramFor(valueClass), DEFAULT_PACKAGE) + "."
+          + valueClass.getName());
+    }
     if (GenService.isCDEnum(type)) {
       ASTCDCompilationUnit compilationUnit = UMLPSymbolTables.getDiagramFor(type.getTypeInfo().getAstNode());
       getCD4C().addImport(ast,getPackageName(compilationUnit, DEFAULT_PACKAGE)+"."+ type.print());

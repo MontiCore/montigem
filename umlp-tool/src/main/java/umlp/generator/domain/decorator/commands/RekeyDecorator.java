@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp.generator.domain.decorator.commands;
 
+import com.google.common.collect.Lists;
 import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
@@ -42,6 +43,22 @@ public class RekeyDecorator extends PutDecorator {
   @Override
   protected List<String> getKeyFields() {
     return List.of("oldKey", "newKey");
+  }
+
+  /**
+   * a rekey moves a value within its owner's map: no other owner is involved
+   */
+  @Override
+  protected boolean hasOldOwner(ASTCDAssocSide a) {
+    return false;
+  }
+
+  /**
+   * the owner only: the value's other side does not change
+   */
+  @Override
+  protected List<String> getEffectedGemIds(ASTCDAssocSide a) {
+    return Lists.newArrayList("gemId");
   }
 
   @Override

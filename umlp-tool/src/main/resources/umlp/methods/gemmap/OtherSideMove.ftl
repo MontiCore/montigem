@@ -5,19 +5,25 @@
      other participants move only what they loaded.
      valueId: an expression for the value's gemId; ownerId: an expression for the new owner's gemId; map: the role of
      the map; otherSide: the role of the other side; valueType/valueManager, ownerType/ownerManager: the types and their
-     managers; removeScope: an expression for the scope of the removal from the old owner -->
+     managers; removeScope: an expression for the scope of the removal from the old owner; oldOwnerVar: a long variable
+     of the including code that gets the old owner's gemId if the value had another owner (left alone otherwise), or
+     empty -->
 ${tc.signature("valueId", "ownerId", "map", "otherSide", "valueType", "valueManager", "ownerType", "ownerManager",
-    "removeScope")}
+    "removeScope", "oldOwnerVar")}
 {
   boolean server = CommandManager.getParticipantId() == 0;
   if (server || ${valueManager}.isLoaded${valueType}(${valueId})) {
     Optional<${valueType}> moved = ${valueManager}.${valueType?uncap_first}Opt(${valueId});
-    long oldOwnerID = moved.isPresent() ? moved.get().get${otherSide?cap_first}Gem().getGemId() : -1;
-    if (oldOwnerID != -1 && oldOwnerID != ${ownerId}
-        && (server || ${ownerManager}.isLoaded${ownerType}(oldOwnerID))) {
-      Optional<${ownerType}> oldOwner = ${ownerManager}.${ownerType?uncap_first}Opt(oldOwnerID);
-      if (oldOwner.isPresent()) {
-        oldOwner.get()._internal_remove${map?cap_first}Id(${valueId}, ${removeScope});
+    long movedFrom = moved.isPresent() ? moved.get().get${otherSide?cap_first}Gem().getGemId() : -1;
+    if (movedFrom != -1 && movedFrom != ${ownerId}) {
+      <#if oldOwnerVar?has_content>
+      ${oldOwnerVar} = movedFrom;
+      </#if>
+      if (server || ${ownerManager}.isLoaded${ownerType}(movedFrom)) {
+        Optional<${ownerType}> oldOwner = ${ownerManager}.${ownerType?uncap_first}Opt(movedFrom);
+        if (oldOwner.isPresent()) {
+          oldOwner.get()._internal_remove${map?cap_first}Id(${valueId}, ${removeScope});
+        }
       }
     }
   }
