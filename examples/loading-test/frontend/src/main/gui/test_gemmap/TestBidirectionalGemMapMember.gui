@@ -1,0 +1,13 @@
+/* (c) https://github.com/MontiCore/monticore */
+package test_gemmap;
+
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemButton;
+
+import LoadingTests.Member;
+
+// shows only a member, its clubs are not loaded: changes of the clubs' maps reach its club side nevertheless
+page TestBidirectionalGemMapMember(Member m, String result = "loaded") {
+  resultText@GemText(value = result);
+  readClub@GemButton(label = "Read Club", leftClick = readClub(m));
+}
