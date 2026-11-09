@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package dashboard;
 
+import chatmodule.MessageSender;
 import dashboardmodule.CellConfig;
 import dashboardmodule.DashboardModuleConfig;
 import dashboardmodule.DashboardModuleManager;
@@ -18,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static dashboardmodule.VizType.BAR;
+import static dashboardmodule.VizType.FILTERABLE_TABLE;
 import static dashboardmodule.VizType.LINE;
 import static dashboardmodule.VizType.NETWORK;
 import static dashboardmodule.VizType.PIE;
@@ -28,6 +30,15 @@ import static dashboardmodule.VizType.SCATTER;
     scanBasePackages = {"umlp.backendrte.service.websocket", "umlp.backendrte.service.rest", "service"}
 )
 public class DashboardServerApplication extends DashboardServerApplicationTOP {
+  private ChatService chatService;
+
+  // Initialize on the first chat request so dashboard startup does not require model credentials.
+  private synchronized ChatService getChatService() {
+    if (chatService == null) {
+      chatService = new ChatService();
+    }
+    return chatService;
+  }
 
   public static void main(String[] args) {
     SpringApplication.run(DashboardServerApplication.class, args);
@@ -37,11 +48,73 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
   @Override
   public void init() throws IOException {
     super.init();
+    MessageSender.setHandler((message, history, contextGemId) ->
+        getChatService().send(history, DashboardModuleManager.getViewConfigSure(contextGemId)));
     // Allow the data scripts of the dashboard cells to access the example domain (e.g., DashboardManager.getOrganizationList())
     InterpreterWithErrorHandling.addDomain("dashboard", DashboardManager.class);
     initUseCaseData();
     initEntities();
   }
+
+  // Lists the teams of the example domain with the share of their completed tasks
+  String realisticTableData = """
+      List<String> teams = [];
+      List<String> departments = [];
+      List<Double> people = [];
+      List<String> averageAges = [];
+      List<String> completedTasks = [];
+      for (Team team : DashboardManager.getTeamList()) {
+        int ageSum = 0;
+        for (Person person : team.getPeopleList()) {
+          ageSum = ageSum + person.getAge();
+        }
+        String averageAge = "-";
+        if (team.getPeopleList().size() > 0) {
+          averageAge = "" + (ageSum / team.getPeopleList().size());
+        }
+        int completed = 0;
+        for (Task task : team.getTasksList()) {
+          if (task.isCompleted()) {
+            completed = completed + 1;
+          }
+        }
+        teams.add(team.getName());
+        departments.add(team.getDepartment().toString());
+        people.add(1.0 * team.getPeopleList().size());
+        averageAges.add(averageAge);
+        completedTasks.add(completed + " of " + team.getTasksList().size());
+      }
+      List<GemFilterableTableColumn> columns = [
+        GemFilterableTableColumnBuilder().header("Team").texts(teams).build().get(),
+        GemFilterableTableColumnBuilder().header("Department").texts(departments).build().get(),
+        GemFilterableTableColumnBuilder().header("People").numbers(people).build().get(),
+        GemFilterableTableColumnBuilder().header("Average age").texts(averageAges).build().get(),
+        GemFilterableTableColumnBuilder().header("Completed tasks").texts(completedTasks).build().get()
+      ];
+      return GemFilterableTableDataBuilder().columns(columns).build().get();
+      """;
+
+  // Lists the people of the example domain, the scripts of the columns of the cell filter and render them
+  String realisticFilterableTableData = """
+      List<String> names = [];
+      List<String> roles = [];
+      List<Double> ages = [];
+      List<Boolean> international = [];
+      for (Person person : DashboardManager.getPersonList()) {
+        names.add(person.getName());
+        roles.add(person.getRole().toString());
+        ages.add(1.0 * person.getAge());
+        international.add(person.isInternational());
+      }
+      List<GemFilterableTableColumn> columns = [
+        GemFilterableTableColumnBuilder().header("Name").texts(names).build().get(),
+        GemFilterableTableColumnBuilder().header("Role").texts(roles).build().get(),
+        GemFilterableTableColumnBuilder().header("Age").numbers(ages).build().get(),
+        GemFilterableTableColumnBuilder().header("International").booleans(international).build().get()
+      ];
+      return GemFilterableTableDataBuilder().columns(columns).build().get();
+      """;
+
   String defaultNetworkData = """
       GraphNode node1 = GraphNodeBuilder().id("1").label("Frontend").fixed(Optional.of(true)).x(Optional.of(2.5)).y(Optional.of(2.5)).size(Optional.of(40)).build().get();
       GraphNode node2 = GraphNodeBuilder().id("2").label("Team 1").fixed(Optional.of(true)).x(Optional.of(1.0)).y(Optional.of(1.0)).size(Optional.of(40)).build().get();
@@ -445,10 +518,66 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         .build()
         .get();
 
+    CellConfig cell4 = DashboardModuleManager.cellConfigBuilder()
+        .data(realisticTableData)
+        .name("Teams")
+        .viz(FILTERABLE_TABLE)
+        .extra(DashboardModuleManager.extraDataBuilder()
+            .tableextra(DashboardModuleManager.tableExtraDataBuilder().build().get()))
+        .size(DashboardModuleManager.dashboardModuleSizeBuilder()
+            .height(4.0)
+            .width(12.0)
+            .build()
+            .get())
+        .position(DashboardModuleManager.dashboardModulePositionBuilder()
+            .x(0.0)
+            .y(4.0)
+            .build()
+            .get())
+        .build()
+        .get();
+
+    CellConfig cell5 = DashboardModuleManager.cellConfigBuilder()
+        .data(realisticFilterableTableData)
+        .name("People of age 30 or older")
+        .viz(FILTERABLE_TABLE)
+        .extra(DashboardModuleManager.extraDataBuilder()
+            .tableextra(DashboardModuleManager.tableExtraDataBuilder()
+                .columnsAdd(DashboardModuleManager.columnScriptsBuilder()
+                    .column("Age")
+                    .filter(">= 30")
+                    .render("Math.round(v) + \" years\"")
+                    .build()
+                    .get())
+                .columnsAdd(DashboardModuleManager.columnScriptsBuilder()
+                    .column("International")
+                    .filter("")
+                    .render("v ? \"yes\" : \"no\"")
+                    .build()
+                    .get())
+                .build()
+                .get())
+            .build()
+            .get())
+        .size(DashboardModuleManager.dashboardModuleSizeBuilder()
+            .height(4.0)
+            .width(12.0)
+            .build()
+            .get())
+        .position(DashboardModuleManager.dashboardModulePositionBuilder()
+            .x(0.0)
+            .y(8.0)
+            .build()
+            .get())
+        .build()
+        .get();
+
     cells.add(cell0);
     cells.add(cell1);
     cells.add(cell2);
     cells.add(cell3);
+    cells.add(cell4);
+    cells.add(cell5);
 
     return cells;
   }

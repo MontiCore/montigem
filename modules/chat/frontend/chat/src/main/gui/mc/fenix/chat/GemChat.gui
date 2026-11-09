@@ -1,0 +1,37 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.chat;
+
+/**
+  Chat with a scrollable message history and an input field to write new
+  messages. The history scrolls to the newest message as long as the user has
+  not scrolled up.
+*/
+component GemChat(
+  /** Messages of the chat, usually `GemChatMessage` components. */
+  List<GUIViewElement> messages,
+  /**
+    The input field's value. If it is linked to a variable, the value of the
+    variable will change when the user enters a new value.
+  */
+  ?String entry,
+  /** Text displayed when the input field is empty. */
+  String placeholder = "",
+  /** Text of the send button. */
+  String sendLabel = "Send",
+  /**
+    If true, a loading spinner is displayed below the messages and `send` is
+    not executed.
+  */
+  boolean waitingForResponse = false,
+  /** Text displayed below the loading spinner. */
+  String waitingLabel = "",
+  /**
+    Callback that is executed when the user clicks the send button or presses
+    Enter while the input field is not blank. Shift+Enter inserts a line break.
+  */
+  Event<Void> send,
+  /** Width of the component. */
+  String width = "100%",
+  /** Height of the component. */
+  String height = "100%"
+)

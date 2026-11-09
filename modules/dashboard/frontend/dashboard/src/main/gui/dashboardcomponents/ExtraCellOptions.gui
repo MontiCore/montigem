@@ -17,6 +17,7 @@ import dashboardcomponents.ExtraBarOptions;
 import dashboardcomponents.ExtraBoxOptions;
 import dashboardcomponents.ExtraSpeedOptions;
 import dashboardcomponents.ExtraScatterOptions;
+import dashboardcomponents.ExtraTableOptions;
 
 import mc.fenix.arrange.GemRow;
 import mc.fenix.arrange.GemColumn;
@@ -52,6 +53,9 @@ component ExtraCellOptions(
                  },
                  @guard(compareViz(VizType.PIE)) {
                    @ExtraPieOptions(extra = cell.extra);
+                 },
+                 @guard(compareViz(VizType.FILTERABLE_TABLE)) {
+                   @ExtraTableOptions(extra = cell.extra);
                  }
              ]);
            } else {
@@ -76,6 +80,9 @@ component ExtraCellOptions(
                    },
                    @guard(compareViz(VizType.PIE)) {
                      @ExtraPieOptions(extra = cell.extra);
+                   },
+                   @guard(compareViz(VizType.FILTERABLE_TABLE)) {
+                     @ExtraTableOptions(extra = cell.extra);
                    }
               ]);
            },

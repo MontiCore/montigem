@@ -110,3 +110,7 @@ include ':modules:dashboard:frontend'
 include ':modules:dashboard:frontend:dashboard'
 include ':modules:dashboard:lang'
 
+include ':modules:chat'
+include ':modules:chat:backend'
+include ':modules:chat:frontend'
+include ':modules:chat:frontend:chat'

@@ -144,6 +144,8 @@ public class CellDialog extends CellDialogTOP {
         return extra.isPresentPiextra();
       case NETWORK:
         return extra.isPresentGraphextra();
+      case FILTERABLE_TABLE:
+        return extra.isPresentTableextra();
     }
     return true;
   }
@@ -206,6 +208,12 @@ public class CellDialog extends CellDialogTOP {
           result = DashboardModuleManager.getDashboardModuleApp().getError();
         }
         break;
+      case FILTERABLE_TABLE:
+        // also interprets the scripts of the columns, which are edited after the data script (checkCellExtra)
+        if (!CommandManager.executeCommand(FilterableTableCommand.of(cell)).asSimpleResult().isSuccessful()) {
+          result = DashboardModuleManager.getDashboardModuleApp().getError();
+        }
+        break;
     }
     return result;
   }
@@ -254,6 +262,12 @@ public class CellDialog extends CellDialogTOP {
         break;
       case NETWORK:
         result = checkGraphExtra(cell);
+        break;
+      case FILTERABLE_TABLE:
+        String interpretation = checkInterpretation(cell);
+        if (interpretation != "success") {
+          result = "Interpretation failed: " + interpretation;
+        }
         break;
     }
     return result;

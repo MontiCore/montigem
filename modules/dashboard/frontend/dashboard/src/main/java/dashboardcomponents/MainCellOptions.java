@@ -2,6 +2,7 @@ package dashboardcomponents;
 
 import dashboardmodule.CellConfig;
 import dashboardmodule.DashboardModuleManager;
+import dashboardmodule.TableExtraData;
 import static def.dom.Globals.document;
 import def.dom.HTMLAnchorElement;
 
@@ -53,6 +54,9 @@ public class MainCellOptions extends MainCellOptionsTOP{
       case NETWORK:
         this.getCell().setData(defaultNetworkData);
         break;
+      case FILTERABLE_TABLE:
+        this.getCell().setData(defaultFilterableTableData);
+        break;
     };
     setDefaultExtra(this.getCell());
   }
@@ -80,6 +84,9 @@ public class MainCellOptions extends MainCellOptionsTOP{
         break;
       case NETWORK:
         setDefaultGraphExtra(cell);
+        break;
+      case FILTERABLE_TABLE:
+        setDefaultTableExtra(cell);
         break;
     };
   }
@@ -170,6 +177,18 @@ public class MainCellOptions extends MainCellOptionsTOP{
       return GraphBuilder().nodes(nodes).edges(edges).build().get();
       """;
 
+  String defaultFilterableTableData = """
+      List<String> teams = ["Team 1", "Team 2", "Team 3"];
+      List<Double> tasks = [576.0, 455.0, 505.0];
+      List<Double> issues = [35.0, 42.0, 28.0];
+      List<GemFilterableTableColumn> columns = [
+        GemFilterableTableColumnBuilder().header("Team").texts(teams).build().get(),
+        GemFilterableTableColumnBuilder().header("Tasks completed").numbers(tasks).build().get(),
+        GemFilterableTableColumnBuilder().header("Issues closed").numbers(issues).build().get()
+      ];
+      return GemFilterableTableDataBuilder().columns(columns).build().get();
+      """;
+
   //--------------------------
   //default extra data setters
   //--------------------------
@@ -240,6 +259,19 @@ public class MainCellOptions extends MainCellOptionsTOP{
             .innerRadius(10)
         )
     );
+  }
+
+  // an example filter of the default data (defaultFilterableTableData)
+  public static void setDefaultTableExtra(CellConfig cell) {
+    // built, as the dialog adds and removes columns (see View.copyPasteTableExtra)
+    TableExtraData extra = DashboardModuleManager.tableExtraDataBuilder().build().get();
+    extra.addColumns(DashboardModuleManager.columnScriptsBuilder()
+        .column("Tasks completed")
+        .filter(">= 500")
+        .render("")
+        .build()
+        .get());
+    cell.setExtra(DashboardModuleManager.extraDataBuilder().tableextra(extra));
   }
 
   public static void setDefaultGraphExtra(CellConfig cell) {

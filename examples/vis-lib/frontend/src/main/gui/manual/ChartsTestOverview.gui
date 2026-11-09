@@ -13,7 +13,7 @@ import manual.GemCandlestickChartTest;
 import manual.GemGaugeChartTest;
 import manual.GemHeatmapChartTest;
 import manual.GemLineChartTest;
-import manual.GemNetworkGraphTest;
+import manual.GemGraphTest;
 import manual.GemPieChartTest;
 import manual.GemSunburstChartTest;
 import manual.GemTimelineChartTest;
@@ -39,7 +39,7 @@ page ChartsTestOverview() {
             @ComponentCard(title = "Line Chart Test", icon = "show_chart", description = "Test scenarios for Line Charts.", click = navigate(@GemLineChartTest())),
             @ComponentCard(title = "Gauge Chart Test", icon = "speed", description = "Test scenarios for Gauge Charts.", click = navigate(@GemGaugeChartTest())),
             @ComponentCard(title = "Venn Diagram Test", icon = "bubble_chart", description = "Test scenarios for Venn Diagrams.", click = navigate(@GemVennDiagramTest())),
-            @ComponentCard(title = "Network Graph Test", icon = "hub", description = "Test scenarios for Network Graphs.", click = navigate(@GemNetworkGraphTest())),
+            @ComponentCard(title = "Network Graph Test", icon = "hub", description = "Test scenarios for Network Graphs.", click = navigate(@GemGraphTest())),
             @ComponentCard(title = "Heatmap Test", icon = "grid_on", description = "Test scenarios for Heatmaps.", click = navigate(@GemHeatmapChartTest())),
             @ComponentCard(title = "Sunburst Test", icon = "donut_large", description = "Test scenarios for Sunburst Charts.", click = navigate(@GemSunburstChartTest())),
             @ComponentCard(title = "Timeline Test", icon = "view_timeline", description = "Test scenarios for Timelines.", click = navigate(@GemTimelineChartTest())),
