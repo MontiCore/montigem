@@ -30,12 +30,14 @@ Long oldID = this._${name}.getID(key);
 if (oldID != null && oldID == gemID) {
   return;
 }
+// the value's other owner before this put, -1 if none (or unknown here: the value is not loaded)
+long oldOwnerID = -1;
 <#if otherSideName?has_content && !otherSideIsList>
 if (scope.contains(NotificationScope.LOCAL)) {
-  // a single owner: the value leaves its old owner's map; the server removes with ALL, for the database and the old
-  // owner's subscribers (they do not receive this put), the other participants locally
+  // a single owner: the value leaves its old owner's map. Locally: the put notification names the old owner, so the
+  // put command reaches its subscribers, which take the value out themselves (like the replaced value below)
   ${tc.includeArgs("umlp.methods.gemmap.OtherSideMove", ["gemID", "this.getGemId()", name, otherSideName, targetName,
-      targetManager, ownerType, ownerManager, "CommandManager.getParticipantId() == 0 ? NotificationScope.ALL : NotificationScope.LOCAL"])}
+      targetManager, ownerType, ownerManager, "NotificationScope.LOCAL", "oldOwnerID"])}
 }
 </#if>
 this._${name}._internal_putValueID(key, gemID);
@@ -60,5 +62,5 @@ for (${sourceName}Observer obs : ${sourceName?uncap_first}Observers) {
   if (oldID != null) {
     obs.maybeNotifyRemove${name?cap_first}((${sourceName}) this, oldID, -1, removeScope);
   }
-  obs.maybeNotifyPut${name?cap_first}((${sourceName}) this, key, gemID, scope);
+  obs.maybeNotifyPut${name?cap_first}((${sourceName}) this, key, gemID, oldOwnerID, scope);
 }

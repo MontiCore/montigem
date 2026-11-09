@@ -100,16 +100,16 @@ public class PutDecorator extends AddDecorator {
     for (String keyField : getKeyFields()) {
       fields.add(getCD4C().addAttribute(ast, "protected " + key.getStoredKeyType() + " " + keyField));
     }
+    if (hasOldOwner(a)) {
+      fields.add(getCD4C().addAttribute(ast, "protected long oldOwnerGemId"));
+    }
     fields.forEach(f -> ast.addAllCDMembers(accessor.decorate(f)));
 
     getCD4C().addConstructor(ast, "umlp.commands.put.Constructor", classname,
-        getPackageName(origCD, COMMAND_PACKAGE), valueIdName, key.getStoredKeyType(), getKeyFields());
+        getPackageName(origCD, COMMAND_PACKAGE), valueIdName, key.getStoredKeyType(), getKeyFields(), hasOldOwner(a));
     addDoAction(ast, origCD, a, domainType, key);
     addCheckAccessPolicy(ast, domainType);
-    // the owner only: maps are unidirectional, only the participants that loaded the owner have the map. The value
-    // must not be included: sending the command subscribes the receivers to the effected objects, so they would
-    // receive (and load) the value with its next setter command.
-    getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("gemId"));
+    getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), getEffectedGemIds(a));
 
     addImports(origCD, domainType, ast);
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandManager"));
@@ -120,13 +120,45 @@ public class PutDecorator extends AddDecorator {
     return ast;
   }
 
+  /**
+   * @return whether the command names the owner the value left: a put of a bidirectional association with a single
+   * owner moves the value (see GenService#hasSingleOwner)
+   */
+  protected boolean hasOldOwner(ASTCDAssocSide a) {
+    return GenService.hasSingleOwner(a);
+  }
+
+  /**
+   * @return the effected objects. Unidirectional: the owner only, only the participants that loaded the owner have
+   * the map. The value must not be included: sending the command subscribes the receivers to the effected objects, so
+   * they would receive (and load) the value with its next setter command. Bidirectional: the value as well, its other
+   * side changes, and the old owner of a single owner, whose map loses the value (like a bidirectional association,
+   * whose commands name both sides)
+   */
+  protected List<String> getEffectedGemIds(ASTCDAssocSide a) {
+    if (GenService.getOtherSideOfMap(a).isEmpty()) {
+      return Lists.newArrayList("gemId");
+    }
+    List<String> ids = Lists.newArrayList("gemId", a.getName() + "GemId");
+    if (hasOldOwner(a)) {
+      ids.add("oldOwnerGemId");
+    }
+    return ids;
+  }
+
   protected void addDoAction(ASTCDClass ast, ASTCDCompilationUnit origCD, ASTCDAssocSide a, ASTCDType domainType,
                              QualifierKey key) {
     String targetType = a.getSymbol().getType().print();
+    // bidirectional: the other side, see put/OtherSideDoRun
+    String otherSide = GenService.getOtherSideOfMap(a).map(ASTCDAssocSide::getName).orElse("");
+    boolean otherSideIsList = GenService.getOtherSideOfMap(a).map(GenService::isList).orElse(false);
+    if (!otherSide.isEmpty()) {
+      getCD4C().addImport(ast, "java.util.Collections");
+    }
     if (key.isDerived()) {
       getCD4C().addMethod(ast, "umlp.commands.put.DoRun", domainType.getName(), getCorrectManager(domainType),
           a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getStoredKeyType(),
-          key.isEntryKey() ? "0xA7316" : "0xA7306");
+          key.isEntryKey() ? "0xA7316" : "0xA7306", otherSide, otherSideIsList);
       // preconditions: the value exists, a long key is within what a browser represents (neither executed nor sent
       // on otherwise)
       getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", false, key.isLongKey(), a.getName(), targetType,
@@ -144,7 +176,7 @@ public class PutDecorator extends AddDecorator {
     }
     getCD4C().addMethod(ast, "umlp.commands.put.DoRunKey", domainType.getName(), getCorrectManager(domainType),
         a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getKeyType(),
-        keyTypeManager);
+        keyTypeManager, otherSide, otherSideIsList);
     // preconditions: the chosen key is present (and a long key within what a browser represents), the value and the
     // key object exist; a put that fails them is neither executed nor sent on
     getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", true, key.isLongKey(), a.getName(), targetType,
@@ -164,8 +196,9 @@ public class PutDecorator extends AddDecorator {
         .setName(cmdName + DE_SER)
         .build();
     getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_FromJsonObject", cmdName, valueIdName,
-        getKeyFields(), QualifierKey.of(a).getStoredKeyJson());
-    getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_BuildJson", cmdName, valueIdName, getKeyFields());
+        getKeyFields(), QualifierKey.of(a).getStoredKeyJson(), hasOldOwner(a));
+    getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_BuildJson", cmdName, valueIdName, getKeyFields(),
+        hasOldOwner(a));
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.JsonPrinter");
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.json.JsonObject");
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandDeSer"));
