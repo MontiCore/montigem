@@ -2,8 +2,11 @@
 <#-- mapRoles: the map roles of loaded owners that may hold the deleted object (GemMapOwnerRole);
      keyRoles: the map roles of loaded owners that may use the deleted object as a key (GemMapOwnerRole#keyedBy);
      bidirectionalMaps: the roles of the deleted object's own GemMaps of bidirectional qualified associations
-     (GenService#getBidirectionalMaps) -->
-${tc.signature("cdName","name", "managerName", "mapRoles", "keyRoles", "bidirectionalMaps")}
+     (GenService#getBidirectionalMaps);
+     bidirectionalKeyAssocs: the bidirectional type qualified associations whose keys may be the deleted object
+     (GemMapOwnerRole#typeQualifiedKeyedBy): their owners that hold it are loaded first, so that the entries leave
+     through them (keyRoles) and the values' other side follows; the database alone would drop only the rows -->
+${tc.signature("cdName","name", "managerName", "mapRoles", "keyRoles", "bidirectionalMaps", "bidirectionalKeyAssocs")}
 ${cd4c.method("protected boolean _doDelete${name}(Long gemId, NotificationScope scope)")}
   if(!(known${name}s.containsKey(gemId) || ${cdName}DAOFactory.get${name?cap_first}DAO().select${name}(gemId).isPresent())) {
     return false;
@@ -26,6 +29,13 @@ ${tc.includeArgs("umlp.managerimpl.RemoveBidirectionalMapEntries", [name, "_do" 
     }
   }
   </#if>
+</#list>
+<#list bidirectionalKeyAssocs as assoc>
+  <#assign ownerType = genService.getOtherSideOfMap(genService.getTypeQualifiedMapSide(assoc).get()).get().getSymbol().getType().print()>
+  // bidirectional: the owners that hold the deleted object as a key are loaded, so that the loop below reaches them
+  for (long ownerID : ${cdName}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().selectOwnerIdsWithKey${assoc.getName()?cap_first}(gemId)) {
+    _do${ownerType}Opt(ownerID);
+  }
 </#list>
 <#if keyRoles?has_content>
   // the entries whose key is the deleted object leave the maps of the loaded owners the same way, by their values

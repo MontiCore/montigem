@@ -207,6 +207,10 @@ public class DAODecorator extends DAOInterfaceDecorator {
     if (key.isEntryKey()) {
       getCD4C().addMethod(daoClass, "umlp.dao.associations.RemoveAllWithKeyForAssocDAO", assoc, sqlTable,
           key.getColumnName());
+      if (GenService.getOtherSideOfMap(mapSide).isPresent()) {
+        getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectOwnerIdsWithKeyForAssocDAO", assoc, sqlTable,
+            SQLSchemaGenerator.convertAssociationRollName(ownerSide.getName()), key.getColumnName());
+      }
     }
   }
 
