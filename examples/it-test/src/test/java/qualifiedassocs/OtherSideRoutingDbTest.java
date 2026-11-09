@@ -159,6 +159,33 @@ public interface OtherSideRoutingDbTest extends QualifiedAssocsTestSetup {
     assertEquals(List.of(club2.getGemId()), clubsIds(annaOfClient0));
   }
 
+  /**
+   * a put under a free key of a value without an owner (no replaced value, no old owner) reaches only the subscribers
+   * of the owner and the value: an unrelated participant that put another value that way before is not subscribed to
+   * the other put's objects, so it does not load them on their next change
+   */
+  @Test
+  default void testPutDoesNotReachUnrelatedParticipants() {
+    getBackend().activate();
+    var club1 = club();
+    var club2 = club();
+    var anna = person("anna", 1);
+    var bob = person("bob", 2);
+    getClients(0).activate();
+    var club1OfClient0 = QualifiedAssocsManager.getClubSure(club1.getGemId());
+    club1OfClient0.putMemberByCode("a1", QualifiedAssocsManager.getPersonSure(anna.getGemId()));
+
+    getClients(1).activate();
+    var club2OfClient1 = QualifiedAssocsManager.getClubSure(club2.getGemId());
+    club2OfClient1.putMemberByCode("b1", QualifiedAssocsManager.getPersonSure(bob.getGemId()));
+
+    getBackend().activate();
+    bob.setNumber(5);
+    getClients(0).activate();
+    assertFalse(QualifiedAssocsManager.isLoadedPerson(bob.getGemId()));
+    assertFalse(QualifiedAssocsManager.isLoadedClub(club2.getGemId()));
+  }
+
   /** a client that names no old owner (it did not load the value): the server names it before sending the put on */
   @Test
   default void testServerNamesTheOldOwner() {
