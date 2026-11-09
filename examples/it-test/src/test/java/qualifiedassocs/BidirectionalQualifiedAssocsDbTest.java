@@ -166,6 +166,41 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     assertEquals(-1, ledClubId(anna));
   }
 
+  /** deleting the owner clears the other side of the loaded values, on the server and on a client, and in the db */
+  @Test
+  default void testOtherSideAfterOwnerDeletion() {
+    getBackend().activate();
+    var club = club();
+    var other = club();
+    var anna = person("anna", 1);
+    var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();
+    club.putMemberByCode("a1", anna);
+    club.putLeaderByDepartment(sales, anna);
+    club.putMemberByLogin(anna);
+    other.putMemberByLogin(anna);
+    getClients(0).activate();
+    var clientAnna = QualifiedAssocsManager.getPersonSure(anna.getGemId());
+    assertEquals(club.getGemId(), clubId(clientAnna));
+    assertEquals(2, clubsIds(clientAnna).size());
+
+    getBackend().activate();
+    assertTrue(QualifiedAssocsManager.deleteClub(club.getGemId()));
+    assertEquals(-1, clubId(anna));
+    assertEquals(-1, ledClubId(anna));
+    assertEquals(List.of(other.getGemId()), clubsIds(anna));
+    getClients(0).activate();
+    assertEquals(-1, clubId(clientAnna));
+    assertEquals(-1, ledClubId(clientAnna));
+    assertEquals(List.of(other.getGemId()), clubsIds(clientAnna));
+
+    getBackend().activate();
+    QualifiedAssocsManager.TESTING_clearCache();
+    var loaded = QualifiedAssocsManager.getPersonSure(anna.getGemId());
+    assertEquals(-1, clubId(loaded));
+    assertEquals(-1, ledClubId(loaded));
+    assertEquals(List.of(other.getGemId()), clubsIds(loaded));
+  }
+
   /** values put while the owner is a builder refer to it once it is built */
   @Test
   default void testOtherSideAfterBuild() {

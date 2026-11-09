@@ -1,11 +1,15 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
 <#-- mapRoles: the map roles of loaded owners that may hold the deleted object (GemMapOwnerRole);
-     keyRoles: the map roles of loaded owners that may use the deleted object as a key (GemMapOwnerRole#keyedBy) -->
-${tc.signature("name", "managerName", "mapRoles", "keyRoles")}
+     keyRoles: the map roles of loaded owners that may use the deleted object as a key (GemMapOwnerRole#keyedBy);
+     bidirectionalMaps: the roles of the deleted object's own GemMaps of bidirectional qualified associations
+     (GenService#getBidirectionalMaps) -->
+${tc.signature("name", "managerName", "mapRoles", "keyRoles", "bidirectionalMaps")}
 ${cd4c.method("protected boolean _doDelete${name}(Long gemId, NotificationScope scope)")}
   if (!${name?uncap_first}s.containsKey(gemId)) {
     return false;
   }
+${tc.includeArgs("umlp.managerimpl.RemoveBidirectionalMapEntries", [name,
+    "java.util.Optional.ofNullable(" + name?uncap_first + "s.get(gemId))", bidirectionalMaps])}
 <#if mapRoles?has_content>
   // the deleted object leaves the maps of the loaded owners that hold it, through the owners: with ALL, whatever the
   // scope of the deletion, every participant that loaded an owner removes the entry
