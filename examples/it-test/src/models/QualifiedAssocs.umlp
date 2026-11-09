@@ -61,4 +61,10 @@ umlp QualifiedAssocs {
   association [*] Club [[login]] (clubs) <-> (memberByLogin) Person [1];
   association [0..1] Club [[number]] (numberClub) <-> (memberByNumber) Person [1];
   association [*] Club [Department] (sponsoredClubs) <-> (sponsorByDepartment) Person [1];
+
+  /* bidirectional with inheritance: Team is a Club (the owner), Admin a Person (the value) */
+  class Team extends Club;
+
+  /* bidirectional, the key type is the value type: deleting a person removes its entries as a key and as a value */
+  association [0..1] Club [Person] (mentorClub) <-> (menteeByMentor) Person [1];
 }

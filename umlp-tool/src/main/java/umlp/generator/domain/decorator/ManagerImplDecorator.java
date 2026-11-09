@@ -161,6 +161,8 @@ public class ManagerImplDecorator extends AbstractDecorator {
             GenService.getBidirectionalMaps(domainClass).stream().map(ASTCDAssocSide::getName).collect(Collectors.toList()),
             GemMapOwnerRole.typeQualifiedKeyedBy(origCD, domainClass).stream()
                 .filter(assoc -> GenService.getTypeQualifiedMapSide(assoc).flatMap(GenService::getOtherSideOfMap)
+                    .filter(ownerSide -> isDeclaredIn(origCD, ownerSide.getSymbol().getType().getTypeInfo()
+                        .getAstNode()))
                     .isPresent())
                 .collect(Collectors.toList()));
         getCD4C().addMethod(managerClass, "umlp.managerimpl.DoRegister", name);
@@ -290,6 +292,15 @@ public class ManagerImplDecorator extends AbstractDecorator {
     getCD4C().addImport(clazz, PathUtil.getBackendRTECommonPath("SoftValueHashMap"));
     getCD4C().addImport(clazz, "java.util.HashMap");
     getCD4C().addImport(clazz, "java.util.Map");
+  }
+
+  /**
+   * @return whether the type node is a class or interface declared in cd: only those have a manager method
+   * {@code _do<Type>Opt} in the manager generated for cd (like GemMapOwnerRole, which considers the classes of cd)
+   */
+  protected boolean isDeclaredIn(ASTCDCompilationUnit cd, Object typeNode) {
+    return cd.getCDDefinition().getCDClassesList().stream().anyMatch(c -> c == typeNode)
+        || cd.getCDDefinition().getCDInterfacesList().stream().anyMatch(i -> i == typeNode);
   }
 
 }

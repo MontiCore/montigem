@@ -541,10 +541,11 @@ public class GenService {
 
   /**
    * @return the GemMap sides of type (declared in it or a supertype) whose association is bidirectional, i.e. that have
-   * an other side, see {@link #getOtherSideOfMap}
+   * an other side, see {@link #getOtherSideOfMap}; not derived associations, they have no maps
    */
   public static List<ASTCDAssocSide> getBidirectionalMaps(ASTCDType type) {
     return CDSymbolTables.getAssociationsInHierarchy(type).stream()
+        .filter(side -> !isSymbolDerived(side))
         .filter(side -> getOtherSideOfMap(side).isPresent())
         .collect(Collectors.toList());
   }
