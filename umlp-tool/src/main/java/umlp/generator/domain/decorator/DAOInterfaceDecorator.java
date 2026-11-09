@@ -217,6 +217,10 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
     if (key.isEntryKey()) {
       // deleting a key object deletes its pairs, see GemMapOwnerRole#typeQualifiedKeyedBy
       getCD4C().addMethod(daoInterface, "umlp.daointerface.associations.RemoveAllWithKeyForAssocDAO", assoc);
+      if (GenService.getOtherSideOfMap(mapSide).isPresent()) {
+        // the server loads the owners holding a deleted key object first, see managerimpl/DoDelete
+        getCD4C().addMethod(daoInterface, "umlp.daointerface.associations.SelectOwnerIdsWithKeyForAssocDAO", assoc);
+      }
     }
   }
 
