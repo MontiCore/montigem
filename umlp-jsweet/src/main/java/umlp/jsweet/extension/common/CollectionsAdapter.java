@@ -406,21 +406,63 @@ public class CollectionsAdapter extends AbstractAdapter {
     getPrinter().printDefaultMethodInvocation(methodInvocationTree);
   }
 
+  /**
+   * the JDK list and set classes whose constructor calls become an awaited async RTE constructor (AsyncList, AsyncSet),
+   * see {@link #substituteNewClass}
+   */
+  public static final Set<String> ASYNC_LIST_AND_SET_CLASSES = Set.of(
+      "java.util.List",
+      "java.util.AbstractList",
+      "java.util.LinkedList",
+      "java.util.ArrayList",
+      "java.util.concurrent.CopyOnWriteArrayList",
+      "java.util.Stack",
+      "java.util.Vector",
+      "java.util.Set",
+      "java.util.HashSet",
+      "java.util.LinkedHashSet");
+
+  /**
+   * the JDK map classes whose constructor calls become an awaited async RTE constructor (AsyncMap), see
+   * {@link #substituteNewClass}
+   */
+  public static final Set<String> ASYNC_MAP_CLASSES = Set.of(
+      "java.util.HashMap",
+      "java.util.LinkedHashMap",
+      "java.util.TreeMap",
+      "java.util.Hashtable",
+      "java.util.WeakHashMap",
+      "java.util.IdentityHashMap",
+      "java.util.concurrent.ConcurrentHashMap",
+      "java.util.concurrent.ConcurrentSkipListMap");
+
+  /**
+   * @return whether constructing the class (qualified name) awaits an async RTE constructor, so the enclosing method
+   * must be async (UMLPAsyncAwaitPropagationScanner)
+   */
+  public static boolean isAsyncCollectionClass(String qualifiedName) {
+    return ASYNC_LIST_AND_SET_CLASSES.contains(qualifiedName) || ASYNC_MAP_CLASSES.contains(qualifiedName);
+  }
+
   @Override
   public boolean substituteNewClass(NewClassElement newClass) {
-    switch (newClass.getTypeAsElement().toString()) {
-      case "java.util.List":
-      case "java.util.AbstractList":
-      case "java.util.LinkedList":
-      case "java.util.ArrayList":
-      case "java.util.concurrent.CopyOnWriteArrayList":
-      case "java.util.Stack":
-      case "java.util.Vector":
-      case "java.util.Set":
-      case "java.util.HashSet":
-      case "java.util.LinkedHashSet":
-        if (newClass.getArgumentCount() == 0) {
+    String className = newClass.getTypeAsElement().toString();
+    if (ASYNC_LIST_AND_SET_CLASSES.contains(className)) {
+      if (newClass.getArgumentCount() == 0) {
+        if (isSetType(newClass)) {
+          print("(await new " + CustomAsyncSetImplementationConstructor + "())");
+          getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncSetImplementationName, getLibraryLocation()));
+        }
+        else {
+          print("(await new " + CustomAsyncListImplementationConstructor + "())");
+          getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncListImplementationName, getLibraryLocation()));
+        }
+      }
+      else {
+        if (util().isNumber(newClass.getArgument(0).getType())
+            || (newClass.getArgument(0) instanceof LiteralElement)) {
           if (isSetType(newClass)) {
+            // TODO this is not relevant for Sets??
             print("(await new " + CustomAsyncSetImplementationConstructor + "())");
             getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncSetImplementationName, getLibraryLocation()));
           }
@@ -430,56 +472,38 @@ public class CollectionsAdapter extends AbstractAdapter {
           }
         }
         else {
-          if (util().isNumber(newClass.getArgument(0).getType())
-              || (newClass.getArgument(0) instanceof LiteralElement)) {
-            if (isSetType(newClass)) {
-              // TODO this is not relevant for Sets??
-              print("(await new " + CustomAsyncSetImplementationConstructor + "())");
-              getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncSetImplementationName, getLibraryLocation()));
-            }
-            else {
-              print("(await new " + CustomAsyncListImplementationConstructor + "())");
-              getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncListImplementationName, getLibraryLocation()));
-            }
+          if (isSetType(newClass)) {
+            print("(await new " + CustomAsyncSetImplementationConstructor + "(")
+                .print(newClass.getArgument(0)).print("))");
+            getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncSetImplementationName, getLibraryLocation()));
           }
           else {
-            if (isSetType(newClass)) {
-              print("(await new " + CustomAsyncSetImplementationConstructor + "(")
-                  .print(newClass.getArgument(0)).print("))");
-              getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncSetImplementationName, getLibraryLocation()));
-            }
-            else {
-              print("(await new " + CustomAsyncListImplementationConstructor + "(")
-                  .print(newClass.getArgument(0)).print("))");
-              getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncListImplementationName, getLibraryLocation()));
-            }
+            print("(await new " + CustomAsyncListImplementationConstructor + "(")
+                .print(newClass.getArgument(0)).print("))");
+            getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncListImplementationName, getLibraryLocation()));
           }
         }
-        return true;
-      case "umlp.guiutil.UMLPGuiArray":
-        if (newClass.getArgumentCount() == 0) {
-          print("[]");
-        }
-        else if (newClass.getArgumentCount() == 1) {
-          printArgList(newClass.getArguments()).print(".toArray()");
-        }
-        else {
-          Log.warn("Did not implement new UMLPGuiArray with more than one parameters");
-        }
-        return true;
-      case "java.util.HashMap":
-      case "java.util.LinkedHashMap":
-      case "java.util.TreeMap":
-      case "java.util.Hashtable":
-      case "java.util.WeakHashMap":
-      case "java.util.IdentityHashMap":
-      case "java.util.concurrent.ConcurrentHashMap":
-      case "java.util.concurrent.ConcurrentSkipListMap":
-        // no arguments, a capacity (+ load factor), a comparator (ignored) or a map to copy
-        print("(await new " + CustomAsyncMapImplementationConstructor + "(")
-            .printArgList(newClass.getArguments()).print("))");
-        getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncMapImplementationName, getLibraryLocation()));
-        return true;
+      }
+      return true;
+    }
+    if (ASYNC_MAP_CLASSES.contains(className)) {
+      // no arguments, a capacity (+ load factor), a comparator (ignored) or a map to copy
+      print("(await new " + CustomAsyncMapImplementationConstructor + "(")
+          .printArgList(newClass.getArguments()).print("))");
+      getPrinter().useModule(new ModuleImportDescriptor(CustomAsyncMapImplementationName, getLibraryLocation()));
+      return true;
+    }
+    if ("umlp.guiutil.UMLPGuiArray".equals(className)) {
+      if (newClass.getArgumentCount() == 0) {
+        print("[]");
+      }
+      else if (newClass.getArgumentCount() == 1) {
+        printArgList(newClass.getArguments()).print(".toArray()");
+      }
+      else {
+        Log.warn("Did not implement new UMLPGuiArray with more than one parameters");
+      }
+      return true;
     }
 
     return super.substituteNewClass(newClass);
