@@ -8,9 +8,6 @@ ${tc.signature("classname", "managerName", "packagename", "hasOCL", "bidirection
 ${cd4c.method("public StatusResult doAction()")}
 
 ${managerName}.addWithScope${classname}(${classname?uncap_first}, NotificationScope.LOCAL);
-<#if bidirectionalMaps?has_content>
-boolean server = CommandManager.getParticipantId() == 0;
-</#if>
 <#list bidirectionalMaps as assoc>
   <#assign otherSide=genService.getOtherSideOfMap(assoc).get()>
   <#assign valueType=assoc.getSymbol().getType().print()>
@@ -18,28 +15,17 @@ boolean server = CommandManager.getParticipantId() == 0;
   <#assign ownerType=otherSide.getSymbol().getType().print()>
   <#assign ownerManager=genService.getManagerOfType(otherSide)>
 for (long valueID : ${classname?uncap_first}._internal_get${assoc.getName()?cap_first}GemMap().getValueIDs()) {
-  if (!server && !${valueManager}.isLoaded${valueType}(valueID)) {
-    continue;
+  <#if !genService.isList(otherSide)>
+  if (CommandManager.getParticipantId() == 0) {
+    ${tc.includeArgs("umlp.methods.gemmap.OtherSideMove", ["valueID", classname?uncap_first + ".getGemId()",
+        assoc.getName(), otherSide.getName(), valueType, valueManager, ownerType, ownerManager, "NotificationScope.ALL"])}
   }
-  Optional<${valueType}> value = ${valueManager}.${valueType?uncap_first}Opt(valueID);
-  if (value.isEmpty()) {
-    continue;
-  }
-  <#if genService.isList(otherSide)>
-  if (value.get()._internal_get${otherSide.getName()?cap_first}GemList().indexOfId(${classname?uncap_first}.getGemId()) == -1) {
-    value.get()._internal_add${otherSide.getName()?cap_first}(value.get()._internal_get${otherSide.getName()?cap_first}GemList().getIDs().size(),
-        Collections.singletonList(${classname?uncap_first}.getGemId()), NotificationScope.MINIMAL);
-  }
-  <#else>
-  long oldOwnerID = value.get().get${otherSide.getName()?cap_first}Gem().getGemId();
-  if (server && oldOwnerID != -1 && oldOwnerID != ${classname?uncap_first}.getGemId()) {
-    Optional<${ownerType}> oldOwner = ${ownerManager}.${ownerType?uncap_first}Opt(oldOwnerID);
-    if (oldOwner.isPresent()) {
-      oldOwner.get()._internal_remove${assoc.getName()?cap_first}Id(valueID, NotificationScope.ALL);
-    }
-  }
-  value.get()._internal_set${otherSide.getName()?cap_first}(${classname?uncap_first}.getGemId(), NotificationScope.MINIMAL);
   </#if>
+  if (${valueManager}.isLoaded${valueType}(valueID)) {
+    ${valueType} value = ${valueManager}.get${valueType}Sure(valueID);
+    ${tc.includeArgs("umlp.methods.gemmap.OtherSideRefer", ["value", classname?uncap_first + ".getGemId()",
+        otherSide.getName(), genService.isList(otherSide)])}
+  }
 }
 </#list>
 return StatusResult.ok(getId());
