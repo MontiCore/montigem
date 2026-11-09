@@ -14,9 +14,10 @@ import java.util.stream.Stream;
  * Generates the sync protocol tests of qualified associations (GemMaps), attribute qualified ones ([[attr]], the key
  * is derived from the value) and type qualified ones ([T], the key is chosen on put), like
  * {@link SyncProtocolTestGenerator} does for list associations: one test interface per map of the model
- * (examples/it-sync-protocol-test/models/Associations.umlp, classes named <Key><Value>), with a test method per
- * build state, context pair, operation (the ones that apply to the key, see {@link Operation#appliesTo}) and load
- * state, and the support that is specific to the map.
+ * (examples/it-sync-protocol-test/models/Associations.umlp, classes named <Key><Owner><Value>), with a test method per
+ * build state, context pair, operation (the ones that apply to the map, see {@link Operation#appliesTo}) and load
+ * state, and the support that is specific to the map. Bidirectional maps ({@link Owner}) check the other side of the
+ * values as well.
  */
 public final class GemMapSyncTestGenerator {
   private GemMapSyncTestGenerator() {
@@ -64,6 +65,34 @@ public final class GemMapSyncTestGenerator {
     }
   }
 
+  /**
+   * the owner side of the association: unidirectional, or bidirectional with the owner side's cardinality; the value
+   * side of a bidirectional association is the map's other side (role owner or owners)
+   */
+  enum Owner {
+    UNI(""),
+    // [1]: a value is in one owner's map, a put into another owner's map moves it
+    ONE("One"),
+    // [0..1]: the same as [1]
+    OPT("Opt"),
+    // [*]: a value may be in several owners' maps
+    MANY("Many");
+
+    final String namePart;
+
+    Owner(String namePart) {
+      this.namePart = namePart;
+    }
+
+    boolean bidirectional() {
+      return this != UNI;
+    }
+
+    boolean single() {
+      return this == ONE || this == OPT;
+    }
+  }
+
   enum Value {
     PLAIN("Plain"),
     SUPER("Super"),
@@ -108,6 +137,8 @@ public final class GemMapSyncTestGenerator {
     FULL_OBJECT_LOADED("FullObjectLoaded"),
     // the owner is loaded, so its keys are known, the values are not
     OWNER_LOADED("OwnerLoaded"),
+    // bidirectional: the values are loaded, the owner is not; the values' other side follows nevertheless
+    VALUE_LOADED("ValueLoaded"),
     FULL_OBJECT_NOT_LOADED("FullObjectNotLoaded");
 
     final String namePart;
@@ -133,7 +164,12 @@ public final class GemMapSyncTestGenerator {
     // deleting the owner removes its map, the values and the maps of other owners stay
     DELETE_OWNER("DeleteOwner"),
     // chosen keys that are objects: deleting the key object removes its entry, the value stays
-    DELETE_KEY("DeleteKey");
+    DELETE_KEY("DeleteKey"),
+    // bidirectional: value 0 is put into the map of another owner; a single owner loses it
+    MOVE_OWNER("MoveOwner"),
+    // bidirectional, derived keys: the value side of value 0 is changed to (single) or extended by (several) another
+    // owner, which puts it into that owner's map
+    SET_OWNER("SetOwner");
 
     final String namePart;
 
@@ -141,20 +177,29 @@ public final class GemMapSyncTestGenerator {
       this.namePart = namePart;
     }
 
-    boolean appliesTo(Key key) {
+    boolean appliesTo(GemMap gemMap) {
+      Key key = gemMap.key();
       return switch (this) {
         case REKEY -> !key.chosen;
         case MOVE -> key.chosen;
         // the entries of a derived key object are not removed on its deletion yet (known bug)
         case DELETE_KEY -> key.chosen && key.entry;
+        case MOVE_OWNER -> gemMap.owner().bidirectional();
+        // the value side of a type qualified association is read-only (there is no key to put it under)
+        case SET_OWNER -> gemMap.owner().bidirectional() && !key.chosen;
         default -> true;
       };
     }
   }
 
-  record GemMap(Key key, Value value) {
+  record GemMap(Key key, Owner owner, Value value) {
     String caseName() {
-      return key.namePart + value.namePart;
+      return key.namePart + owner.namePart + value.namePart;
+    }
+
+    // the role of the map's other side on the value
+    String otherSide() {
+      return owner.single() ? "owner" : "owners";
     }
 
     String ownerType() {
@@ -193,7 +238,17 @@ public final class GemMapSyncTestGenerator {
         if (!key.hasValue(value)) {
           continue;
         }
-        gemMaps.add(new GemMap(key, value));
+        gemMaps.add(new GemMap(key, Owner.UNI, value));
+      }
+    }
+    // bidirectional, Plain only: [1] and [*] for the main keys, [0..1] (the same code as [1]) for one [[attr]] and one
+    // [T] key
+    for (Key key : List.of(Key.STR, Key.NUM, Key.OBJ, Key.ROLE, Key.TYPE_STR, Key.TYPE_NUM, Key.TYPE_OBJ)) {
+      for (Owner owner : List.of(Owner.ONE, Owner.OPT, Owner.MANY)) {
+        if (owner == Owner.OPT && key != Key.STR && key != Key.TYPE_OBJ) {
+          continue;
+        }
+        gemMaps.add(new GemMap(key, owner, Value.PLAIN));
       }
     }
     return gemMaps;
@@ -258,10 +313,13 @@ public final class GemMapSyncTestGenerator {
     for (BuildState buildState : BuildState.values()) {
       for (ContextPair contextPair : ContextPair.values()) {
         for (Operation operation : Operation.values()) {
-          if (!operation.appliesTo(gemMap.key())) {
+          if (!operation.appliesTo(gemMap)) {
             continue;
           }
           for (LoadState loadState : LoadState.values()) {
+            if (loadState == LoadState.VALUE_LOADED && !gemMap.owner().bidirectional()) {
+              continue;
+            }
             if (isSensible(buildState, contextPair, loadState)) {
               appendTestMethod(content, buildState, contextPair, operation, loadState, gemMap);
             }
@@ -302,6 +360,10 @@ public final class GemMapSyncTestGenerator {
       content.append("    // the keys travel without the values\n");
       content.append("    assertValuesNotLoaded(scenario);\n");
     }
+    // VALUE_LOADED: the values' other side follows without the owner (whether the owner stays unloaded is not
+    // checked: changing a single other side by id loads its old value, known bug #18)
+    // before the map's assertions, which load the owner
+    appendOtherSideAssertion(content, operation, gemMap, "");
     appendExpectedAssertion(content, operation, gemMap, "");
     if (operation == Operation.REPLACE && !gemMap.key().chosen) {
       content.append("    // the replaced value derives the same key: the server reports it, the value is replaced\n");
@@ -345,7 +407,8 @@ public final class GemMapSyncTestGenerator {
   private static int initialValueCount(Operation operation) {
     return switch (operation) {
       case BUILD_OBJECT, PUT, PUT_BY_MAP, REPLACE -> 1;
-      case GET, REKEY, MOVE, REMOVE, REMOVE_BY_KEY_SET, DELETE_OBJECT, DELETE_OWNER, DELETE_KEY -> 2;
+      case GET, REKEY, MOVE, REMOVE, REMOVE_BY_KEY_SET, DELETE_OBJECT, DELETE_OWNER, DELETE_KEY, MOVE_OWNER,
+           SET_OWNER -> 2;
     };
   }
 
@@ -359,8 +422,10 @@ public final class GemMapSyncTestGenerator {
     }
 
     appendActivation(content, expectedContext(contextPair));
-    content.append("    preloadOwner(scenario.ownerId);\n");
-    if (loadState == LoadState.FULL_OBJECT_LOADED) {
+    if (loadState != LoadState.VALUE_LOADED) {
+      content.append("    preloadOwner(scenario.ownerId);\n");
+    }
+    if (loadState == LoadState.FULL_OBJECT_LOADED || loadState == LoadState.VALUE_LOADED) {
       content.append("    preloadValue(scenario.value0Id);\n");
       content.append("    preloadValue(scenario.value1Id);\n");
       content.append("    preloadValue(scenario.value2Id);\n");
@@ -426,6 +491,18 @@ public final class GemMapSyncTestGenerator {
         }
         content.append("    assert").append(persisted).append("OtherOwnerEntryPresent(scenario, 0, scenario.value0Id);\n");
       }
+      case MOVE_OWNER, SET_OWNER -> {
+        if (gemMap.owner().single()) {
+          content.append(absent).append("0);\n");
+          content.append(size).append("1);\n");
+        }
+        else {
+          content.append(present).append("0, scenario.value0Id);\n");
+          content.append(size).append("2);\n");
+        }
+        content.append(present).append("1, scenario.value1Id);\n");
+        content.append("    assert").append(persisted).append("OtherOwnerEntryPresent(scenario, 0, scenario.value0Id);\n");
+      }
       case DELETE_KEY -> {
         // key 0 is deleted: its entry is checked by the gemId of the key object
         content.append("    assert").append(persisted).append("StoredKeyAbsent(scenario, 0);\n");
@@ -441,11 +518,60 @@ public final class GemMapSyncTestGenerator {
     }
   }
 
+  /**
+   * bidirectional: the other side of the values names the owners whose maps hold them (o: the owner, oo: the other
+   * owner of DELETE_OWNER, MOVE_OWNER and SET_OWNER)
+   */
+  private static void appendOtherSideAssertion(StringBuilder content, Operation operation, GemMap gemMap,
+                                               String persisted) {
+    if (!gemMap.owner().bidirectional()) {
+      return;
+    }
+    String o = "scenario.ownerId";
+    String oo = "scenario.otherOwnerId";
+    String assertion = "    assert" + persisted + "OtherSide(";
+    switch (operation) {
+      case BUILD_OBJECT -> content.append(assertion).append("scenario.value0Id, ").append(o).append(");\n");
+      case PUT, PUT_BY_MAP -> {
+        content.append(assertion).append("scenario.targetValueId, ").append(o).append(");\n");
+        content.append(assertion).append("scenario.value0Id, ").append(o).append(");\n");
+      }
+      case GET, REKEY, MOVE -> {
+        content.append(assertion).append("scenario.value0Id, ").append(o).append(");\n");
+        content.append(assertion).append("scenario.value1Id, ").append(o).append(");\n");
+      }
+      case REMOVE, REMOVE_BY_KEY_SET, DELETE_KEY -> {
+        content.append(assertion).append("scenario.value0Id);\n");
+        content.append(assertion).append("scenario.value1Id, ").append(o).append(");\n");
+      }
+      case REPLACE -> {
+        content.append(assertion).append("scenario.targetValueId, ").append(o).append(");\n");
+        content.append(assertion).append("scenario.oldValueId);\n");
+      }
+      case DELETE_OBJECT -> content.append(assertion).append("scenario.value1Id, ").append(o).append(");\n");
+      case DELETE_OWNER -> {
+        // value 0 was put into the other owner's map as well (a single owner moved it there)
+        content.append(assertion).append("scenario.value0Id, ").append(oo).append(");\n");
+        content.append(assertion).append("scenario.value1Id);\n");
+      }
+      case MOVE_OWNER, SET_OWNER -> {
+        if (gemMap.owner().single()) {
+          content.append(assertion).append("scenario.value0Id, ").append(oo).append(");\n");
+        }
+        else {
+          content.append(assertion).append("scenario.value0Id, ").append(o).append(", ").append(oo).append(");\n");
+        }
+        content.append(assertion).append("scenario.value1Id, ").append(o).append(");\n");
+      }
+    }
+  }
+
   private static void appendDatabaseAssertion(StringBuilder content, Operation operation, GemMap gemMap) {
     content.append("\n");
     content.append("    if (hasDatabase()) {\n");
     content.append("      getBackend().activate();\n");
     StringBuilder persisted = new StringBuilder();
+    appendOtherSideAssertion(persisted, operation, gemMap, "Persisted");
     appendExpectedAssertion(persisted, operation, gemMap, "Persisted");
     content.append(persisted.toString().replace("\n    ", "\n      ").replaceFirst("^    ", "      "));
     content.append("    }\n");
@@ -597,14 +723,14 @@ public final class GemMapSyncTestGenerator {
 
     content.append("      case GET -> scenario.targetValueId = scenario.value1Id;\n");
 
-    if (Operation.REKEY.appliesTo(gemMap.key())) {
+    if (Operation.REKEY.appliesTo(gemMap)) {
       content.append("      case REKEY -> {\n");
       content.append("        scenario.targetValueId = scenario.value0Id;\n");
       content.append("        AssociationsManager.get").append(valueType).append("Sure(scenario.value0Id).setKey(key(scenario, 3));\n");
       content.append("      }\n");
     }
 
-    if (Operation.MOVE.appliesTo(gemMap.key())) {
+    if (Operation.MOVE.appliesTo(gemMap)) {
       content.append("      case MOVE -> {\n");
       content.append("        scenario.targetValueId = scenario.value0Id;\n");
       content.append("        owner.putByKey(key(scenario, 3), AssociationsManager.get").append(valueType)
@@ -642,11 +768,31 @@ public final class GemMapSyncTestGenerator {
     content.append("        assertTrue(AssociationsManager.delete").append(ownerType).append("(scenario.ownerId));\n");
     content.append("      }\n");
 
-    if (Operation.DELETE_KEY.appliesTo(gemMap.key())) {
+    if (Operation.DELETE_KEY.appliesTo(gemMap)) {
       content.append("      case DELETE_KEY -> {\n");
       content.append("        scenario.targetValueId = scenario.value0Id;\n");
       content.append("        assertTrue(AssociationsManager.delete").append(gemMap.key().keyClass())
           .append("(scenario.keyIds[0]));\n");
+      content.append("      }\n");
+    }
+
+    if (Operation.MOVE_OWNER.appliesTo(gemMap)) {
+      content.append("      case MOVE_OWNER -> {\n");
+      content.append("        ").append(ownerType).append(" otherOwner = newBareOwner();\n");
+      content.append("        scenario.otherOwnerId = otherOwner.getGemId();\n");
+      content.append("        scenario.targetValueId = scenario.value0Id;\n");
+      content.append("        otherOwner.putByKey(")
+          .append(putArgs(gemMap, 0, "AssociationsManager.get" + valueType + "Sure(scenario.value0Id)")).append(");\n");
+      content.append("      }\n");
+    }
+
+    if (Operation.SET_OWNER.appliesTo(gemMap)) {
+      content.append("      case SET_OWNER -> {\n");
+      content.append("        ").append(ownerType).append(" otherOwner = newBareOwner();\n");
+      content.append("        scenario.otherOwnerId = otherOwner.getGemId();\n");
+      content.append("        scenario.targetValueId = scenario.value0Id;\n");
+      content.append("        AssociationsManager.get").append(valueType).append("Sure(scenario.value0Id).")
+          .append(gemMap.owner().single() ? "setOwner" : "addOwners").append("(otherOwner);\n");
       content.append("      }\n");
     }
     content.append("    }\n");
@@ -676,6 +822,10 @@ public final class GemMapSyncTestGenerator {
     content.append("      }\n");
     content.append("    }\n");
     content.append("  }\n\n");
+
+    if (gemMap.owner().bidirectional()) {
+      appendOtherSideHelpers(content, gemMap);
+    }
 
     appendEntryAssertions(content, gemMap, "", "AssociationsManager.get" + ownerType + "Sure(scenario.ownerId)");
     appendEntryAssertions(content, gemMap, "Persisted", "selectPersistedOwner(scenario.ownerId)");
@@ -720,6 +870,35 @@ public final class GemMapSyncTestGenerator {
     content.append("    return AssociationsDAOFactory.get").append(ownerType).append("DAO().select")
         .append(ownerType).append("(ownerId).orElseThrow();\n");
     content.append("  }\n\n");
+  }
+
+  /**
+   * assert(Persisted)OtherSide(valueId, ownerIds...): the other side of the value names exactly the given owners
+   * (none: -1 for a single owner, an empty list for several)
+   */
+  private static void appendOtherSideHelpers(StringBuilder content, GemMap gemMap) {
+    String valueType = gemMap.valueType();
+
+    for (String persisted : List.of("", "Persisted")) {
+      String value = persisted.isEmpty()
+          ? "AssociationsManager.get" + valueType + "Sure(valueId)"
+          : "AssociationsDAOFactory.get" + valueType + "DAO().select" + valueType + "(valueId).orElseThrow()";
+      content.append("  default void assert").append(persisted).append("OtherSide(long valueId, long... ownerIds) {\n");
+      content.append("    ").append(valueType).append(" value = ").append(value).append(";\n");
+      if (gemMap.owner().single()) {
+        content.append("    assertEquals(ownerIds.length == 0 ? -1 : ownerIds[0], value.getOwnerGem().getGemId());\n");
+      }
+      else {
+        content.append("    java.util.Set<Long> expected = new java.util.HashSet<>();\n");
+        content.append("    for (long ownerId : ownerIds) {\n");
+        content.append("      expected.add(ownerId);\n");
+        content.append("    }\n");
+        content.append("    java.util.List<Long> actual = value._internal_getOwnersGemList().getIDs();\n");
+        content.append("    assertEquals(expected, new java.util.HashSet<>(actual));\n");
+        content.append("    assertEquals(expected.size(), actual.size());\n");
+      }
+      content.append("  }\n\n");
+    }
   }
 
   private static void appendEntryAssertions(StringBuilder content, GemMap gemMap, String persisted, String owner) {
