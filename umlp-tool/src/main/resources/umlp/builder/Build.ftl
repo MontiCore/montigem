@@ -75,31 +75,17 @@ if (!buildFinished) {
 // like for a bidirectional list (a single owner: they leave their old owner's map, see _internal_put${assoc.getName()?cap_first}Id).
 // Not for a deserialized object: loaded ones are consistent, for one created elsewhere its create command does so
 if (!INTERNAL_deser_mode) {
-  boolean server = CommandManager.getParticipantId() == 0;
   for (long valueID : this._${assoc.getName()}.getValueIDs()) {
-    if (!server && !${valueManager}.isLoaded${valueType}(valueID)) {
-      continue;
-    }
-    Optional<${valueType}> value = ${valueManager}.${valueType?uncap_first}Opt(valueID);
-    if (value.isEmpty()) {
-      continue;
-    }
-    <#if genService.isList(otherSide)>
-    if (value.get()._internal_get${otherSide.getName()?cap_first}GemList().indexOfId(this.getGemId()) == -1) {
-      value.get()._internal_add${otherSide.getName()?cap_first}(value.get()._internal_get${otherSide.getName()?cap_first}GemList().getIDs().size(),
-          Collections.singletonList(this.getGemId()), NotificationScope.MINIMAL);
-    }
-    <#else>
-    long oldOwnerID = value.get().get${otherSide.getName()?cap_first}Gem().getGemId();
-    if (oldOwnerID != -1 && oldOwnerID != this.getGemId()
-        && (server || ${ownerManager}.isLoaded${ownerType}(oldOwnerID))) {
-      Optional<${ownerType}> oldOwner = ${ownerManager}.${ownerType?uncap_first}Opt(oldOwnerID);
-      if (oldOwner.isPresent()) {
-        oldOwner.get()._internal_remove${assoc.getName()?cap_first}Id(valueID, server ? NotificationScope.ALL : NotificationScope.LOCAL);
-      }
-    }
-    value.get()._internal_set${otherSide.getName()?cap_first}(this.getGemId(), NotificationScope.MINIMAL);
+    <#if !genService.isList(otherSide)>
+    ${tc.includeArgs("umlp.methods.gemmap.OtherSideMove", ["valueID", "this.getGemId()", assoc.getName(),
+        otherSide.getName(), valueType, valueManager, ownerType, ownerManager,
+        "CommandManager.getParticipantId() == 0 ? NotificationScope.ALL : NotificationScope.LOCAL"])}
     </#if>
+    if (${valueManager}.isLoaded${valueType}(valueID)) {
+      ${valueType} value = ${valueManager}.get${valueType}Sure(valueID);
+      ${tc.includeArgs("umlp.methods.gemmap.OtherSideRefer", ["value", "this.getGemId()", otherSide.getName(),
+          genService.isList(otherSide)])}
+    }
   }
 }
   </#if>

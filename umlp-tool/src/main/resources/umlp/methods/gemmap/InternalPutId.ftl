@@ -32,52 +32,24 @@ if (oldID != null && oldID == gemID) {
 }
 <#if otherSideName?has_content && !otherSideIsList>
 if (scope.contains(NotificationScope.LOCAL)) {
-  // a single owner: the value leaves its old owner's map, which its other side names. The server loads the value and
-  // the old owner if needed and removes with ALL: the database deletes the old pair and the old owner's subscribers
-  // learn it (they do not receive this put); the other participants move what they loaded, locally
-  boolean server = CommandManager.getParticipantId() == 0;
-  if (server || ${targetManager}.isLoaded${targetName}(gemID)) {
-    Optional<${targetName}> moved = ${targetManager}.${targetName?uncap_first}Opt(gemID);
-    long oldOwnerID = moved.isPresent() ? moved.get().get${otherSideName?cap_first}Gem().getGemId() : -1;
-    if (oldOwnerID != -1 && oldOwnerID != this.getGemId()
-        && (server || ${ownerManager}.isLoaded${ownerType}(oldOwnerID))) {
-      Optional<${ownerType}> oldOwner = ${ownerManager}.${ownerType?uncap_first}Opt(oldOwnerID);
-      if (oldOwner.isPresent()) {
-        oldOwner.get()._internal_remove${name?cap_first}Id(gemID, server ? NotificationScope.ALL : NotificationScope.LOCAL);
-      }
-    }
-  }
+  // a single owner: the value leaves its old owner's map; the server removes with ALL, for the database and the old
+  // owner's subscribers (they do not receive this put), the other participants locally
+  ${tc.includeArgs("umlp.methods.gemmap.OtherSideMove", ["gemID", "this.getGemId()", name, otherSideName, targetName,
+      targetManager, ownerType, ownerManager, "CommandManager.getParticipantId() == 0 ? NotificationScope.ALL : NotificationScope.LOCAL"])}
 }
 </#if>
 this._${name}._internal_putValueID(key, gemID);
 check${name?cap_first}();
 <#if otherSideName?has_content>
 if (scope.contains(NotificationScope.LOCAL)) {
-  // the other side of the values loaded here refers to this owner, a replaced value's no longer, like for a
-  // bidirectional list (MINIMAL: the map's command and row carry the pair)
+  // the other side of the values loaded here refers to this owner, a replaced value's no longer
   if (oldID != null && ${targetManager}.isLoaded${targetName}(oldID)) {
     ${targetName} replaced = ${targetManager}.get${targetName}Sure(oldID);
-  <#if otherSideIsList>
-    int idx = replaced._internal_get${otherSideName?cap_first}GemList().indexOfId(this.getGemId());
-    if (idx != -1) {
-      replaced._internal_remove${otherSideName?cap_first}(Collections.singleton(idx), NotificationScope.MINIMAL);
-    }
-  <#else>
-    if (replaced.get${otherSideName?cap_first}Gem().getGemId() == this.getGemId()) {
-      replaced._internal_set${otherSideName?cap_first}(-1L, NotificationScope.MINIMAL);
-    }
-  </#if>
+    ${tc.includeArgs("umlp.methods.gemmap.OtherSideRelease", ["replaced", "this.getGemId()", otherSideName, otherSideIsList])}
   }
   if (${targetManager}.isLoaded${targetName}(gemID)) {
     ${targetName} value = ${targetManager}.get${targetName}Sure(gemID);
-  <#if otherSideIsList>
-    if (value._internal_get${otherSideName?cap_first}GemList().indexOfId(this.getGemId()) == -1) {
-      value._internal_add${otherSideName?cap_first}(value._internal_get${otherSideName?cap_first}GemList().getIDs().size(),
-          Collections.singletonList(this.getGemId()), NotificationScope.MINIMAL);
-    }
-  <#else>
-    value._internal_set${otherSideName?cap_first}(this.getGemId(), NotificationScope.MINIMAL);
-  </#if>
+    ${tc.includeArgs("umlp.methods.gemmap.OtherSideRefer", ["value", "this.getGemId()", otherSideName, otherSideIsList])}
   }
 }
 </#if>
