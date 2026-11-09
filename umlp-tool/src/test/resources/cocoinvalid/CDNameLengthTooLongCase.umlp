@@ -1,4 +1,4 @@
-umlp CDNameLengthToLongCase {
+umlp CDNameLengthTooLongCase {
   enum RoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRoleRole {
     SYSTEM, USER, ASSISTANT, TOOL;
   }

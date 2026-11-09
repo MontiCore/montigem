@@ -3,8 +3,11 @@
 package umlp._cocos;
 
 import de.monticore.cd4analysis.cocos.CD4AnalysisCoCosDelegator;
+import de.monticore.cdassociation._cocos.CDAssociationASTCDAssociationCoCo;
 import de.monticore.cdassociation.cocos.ebnf.RoleAndFieldNamesUnique;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
+import de.monticore.cdbasis._cocos.CDBasisASTCDClassCoCo;
+import de.monticore.cdinterfaceandenum._cocos.CDInterfaceAndEnumASTCDInterfaceCoCo;
 
 /**
  * Collection of all CoCos of the UMLP language
@@ -31,7 +34,12 @@ public class UMLPCoCos {
   public static void addAllCDCoCosAfterTrafo(UMLPCoCoChecker checker) {
     checker.addChecker(new CD4AnalysisCoCosDelegator().getCheckerForAllCoCos());
     // CoCos for generation after Trafo
-    checker.addCoCo(new PostgresTableNameLengthCoCo());
+
+    /*  checker.addCoCo((CDInterfaceAndEnumASTCDEnumCoCo) new PostgresTableNameLengthCoCo());
+    checker.addCoCo((CDBasisASTCDAttributeCoCo) new PostgresTableNameLengthCoCo());*/
+    checker.addCoCo((CDBasisASTCDClassCoCo) new PostgresTableNameLengthCoCo());
+    checker.addCoCo((CDInterfaceAndEnumASTCDInterfaceCoCo) new PostgresTableNameLengthCoCo());
+    checker.addCoCo((CDAssociationASTCDAssociationCoCo) new PostgresTableNameLengthCoCo());
   }
 
   public static void addAllCDCoCos(UMLPCoCoChecker checker){
