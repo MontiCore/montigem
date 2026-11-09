@@ -65,6 +65,30 @@ For MontiGem users:
   `qualifier` (`qualifier_id` for domain class keys), `NOT NULL`; in Neo4j it is the property
   `qualifier` of the relationship. There is no migration: existing tables of type qualified
   associations have to be recreated.
+
+## 2026-11-09: 7.10.0-SNAPSHOT
+* Qualified associations (attribute and type qualified) may be bidirectional. The owner side
+  needs an explicit cardinality, `[1]`, `[0..1]` or `[*]` (`0xCDC6D`); the value side stays `[1]`:
+  ```
+  association [0..1] Club [[code]] (club) <-> (memberByCode) Member [1];
+  association [*] Club [String] (clubs) <-> (memberByRole) Member [1];
+  ```
+  The value side is the map's other side: `member.getClub()` for `[1]`/`[0..1]`, the list
+  `member.getClubsList()` for `[*]`. The map is the only source of truth: puts, removals, deleting
+  the owner and deleting the key object of a type qualified map update the other side of the
+  values on every participant, also on those that loaded only a value; the other side has no
+  commands and no database rows of its own.
+  * `[1]`/`[0..1]`: a value is in one owner's map only, putting it into another owner's map takes
+    it out of the old one.
+  * `[*]`: a value may be in several owners' maps, under its own key in each for type qualified
+    associations.
+  * Attribute qualified: the other side can be changed as well, `member.setClub(club)` puts the
+    member into the club's map under its derived key. Type qualified: the other side is read-only
+    (there is no key to put the value under): it has no mutators, and its list refuses changes
+    (`0xA7330`).
+  * The put and remove commands of a bidirectional map need the access permission of the value
+    type as well as the owner's (`Create` for a put, `Delete` for a removal), like the commands of
+    a bidirectional association.
 * **Breaking:** the put notification of a GemMap gets the value it replaced and the value's old
   owner, like a set notification gets the old value:
   `notifyPut<Role>(owner, key, valueGemId, oldValueGemId, oldOwnerGemId)` (`oldValueGemId` is `-1`
