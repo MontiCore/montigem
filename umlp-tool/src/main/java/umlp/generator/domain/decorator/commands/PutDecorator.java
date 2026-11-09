@@ -108,7 +108,7 @@ public class PutDecorator extends AddDecorator {
     getCD4C().addConstructor(ast, "umlp.commands.put.Constructor", classname,
         getPackageName(origCD, COMMAND_PACKAGE), valueIdName, key.getStoredKeyType(), getKeyFields(), hasOldOwner(a));
     addDoAction(ast, origCD, a, domainType, key);
-    addCheckAccessPolicy(ast, domainType);
+    addCheckAccessPolicy(ast, domainType, a);
     getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), getEffectedGemIds(a));
 
     addImports(origCD, domainType, ast);
@@ -183,7 +183,19 @@ public class PutDecorator extends AddDecorator {
         getCorrectManagerOfTargetType(a), key.getKeyType(), keyTypeManager);
   }
 
-  protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType) {
+  /**
+   * the owner type's Create permission; bidirectional: the value type's as well, whose other side changes (like the
+   * add command of a bidirectional association)
+   */
+  protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType, ASTCDAssocSide a) {
+    if (GenService.getOtherSideOfMap(a).isPresent()) {
+      ASTCDType valueType = (ASTCDType) a.getSymbol().getType().getTypeInfo().getAstNode();
+      getCD4C().addMethod(ast, "umlp.commands.assocs.AssocsCheckAccessPolicy", domainType.getName(),
+          valueType.getName(), "Create");
+      getCD4C().addImport(ast, getPackageName(UMLPSymbolTables.getDiagramFor(valueType), DEFAULT_PACKAGE) + "."
+          + valueType.getName() + "AccessPolicy");
+      return;
+    }
     getCD4C().addMethod(ast, getGeneralCheckAccessPolicyTemplate(), domainType.getName(), "Create");
   }
 
