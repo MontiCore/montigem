@@ -168,6 +168,11 @@ public class DAONeo4jDecorator extends DAODecorator {
       getCD4C().addMethod(daoClass, "umlp.dao.associations.RemoveAllWithKeyForAssocDAONeo4j", assoc,
           CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), mapSide.getName(),
           key.getNeo4jPropertyName(), otherSideRole);
+      if (!otherSideRole.isEmpty()) {
+        getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectOwnerIdsWithKeyForAssocDAONeo4j", assoc,
+            CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), mapSide.getName(),
+            key.getNeo4jPropertyName());
+      }
     }
   }
 

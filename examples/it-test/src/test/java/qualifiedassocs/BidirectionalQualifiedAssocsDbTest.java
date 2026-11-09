@@ -11,6 +11,7 @@ import qualifiedassocs.test_infrastructure.QualifiedAssocsTestSetup;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -164,6 +165,46 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     assertTrue(QualifiedAssocsManager.deleteDepartment(sales.getGemId()));
     assertEquals(0, club.sizeLeaderByDepartments());
     assertEquals(-1, ledClubId(anna));
+  }
+
+  /**
+   * deleting the key object while the owner is not loaded: the server loads the owner, so the entry leaves through it
+   * and the other side of the loaded values follows, on the server and on a client that loaded only the value
+   */
+  @Test
+  default void testOtherSideAfterKeyObjectDeletionWithOwnerNotLoaded() {
+    getBackend().activate();
+    var club = club();
+    var other = club();
+    var anna = person("anna", 1);
+    var sales = QualifiedAssocsManager.departmentBuilder().name("sales").build().get();
+    var it = QualifiedAssocsManager.departmentBuilder().name("it").build().get();
+    club.putLeaderByDepartment(sales, anna);
+    club.putSponsorByDepartment(sales, anna);
+    other.putSponsorByDepartment(it, anna);
+    QualifiedAssocsManager.TESTING_clearCache();
+    var serverAnna = QualifiedAssocsManager.getPersonSure(anna.getGemId());
+    assertEquals(club.getGemId(), ledClubId(serverAnna));
+    assertEquals(2, serverAnna._internal_getSponsoredClubsGemList().getIDs().size());
+    assertFalse(QualifiedAssocsManager.isLoadedClub(club.getGemId()));
+    getClients(0).activate();
+    var clientAnna = QualifiedAssocsManager.getPersonSure(anna.getGemId());
+    assertEquals(club.getGemId(), ledClubId(clientAnna));
+
+    getBackend().activate();
+    assertTrue(QualifiedAssocsManager.deleteDepartment(sales.getGemId()));
+    assertEquals(-1, ledClubId(serverAnna));
+    assertEquals(List.of(other.getGemId()), serverAnna._internal_getSponsoredClubsGemList().getIDs());
+    getClients(0).activate();
+    assertEquals(-1, ledClubId(clientAnna));
+    assertEquals(List.of(other.getGemId()), clientAnna._internal_getSponsoredClubsGemList().getIDs());
+
+    getBackend().activate();
+    QualifiedAssocsManager.TESTING_clearCache();
+    var loadedClub = QualifiedAssocsManager.getClubSure(club.getGemId());
+    assertEquals(0, loadedClub.sizeLeaderByDepartments());
+    assertEquals(0, loadedClub.sizeSponsorByDepartments());
+    assertEquals(-1, ledClubId(QualifiedAssocsManager.getPersonSure(anna.getGemId())));
   }
 
   /** deleting the owner clears the other side of the loaded values, on the server and on a client, and in the db */
