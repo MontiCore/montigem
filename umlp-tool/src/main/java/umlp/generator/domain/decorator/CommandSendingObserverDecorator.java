@@ -119,7 +119,7 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
             String keyType = QualifierKey.of(a).getStoredKeyType();
             String role = StringTransformations.capitalize(a.getName());
             setOverrideAnnotation(getCD4C().addMethod(ast, putAttributeTmplt(), a.getName(), keyType, otherType.print(),
-                GenService.hasSingleOwner(a)));
+                GenService.getOtherSideOfMap(a).isPresent(), GenService.hasSingleOwner(a)));
             getCD4C().addImport(ast, getPackageName(cd, COMMAND_PACKAGE) + "." + otherType.print() + "_put" + role);
             if (rekeyAttributeTmplt().isPresent() && GenService.isKeyDerived(a)) {
               setOverrideAnnotation(getCD4C().addMethod(ast, rekeyAttributeTmplt().get(), a.getName(), keyType,
