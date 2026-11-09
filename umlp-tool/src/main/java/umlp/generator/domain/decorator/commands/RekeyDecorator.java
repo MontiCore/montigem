@@ -69,7 +69,7 @@ public class RekeyDecorator extends PutDecorator {
   }
 
   @Override
-  protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType) {
+  protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType, ASTCDAssocSide a) {
     getCD4C().addMethod(ast, "umlp.commands.rekey.CheckAccessPolicy");
   }
 }

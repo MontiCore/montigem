@@ -147,7 +147,17 @@ public class RemoveDecorator extends AbstractDeSerDecorator {
     getCD4C().addMethod(ast, getDoRunTemplate(), name, domainClass.getName(), getCorrectManager(domainClass), isGem, name, hasOCL,
         isMap, otherSide.map(ASTCDAssocSide::getName).orElse(""), otherSide.map(GenService::isList).orElse(false),
         valueType, isMap ? GenService.getManagerOfType(map.get()) : "");
-    getCD4C().addMethod(ast, getCheckAccessPolicyTemplate(), domainClass.getName(), "Delete");
+    if (otherSide.isPresent()) {
+      // bidirectional: the value type's Delete permission as well, its other side changes (like the remove command of
+      // a bidirectional association)
+      ASTCDType valueClass = (ASTCDType) map.get().getSymbol().getType().getTypeInfo().getAstNode();
+      getCD4C().addMethod(ast, "umlp.commands.assocs.AssocsCheckAccessPolicy", domainClass.getName(),
+          valueClass.getName(), "Delete");
+      getCD4C().addImport(ast, getPackageName(UMLPSymbolTables.getDiagramFor(valueClass), DEFAULT_PACKAGE) + "."
+          + valueClass.getName() + "AccessPolicy");
+    } else {
+      getCD4C().addMethod(ast, getCheckAccessPolicyTemplate(), domainClass.getName(), "Delete");
+    }
     if (isGem && (!isMap || otherSide.isPresent())) {
       getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("getGemId()", name + "GemId"));
     } else {
