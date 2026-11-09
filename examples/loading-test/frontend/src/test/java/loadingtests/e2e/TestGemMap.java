@@ -23,7 +23,7 @@ import static umlp.test_rte.playwright.ComponentKind.GemText;
  * against the TypeScript RTE GemMaps, the test checks the backend after synchronization and/or what the
  * page read in the browser
  */
-public class TestGemMapE2E extends AbstractLoadingTestsE2ETest {
+public class TestGemMap extends AbstractLoadingTestsE2ETest {
 
   Course course;
   Student anna;

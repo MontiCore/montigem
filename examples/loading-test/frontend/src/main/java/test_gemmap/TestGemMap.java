@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 /**
  * Runs GemMap scenarios in the browser, i.e. against the TypeScript RTE GemMaps;
- * see loadingtests.e2e.TestGemMapE2E
+ * see loadingtests.e2e.TestGemMap
  */
 public class TestGemMap extends TestGemMapTOP {
 
