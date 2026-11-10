@@ -31,9 +31,6 @@ public class PostgresTableNameLengthCoCo implements
 
   private void tooLongWarn(String name, String truncatedName, ASTCDBasisNode node, String className) {
     if (SQLSchemaGenerator.MAX_IDENTIFIER_BYTES < name.length()) {
-      System.out.println(name);
-      System.out.println(truncatedName);
-
       Log.warn(ERROR_CODE + String.format(
           ERROR_MSG,
           className,
