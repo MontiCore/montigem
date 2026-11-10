@@ -331,6 +331,13 @@ public class UMLPTool extends UMLPToolTOP {
     return options;
   }
 
+  public void runAfterTrafoCoCos(ASTCDCompilationUnit ast) {
+    boolean qfBefore = Log.isFailQuickEnabled();
+    Log.enableFailQuick(false); // Aggregate errors
+    UMLPCoCos.checkAfterTrafo(ast);
+    Log.enableFailQuick(qfBefore); // Fail if an error was found
+  }
+
   @Override
   public void runDefaultCoCos(ASTCDCompilationUnit ast) {
     boolean qfBefore = Log.isFailQuickEnabled();
