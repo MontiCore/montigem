@@ -21,6 +21,9 @@ public class UMLPCoCos {
     checker.checkAll(ast);
   }
 
+  /**
+   * This method runs CoCo checks that appear the default trafos like UMLSetDefaultsTrafo
+   */
   public static void checkAfterTrafo(ASTCDCompilationUnit ast) {
     UMLPCoCoChecker checker = new UMLPCoCoChecker();
     addAllCDCoCosAfterTrafo(checker);
@@ -31,9 +34,6 @@ public class UMLPCoCos {
     // TODO add cocos, once these are implemented
   }
 
-  /**
-   * This method runs CoCo checks that appear the default trafos like UMLSetDefaultsTrafo
-   */
   public static void addAllCDCoCosAfterTrafo(UMLPCoCoChecker checker) {
     checker.addChecker(new CD4AnalysisCoCosDelegator().getCheckerForAllCoCos());
     // CoCos for generation after Trafo
