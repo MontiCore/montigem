@@ -86,7 +86,7 @@ public class ManagerImplDecorator extends AbstractDecorator {
 
     getCD4C().addImport(managerClass, Joiners.DOT.join(getPackageName(origCD, COMMAND_PACKAGE), name + EventSendingObserverDecorator.SUFFIX));
 
-    List<ASTCDClass> concreteDomainClasses = getConcreteDomainClasses(origCD)
+    List<ASTCDClass> concreteDomainClasses = getConcreteNonPojoDomainClasses(origCD)
         .stream()
         .filter(c -> !TagLookUp.isSingleton(c))
         .collect(Collectors.toList());
@@ -127,6 +127,16 @@ public class ManagerImplDecorator extends AbstractDecorator {
       return;
     }
     boolean isSingleton = TagLookUp.isSingleton(domainClass);
+    boolean isPojo = TagLookUp.isPojo(domainClass);
+
+    if(isPojo){
+      if(!domainClass.getModifier().isAbstract()){
+        getCD4C().addMethod(managerClass, "umlp.managerimpl.DoBuilderParam", name);
+        getCD4C().addMethod(managerClass, "umlp.managerimpl.DoDeSerBuilder", name);
+      }
+      return;
+    }
+
     if (!domainClass.getModifier().isAbstract()) {
       managerClass.addCDMember(getDBObserverAttribute(domainClass));
       managerClass.addCDMember(getCommandSendingObserverAttribute(origCD, managerClass, domainClass));

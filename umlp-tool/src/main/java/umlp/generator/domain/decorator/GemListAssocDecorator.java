@@ -37,7 +37,7 @@ public class GemListAssocDecorator extends AbstractDecorator {
   @Override
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, GEMLIST_PACKAGE);
-    getNonDerivedDomainClasses(origCD).forEach(c -> CDSymbolTables.getAssociations(c)
+    getNonDerivedNonPojoDomainClasses(origCD).forEach(c -> CDSymbolTables.getAssociations(c)
                                                                   .stream()
                                                                   .filter(Predicate.not(GenService::isSymbolDerived))
                                                                   .forEach(a -> astcdPackage.addAllCDElements(

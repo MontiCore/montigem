@@ -211,7 +211,9 @@ public class SQLSchemaGenerator {
 
   protected void generateTypeSchemas(ASTCDDefinition cd, IndentPrinter p) {
     for (ASTCDClass node : cd.getCDClassesList()) {
-      generateClassSchema(cd, node, p);
+      if(!GenService.hasStereotype(node.getModifier(), "pojo")) {
+        generateClassSchema(cd, node, p);
+      }
     }
     // List attributes are saved in a table named after the defining type
     // thus we also need to take interfaces into account here

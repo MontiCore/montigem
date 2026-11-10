@@ -35,7 +35,7 @@ public class QueryBuilderDecorator extends AbstractDecorator {
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, DEFAULT_PACKAGE);
     cdName = origCD.getCDDefinition().getName();
     List<ASTCDClass> qbList = new ArrayList<>();
-    for (ASTCDClass c : getConcreteDomainClasses(origCD)) {
+    for (ASTCDClass c : getConcreteNonPojoDomainClasses(origCD)) {
       ASTCDClass qb = createQueryBuilderClassForDomainClass(c);
       astcdPackage.addCDElement(withOrigin(qb));
       qbList.add(qb);

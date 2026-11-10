@@ -35,7 +35,7 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     cdName = origCD.getCDDefinition().getName();
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, DEFAULT_PACKAGE);
-    getConcreteDomainClasses(origCD).forEach(c ->
+    getConcreteNonPojoDomainClasses(origCD).forEach(c ->
         astcdPackage.addCDElement(withOrigin(
             dAOForDomainClass(c))));
 

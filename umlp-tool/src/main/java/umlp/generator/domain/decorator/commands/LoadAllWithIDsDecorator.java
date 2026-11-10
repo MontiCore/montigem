@@ -26,7 +26,7 @@ public class LoadAllWithIDsDecorator extends AbstractDeSerDecorator {
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     addedDeSers.clear();
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, COMMAND_PACKAGE);
-    getNonDerivedDomainClasses(origCD).forEach(c -> {
+    getNonDerivedNonPojoDomainClasses(origCD).forEach(c -> {
       astcdPackage.addCDElement(withOrigin(createClass(origCD, c, astcdPackage.getName())));
       astcdPackage.addCDElement(withOrigin(createDeSer(origCD, c)));
     });
@@ -47,11 +47,11 @@ public class LoadAllWithIDsDecorator extends AbstractDeSerDecorator {
         .setCDExtendUsage(getExtendUsageFacade().createCDExtendUsage("Request<" + classname + ">"))
         .setName(cmdName)
         .build();
-    
+
     ASTCDAttribute attr = addGemIds(ast);
 
     addConstructor(ast, cmdName, domainPackage);
-    
+
     getCD4C().addMethod(ast, "umlp.commands.GeneralCheckAccessPolicy", classname, "Read");
     getCD4C().addMethod(ast, "umlp.commands.loadallwithids.DoRun", classname, domainPackage, getCorrectManager(domainType));
     getCD4C().addMethod(ast, "umlp.commands.loadallwithids.GetNewlySubscribedGemIds");

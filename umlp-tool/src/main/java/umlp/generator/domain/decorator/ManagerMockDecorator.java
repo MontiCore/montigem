@@ -76,7 +76,7 @@ public class ManagerMockDecorator extends AbstractDecorator {
 
     getCD4C().addImport(managerClass, Joiners.DOT.join(getPackageName(origCD, COMMAND_PACKAGE), name + EventSendingObserverDecorator.SUFFIX));
 
-    List<ASTCDClass> concreteDomainClasses = getConcreteDomainClasses(origCD);
+    List<ASTCDClass> concreteDomainClasses = getConcreteNonPojoDomainClasses(origCD);
     Function<ASTCDClass, Boolean> isSingleton = TagLookUp::isSingleton;
     getCD4C().addMethod(managerClass, "umlp.managermock.ClearCache",
             concreteDomainClasses.stream().filter(x -> !isSingleton.apply(x)).collect(Collectors.toList()),
@@ -122,6 +122,14 @@ public class ManagerMockDecorator extends AbstractDecorator {
     }
     String lName = StringTransformations.uncapitalize(name);
     boolean isSingleton = TagLookUp.isSingleton(domainClass);
+    boolean isPojo = TagLookUp.isPojo(domainClass);
+    if (isPojo) {
+      if (!domainClass.getModifier().isAbstract()) {
+        getCD4C().addMethod(managerClass, "umlp.managermock.DoBuilderParam", name);
+        getCD4C().addMethod(managerClass, "umlp.managermock.DoDeSerBuilder", name);
+      }
+      return;
+    }
 
     List<ASTCDAssocSide> assocs = CDSymbolTables.getAssociations(domainClass);
     Set<ASTCDType> concreteSubclassesInclSelf = UMLPSymbolTables.collectConcreteSubclassesInclSelf(origCD, domainClass);
@@ -153,7 +161,7 @@ public class ManagerMockDecorator extends AbstractDecorator {
         getCD4C().addMethod(managerClass, "umlp.managermock.DoGetFilteredList", name, concreteSubclassesInclSelf);
         getCD4C().addMethod(managerClass, "umlp.managermock.DoRegister", name, keyObservers);
       }
-      
+
       if (isSingleton) {
         addAttribute(managerClass, "protected Optional<" + name + "> " + lName + "Instance", "Optional.empty()");
       }else {
