@@ -8,6 +8,7 @@ import mc.fenix.networkgraph.NetworkGraphTypes.Graph;
 import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotData;
 import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotShape;
 import mc.fenix.charts.GemGaugeChartTypes.GemGaugeChartData;
+import mc.fenix.table.GemTableTypes.GemFilterableTableData;
 
 import java.util.List;
 import java.lang.Object;
@@ -26,6 +27,9 @@ umlp DashboardModule {
     GemBoxPlotData interpretBoxPlot(String data);
     GemGaugeChartData interpretGaugeChart(String data);
     GemScatterPlotData interpretScatterPlot(String data);
+    // Interprets the data script, then the filter and render scripts of the columns, given as a JSON array of
+    // {column, filter, render} objects: the frontend cannot send lists of strings, it serializes them as objects
+    GemFilterableTableData interpretFilterableTable(String data, String columnScripts);
   }
 
   class DashboardModuleConfig {
@@ -56,6 +60,19 @@ umlp DashboardModule {
     Optional<GraphExtraData> graphextra;
     Optional<PieExtraData> piextra;
     Optional<ScatterExtraData> scatterextra;
+    Optional<TableExtraData> tableextra;
+  }
+
+  class TableExtraData {
+    List<ColumnScripts> columns;
+  }
+
+  // Scripts of a column of a FILTERABLE_TABLE, each returns a lambda over the values of the column (or is empty):
+  // filter keeps the rows whose value is accepted, render computes the displayed text of a value
+  class ColumnScripts {
+    String column;
+    String filter;
+    String render;
   }
 
   class PieExtraData {
@@ -113,11 +130,6 @@ umlp DashboardModule {
     String lastUpdated;
   }
 
-  class TableData{
-    List<String> body;
-    List<String> headers;
-  }
-
   class DashboardModuleSize {
     double height;
     double width;
@@ -129,7 +141,6 @@ umlp DashboardModule {
   }
 
   enum VizType {
-    TABLE,
     TILE,
     NETWORK,
     LINE,
@@ -137,7 +148,8 @@ umlp DashboardModule {
     PIE,
     SPEED,
     BOX,
-    SCATTER;
+    SCATTER,
+    FILTERABLE_TABLE;
   }
 
   class Preset {

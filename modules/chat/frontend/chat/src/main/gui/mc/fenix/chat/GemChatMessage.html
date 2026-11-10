@@ -1,0 +1,20 @@
+<!-- (c) https://github.com/MontiCore/monticore -->
+
+<div class="gem-chat-message" [class.gem-chat-message-response]="!user">
+  <div *ngIf="timestamp" class="gem-chat-message-timestamp">{{ timestamp }}</div>
+  <gem-markdown class="gem-chat-message-content" [value]="content" height="auto"></gem-markdown>
+  <button
+    type="button"
+    class="gem-chat-message-sources-toggle"
+    [attr.aria-expanded]="sourcesExpanded"
+    (click)="sourcesExpanded = !sourcesExpanded"
+  >
+    <gem-icon [name]="sourcesExpanded ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"></gem-icon>
+    {{ sourcesLabel }}
+  </button>
+  <div class="gem-chat-message-sources" [hidden]="!sourcesExpanded">
+    <ng-container *ngFor="let s of sources">
+      <ng-container *ngTemplateOutlet="s"></ng-container>
+    </ng-container>
+  </div>
+</div>

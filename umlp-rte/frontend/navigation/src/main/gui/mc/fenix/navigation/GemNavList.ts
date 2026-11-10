@@ -15,6 +15,8 @@ export class GemNavList extends GemNavListComponent implements AfterViewInit, On
   private readonly ngZone = inject(NgZone);
   private readonly elementRef = inject(ElementRef);
   private resizeObserver: ResizeObserver;
+  // true while the list is collapsed because it was too narrow, false if the user collapsed it
+  private autoCollapsed = false;
 
   @HostBinding("style.width")
   get _hostWidth(): string {
@@ -32,16 +34,19 @@ export class GemNavList extends GemNavListComponent implements AfterViewInit, On
   }
 
   toggleCollapsed(): void {
+    this.autoCollapsed = false;
     this.collapsed = !this.collapsed;
     this.collapsedChange.emit();
   }
 
   ngAfterViewInit(): void {
+    // observe the space available to the list
+    const container = this.elementRef.nativeElement.parentElement ?? this.elementRef.nativeElement;
     this.resizeObserver = new ResizeObserver((entries) => {
       const width = entries[0]?.contentRect.width ?? 0;
       this.ngZone.run(() => this.onResize(width));
     });
-    this.resizeObserver.observe(this.elementRef.nativeElement);
+    this.resizeObserver.observe(container);
   }
 
   override ngOnDestroy(): void {
@@ -49,9 +54,19 @@ export class GemNavList extends GemNavListComponent implements AfterViewInit, On
     super.ngOnDestroy();
   }
 
-  private onResize(width: number): void {
-    if (width < this.autoCollapseThreshold && !this.collapsed) {
+  private onResize(availableWidth: number): void {
+    // the list is not laid out yet, e.g. hidden parent or during a route change
+    if (availableWidth === 0) {
+      return;
+    }
+    const tooNarrow = availableWidth < this.autoCollapseThreshold;
+    if (tooNarrow && !this.collapsed) {
+      this.autoCollapsed = true;
       this.collapsed = true;
+      this.collapsedChange.emit();
+    } else if (!tooNarrow && this.collapsed && this.autoCollapsed) {
+      this.autoCollapsed = false;
+      this.collapsed = false;
       this.collapsedChange.emit();
     }
   }

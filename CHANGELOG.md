@@ -36,6 +36,11 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-11-05: 7.10.0-SNAPSHOT
+* New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`
+  for AI chats.
+* Integration of the chat module into the dashboard module and example.
+
 ## 2026-11-03: 7.10.0-SNAPSHOT
 * Attribute qualified associations become maps (GemMaps), keyed by an attribute or a to-one
   association role of the value:

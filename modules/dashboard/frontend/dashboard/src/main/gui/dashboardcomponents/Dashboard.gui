@@ -24,6 +24,7 @@ import dashboardcomponents.DeleteDialog;
 component Dashboard(
   DashboardModuleConfig config,
   int currentView = 0,
+  Event<Integer> currentViewChanged,
   boolean info = false,
   boolean createView = false,
   //
