@@ -31,12 +31,13 @@ public class UMLPCoCos {
     // TODO add cocos, once these are implemented
   }
 
+  /**
+   * This method runs CoCo checks that appear the default trafos like UMLSetDefaultsTrafo
+   */
   public static void addAllCDCoCosAfterTrafo(UMLPCoCoChecker checker) {
     checker.addChecker(new CD4AnalysisCoCosDelegator().getCheckerForAllCoCos());
     // CoCos for generation after Trafo
 
-    /*  checker.addCoCo((CDInterfaceAndEnumASTCDEnumCoCo) new PostgresTableNameLengthCoCo());
-    checker.addCoCo((CDBasisASTCDAttributeCoCo) new PostgresTableNameLengthCoCo());*/
     checker.addCoCo((CDBasisASTCDClassCoCo) new PostgresTableNameLengthCoCo());
     checker.addCoCo((CDInterfaceAndEnumASTCDInterfaceCoCo) new PostgresTableNameLengthCoCo());
     checker.addCoCo((CDAssociationASTCDAssociationCoCo) new PostgresTableNameLengthCoCo());
@@ -61,6 +62,5 @@ public class UMLPCoCos {
     checker.addCoCo(new UMLPCheckCDEnumModifier());
     checker.addCoCo(new UMLPCheckAttributeName());
     checker.addCoCo(new UMLPCheckCommandUnique());
-    //checker.addCoCo(new PostgresTableNameLengthCoCo());
   }
 }

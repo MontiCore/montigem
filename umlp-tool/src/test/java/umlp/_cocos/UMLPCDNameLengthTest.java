@@ -10,18 +10,15 @@ import umlp.AbstractUMLPTest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class UMLPCDNameLenghtTest extends AbstractUMLPTest {
+public class UMLPCDNameLengthTest extends AbstractUMLPTest {
   @Test
   public void testInvalid() {
     UMLPCoCoChecker checker = new UMLPCoCoChecker();
-/*  checker.addCoCo((CDInterfaceAndEnumASTCDEnumCoCo) new PostgresTableNameLengthCoCo());
-    checker.addCoCo((CDBasisASTCDAttributeCoCo) new PostgresTableNameLengthCoCo());*/
-
     checker.addCoCo((CDBasisASTCDClassCoCo) new PostgresTableNameLengthCoCo());
     checker.addCoCo((CDInterfaceAndEnumASTCDInterfaceCoCo) new PostgresTableNameLengthCoCo());
     checker.addCoCo((CDAssociationASTCDAssociationCoCo) new PostgresTableNameLengthCoCo());
 
-    ASTCDCompilationUnit ast = parse("cocoinvalid/CDNameLengthTooLongCase.umlp");
+    ASTCDCompilationUnit ast = parse("cocoinvalid/UMLPCheckNameLengthTooLong.umlp");
     runAfterParseTrafo(ast);
     createSymTab(ast);
     runDefaultTrafos(ast);

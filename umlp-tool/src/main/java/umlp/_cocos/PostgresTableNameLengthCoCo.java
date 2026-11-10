@@ -26,11 +26,14 @@ public class PostgresTableNameLengthCoCo implements
   public static final String ERROR_MSG = """
        The %s Name %s is too long, Postgres truncates table names after %s characters.
       The truncated name is: %s
-      Set the name by hand or change the existing name.
+      To avoid this truncation, set the name by hand or change the existing name.
       """;
 
   private void tooLongWarn(String name, String truncatedName, ASTCDBasisNode node, String className) {
     if (SQLSchemaGenerator.MAX_IDENTIFIER_BYTES < name.length()) {
+      System.out.println(name);
+      System.out.println(truncatedName);
+
       Log.warn(ERROR_CODE + String.format(
           ERROR_MSG,
           className,
