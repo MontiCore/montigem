@@ -55,8 +55,8 @@ class LayoutToolsTest extends DashboardMockTestSetup {
   @BeforeEach
   void setUp() {
     getBackend().activate();
-    view = DashboardModuleManager.viewConfigBuilder().vid(0).name("Current view").build().get();
-    otherView = DashboardModuleManager.viewConfigBuilder().vid(1).name("Other view").build().get();
+    view = DashboardModuleManager.viewConfigBuilder().vid(0).name("Current view").info("").build().get();
+    otherView = DashboardModuleManager.viewConfigBuilder().vid(1).name("Other view").info("").build().get();
     first = cell("First tile", 0);
     second = cell("Second tile", 3);
     other = cell("Other tile", 0);
@@ -177,7 +177,7 @@ class LayoutToolsTest extends DashboardMockTestSetup {
   }
 
   private CellConfig cell(String name, int x) {
-    return DashboardModuleManager.cellConfigBuilder().name(name).data("return example data;").viz(VizType.TILE)
+    return DashboardModuleManager.cellConfigBuilder().name(name).info("").data("return example data;").viz(VizType.TILE)
         .position(DashboardModuleManager.dashboardModulePositionBuilder().x((double) x).y(0.0).build().get())
         .size(DashboardModuleManager.dashboardModuleSizeBuilder().width(3.0).height(3.0).build().get())
         .build().get();

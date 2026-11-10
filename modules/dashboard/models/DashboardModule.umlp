@@ -40,12 +40,16 @@ umlp DashboardModule {
   class ViewConfig {
     int vid;
     String name;
+    // description of the view, shown in the info dialog opened by the info button of the dashboard
+    String info;
     List<CellConfig> cells;
   }
 
   class CellConfig {
     String data;
     String name;
+    // description of the cell, shown as tooltip of the info icon in the cell's header
+    String info;
     VizType viz;
     Optional<ExtraData> extra;
     -> (size) DashboardModuleSize;
@@ -85,6 +89,32 @@ umlp DashboardModule {
     boolean showSearchNode;
     boolean showControlButtons;
     boolean showInformation;
+    // layout that places the nodes, NONE keeps the positions of the data
+    GraphInitialLayoutType initialLayout;
+    // whether the layers of the hierarchical initial layouts run from left to right instead of top to bottom
+    boolean horizontalLayout;
+    // layout that refines the positions of the initial layout, NONE keeps them
+    GraphComplexLayoutType complexLayout;
+    // the complex layout stops after this number of iterations, absent for no limit
+    Optional<Integer> maxLayoutIterations;
+  }
+
+  // the initial layouts of GemGraph (NetworkGraphTypes.InitialGraphLayoutMode)
+  enum GraphInitialLayoutType {
+    NONE,
+    CIRCULAR,
+    RANDOM,
+    CIRCLE_PACK,
+    HIERARCHICAL,
+    CHANNEL_HIERARCHICAL;
+  }
+
+  // the complex layouts of GemGraph (NetworkGraphTypes.ComplexGraphLayoutMode)
+  enum GraphComplexLayoutType {
+    NONE,
+    FORCE,
+    FORCEATLAS2,
+    NO_OVERLAP;
   }
 
   class BarExtraData {

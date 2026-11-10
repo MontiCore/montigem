@@ -10,6 +10,7 @@ import mc.fenix.arrange.GemRow;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.basic.GemButton;
 import mc.fenix.input.GemTextInput;
+import mc.fenix.input.GemTextareaInput;
 import mc.fenix.input.GemAutocompleteInput;
 import mc.fenix.input.GemDropdownInput;
 import mc.fenix.input.GemDropdownInputTypes.Option;
@@ -47,6 +48,17 @@ component MainCellOptions(
               Option("FILTERABLE_TABLE", "Filterable Table")
             ]
           )
+      ]),
+      //info text, shown in the cell via its info button
+      @GemColumn(vAlign = "top", rowGap = "10px", components = [
+        infoLabel@GemText(size = "17px", weight = "bold", value = "Tooltip Information"),
+        infoInput@GemTextareaInput(
+          labelText = "",
+          placeholder = "Describe what this cell shows",
+          entry = cell.info,
+          height = "80px",
+          resize = "vertical"
+        )
       ]),
       //editor
       @GemRow(components = [

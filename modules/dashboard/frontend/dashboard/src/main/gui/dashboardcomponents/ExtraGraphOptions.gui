@@ -1,46 +1,79 @@
 package dashboardcomponents;
 
 import mc.fenix.arrange.GemColumn;
-import mc.fenix.arrange.GemCard;
-import mc.fenix.basic.GemIcon;
-import mc.fenix.basic.GemButton;
-import mc.fenix.input.GemTextInput;
-import mc.fenix.input.GemAutocompleteInput;
+import mc.fenix.basic.GemText;
+import mc.fenix.input.GemCheckBoxInput;
 import mc.fenix.input.GemDropdownInput;
 import mc.fenix.input.GemDropdownInputTypes.Option;
-import mc.fenix.input.GemCheckBoxInput;
-import mc.fenix.arrange.GemColumn;
+import mc.fenix.input.GemTextInput;
 
 import DashboardModule.ExtraData;
 
+// the minimal height of the graph extra is not offered: the graph fills its cell (Cell.scss), so it had no effect
 component ExtraGraphOptions(
   ExtraData extra
   ){
       @GemColumn(rowGap = "10px", components = [
-        @GemTextInput(
-          inputType = "text",
-          labelText = "Minimal Height:",
-          entry = extra.graphextra.minHeight
-        ),
         checkboxGraphText1@GemCheckBoxInput(
           labelPosition = "top",
-          labelText = "Show Filtered Group",
+          labelText = "Show filter group",
           checked = extra.graphextra.showFilterGroup
         ),
         checkboxGraphText2@GemCheckBoxInput(
           labelPosition = "top",
-          labelText = "Show search node",
+          labelText = "Show node search",
           checked = extra.graphextra.showSearchNode
         ),
         checkboxGraphText3@GemCheckBoxInput(
           labelPosition = "top",
-          labelText = "Show Control Buttons",
+          labelText = "Show control buttons",
           checked = extra.graphextra.showControlButtons
         ),
         checkboxGraphText4@GemCheckBoxInput(
           labelPosition = "top",
-          labelText = "Show Information",
+          labelText = "Show information",
           checked = extra.graphextra.showInformation
-        )
+        ),
+        initialLayout@GemDropdownInput(
+          labelText = "Initial layout:",
+          entry = extra.graphextra.initialLayout,
+          options = [
+            Option("NONE", "None (positions of the data)"),
+            Option("CIRCULAR", "Circular"),
+            Option("RANDOM", "Random"),
+            Option("CIRCLE_PACK", "Circle pack"),
+            Option("HIERARCHICAL", "Hierarchical"),
+            Option("CHANNEL_HIERARCHICAL", "Hierarchical (channels)")
+          ]
+        ),
+        // the direction only applies to the hierarchical layouts
+        @guard(isHierarchical()) {
+          horizontalLayout@GemCheckBoxInput(
+            labelPosition = "top",
+            labelText = "Layers from left to right",
+            checked = extra.graphextra.horizontalLayout
+          );
+        },
+        complexLayout@GemDropdownInput(
+          labelText = "Refining layout:",
+          entry = extra.graphextra.complexLayout,
+          options = [
+            Option("NONE", "None"),
+            Option("FORCE", "Force-directed"),
+            Option("FORCEATLAS2", "ForceAtlas2"),
+            Option("NO_OVERLAP", "Remove overlaps")
+          ]
+        ),
+        @guard(hasComplexLayout()) {
+          @GemColumn(rowGap = "10px", components = [
+            // the refining layouts skip the nodes fixed in the data (except removing overlaps)
+            @GemText(value = "Nodes fixed in the data (fixed = true) keep their positions."),
+            maxIterations@GemTextInput(
+              inputType = "number",
+              labelText = "Maximum iterations (empty for no limit):",
+              entry = extra.graphextra.maxLayoutIterations
+            )
+          ]);
+        }
       ]);
 }
