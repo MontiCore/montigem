@@ -26,16 +26,4 @@ public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTes
     checker.checkAll(ast);
     assertNoErrors();
   }
-
-  @Test
-  void testInvalidNoAttr() {
-    parseInvalid("UMLPAssocQualifierNoAttr");
-    assertFindingAtLine(0,
-                        getExpectedErrorMessage(UMLPAssociationQualifierByAttributeName.NO_ATTR_ERROR_CODE,
-                                                UMLPAssociationQualifierByAttributeName.NO_ATTR_ERROR_MSG_FORMAT,
-                                                "noMatchingAttr",
-                                                "B"),
-                        13);
-    assertFindingsCount(1);
-  }
 }

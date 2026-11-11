@@ -39,14 +39,14 @@ public class UMLPAssociationQualifierKeyCardinality implements CDAssociationASTC
     String qualifier = qualifiedSide.getCDQualifier().getByAttributeName();
     SymTypeExpression targetType = TypeCheck3.symTypeFromAST(targetSide.getMCQualifiedType());
     // a role of an association navigable from the target class
-    Optional<ASTCDAssocSide> role = UMLPAssociationQualifierByAttributeName.findRole(targetType, qualifier);
+    Optional<ASTCDAssocSide> role = UMLPAssociationQualifierAttributeExists.findRole(targetType, qualifier);
     if (role.isPresent()) {
       if (role.get().isPresentCDCardinality() && !role.get().getCDCardinality().isOne()) {
         logError(qualifiedSide.getCDQualifier(), qualifier, targetSide.getMCQualifiedType().getMCQualifiedName());
       }
       return;
     }
-    // an attribute of the target class (unknown names are reported by UMLPAssociationQualifierByAttributeName)
+    // an attribute of the target class (unknown names are reported by UMLPAssociationQualifierAttributeExists)
     Optional<SymTypeExpression> attributeType = resolver.resolveVariable(targetType, qualifier,
         BasicAccessModifier.ALL_INCLUSION, x -> true);
     if (attributeType.isPresent() && isOptionalOrMultiValued(attributeType.get())) {
