@@ -31,8 +31,13 @@ import java.util.concurrent.TimeUnit;
  * The service is started on demand by {@link StartLocalNpmRegistryTask} using the node that the
  * node-gradle plugin provides, and is stopped by Gradle when the build ends.
  * Verdaccio itself is installed once into the tool directory.
- * If a registry already answers at {@link CreateNpmrcTask#LOCAL_NPM_REPOSITORY}
- * (e.g., the one of devScripts/localNpmRepo), it is used as is and left running.
+ * If a registry already answers at the port (e.g., the one of devScripts/localNpmRepo), it is used
+ * as is and left running.
+ * <p>
+ * This must not happen to builds that run at the same time on one host and each bring their own
+ * storage, e.g. CI jobs sharing the network of their host: they would publish to and install from
+ * the registry of another job. Such builds pass their own port with <code>-PlocalNpmRepoPort</code>,
+ * a registry that already answers there is then an error.
  */
 public abstract class LocalNpmRegistryService
     implements BuildService<LocalNpmRegistryService.Params>, AutoCloseable {
@@ -41,7 +46,6 @@ public abstract class LocalNpmRegistryService
 
   private static final String CONFIG_RESOURCE = "/localNpmRepo/config.yaml";
   private static final Logger LOG = Logging.getLogger(LocalNpmRegistryService.class);
-  private static final URI PING = URI.create(CreateNpmrcTask.LOCAL_NPM_REPOSITORY + "-/ping");
   private static final Duration STARTUP_TIMEOUT = Duration.ofSeconds(90);
 
   public interface Params extends BuildServiceParameters {
@@ -51,6 +55,12 @@ public abstract class LocalNpmRegistryService
      * Optional: if absent, only an already running registry can be used to avoid littering your disk
      */
     DirectoryProperty getStorageDir();
+
+    /** Port the registry listens on. */
+    Property<Integer> getPort();
+
+    /** Whether the port was chosen for this build (-PlocalNpmRepoPort) and is not just the default. */
+    Property<Boolean> getPortIsExplicit();
 
     /** Where Verdaccio is installed to; also contains its configuration and log. */
     DirectoryProperty getToolDir();
@@ -66,17 +76,26 @@ public abstract class LocalNpmRegistryService
 
   /** Makes sure that a registry is reachable. Does nothing if it already is. */
   public synchronized void ensureStarted() throws IOException {
-    if (isReachable()) {
+    int port = getParameters().getPort().getOrElse(CreateNpmrcTask.DEFAULT_LOCAL_NPM_PORT);
+    String registry = CreateNpmrcTask.localNpmRepository(port);
+    if (isReachable(port)) {
       if (process == null || !process.isAlive()) {
-        LOG.lifecycle("Using the already running local npm registry at {}",
-            CreateNpmrcTask.LOCAL_NPM_REPOSITORY);
+        if (getParameters().getPortIsExplicit().getOrElse(false)
+            && getParameters().getStorageDir().isPresent()) {
+          // never fall back to it: its packages are the ones of another build
+          throw new GradleException("Another local npm registry is already running at " + registry
+              + ", but this build has to start its own one (storage: "
+              + getParameters().getStorageDir().get().getAsFile() + "). Choose a free port with -P"
+              + CreateNpmrcTask.LOCAL_NPM_PORT_PROPERTY + "=<port>.");
+        }
+        LOG.lifecycle("Using the already running local npm registry at {}", registry);
       }
       return;
     }
 
     if (!getParameters().getStorageDir().isPresent()) {
       throw new GradleException("No local npm registry is running at "
-          + CreateNpmrcTask.LOCAL_NPM_REPOSITORY + " and none can be started because the storage "
+          + registry + " and none can be started because the storage "
           + "directory is unknown. Set -PlocalNpmRepoDir=<dir> to let Gradle start one, or start "
           + "devScripts/localNpmRepo with docker.");
     }
@@ -89,16 +108,15 @@ public abstract class LocalNpmRegistryService
     Path verdaccio = installVerdaccio(toolDir, log);
 
     Path config = toolDir.resolve("config.yaml");
-    Files.writeString(config, renderConfig(configTemplate(), storageDir), StandardCharsets.UTF_8);
+    Files.writeString(config, renderConfig(configTemplate(), storageDir, port), StandardCharsets.UTF_8);
 
-    LOG.lifecycle("Starting the local npm registry at {} (storage: {})",
-        CreateNpmrcTask.LOCAL_NPM_REPOSITORY, storageDir);
+    LOG.lifecycle("Starting the local npm registry at {} (storage: {})", registry, storageDir);
     process = new ProcessBuilder(
         getParameters().getNodeExecutable().get(), verdaccio.toString(), "--config", config.toString())
         .redirectErrorStream(true)
         .redirectOutput(ProcessBuilder.Redirect.appendTo(log.toFile()))
         .start();
-    awaitReady(log);
+    awaitReady(log, port);
   }
 
   /** Installs Verdaccio into the tool directory, if that was not done yet. */
@@ -139,15 +157,16 @@ public abstract class LocalNpmRegistryService
     return bin;
   }
 
-  private void awaitReady(Path log) throws IOException {
+  private void awaitReady(Path log, int port) throws IOException {
     long deadline = System.nanoTime() + STARTUP_TIMEOUT.toNanos();
     try {
       while (System.nanoTime() < deadline) {
-        if (isReachable()) {
-          return;
-        }
+        // first, as a registry answering at the port is not ours if our process failed to bind it
         if (!process.isAlive()) {
           break;
+        }
+        if (isReachable(port)) {
+          return;
         }
         Thread.sleep(250);
       }
@@ -160,10 +179,11 @@ public abstract class LocalNpmRegistryService
         + tail(log));
   }
 
-  private static boolean isReachable() {
+  private static boolean isReachable(int port) {
+    URI ping = URI.create(CreateNpmrcTask.localNpmRepository(port) + "-/ping");
     try {
       HttpResponse<Void> response = HttpClient.newHttpClient().send(
-          HttpRequest.newBuilder(PING).timeout(Duration.ofSeconds(2)).GET().build(),
+          HttpRequest.newBuilder(ping).timeout(Duration.ofSeconds(2)).GET().build(),
           HttpResponse.BodyHandlers.discarding());
       return response.statusCode() == 200;
     }
@@ -188,12 +208,12 @@ public abstract class LocalNpmRegistryService
    * The config of devScripts/localNpmRepo (shared with docker) with the container's
    * storage path and listen address replaced.
    */
-  static String renderConfig(String template, Path storageDir) {
+  static String renderConfig(String template, Path storageDir, int port) {
     return template.lines()
         .filter(line -> !line.startsWith("plugins:"))
         .map(line -> line
             .replace("/verdaccio/storage", storageDir.toAbsolutePath().toString())
-            .replace("0.0.0.0:4873", "127.0.0.1:4873"))
+            .replace("0.0.0.0:4873", "127.0.0.1:" + port))
         .collect(Collectors.joining("\n", "", "\n"));
   }
 

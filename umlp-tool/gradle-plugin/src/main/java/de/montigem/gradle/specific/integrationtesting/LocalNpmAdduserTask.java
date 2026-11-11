@@ -8,6 +8,7 @@ import de.montigem.gradle.specific.CreateNpmrcTask;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.GradleException;
 import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.TaskAction;
 
@@ -38,9 +39,18 @@ public abstract class LocalNpmAdduserTask extends DefaultTask {
   @Internal
   public abstract RegularFileProperty getNpmrcFile();
 
+  /** URL of the local Verdaccio registry, by default the one of this build. */
+  @Internal
+  public abstract Property<String> getRegistry();
+
+  public LocalNpmAdduserTask() {
+    getRegistry().convention(
+        getProject().provider(() -> CreateNpmrcTask.localNpmRepository(getProject())));
+  }
+
   @TaskAction
   public void adduser() throws IOException {
-    URI registry = URI.create(CreateNpmrcTask.LOCAL_NPM_REPOSITORY);
+    URI registry = URI.create(getRegistry().get());
     Path lockFile = Path.of(System.getProperty("java.io.tmpdir"), "umlp-local-npm-adduser.lock");
     PROCESS_LOCK.lock();
     try {
