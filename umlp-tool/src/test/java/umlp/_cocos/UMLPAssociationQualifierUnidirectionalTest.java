@@ -10,13 +10,14 @@ public class UMLPAssociationQualifierUnidirectionalTest extends AbstractCoCoTest
     super(new UMLPAssociationQualifierUnidirectional(), UMLPCoCoChecker::addCoCo);
   }
 
+  /** bidirectional or not navigable from the qualified class, with the qualifier on either side */
   @Test
   public void testInvalidDirections() {
-    parseInvalid("UMLPAssocQualifierBidirectional");
+    parseInvalid("UMLPAssocQualifierNavigability");
 
-    assertFindingAtLine(0, 12, "name", "B");
-    assertFindingAtLine(1, 13, "name", "B");
-    assertFindingAtLine(2, 14, "number", "A");
+    assertFindingAtLine(0, 19, "name", "B");
+    assertFindingAtLine(1, 21, "name", "B");
+    assertFindingAtLine(2, 23, "number", "A");
     assertFindingsCount(3);
   }
 

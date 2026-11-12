@@ -244,7 +244,9 @@ public class GenService {
   }
 
   /**
-   * whether the attribute holds a GemMap, i.e. a GemValueMap or a GemEntryMap
+   * whether the attribute holds a GemMap, i.e. a GemValueMap or a GemEntryMap: the field DomainTypeDecorator creates
+   * for a qualified association side. Like {@link #isGem} and {@link #isGemList}, it compares the type name, because
+   * these fields are created after the symbol table and the Gem types are RTE classes the CD symbol table does not know.
    */
   public static boolean isGemMap(ASTCDAttribute attr) {
     if (attr.getMCType() instanceof ASTMCBasicGenericType) {

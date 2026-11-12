@@ -5,6 +5,8 @@ umlp UMLPAssocQualifierTargetCardinality {
   }
   class B;
 
+  // A GemMap holds exactly one value per key: a [*] or [1..*] value side would need a GemList per key, a [0..1] or
+  // unspecified one an Optional, and neither is GemIdentifiable, which a GemMap value has to be.
   association B [[name]] (byNameMany) -> A [*];
   association B [[name]] (byNameOpt) -> A [0..1];
   association B [[name]] (byNameSome) -> A [1..*];

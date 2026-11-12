@@ -15,11 +15,11 @@ public class UMLPAssociationQualifierTargetCardinalityTest extends AbstractCoCoT
   public void testInvalidTargetCardinality() {
     parseInvalid("UMLPAssocQualifierTargetCardinality");
 
-    assertFindingAtLine(0, 8, "A", "name");
-    assertFindingAtLine(1, 9, "A", "name");
-    assertFindingAtLine(2, 10, "A", "name");
-    assertFindingAtLine(3, 11, "A", "name");
-    assertFindingAtLine(4, 12, "A", "name");
+    assertFindingAtLine(0, 10, "A", "name");
+    assertFindingAtLine(1, 11, "A", "name");
+    assertFindingAtLine(2, 12, "A", "name");
+    assertFindingAtLine(3, 13, "A", "name");
+    assertFindingAtLine(4, 14, "A", "name");
     assertFindingsCount(5);
   }
 
