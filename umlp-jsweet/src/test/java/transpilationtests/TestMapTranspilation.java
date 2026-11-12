@@ -57,13 +57,12 @@ public class TestMapTranspilation {
         .replaceAll("\\s+", "");
     // overrides of RTE methods that are async in TS (jsweetasync.json) are async, even with synchronous bodies
     assertTrue(normalizedContent.contains("publicasyncderiveKey(value:V)"), normalizedContent);
-    // super() of a generated GemMap calls the TS constructor method of the RTE builder without initial ids
-    assertTrue(normalizedContent.contains("awaitsuper.__GemValueMapBuilderConstructor();"), normalizedContent);
     assertTrue(normalizedContent.contains("asynconValueKeyed(value:V)"), normalizedContent);
     // a hook that never loads stays synchronous, like in the RTE
     assertTrue(normalizedContent.contains("publicisKeyDerived():boolean"), normalizedContent);
-    // calls of async RTE methods are awaited, also the async constructor of the RTE superclass
+    // calls of async RTE methods are awaited, also the async constructor of the RTE superclass (super() of a
+    // generated GemMap, without initial ids)
     assertTrue(normalizedContent.contains("awaitthis._internal_removeValueID(gemID);returnawaitthis.size();"), normalizedContent);
-    assertTrue(normalizedContent.contains("awaitsuper.__GemValueMapBuilderConstructor(null)"), normalizedContent);
+    assertTrue(normalizedContent.contains("awaitsuper.__GemValueMapBuilderConstructor();"), normalizedContent);
   }
 }
