@@ -10,17 +10,22 @@ public class UMLPAssociationQualifierByTypeTest extends AbstractCoCoTest<UMLPAss
     super(new UMLPAssociationQualifierByType(), UMLPCoCoChecker::addCoCo);
   }
 
-  /** boolean, enum, floating point and char keys are rejected; domain class, String and integral keys are valid */
+  /**
+   * boolean, enum, floating point, char, Optional and collection keys are rejected; domain class, String and integral
+   * keys are valid
+   */
   @Test
   public void testInvalid() {
     parseInvalid("UMLPAssocQualifierComplexType");
-    assertFindingAtLine(0, 15, "boolean");
-    assertFindingAtLine(1, 16, "E");
-    assertFindingAtLine(2, 17, "double");
-    assertFindingAtLine(3, 18, "Float");
-    assertFindingAtLine(4, 19, "char");
-    assertFindingAtLine(5, 20, "Character");
-    assertFindingsCount(6);
+    assertFindingAtLine(0, 16, "boolean");
+    assertFindingAtLine(1, 17, "E");
+    assertFindingAtLine(2, 19, "double");
+    assertFindingAtLine(3, 20, "Float");
+    assertFindingAtLine(4, 21, "char");
+    assertFindingAtLine(5, 22, "Character");
+    assertFindingAtLine(6, 24, "Optional");
+    assertFindingAtLine(7, 25, "List");
+    assertFindingsCount(8);
   }
 
   @Test

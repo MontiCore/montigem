@@ -53,6 +53,7 @@ public class UMLPCoCos {
     checker.addCoCo(new UMLPAssociationQualifierAttributeExists());
     checker.addCoCo(new UMLPAssociationQualifierByAttributeName());
     checker.addCoCo(new UMLPAssociationQualifierNavigability());
+    checker.addCoCo(new UMLPAssociationQualifierOwnerCardinality());
     checker.addCoCo(new UMLPAssociationQualifierKeyCardinality());
     checker.addCoCo(new UMLPAssociationQualifierTargetCardinality());
     checker.addCoCo(new UMLPAssociationCardinality());

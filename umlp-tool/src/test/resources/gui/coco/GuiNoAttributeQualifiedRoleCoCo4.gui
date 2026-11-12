@@ -5,6 +5,8 @@ package coco;
 import packaged.QualifiedDomain.Directory;
 import util.I;
 
+// invalid: d.byCode is a type qualified role ([String]), i.e. a map like an attribute qualified one, which GUI
+// models do not support yet either
 component GuiNoAttributeQualifiedRoleCoCo4(Directory d) {
   @I(i = d.byCode.number);
 }
