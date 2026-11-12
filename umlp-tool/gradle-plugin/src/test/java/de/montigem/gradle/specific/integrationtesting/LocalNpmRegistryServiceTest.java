@@ -21,7 +21,7 @@ class LocalNpmRegistryServiceTest {
   @Test
   void sharedConfigIsAdaptedToTheHost() throws IOException {
     Path storage = Path.of("/tmp/npmLocal");
-    String config = LocalNpmRegistryService.renderConfig(sharedConfig(), storage);
+    String config = LocalNpmRegistryService.renderConfig(sharedConfig(), storage, 4873);
 
     // absolute, so on Windows with a drive letter and backslashes, e.g. C:\tmp\npmLocal
     String storageDir = storage.toAbsolutePath().toString();
@@ -29,6 +29,14 @@ class LocalNpmRegistryServiceTest {
     assertTrue(config.contains("file: " + storageDir + "/htpasswd\n"));
     assertTrue(config.contains("listen: 127.0.0.1:4873\n"));
     assertFalse(config.contains("/verdaccio"));
+  }
+
+  @Test
+  void listensOnTheGivenPort() throws IOException {
+    String config = LocalNpmRegistryService.renderConfig(sharedConfig(), Path.of("/tmp/npmLocal"), 24873);
+
+    assertTrue(config.contains("listen: 127.0.0.1:24873\n"));
+    assertFalse(config.contains(":4873\n"));
   }
 
   @Test

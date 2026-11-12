@@ -25,6 +25,8 @@ component CellDialog(
   //error
   String message = "Error",
   boolean error = false,
+  //set while the data is interpreted to check it (Save/Next), shown in the preview
+  boolean interpreting = false,
   //
   //tutorial
   int tutorialStep,
@@ -97,7 +99,7 @@ component CellDialog(
           @guard(first) {
             @MainCellOptions(cell = cellForEdit, tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep);
           }else{
-            @ExtraCellOptions(cell = cellForEdit, tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep);
+            @ExtraCellOptions(cell = cellForEdit, tutorialStep = tutorialStep, changeTutorialStep = changeTutorialStep, interpreting = interpreting);
           }
       ]);
       //footer buttons
@@ -105,7 +107,7 @@ component CellDialog(
         @GemRow(hAlign = "center", colGap = "10px", components = [
           abortButton1@GemButton(height = "48px", width = "70px", disabled = alwaysDisabledByTutorial(), leftClick = abortEdit(cell, cellForEdit, close), content = [
            @GemRow(vAlign = "center", components = [
-            @GemIcon(size = "15px", color = "white", name = "delete"),
+            @GemIcon(size = "15px", color = "white", name = "close"),
             @GemText(value = "Abort")
            ])
           ]),
@@ -130,7 +132,7 @@ component CellDialog(
           @GemRow(hAlign = "center", colGap = "10px", components = [
              abortButton2@GemButton(height = "48px", width = "70px", disabled = alwaysDisabledByTutorial(), leftClick = abortCreate(close), content = [
               @GemRow(vAlign = "center", components = [
-               @GemIcon(size = "15px", color = "white", name = "delete"),
+               @GemIcon(size = "15px", color = "white", name = "close"),
                @GemText(value = "Abort")
               ])
              ]),
@@ -154,7 +156,7 @@ component CellDialog(
          @GemRow(hAlign = "center", colGap = "10px", components = [
             abortButton3@GemButton(height = "48px", width = "70px", disabled = alwaysDisabledByTutorial(), leftClick = abortCreate(close), content = [
              @GemRow(vAlign = "center", components = [
-              @GemIcon(size = "15px", color = "white", name = "delete"),
+              @GemIcon(size = "15px", color = "white", name = "close"),
               @GemText(value = "Abort")
              ])
             ]),
