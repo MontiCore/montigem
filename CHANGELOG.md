@@ -50,8 +50,10 @@ For MontiGem users:
   The owner gets `putByLogin(student)`, `getByLogin(key)`, `containsKeyByLogin(key)`,
   `removeByLogin(key)` and the live `java.util.Map` `getByLoginMap()`; changing the key attribute
   of a value moves it in every map holding it. Primitive and `String` keys make a `GemValueMap`,
-  domain object keys a `GemEntryMap`. The association must be unidirectional (`0xCDC6A`), the
-  value side `[1]` (`0xCDC6C`) and the key single valued (`0xCDC6B`).
+  domain object keys a `GemEntryMap`. The association must be unidirectional (`0xCDC6A`) and the
+  value side `[1]` (`0xCDC6C`); the qualifier must be an attribute or a role of the value
+  (`0xCDC69`), an attribute of a primitive, `String` or domain class type, not `Optional`, a
+  collection or an array (`0xCDC68`), and a role with the cardinality `[1]` (`0xCDC6B`).
   Qualified roles are not supported in GUI models yet (`0x00032`).
 * **Breaking:** `java.util.Map` in transpiled Java becomes the asynchronous `IUMLPMap` of
   `@umlp/commonj2ts`, like `java.util.List` becomes `IUMLPList`: handwritten TypeScript has to
