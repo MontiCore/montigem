@@ -26,6 +26,15 @@ public abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
   // (values put by id, e.g. as received from another participant, keep their keys)
   protected transient Map<Long, V> valuesPutBeforeBuild = new LinkedHashMap<>();
 
+  /**
+   * an empty map, e.g. the map of a new owner
+   */
+  public GemValueMapBuilder() {
+  }
+
+  /**
+   * @param initialIds the gemIds of the values per key, e.g. as loaded from the database
+   */
   public GemValueMapBuilder(Map<K,Long> initialIds) {
     if (initialIds != null) {
       for (Entry<K,Long> idMapEntry : initialIds.entrySet()) {

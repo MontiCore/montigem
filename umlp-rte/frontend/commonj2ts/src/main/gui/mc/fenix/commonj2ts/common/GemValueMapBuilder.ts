@@ -28,7 +28,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     super();
   }
 
-  public async __GemValueMapBuilderConstructor(initialIds: IUMLPMap<K, number> | Map<K, number>): Promise<GemValueMapBuilder<K, V>> {
+  public async __GemValueMapBuilderConstructor(initialIds?: IUMLPMap<K, number> | Map<K, number>): Promise<GemValueMapBuilder<K, V>> {
     await super.__GemValueMapConstructor();
     if (initialIds instanceof Map) {
       initialIds.forEach((id, key) => this.builderElemStorage.set(key, new IDOrBuilder<V>(id)));
