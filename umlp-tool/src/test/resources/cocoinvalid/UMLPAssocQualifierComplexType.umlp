@@ -12,12 +12,17 @@ umlp UMLPAssocQualifierComplexType {
 
   enum E;
 
+  // invalid: boolean and enum keys
   association B [boolean] -> A [1];
   association B [E] -> A [1];
+  // invalid: Java and the browser would disagree on floating point and char keys
   association B [double] -> (byDouble) A [1];
   association B [Float] -> (byFloat) A [1];
   association B [char] -> (byChar) A [1];
   association B [Character] -> (byCharacter) A [1];
+  // invalid: an Optional or a collection would be no key or several keys
+  association B [java.util.Optional<String>] -> (byOptional) A [1];
+  association B [java.util.List<String>] -> (byList) A [1];
 
   // valid: domain class, String and integral keys
   association A [C] -> B [1];
