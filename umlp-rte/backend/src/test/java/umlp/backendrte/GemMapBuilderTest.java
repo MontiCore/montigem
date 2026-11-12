@@ -714,7 +714,7 @@ public class GemMapBuilderTest extends AbstractUMLPRTETest {
   class NamedValueMap extends GemValueMapBuilder<String, Node> {
 
     NamedValueMap() {
-      super(null);
+      super();
     }
 
     @Override

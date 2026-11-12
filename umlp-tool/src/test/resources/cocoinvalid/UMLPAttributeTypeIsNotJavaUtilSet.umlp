@@ -13,5 +13,4 @@ umlp UMLPAttributeTypeIsNotJavaUtilSet {
   association [*] A -> B [0..1];
   association [1] B -> A;
   association A [String] -> B [1];
-  association B [[a]] -> A [1];
 }

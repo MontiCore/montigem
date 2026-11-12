@@ -7,6 +7,9 @@ import mc.fenix.networkgraph.networkgraphtypes.GraphEdge;
 import mc.fenix.networkgraph.networkgraphtypes.GraphEdgeBuilder;
 import mc.fenix.networkgraph.networkgraphtypes.GraphNode;
 import mc.fenix.networkgraph.networkgraphtypes.GraphNodeBuilder;
+import mc.fenix.networkgraph.networkgraphtypes.InitialGraphLayout;
+import mc.fenix.networkgraph.networkgraphtypes.InitialGraphLayoutBuilder;
+import mc.fenix.networkgraph.networkgraphtypes.InitialGraphLayoutMode;
 import umlp.jsweet.extension.annotation.Component;
 
 import java.util.ArrayList;
@@ -182,12 +185,10 @@ public class GemGraphExample extends GemGraphExampleTOP {
   }
 
   @Override
-  public Object getPersonGraphInitialLayout() {
-    return new GraphOptions();
-  }
-
-  protected static class GraphOptions {
-    String mode = "HIERARCHICAL";
+  public InitialGraphLayout getPersonGraphInitialLayout() {
+    return new InitialGraphLayoutBuilder()
+        .mode(InitialGraphLayoutMode.HIERARCHICAL)
+        .build().get();
   }
 
 }

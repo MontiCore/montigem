@@ -16,15 +16,15 @@ public class UMLPAssociationQualifierNavigabilityTest extends AbstractCoCoTest<U
    */
   @Test
   public void testInvalidDirections() {
-    parseInvalid("UMLPAssocQualifierBidirectional");
+    parseInvalid("UMLPAssocQualifierNavigability");
 
-    assertOwnerCardinalityFindingAtLine(0, 12, "[[name]]", "B");
-    assertFindingAtLine(1, 13, "[[name]]", "B");
-    assertOwnerCardinalityFindingAtLine(2, 14, "[[number]]", "A");
-    assertOwnerCardinalityFindingAtLine(3, 16, "[String]", "B");
-    assertFindingAtLine(4, 17, "[A]", "B");
-    assertOwnerCardinalityFindingAtLine(5, 18, "[int]", "A");
-    assertOwnerCardinalityFindingAtLine(6, 19, "[[name]]", "B");
+    assertOwnerCardinalityFindingAtLine(0, 18, "[[name]]", "B");
+    assertFindingAtLine(1, 20, "[[name]]", "B");
+    assertOwnerCardinalityFindingAtLine(2, 22, "[[number]]", "A");
+    assertOwnerCardinalityFindingAtLine(3, 26, "[String]", "B");
+    assertFindingAtLine(4, 28, "[A]", "B");
+    assertOwnerCardinalityFindingAtLine(5, 30, "[int]", "A");
+    assertOwnerCardinalityFindingAtLine(6, 32, "[[name]]", "B");
     assertFindingsCount(7);
   }
 

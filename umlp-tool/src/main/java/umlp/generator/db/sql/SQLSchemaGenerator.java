@@ -106,15 +106,15 @@ public class SQLSchemaGenerator {
     return new String(bytes, 0, end, StandardCharsets.UTF_8);
   }
 
-  private static String attributeName(String name) {
+  public static String attributeName(String name) {
     return CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
   }
 
-  private static String className(String name) {
+  public static String className(String name) {
     return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
   }
 
-  private static String assocName(String name) {
+  public static String assocName(String name) {
     String res = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, name);
     res = res.replaceAll("\\s", "_");
     res = res.replaceAll("_+", "_");

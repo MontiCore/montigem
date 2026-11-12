@@ -1,0 +1,38 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPAssocQualifierNavigability {
+  class A {
+    String name;
+  }
+
+  class B {
+    int number;
+  }
+
+  // A qualified association becomes a GemMap in the qualified class (the owner), so it must be navigable from the
+  // owner (0xCDC6A). A bidirectional one also needs the cardinality of the owner, which tells in how many owners'
+  // maps a value may be (0xCDC6D): [1] or [0..1] (a put moves the value to the new owner) or [*].
+
+  // valid: navigable from the owner B only
+  association B [[name]] -> A [1];
+  // invalid: bidirectional without the cardinality of the owner B (0xCDC6D)
+  association B [[name]] <-> A [1];
+  // invalid: navigable from A only, B has no map (0xCDC6A)
+  association B [[name]] <- A [1];
+  // invalid: bidirectional without the cardinality of the owner A, qualifier on the right side (0xCDC6D)
+  association [1] B <-> [[number]] A;
+  // valid: type qualified, navigable from the owner B only
+  association B [String] (byName) -> A [1];
+  // invalid: bidirectional without the cardinality of the owner B (0xCDC6D)
+  association B [String] (byNameBoth) <-> A [1];
+  // invalid: navigable from A only, B has no map (0xCDC6A)
+  association B [A] (byA) <- A [1];
+  // invalid: bidirectional without the cardinality of the owner A (0xCDC6D)
+  association [1] B <-> [int] A;
+  // invalid: [1..*] is not one of the supported cardinalities of the owner (0xCDC6D)
+  association [1..*] B [[name]] (someB) <-> (byNameSome) A [1];
+
+  // valid: bidirectional with the cardinality of the owner
+  association [1] B [[name]] (oneB) <-> (byNameOne) A [1];
+  association [0..1] B [String] (optB) <-> (byNameOpt) A [1];
+  association [*] B [A] (manyB) <-> (byAMany) A [1];
+}

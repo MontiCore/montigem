@@ -10,7 +10,7 @@ import umlp.backendrte.common.GemValueMapBuilder;
 public abstract class GemMapSubclassTranspilation<V extends GemIdentifiable & GemBuildable> extends GemValueMapBuilder<String, V> {
 
   public GemMapSubclassTranspilation() {
-    super(null);
+    super();
   }
 
   @Override

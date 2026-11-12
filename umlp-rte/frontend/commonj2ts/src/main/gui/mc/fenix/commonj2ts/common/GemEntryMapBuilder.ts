@@ -30,7 +30,7 @@ export abstract class GemEntryMapBuilder<K extends GemIdentifiable & GemBuildabl
     super();
   }
 
-  public async __GemEntryMapBuilderConstructor(initialIds: IUMLPMap<number, number> | Map<number, number>): Promise<GemEntryMapBuilder<K, V>> {
+  public async __GemEntryMapBuilderConstructor(initialIds?: IUMLPMap<number, number> | Map<number, number>): Promise<GemEntryMapBuilder<K, V>> {
     await super.__GemEntryMapConstructor();
     if (initialIds instanceof Map) {
       for (const [keyID, id] of Array.from(initialIds.entries())) {

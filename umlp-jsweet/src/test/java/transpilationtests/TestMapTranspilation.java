@@ -60,8 +60,9 @@ public class TestMapTranspilation {
     assertTrue(normalizedContent.contains("asynconValueKeyed(value:V)"), normalizedContent);
     // a hook that never loads stays synchronous, like in the RTE
     assertTrue(normalizedContent.contains("publicisKeyDerived():boolean"), normalizedContent);
-    // calls of async RTE methods are awaited, also the async constructor of the RTE superclass
+    // calls of async RTE methods are awaited, also the async constructor of the RTE superclass (super() of a
+    // generated GemMap, without initial ids)
     assertTrue(normalizedContent.contains("awaitthis._internal_removeValueID(gemID);returnawaitthis.size();"), normalizedContent);
-    assertTrue(normalizedContent.contains("awaitsuper.__GemValueMapBuilderConstructor(null)"), normalizedContent);
+    assertTrue(normalizedContent.contains("awaitsuper.__GemValueMapBuilderConstructor();"), normalizedContent);
   }
 }

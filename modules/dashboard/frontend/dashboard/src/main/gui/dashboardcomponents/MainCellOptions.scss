@@ -70,3 +70,8 @@
 :host ::ng-deep :where(.monaco-editor) * {
   font-family: inherit;
 }
+
+// as wide as the data editor below
+:host ::ng-deep .infoInput {
+  min-width: 800px;
+}

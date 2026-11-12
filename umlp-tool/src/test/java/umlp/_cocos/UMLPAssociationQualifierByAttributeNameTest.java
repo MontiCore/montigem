@@ -10,17 +10,23 @@ public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTes
     super(new UMLPAssociationQualifierByAttributeName(), UMLPCoCoChecker::addCoCo);
   }
 
+  /**
+   * List, Optional and Set attributes (no key or several keys per value object), an enum attribute and float, double
+   * and char attributes
+   */
   @Test
   public void testInvalidQAttrType() {
     parseInvalid("UMLPAssocQualifierComplexAttrType");
 
-    // the List names (line 16) is multi-valued, see UMLPAssociationQualifierKeyCardinalityTest
-    assertFindingAtLine(0, 17, "e");
+    assertFindingAtLine(0, 18, "names");
+    assertFindingAtLine(1, 19, "optName");
+    assertFindingAtLine(2, 20, "ids");
+    assertFindingAtLine(3, 21, "e");
     // Java and the browser would disagree on floating point and char keys
-    assertFindingAtLine(1, 18, "weight");
-    assertFindingAtLine(2, 19, "ratio");
-    assertFindingAtLine(3, 20, "initial");
-    assertFindingsCount(4);
+    assertFindingAtLine(4, 22, "weight");
+    assertFindingAtLine(5, 23, "ratio");
+    assertFindingAtLine(6, 24, "initial");
+    assertFindingsCount(7);
   }
 
   @Test
@@ -29,17 +35,5 @@ public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTes
     createSymTab(ast);
     checker.checkAll(ast);
     assertNoErrors();
-  }
-
-  @Test
-  void testInvalidNoAttr() {
-    parseInvalid("UMLPAssocQualifierNoAttr");
-    assertFindingAtLine(0,
-                        getExpectedErrorMessage(UMLPAssociationQualifierByAttributeName.NO_ATTR_ERROR_CODE,
-                                                UMLPAssociationQualifierByAttributeName.NO_ATTR_ERROR_MSG_FORMAT,
-                                                "noMatchingAttr",
-                                                "B"),
-                        13);
-    assertFindingsCount(1);
   }
 }

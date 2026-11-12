@@ -34,7 +34,10 @@ final class CellOptions {
       case BOX -> "{\"min\":0.0,\"max\":null}";
       case SPEED -> "{\"min\":0,\"max\":null,\"unit\":\"\",\"textValue\":\"\",\"textPosition\":\"center\"}";
       case NETWORK -> "{\"minHeight\":\"50vH\",\"showFilterGroup\":false,\"showSearchNode\":false,"
-          + "\"showControlButtons\":true,\"showInformation\":false}";
+          + "\"showControlButtons\":true,\"showInformation\":false,"
+          // the layouts GemGraph uses by default, as in the cell options of the frontend
+          + "\"initialLayout\":\"RANDOM\",\"horizontalLayout\":false,\"complexLayout\":\"FORCEATLAS2\","
+          + "\"maxLayoutIterations\":100}";
       case SCATTER -> "{\"xAxis\":{\"label\":\"X\",\"minValue\":0.0,\"maxValue\":null,\"stepWidth\":999.0},"
           + "\"yAxis\":{\"label\":\"Y\",\"minValue\":0.0,\"maxValue\":null,\"stepWidth\":999.0}}";
       case FILTERABLE_TABLE -> "{\"columns\":[]}";
@@ -81,6 +84,14 @@ final class CellOptions {
         printer.member("showSearchNode", g != null && g.isShowSearchNode());
         printer.member("showControlButtons", g == null || g.isShowControlButtons());
         printer.member("showInformation", g != null && g.isShowInformation());
+        // cells stored before the layouts could be chosen have none, they get the layouts used before
+        boolean legacy = g == null || g.getComplexLayout() == null;
+        printer.member("initialLayout", g == null || g.getInitialLayout() == null
+            ? GraphInitialLayoutType.RANDOM.name() : g.getInitialLayout().name());
+        printer.member("horizontalLayout", g != null && g.isHorizontalLayout());
+        printer.member("complexLayout", legacy ? GraphComplexLayoutType.FORCEATLAS2.name() : g.getComplexLayout().name());
+        printer.memberJson("maxLayoutIterations", legacy || g.getMaxLayoutIterations() == null ? "100"
+            : g.getMaxLayoutIterations().map(Object::toString).orElse("null"));
       }
       case SCATTER -> {
         var scatter = e != null && e.isPresentScatterextra() ? e.getScatterextra() : null;
@@ -160,7 +171,22 @@ final class CellOptions {
         .contains(result.getStringMember("textPosition"))) {
       throw new IllegalArgumentException("textPosition must be top, center or bottom.");
     }
+    if (type == VizType.NETWORK) {
+      if (!names(GraphInitialLayoutType.values()).contains(result.getStringMember("initialLayout"))) {
+        throw new IllegalArgumentException("initialLayout must be one of " + names(GraphInitialLayoutType.values()) + ".");
+      }
+      if (!names(GraphComplexLayoutType.values()).contains(result.getStringMember("complexLayout"))) {
+        throw new IllegalArgumentException("complexLayout must be one of " + names(GraphComplexLayoutType.values()) + ".");
+      }
+      if (!result.getMember("maxLayoutIterations").isJsonNull() && result.getIntegerMember("maxLayoutIterations") <= 0) {
+        throw new IllegalArgumentException("maxLayoutIterations must be positive, or null for no limit.");
+      }
+    }
     return result;
+  }
+
+  private static List<String> names(Enum<?>[] values) {
+    return java.util.Arrays.stream(values).map(Enum::name).toList();
   }
 
   private static void merge(JsonObject target, JsonObject patch, JsonObject schema) {
@@ -177,7 +203,10 @@ final class CellOptions {
         return;
       }
       boolean valid;
-      if (template.isJsonNull()) {
+      if (key.equals("maxLayoutIterations")) {
+        // integer by default, null for no limit
+        valid = value.isJsonNull() || isInteger(value);
+      } else if (template.isJsonNull()) {
         boolean integer = schema.hasMember("minValue") && isInteger(schema.getMember("minValue"))
             || schema.hasMember("min") && isInteger(schema.getMember("min"));
         valid = value.isJsonNull() || (integer ? isInteger(value) : isFiniteNumber(value));
@@ -310,6 +339,10 @@ final class CellOptions {
           g.setShowSearchNode(o.getBooleanMember("showSearchNode"));
           g.setShowControlButtons(o.getBooleanMember("showControlButtons"));
           g.setShowInformation(o.getBooleanMember("showInformation"));
+          g.setInitialLayout(GraphInitialLayoutType.valueOf(o.getStringMember("initialLayout")));
+          g.setHorizontalLayout(o.getBooleanMember("horizontalLayout"));
+          g.setComplexLayout(GraphComplexLayoutType.valueOf(o.getStringMember("complexLayout")));
+          g.setMaxLayoutIterations(integer(o, "maxLayoutIterations"));
         }
       }
       case SCATTER -> {
@@ -375,7 +408,11 @@ final class CellOptions {
           .minHeight(o.getStringMember("minHeight")).showFilterGroup(o.getBooleanMember("showFilterGroup"))
           .showSearchNode(o.getBooleanMember("showSearchNode"))
           .showControlButtons(o.getBooleanMember("showControlButtons"))
-          .showInformation(o.getBooleanMember("showInformation")).build().get());
+          .showInformation(o.getBooleanMember("showInformation"))
+          .initialLayout(GraphInitialLayoutType.valueOf(o.getStringMember("initialLayout")))
+          .horizontalLayout(o.getBooleanMember("horizontalLayout"))
+          .complexLayout(GraphComplexLayoutType.valueOf(o.getStringMember("complexLayout")))
+          .maxLayoutIterations(integer(o, "maxLayoutIterations")).build().get());
       case SCATTER -> extra.setScatterextra(DashboardModuleManager.scatterExtraDataBuilder()
           .xAxis(buildAxis(o.getObjectMember("xAxis"))).yAxis(buildAxis(o.getObjectMember("yAxis"))).build().get());
       case FILTERABLE_TABLE -> {
