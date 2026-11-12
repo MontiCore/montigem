@@ -55,8 +55,11 @@ public class CommandResultDeSerDecorator extends AbstractDecorator {
     getCD4C().addMethod(cmdResultDeSerClass, getBuildJsonTemplate(), classNames);
     getCD4C().addMethod(cmdResultDeSerClass, getFromJsonTemplate());
     getCD4C().addMethod(cmdResultDeSerClass, getDeserSingleValueTemplate(), deSerTypes);
-    getCD4C().addMethod(cmdResultDeSerClass, getSerSingleValueTemplate(), deSerTypes);
-    getCD4C().addMethod(cmdResultDeSerClass, getCanDeserTemplate(), classNames);
+    Map<String, String> abstractTypes = getAbstractTypes(origCD);
+    getCD4C().addMethod(cmdResultDeSerClass, getSerSingleValueTemplate(), deSerTypes, abstractTypes);
+    List<String> declarableTypes = new ArrayList<>(classNames);
+    declarableTypes.addAll(abstractTypes.keySet());
+    getCD4C().addMethod(cmdResultDeSerClass, getCanDeserTemplate(), declarableTypes);
 
     addImports(cmdResultDeSerClass);
 
@@ -74,6 +77,23 @@ public class CommandResultDeSerDecorator extends AbstractDecorator {
       deSerTypes.put(fqn, simpleName);
     }
     return deSerTypes;
+  }
+
+  /**
+   * Abstract classes of this CD (FQN -> simple name). They have no DeSer of
+   * their own, but may be the declared element type of a result (e.g.
+   * LoadAll&lt;X&gt;WithIDs); their values are (de)serialized with the DeSer of
+   * the concrete runtime type.
+   */
+  protected Map<String, String> getAbstractTypes(ASTCDCompilationUnit origCD) {
+    String packageName = getPackageName(origCD, DEFAULT_PACKAGE);
+    Map<String, String> abstractTypes = new LinkedHashMap<>();
+    for (ASTCDClass c : origCD.getCDDefinition().getCDClassesList()) {
+      if (!c.getModifier().isDerived() && c.getModifier().isAbstract()) {
+        abstractTypes.put(Joiners.DOT.join(packageName, c.getName()), c.getName());
+      }
+    }
+    return abstractTypes;
   }
 
   protected List<String> getClassNames(ASTCDCompilationUnit origCD) {

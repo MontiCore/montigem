@@ -2,8 +2,11 @@
 
 classdiagram LoadingTests {
 
-  class Person {
+  abstract class Being {
     String name;
+  }
+
+  class Person extends Being {
     int age;
   }
 
@@ -11,8 +14,7 @@ classdiagram LoadingTests {
     int matNr;
   }
 
-  class Animal {
-    String name;
+  class Animal extends Being {
     int legs;
   }
 
