@@ -3,6 +3,7 @@
 // The dashboard itself (configs, cells, views, ...) is provided by the dashboard module
 import DashboardModule.*;
 import ChatModule.*;
+import CollabTextModule.*;
 
 import java.util.List;
 

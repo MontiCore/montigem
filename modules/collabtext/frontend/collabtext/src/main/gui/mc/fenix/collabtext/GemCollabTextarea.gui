@@ -1,0 +1,45 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.collabtext;
+
+/**
+  Text area for plain text that several users edit at the same time. It displays
+  the cursors and selections of the other users and reports every change of the
+  user as an edit, instead of the whole text.
+
+  The component does not synchronize anything itself. `CollabTextarea` connects
+  it to a `CollabText` of the domain model.
+*/
+component GemCollabTextarea(
+  /**
+    The text. When it changes while the user is typing, the cursor and the
+    selection of the user stay at the same characters.
+  */
+  String value,
+  /** Cursors of the other users, `GemCollabTextCursor` components. */
+  List<GUIViewElement> cursors,
+  /**
+    Callback that is executed when the user changes the text. The edit is passed
+    as `<position>|<number of deleted characters>|<inserted text>`.
+  */
+  Event<String> edit,
+  /**
+    Callback that is executed when the user moves the cursor or changes the
+    selection, but not when the cursor only moves along with an edit. The
+    selection is passed as `<anchor>|<head>`, the cursor is at the head.
+  */
+  Event<String> selectionChange,
+  /** Text displayed when the text area is empty. */
+  String placeholder = "",
+  /** Whether the text area is disabled. */
+  boolean disabled = false,
+  /**
+    Lengths of consecutive pieces of the text, separated by commas, e.g., the
+    chunks in which it is stored. The pieces are shaded alternately, no piece
+    is shaded if it is empty.
+  */
+  String chunks = "",
+  /** Width of the component. */
+  String width = "100%",
+  /** Height of the component. */
+  String height = "100%"
+)

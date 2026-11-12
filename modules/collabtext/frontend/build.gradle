@@ -1,0 +1,91 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import de.montigem.gradle.specific.GUIJava2TSTask
+import de.montigem.gradle.specific.UMLPJava2TSTask
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
+plugins {
+  id 'de.rwth.se.montigem-module-frontend'
+}
+
+base {
+  archivesName = "collabtext-frontend"
+}
+
+montigem {
+  libs.addAll([project(":modules:collabtext:frontend:collabtext")])
+}
+
+// Publish async metadata from both GUI and domain transpilation, as in the dashboard module.
+// Applications need it to await the module's asynchronous manager and collection operations.
+afterEvaluate {
+  def mergeJSweetAsync = tasks.register("mergeJSweetAsyncMethods") {
+    group = "build"
+
+    montigem.libs.each { subproject ->
+      def guiJava2tsTask = subproject.tasks.named("guiJava2ts", GUIJava2TSTask)
+      def umlpJava2tsTask = subproject.tasks.named("umlpJava2ts", UMLPJava2TSTask)
+      dependsOn(guiJava2tsTask, umlpJava2tsTask)
+      inputs.files(guiJava2tsTask.map { it.outputs.files })
+      inputs.files(umlpJava2tsTask.map { it.outputs.files })
+    }
+
+    def outputFile = layout.buildDirectory.file("generated-resources/jsweetasync.json")
+    outputs.file(outputFile)
+
+    doLast {
+      def slurper = new JsonSlurper()
+      def mergedList = []
+      def addExact = { Provider<Directory> adapterDir ->
+        if (adapterDir.isPresent()) {
+          def file = new File(adapterDir.get().asFile, "jsweet-async-methods.json")
+          if (file.exists()) {
+            def exact = slurper.parse(file)["@Async"]?.get("exact")
+            if (exact) mergedList.addAll(exact)
+          }
+        }
+      }
+      montigem.libs.each { subproject ->
+        def guiTask = subproject.tasks.named("guiJava2ts", GUIJava2TSTask).get()
+        addExact(guiTask.getJSweetAdapterDir())
+        addExact(guiTask.getCD2JavaJSweetAdapterDir())
+        addExact(subproject.tasks.named("umlpJava2ts", UMLPJava2TSTask).get().getJSweetAdapterDir())
+      }
+      def out = outputFile.get().asFile
+      out.parentFile.mkdirs()
+      // JSweet writes the methods in a different order in every build, the jar must not change because of that
+      out.text = JsonOutput.prettyPrint(JsonOutput.toJson(["@Async": ["exact": mergedList.unique().sort()]]))
+    }
+  }
+
+  sourceSets.main.resources.srcDir(layout.buildDirectory.dir("generated-resources"))
+  processResources.dependsOn(mergeJSweetAsync)
+  tasks.named("jar").configure { dependsOn(mergeJSweetAsync) }
+}
+
+// Publish the GUI symbols and the import map of the module (umlp.modules:collabtext depends on them)
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      // A unique artifactId, otherwise the jar clashes with umlp.umlp-rte:frontend in using app
+      artifactId = "collabtext-frontend"
+      from components.java
+    }
+  }
+  repositories {
+    maven {
+      url "file://${project.layout.buildDirectory.get().asFile}/repo"
+    }
+    maven {
+      if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+        credentials.username mavenUser
+        credentials.password mavenPassword
+      }
+
+      def releasesRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-releases/"
+      def snapshotsRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-snapshots/"
+      url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+    }
+  }
+}

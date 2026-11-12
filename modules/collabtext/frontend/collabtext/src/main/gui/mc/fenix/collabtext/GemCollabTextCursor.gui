@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.collabtext;
+
+/**
+  Cursor and selection of another user in a `GemCollabTextarea`.
+*/
+component GemCollabTextCursor(
+  /** Text displayed at the cursor, e.g., the name of the user. */
+  String label = "",
+  /** CSS color of the cursor and the selection. */
+  String color = "#1976d2",
+  /** Index in the text at which the selection starts. */
+  int anchor = 0,
+  /** Index in the text at which the selection ends and the cursor is displayed. */
+  int head = 0
+)
