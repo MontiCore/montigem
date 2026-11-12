@@ -10,13 +10,16 @@ public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTes
     super(new UMLPAssociationQualifierByAttributeName(), UMLPCoCoChecker::addCoCo);
   }
 
+  /** List, Optional and Set attributes (no key or several keys per value object) and an enum attribute */
   @Test
   public void testInvalidQAttrType() {
     parseInvalid("UMLPAssocQualifierComplexAttrType");
 
-    // the List names (line 13) is multi-valued, see UMLPAssociationQualifierKeyCardinalityTest
-    assertFindingAtLine(0, 14, "e");
-    assertFindingsCount(1);
+    assertFindingAtLine(0, 15, "names");
+    assertFindingAtLine(1, 16, "optName");
+    assertFindingAtLine(2, 17, "ids");
+    assertFindingAtLine(3, 18, "e");
+    assertFindingsCount(4);
   }
 
   @Test

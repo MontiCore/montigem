@@ -17,8 +17,10 @@ import java.util.Optional;
 
 /**
  * The attribute that qualifies an attribute qualified association ({@code Owner [[attr]] -> Value}) has a type that
- * can be a key: a primitive or String (GemValueMap) or a domain class (GemEntryMap). That the attribute exists is
- * checked by {@link UMLPAssociationQualifierAttributeExists}.
+ * can be a key: a primitive or String (GemValueMap) or a domain class (GemEntryMap). Optional, collection and array
+ * types are rejected as well, they would give a value object no key or several keys. That the attribute exists is
+ * checked by {@link UMLPAssociationQualifierAttributeExists}, the cardinality of a role that is used as qualifier by
+ * {@link UMLPAssociationQualifierKeyCardinality}.
  */
 public class UMLPAssociationQualifierByAttributeName implements CDAssociationASTCDAssociationCoCo, CoCoTestable {
 
@@ -50,15 +52,11 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
     final String attributeName = qSide.getCDQualifier().getByAttributeName();
     Optional<SymTypeExpression> expr = this.resolver.resolveVariable(ste, attributeName,
         BasicAccessModifier.ALL_INCLUSION, x -> true);
-    if (expr.isPresent()) {
-      // optional and multi-valued attributes are reported by UMLPAssociationQualifierKeyCardinality
-      if (!UMLPAssociationQualifierKeyCardinality.isOptionalOrMultiValued(expr.get())
-          && !isValueKey(expr.get()) && !isDomainKey(expr.get())){
-        logError(qSide.getCDQualifier().get_SourcePositionStart(),
-                 TYPE_ERROR_CODE,
-                 TYPE_ERROR_MSG_FORMAT,
-                 attributeName);
-      }
+    if (expr.isPresent() && !isValueKey(expr.get()) && !isDomainKey(expr.get())) {
+      logError(qSide.getCDQualifier().get_SourcePositionStart(),
+               TYPE_ERROR_CODE,
+               TYPE_ERROR_MSG_FORMAT,
+               attributeName);
     }
     // a qualifier that is no attribute is a role (a domain object key) or does not exist
     // (UMLPAssociationQualifierAttributeExists)

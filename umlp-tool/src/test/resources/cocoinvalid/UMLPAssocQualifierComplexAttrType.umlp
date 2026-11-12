@@ -6,10 +6,14 @@ umlp UMLPAssocQualifierComplexAttrType {
 
   class B {
     java.util.List<String> names;
+    java.util.Optional<String> optName;
+    java.util.Set<Integer> ids;
   }
 
   enum E;
 
   association A [[names]] -> B [1];
+  association A [[optName]] -> B [1];
+  association A [[ids]] -> B [1];
   association B [[e]] -> A [1];
 }

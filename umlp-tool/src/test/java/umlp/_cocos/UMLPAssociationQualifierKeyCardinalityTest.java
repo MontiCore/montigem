@@ -10,21 +10,19 @@ public class UMLPAssociationQualifierKeyCardinalityTest extends AbstractCoCoTest
     super(new UMLPAssociationQualifierKeyCardinality(), UMLPCoCoChecker::addCoCo);
   }
 
-  /** optional and multi-valued qualifiers, as attributes and as association roles, on both sides */
+  /** optional and multi-valued association roles as qualifiers, on both sides */
   @Test
   public void testInvalidKeyCardinality() {
     parseInvalid("UMLPAssocQualifierKeyCardinality");
 
-    assertFindingAtLine(0, 13, "optName", "A");
-    assertFindingAtLine(1, 14, "names", "A");
-    assertFindingAtLine(2, 15, "optC", "A");
-    assertFindingAtLine(3, 16, "manyC", "A");
-    assertFindingAtLine(4, 17, "someC", "A");
-    assertFindingAtLine(5, 18, "manyC", "A");
-    assertFindingsCount(6);
+    assertFindingAtLine(0, 12, "optC", "A");
+    assertFindingAtLine(1, 13, "manyC", "A");
+    assertFindingAtLine(2, 14, "someC", "A");
+    assertFindingAtLine(3, 15, "manyC", "A");
+    assertFindingsCount(4);
   }
 
-  /** single valued qualifiers: attributes and an association role */
+  /** single valued qualifiers: attributes (no cardinality) and an association role with cardinality [1] */
   @Test
   public void testValidKeys() {
     ASTCDCompilationUnit ast = parse("cocovalid/UMLPAssocQualifierKeys.umlp");
