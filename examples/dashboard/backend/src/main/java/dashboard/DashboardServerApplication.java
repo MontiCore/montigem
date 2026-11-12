@@ -2,6 +2,10 @@
 package dashboard;
 
 import chatmodule.MessageSender;
+import collabtextmodule.CollabText;
+import collabtextmodule.CollabTextModuleManager;
+import collabtextmodule.CollabTextSync;
+import collabtextmodule.TextEdit;
 import dashboardmodule.CellConfig;
 import dashboardmodule.DashboardModuleConfig;
 import dashboardmodule.DashboardModuleManager;
@@ -54,6 +58,10 @@ public class DashboardServerApplication extends DashboardServerApplicationTOP {
         getChatService().send(history, DashboardModuleManager.getViewConfigSure(contextGemId)));
     // Allow the data scripts of the dashboard cells to access the example domain (e.g., DashboardManager.getOrganizationList())
     InterpreterWithErrorHandling.addDomain("dashboard", DashboardManager.class);
+    // The text of the page home/CollabDemo
+    CollabText sharedNotes = CollabTextModuleManager.collabTextBuilder().build().get();
+    CollabTextSync.apply(sharedNotes, new TextEdit(0, 0,
+        "Open this page in a second window and type in both of them.\n"));
     initUseCaseData();
     initEntities();
   }

@@ -1,0 +1,20 @@
+<!-- (c) https://github.com/MontiCore/monticore -->
+
+<div class="gem-collab-textarea-backdrop" aria-hidden="true">
+  <div #marks class="gem-collab-textarea-marks gem-collab-textarea-text"></div>
+</div>
+<textarea
+  #input
+  class="gem-collab-textarea-input gem-collab-textarea-text"
+  [placeholder]="placeholder"
+  [disabled]="disabled"
+  (input)="onInput()"
+  (scroll)="alignMarks()"
+  (keyup)="reportSelection()"
+  (mouseup)="reportSelection()"
+  (select)="reportSelection()"
+  (focus)="reportSelection()"
+></textarea>
+<ng-container *ngFor="let cursor of cursors">
+  <ng-container *ngTemplateOutlet="cursor; injector: cursorInjector"></ng-container>
+</ng-container>

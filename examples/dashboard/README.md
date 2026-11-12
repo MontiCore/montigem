@@ -1,6 +1,8 @@
 Example application using the [dashboard module](../../modules/dashboard) and
 [chat module](../../modules/chat).
 It provides an example domain (organizations, teams, people, ...) and dashboard configurations visualizing it.
+The page `home/CollabDemo` additionally shows the text area of the
+[collaborative text module](../../modules/collabtext): open it in two windows to edit the same text.
 
 Prerequisites: Java 21 installed 
 To build the single jar for sharing use `gradle :examples:dashboard:frontend:fullAppJar`

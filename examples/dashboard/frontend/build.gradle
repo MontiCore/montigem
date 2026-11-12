@@ -25,6 +25,11 @@ dependencies {
   montigemModuleUMLPSymbols project(':modules:chat')
   montigemModuleGUISymbols project(':modules:chat:frontend')
   montigemModuleImportMap project(':modules:chat:frontend')
+
+  montigemModuleUMLPModels project(':modules:collabtext')
+  montigemModuleUMLPSymbols project(':modules:collabtext')
+  montigemModuleGUISymbols project(':modules:collabtext:frontend')
+  montigemModuleImportMap project(':modules:collabtext:frontend')
 }
 
 configurations {
@@ -47,12 +52,16 @@ tasks.named("gui2java", GUI2JavaTask) {
 // such that the example uses the current module without publishing the library first
 def dashboardLib = project(':modules:dashboard:frontend:dashboard')
 def chatLib = project(':modules:chat:frontend:chat')
+def collabtextLib = project(':modules:collabtext:frontend:collabtext')
 tasks.named("createSymlink", CreateSymlinkTask) {
-  dependsOn dashboardLib.tasks.named("guiJava2ts"), chatLib.tasks.named("guiJava2ts")
+  dependsOn dashboardLib.tasks.named("guiJava2ts"), chatLib.tasks.named("guiJava2ts"),
+      collabtextLib.tasks.named("guiJava2ts")
   links.put(layout.buildDirectory.dir("app/libs/@montigem/dashboard").get().asFile,
       dashboardLib.layout.projectDirectory.asFile)
   links.put(layout.buildDirectory.dir("app/libs/@montigem/chat").get().asFile,
       chatLib.layout.projectDirectory.asFile)
+  links.put(layout.buildDirectory.dir("app/libs/@montigem/collabtext").get().asFile,
+      collabtextLib.layout.projectDirectory.asFile)
 }
 
 test {

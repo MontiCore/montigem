@@ -1,0 +1,56 @@
+/* (c) https://github.com/MontiCore/monticore */
+package collabtextcomponents;
+
+import mc.fenix.collabtext.GemCollabTextarea;
+import mc.fenix.collabtext.GemCollabTextCursor;
+
+import CollabTextModule.CollabText;
+import CollabTextModule.CollabTextCursor;
+
+/**
+  Text area in which all users who have the same `CollabText` open edit it
+  together: their changes appear live and each user sees the cursors and
+  selections of the others.
+*/
+component CollabTextarea(
+  CollabText text,
+  /** Name displayed to the other users at the cursor of this user. */
+  String userName = "",
+  /** CSS color of the cursor of this user for the others. By default, each user gets one. */
+  String userColor = "",
+  String placeholder = "",
+  boolean disabled = false,
+  /** Whether the chunks in which the text is stored are shaded, e.g., to demonstrate the synchronization. */
+  boolean showChunks = false,
+  /** The text as this user sees it, i.e., including the edits that are not synchronized yet. */
+  String value = "",
+  /** True until the text is read from its chunks. The text area is disabled meanwhile. */
+  boolean loading = true,
+  /**
+    Lengths of the chunks of the text as this user sees it, separated by commas.
+    For the edits that are not synchronized yet, these are the chunks the backend will make.
+  */
+  String chunkLengths = ""
+) {
+
+    editor@GemCollabTextarea(
+      value = value,
+      placeholder = placeholder,
+      disabled = isLocked(disabled, loading),
+      chunks = shownChunks(showChunks, chunkLengths),
+      edit = applyEdit(),
+      selectionChange = moveCursor(),
+      cursors = [
+        @iterate(CollabTextCursor cursor : text.cursors) {
+          @guard(isOtherUser(cursor)) {
+            remoteCursor@GemCollabTextCursor(
+              label = cursor.userName,
+              color = cursor.color,
+              anchor = cursor.anchor,
+              head = cursor.head
+            );
+          }
+        }
+      ]
+    );
+}

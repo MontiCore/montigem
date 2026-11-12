@@ -45,6 +45,8 @@ dependencies {
   montigemModuleUMLPModels project(':modules:dashboard')
   montigemModule project(':modules:chat')
   montigemModuleUMLPModels project(':modules:chat')
+  montigemModule project(':modules:collabtext')
+  montigemModuleUMLPModels project(':modules:collabtext')
 }
 
 tasks.named("umlp2java", UMLP2JavaTask) {

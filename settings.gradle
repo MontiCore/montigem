@@ -114,3 +114,8 @@ include ':modules:chat'
 include ':modules:chat:backend'
 include ':modules:chat:frontend'
 include ':modules:chat:frontend:chat'
+
+include ':modules:collabtext'
+include ':modules:collabtext:backend'
+include ':modules:collabtext:frontend'
+include ':modules:collabtext:frontend:collabtext'
