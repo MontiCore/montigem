@@ -1,7 +1,10 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
 ${tc.signature()}
-${cd4c.method("protected void cleanupBackend(Page page, BrowserContext browserContext)")}
+${cd4c.method("protected void cleanupBackend(Page page, BrowserContext browserContext, TestInfo testInfo)")}
 
+  if(coverageTracker != null){
+    coverageTracker.stopJSCoverage(testInfo.getDisplayName());
+  }
   page.close();
   browserContext.close();
 
