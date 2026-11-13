@@ -1,7 +1,6 @@
 plugins {
   id 'java-library'
 }
-
 group = "de.se-rwth.dt"
 
 java {
