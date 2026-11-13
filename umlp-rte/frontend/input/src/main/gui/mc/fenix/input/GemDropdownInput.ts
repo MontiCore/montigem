@@ -7,8 +7,7 @@ import {
   EventEmitter,
   HostBinding,
   HostListener,
-  Output,
-  SimpleChanges
+  Output
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -68,23 +67,24 @@ export class GemDropdownInput extends GemDropdownInputComponent {
 
   ngOnInit(): void {
     this.filteredOptions = this.options;
-    if (this.filteredOptions?.length > 0) {
-      this.selectOption(this.filteredOptions[0]);
-    }
+    this.updateSelectedOption();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-/*    if (changes["options"]) {
-      this.filteredOptions = changes["options"].currentValue;
-    }*/
-    if (changes["entry"]) {
-      this.selectedOption = this.options?.find(o => o.getValue() === this.entry);
-    }
+  // The generated options setter resolves the list asynchronously, so options usually arrive after entry.
+  // Recompute the selected option whenever either of them changes, independent of their order.
+  public override setEntry(val: string) {
+    super.setEntry(val);
+    this.updateSelectedOption();
   }
 
   public override setOptions(val: Array<Option>) {
     super.setOptions(val);
     this.filteredOptions = val;
+    this.updateSelectedOption();
+  }
+
+  private updateSelectedOption(): void {
+    this.selectedOption = this.options?.find(o => o.getValue() === this.entry);
   }
 
   onKeyPress(event: KeyboardEvent): void {

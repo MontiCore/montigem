@@ -105,6 +105,42 @@ public class GemCardE2ETest extends AbstractDomainE2ETest {
     assertEquals(expandedOffset, offsetOfCardBelow(page), DELTA);
   }
 
+  @Test
+  void testDropdownOptionsAreNotCutOffByCard(Page page) {
+    Locator dropdown = page.locator(".dropdownCard gem-dropdown-input").first();
+    dropdown.scrollIntoViewIfNeeded();
+    dropdown.locator(".gem-dropdown-input").click();
+
+    Locator lastOption = page.locator(".dropdownCard .gem-dropdown-option").last();
+    lastOption.scrollIntoViewIfNeeded();
+    BoundingBox option = lastOption.boundingBox();
+    // the options reach beyond the bottom of the card, i.e. the test covers an overflowing overlay
+    assertTrue(option.y > frame(page, ".dropdownCard").y + frame(page, ".dropdownCard").height,
+        "the options do not overflow the card, the test has to be adapted");
+    // the last option is neither clipped by the card nor covered by the card below
+    assertTrue(isTopmostAt(page, lastOption, option), "the last option is cut off or covered");
+
+    lastOption.click();
+    assertEquals("auto", dropdown.locator(".gem-dropdown-text").innerText().trim());
+  }
+
+  @Test
+  void testCollapsedCardStillHidesItsContent(Page page) {
+    Locator header = page.locator(".dropdownCard .gem-card-header").first();
+    header.scrollIntoViewIfNeeded();
+    header.click();
+    page.waitForTimeout(COLLAPSE_ANIMATION_MS);
+    assertTrue(page.locator(".dropdownCard .gem-dropdown-input").first().isHidden(),
+        "the content of a collapsed card is visible");
+  }
+
+  /** Whether the element is the one hit at the center of its bounding box, i.e. visible on top. */
+  private boolean isTopmostAt(Page page, Locator element, BoundingBox box) {
+    return (Boolean) element.evaluate(
+        "(el, p) => { const hit = document.elementFromPoint(p[0], p[1]); return hit === el || el.contains(hit); }",
+        java.util.List.of(box.x + box.width / 2, box.y + box.height / 2));
+  }
+
   /** Vertical distance between the collapsible card and the card below it (independent of scrolling). */
   private double offsetOfCardBelow(Page page) {
     return box(page, ".cardBelow").y - box(page, ".collapsibleCard").y;
