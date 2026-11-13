@@ -68,6 +68,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "TreeNode", target = "/example_arrange/GemTreeNodeExample");
         @GemNavItem(title = "Dialog", target = "/example_arrange/GemDialogExample");
         @GemNavItem(title = "Card", target = "/example_arrange/GemCardExample");
+        @GemNavItem(title = "Divider", target = "/example_arrange/GemDividerExample");
         @GemNavItem(title = "Column", target = "/example_arrange/GemColumnExample");
         @GemNavItem(title = "Column2", target = "/example_arrange/GemColumnExample2");
         @GemNavItem(title = "Row", target = "/example_arrange/GemRowExample");

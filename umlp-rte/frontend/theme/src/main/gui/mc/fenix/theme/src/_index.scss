@@ -29,6 +29,7 @@
 @import "./components/GemTextareaInput";
 @import "./components/GemVideo";
 @import "./components/GemImage";
+@import "./components/GemDivider";
 @import "./Table";
 
 
@@ -50,6 +51,7 @@
   @include gem-markdown-theme();
   @include gem-charts-dark-theme();
   @include gem-column-theme();
+  @include gem-divider-theme();
   @include dialog-theme($rwth-blue-2, $rwth-black, $rwth-black-4);
   @include gem-grid-theme();
   @include gem-grid-cell-theme();

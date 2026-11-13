@@ -1,0 +1,42 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_arrange;
+
+import mc.fenix.arrange.GemDivider;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemText;
+import mc.fenix.navigation.GemNavList;
+import mc.fenix.navigation.GemNavItem;
+import common.ExamplePage;
+
+page GemDividerExample() {
+  @ExamplePage(
+    component = @GemColumn(
+      width = "100%",
+      components = [
+        @GemText(value = "Content Above Divider", weight = "bold"),
+        @GemDivider(),
+        @GemText(value = "Content Below Default Divider (1px, #e0e0e0)"),
+        @GemDivider(height = "3px", color = "#1976d2"),
+        @GemText(value = "Content Below Custom Divider (3px, #1976d2)"),
+
+        @GemDivider(),
+
+        @GemText(value = "Divider in GemNavList", size = "1.5rem", weight = "bold"),
+        @GemNavList(
+          width = "250px",
+          components = [
+            @GemNavItem(title = "Dashboard", target = "#"),
+            @GemNavItem(title = "Profile", target = "#"),
+            @GemDivider(),
+            @GemNavItem(title = "Settings", target = "#"),
+            @GemNavItem(title = "Help", target = "#"),
+            @GemDivider(),
+            @GemNavItem(title = "Logout", target = "#")
+          ]
+        )
+      ]
+    ),
+    basePath = "example_arrange",
+    componentName = "GemDividerExample"
+  );
+}
