@@ -67,4 +67,12 @@ umlp QualifiedAssocs {
 
   /* bidirectional, the key type is the value type: deleting a person removes its entries as a key and as a value */
   association [0..1] Club [Person] (mentorClub) <-> (menteeByMentor) Person [1];
+
+  /* Map attributes become type qualified associations (UMLAttrToAssocTrafo), like Directory's byCode and
+     headByDepartment: Roster [String] (byNickRoster) -> (byNick) Person [1] and Roster [Department]
+     (deputyByDepartmentRoster) -> (deputyByDepartment) Person [1]; both spellings of the map type */
+  class Roster {
+    Map<String, Person> byNick;
+    java.util.Map<Department, Person> deputyByDepartment;
+  }
 }

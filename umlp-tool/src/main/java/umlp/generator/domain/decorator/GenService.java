@@ -666,6 +666,36 @@ public class GenService {
     return false;
   }
 
+  /**
+   * whether the type is {@code java.util.Map}, generic or raw; a {@code Map<K, V>} attribute with a domain class value
+   * becomes a type qualified association (UMLAttrToAssocTrafo)
+   */
+  public static boolean isMap(SymTypeExpression type) {
+    if (type instanceof SymTypeOfGenerics) {
+      return ((SymTypeOfGenerics) type).getBaseName().equals("Map");
+    }
+    return type.hasTypeInfo() && type.getTypeInfo().getName().equals("Map");
+  }
+
+  /**
+   * @param type a {@code Map} type, see {@link #isMap(SymTypeExpression)}
+   * @return its type argument at index (0: key, 1: value), empty for a raw {@code Map}
+   */
+  public static Optional<SymTypeExpression> getMapTypeArgument(SymTypeExpression type, int index) {
+    if (type instanceof SymTypeOfGenerics && ((SymTypeOfGenerics) type).sizeArguments() == 2) {
+      return Optional.of(((SymTypeOfGenerics) type).getArgument(index));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * whether the type is a domain class or interface (no enum, no POJO), i.e. a GemIdentifiable that can be the value
+   * of an association
+   */
+  public static boolean isAssociationTarget(SymTypeExpression type) {
+    return type.hasTypeInfo() && isDomainType(type) && !isCDEnum(type);
+  }
+
   public static boolean isCollection(SymTypeExpression type) {
     if (type instanceof SymTypeOfGenerics) {
       return type.getTypeInfo().getInterfaceList().stream().filter(

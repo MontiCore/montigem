@@ -30,4 +30,10 @@ umlp UMLPAssocQualifierKeys {
   association B [int] (byInt) -> A [1];
   association B [C] (byCKey) -> A [1];
   association [1] A (byLongFromRight) <- [long] B;
+
+  // Map attributes: become type qualified associations (UMLAttrToAssocTrafo)
+  class E {
+    java.util.Map<String, A> aByName;
+    java.util.Map<C, A> aByC;
+  }
 }
