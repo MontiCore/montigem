@@ -12,9 +12,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static umlp.test_rte.playwright.ComponentKind.GemButton;
 import static umlp.test_rte.playwright.ComponentKind.GemText;
 
@@ -156,25 +153,23 @@ public class TestBidirectGemMap extends AbstractLoadingTestsE2ETest {
   protected void assertInClub1(Page page) {
     click(page, "Read");
     assertThat(result(page)).hasText("inClub1=true;inClub2=false;club=C 1");
-    assertTrue(club1.containsKeyMemberByCode(CODE));
-    assertFalse(club2.containsKeyMemberByCode(CODE));
-    assertEquals(club1.getGemId(), member.getClubGem().getGemId());
+    // the browser's commands reach the backend asynchronously
+    waitUntil(() -> club1.containsKeyMemberByCode(CODE) && !club2.containsKeyMemberByCode(CODE)
+        && member.getClubGem().getGemId() == club1.getGemId(), "backend: the member in club 1 only");
   }
 
   protected void assertInClub2(Page page) {
     click(page, "Read");
     assertThat(result(page)).hasText("inClub1=false;inClub2=true;club=C 2");
-    assertFalse(club1.containsKeyMemberByCode(CODE));
-    assertTrue(club2.containsKeyMemberByCode(CODE));
-    assertEquals(club2.getGemId(), member.getClubGem().getGemId());
+    waitUntil(() -> !club1.containsKeyMemberByCode(CODE) && club2.containsKeyMemberByCode(CODE)
+        && member.getClubGem().getGemId() == club2.getGemId(), "backend: the member in club 2 only");
   }
 
   protected void assertInNoClub(Page page) {
     click(page, "Read");
     assertThat(result(page)).hasText("inClub1=false;inClub2=false;club=none");
-    assertFalse(club1.containsKeyMemberByCode(CODE));
-    assertFalse(club2.containsKeyMemberByCode(CODE));
-    assertEquals(-1, member.getClubGem().getGemId());
+    waitUntil(() -> !club1.containsKeyMemberByCode(CODE) && !club2.containsKeyMemberByCode(CODE)
+        && member.getClubGem().getGemId() == -1, "backend: the member in no club");
   }
 
   protected void assertRoles(Page page, boolean inClub1, boolean inClub2) {
@@ -182,11 +177,10 @@ public class TestBidirectGemMap extends AbstractLoadingTestsE2ETest {
     click(page, "Read Roles");
     assertThat(result(page)).hasText("inClub1=" + inClub1 + ";inClub2=" + inClub2 + ";clubs=" + clubs
         + ";hasClub1=" + inClub1 + ";hasClub2=" + inClub2);
-    assertEquals(inClub1, club1.containsKeyMemberByRole(ROLE));
-    assertEquals(inClub2, club2.containsKeyMemberByRole(ROLE));
-    assertEquals(clubs, member.sizeClubss());
-    assertEquals(inClub1, member.containsClubs(club1));
-    assertEquals(inClub2, member.containsClubs(club2));
+    waitUntil(() -> club1.containsKeyMemberByRole(ROLE) == inClub1 && club2.containsKeyMemberByRole(ROLE) == inClub2
+        && member.sizeClubss() == clubs && member.containsClubs(club1) == inClub1
+        && member.containsClubs(club2) == inClub2,
+        "backend: the role in club 1 " + inClub1 + ", in club 2 " + inClub2);
   }
 
   protected void assertMemberSide(Page page, long clubId, int clubs) {

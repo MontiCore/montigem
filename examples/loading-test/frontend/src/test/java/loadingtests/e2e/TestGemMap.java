@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static umlp.test_rte.playwright.ComponentKind.GemButton;
 import static umlp.test_rte.playwright.ComponentKind.GemText;
@@ -57,11 +56,23 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     return page.locator(GemText.selector()).first();
   }
 
+  /**
+   * clicks the button until the result contains the text: a command pushed by the backend reaches the browser
+   * asynchronously, so a single click right after the change may still read the old state
+   */
+  void clickUntil(Page page, String label, String text) {
+    waitUntil(() -> {
+      click(page, label);
+      return result(page).textContent().contains(text);
+    }, "\"" + label + "\" never showed " + text);
+    assertThat(result(page)).hasText(text);
+  }
+
   @Test
   public void testPutByOwner(Page page) {
     open(page, anna);
     click(page, "Put By Owner");
-    assertTrue(course.containsKeyParticipantByMatNr(1001));
+    waitUntil(() -> course.containsKeyParticipantByMatNr(1001), "backend: course.containsKeyParticipantByMatNr(1001)");
     assertEquals(anna.getGemId(), course.getParticipantByMatNr(1001).getGemId());
   }
 
@@ -69,7 +80,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
   public void testPutByMap(Page page) {
     open(page, anna);
     click(page, "Put By Map");
-    assertTrue(course.containsKeyParticipantByMatNr(1001));
+    waitUntil(() -> course.containsKeyParticipantByMatNr(1001), "backend: course.containsKeyParticipantByMatNr(1001)");
     assertEquals(anna.getGemId(), course.getParticipantByMatNr(1001).getGemId());
   }
 
@@ -78,7 +89,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     course.putParticipantByMatNr(anna);
     open(page, anna);
     click(page, "Remove By Owner");
-    assertFalse(course.containsKeyParticipantByMatNr(1001));
+    waitUntil(() -> !course.containsKeyParticipantByMatNr(1001), "backend: !course.containsKeyParticipantByMatNr(1001)");
   }
 
   @Test
@@ -86,7 +97,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     course.putParticipantByMatNr(anna);
     open(page, anna);
     click(page, "Remove By Map");
-    assertFalse(course.containsKeyParticipantByMatNr(1001));
+    waitUntil(() -> !course.containsKeyParticipantByMatNr(1001), "backend: !course.containsKeyParticipantByMatNr(1001)");
   }
 
   @Test
@@ -94,7 +105,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     course.putParticipantByMatNr(anna);
     open(page, anna);
     click(page, "Remove By KeySet");
-    assertFalse(course.containsKeyParticipantByMatNr(1001));
+    waitUntil(() -> !course.containsKeyParticipantByMatNr(1001), "backend: !course.containsKeyParticipantByMatNr(1001)");
   }
 
   /** the browser loads the map from the backend with value ids only and keys them on first access */
@@ -114,8 +125,8 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Rekey");
     assertThat(result(page)).hasText("before=true;old=false;new=true");
-    assertFalse(course.containsKeyParticipantByMatNr(1001));
-    assertTrue(course.containsKeyParticipantByMatNr(2001));
+    waitUntil(() -> !course.containsKeyParticipantByMatNr(1001), "backend: !course.containsKeyParticipantByMatNr(1001)");
+    waitUntil(() -> course.containsKeyParticipantByMatNr(2001), "backend: course.containsKeyParticipantByMatNr(2001)");
   }
 
   /** the key attribute staffId is declared in Staff, the superclass of the value Tutor */
@@ -124,12 +135,12 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Tutor");
     assertThat(result(page)).hasText("tutor=true");
-    assertTrue(course.containsKeyTutorByStaffId("T1"));
+    waitUntil(() -> course.containsKeyTutorByStaffId("T1"), "backend: course.containsKeyTutorByStaffId(\"T1\")");
 
     click(page, "Rekey Tutor");
     assertThat(result(page)).hasText("before=true;old=false;new=true");
-    assertFalse(course.containsKeyTutorByStaffId("T1"));
-    assertTrue(course.containsKeyTutorByStaffId("T1-new"));
+    waitUntil(() -> !course.containsKeyTutorByStaffId("T1"), "backend: !course.containsKeyTutorByStaffId(\"T1\")");
+    waitUntil(() -> course.containsKeyTutorByStaffId("T1-new"), "backend: course.containsKeyTutorByStaffId(\"T1-new\")");
   }
 
   /** GemEntryMap: the key is the Student the Enrollment references */
@@ -138,7 +149,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Enrollment");
     assertThat(result(page)).hasText("enrollment=true;grade=2");
-    assertTrue(course.containsKeyEnrollmentByStudent(anna));
+    waitUntil(() -> course.containsKeyEnrollmentByStudent(anna), "backend: course.containsKeyEnrollmentByStudent(anna)");
     assertEquals(enrollment.getGemId(), course.getEnrollmentByStudent(anna).getGemId());
   }
 
@@ -148,9 +159,11 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Build Course");
     assertThat(result(page)).hasText("built=true");
+    waitUntil(() -> LoadingTestsManager.getCourseList().stream()
+        .anyMatch(c -> c.getTitle().equals("Built In Browser")), "the built course in the backend");
     Course built = LoadingTestsManager.getCourseList().stream()
         .filter(c -> c.getTitle().equals("Built In Browser")).findFirst().get();
-    assertTrue(built.containsKeyParticipantByMatNr(1001));
+    waitUntil(() -> built.containsKeyParticipantByMatNr(1001), "1001 in the built course in the backend");
     assertEquals(anna.getGemId(), built.getParticipantByMatNr(1001).getGemId());
   }
 
@@ -163,9 +176,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     assertThat(result(page)).hasText("size=1;1001=Anna;contains1001=true;contains9999=false");
 
     course.putParticipantByMatNr(ben);
-    waitRdy(page);
-    click(page, "Read");
-    assertThat(result(page)).hasText("size=2;1001=Anna;1002=Ben;contains1001=true;contains9999=false");
+    clickUntil(page, "Read", "size=2;1001=Anna;1002=Ben;contains1001=true;contains9999=false");
   }
 
   @Test
@@ -174,7 +185,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     course.putParticipantByMatNr(ben);
     open(page, anna);
     click(page, "Clear");
-    assertEquals(0, course.sizeParticipantByMatNrs());
+    waitUntil(() -> course.sizeParticipantByMatNrs() == 0, "backend: course.sizeParticipantByMatNrs() == 0");
   }
 
   /** type qualified association: the key chosen in the browser reaches the backend */
@@ -183,7 +194,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Seat");
     assertThat(result(page)).hasText("seat=true");
-    assertTrue(course.containsKeyStudentBySeat("A1"));
+    waitUntil(() -> course.containsKeyStudentBySeat("A1"), "backend: course.containsKeyStudentBySeat(\"A1\")");
     assertEquals(anna.getGemId(), course.getStudentBySeat("A1").getGemId());
   }
 
@@ -194,9 +205,10 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Move Seat");
     assertThat(result(page)).hasText("A1=false;B2=true;size=1");
-    assertFalse(course.containsKeyStudentBySeat("A1"));
+    waitUntil(() -> !course.containsKeyStudentBySeat("A1"), "backend: !course.containsKeyStudentBySeat(\"A1\")");
+    waitUntil(() -> course.containsKeyStudentBySeat("B2"), "backend: course.containsKeyStudentBySeat(\"B2\")");
     assertEquals(anna.getGemId(), course.getStudentBySeat("B2").getGemId());
-    assertEquals(1, course.sizeStudentBySeats());
+    waitUntil(() -> course.sizeStudentBySeats() == 1, "backend: course.sizeStudentBySeats() == 1");
   }
 
   /** the browser loads the map from the backend with the keys and the value ids */
@@ -215,7 +227,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     course.putStudentBySeat("A1", anna);
     open(page, anna);
     click(page, "Remove Seat");
-    assertFalse(course.containsKeyStudentBySeat("A1"));
+    waitUntil(() -> !course.containsKeyStudentBySeat("A1"), "backend: !course.containsKeyStudentBySeat(\"A1\")");
   }
 
   /** a remove through the map in the browser reaches the backend */
@@ -224,7 +236,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     course.putStudentBySeat("A1", anna);
     open(page, anna);
     click(page, "Remove Seat By Map");
-    assertFalse(course.containsKeyStudentBySeat("A1"));
+    waitUntil(() -> !course.containsKeyStudentBySeat("A1"), "backend: !course.containsKeyStudentBySeat(\"A1\")");
   }
 
   /** a put in the backend reaches the type qualified map in the browser */
@@ -235,9 +247,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     assertThat(result(page)).hasText("size=0;A1=-;B2=-");
 
     course.putStudentBySeat("A1", anna);
-    waitRdy(page);
-    click(page, "Read Seats");
-    assertThat(result(page)).hasText("size=1;A1=Anna;B2=-");
+    clickUntil(page, "Read Seats", "size=1;A1=Anna;B2=-");
   }
 
   /** deleting a key object in the backend removes its entry from the map in the browser */
@@ -250,10 +260,8 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     assertThat(result(page)).hasText("mentees=1");
 
     assertTrue(LoadingTestsManager.deleteTutor(mentor.getGemId()));
-    waitRdy(page);
-    click(page, "Read Mentees");
-    assertThat(result(page)).hasText("mentees=0");
-    assertEquals(0, course.sizeMenteeByTutors());
+    clickUntil(page, "Read Mentees", "mentees=0");
+    waitUntil(() -> course.sizeMenteeByTutors() == 0, "backend: course.sizeMenteeByTutors() == 0");
   }
 
   /** the largest long key the browser represents exactly arrives in the backend unchanged */
@@ -262,6 +270,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Max Phone");
     assertThat(result(page)).hasText("max=true");
+    waitUntil(() -> course.containsKeyStudentByPhone(9007199254740991L), "backend: course.containsKeyStudentByPhone(9007199254740991L)");
     assertEquals(anna.getGemId(), course.getStudentByPhone(9007199254740991L).getGemId());
   }
 
@@ -271,7 +280,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Unsafe Phone");
     assertThat(result(page)).hasText("unsafe=false;size=0");
-    assertEquals(0, course.sizeStudentByPhones());
+    waitUntil(() -> course.sizeStudentByPhones() == 0, "backend: course.sizeStudentByPhones() == 0");
   }
 
   /** type qualified GemEntryMap: the key is the Tutor chosen in the browser */
@@ -280,7 +289,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Mentee");
     assertThat(result(page)).hasText("mentee=Anna");
-    assertTrue(course.containsKeyMenteeByTutor(tutor));
+    waitUntil(() -> course.containsKeyMenteeByTutor(tutor), "backend: course.containsKeyMenteeByTutor(tutor)");
     assertEquals(anna.getGemId(), course.getMenteeByTutor(tutor).getGemId());
   }
 }
