@@ -17,7 +17,7 @@ After building your library with `ng build commonj2ts`, go to the dist folder `c
 
 ## Running unit tests
 
-Run `ng test commonj2ts` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Run `ng test commonj2ts` to execute the unit tests via [Vitest](https://vitest.dev).
 
 ## Further help
 
