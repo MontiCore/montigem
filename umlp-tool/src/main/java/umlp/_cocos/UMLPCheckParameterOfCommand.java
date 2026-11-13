@@ -20,7 +20,7 @@ public class UMLPCheckParameterOfCommand implements CDBasisASTCDClassCoCo {
   public static final String ERROR_MSG_ARRAY = " The singleton class %s must not have any array as parameters of its method %s, use List";
   public static final String ERROR_MSG_MAP = " The singleton class %s must not have any maps as parameters of its method %s";
 
-  public static final String ERROR_SUFFIX = "\n This parameter for commands has not yet been implemented";
+  public static final String ERROR_SUFFIX = "\n Support for this type of parameter is not yet implemented";
 
 
   @Override
