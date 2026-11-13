@@ -10,6 +10,16 @@ variables:
   PUPPETEER_SKIP_DOWNLOAD: "true"
   CHROME_BIN: "/usr/bin/google-chrome-stable"
   PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
+  # Jobs that deploy, publish or trigger other projects only run in this project, never in forks
+  # (e.g. student forks in the RWTH GitLab, see docs/StudentContribution.md)
+  MAIN_PROJECT_PATH: "monticore/umlp"
+
+# `only:` condition for jobs that must only run on `dev` of the main project
+.only_main_dev: &only_main_dev
+  refs:
+    - dev
+  variables:
+    - $CI_PROJECT_PATH == $MAIN_PROJECT_PATH
 
 cache:
   paths:
@@ -36,7 +46,7 @@ gendoc:
       - docs/gendoc_img
     expire_in: 1 hour
   rules:
-    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PROJECT_PATH == $MAIN_PROJECT_PATH && $CI_COMMIT_BRANCH == "dev"
   allow_failure: false
 
 pages:
@@ -44,7 +54,7 @@ pages:
   needs: ["gendoc"]
   image: registry.git.rwth-aachen.de/monticore/container-registry/mkdocs-image
   rules:
-    - if: $CI_COMMIT_BRANCH == "dev"
+    - if: $CI_PROJECT_PATH == $MAIN_PROJECT_PATH && $CI_COMMIT_BRANCH == "dev"
   script:
     - cp CHANGELOG.md ./docs/.
     - mkdocs build --verbose --clean
@@ -163,16 +173,14 @@ build_with_deploy:
         coverage_format: jacoco
         path: build/reports/jacoco/testCodeCoverageReport/testCodeCoverageReport.xml
     expire_in: 1 week
-  only: # This job is deploying docker-containers... this should _really_ only happen from the `dev` branch
-    refs:
-      - dev
+  only: *only_main_dev # This job is deploying docker-containers... this should _really_ only happen from the `dev` branch
 
 # Clean build without any cache: an undeclared task input cannot hide behind a cached task result
 build_no_build_cache:
   stage: build
   cache: []
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PROJECT_PATH == $MAIN_PROJECT_PATH && $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "web"
   before_script:
     # Double the Gradle daemon heap for this job only; the checked-in value stays at 4g.
@@ -226,7 +234,7 @@ slowtest:
     POSTGRES_PASSWORD:  $pass
     POSTGRES_HOST_AUTH_METHOD: trust
   rules:
-    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PROJECT_PATH == $MAIN_PROJECT_PATH && $CI_PIPELINE_SOURCE == "schedule"
   script:
     - "gradle --version 2>&1 | tee $CI_PROJECT_DIR/build.log"
     - "gradle slowtest --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 2>&1 | tee -a $CI_PROJECT_DIR/build.log"
@@ -254,8 +262,7 @@ trigger-dtmm:
   trigger:
     project: monticore/umlp-anwendungen/dtmm
     branch: main
-  only:
-    - dev
+  only: *only_main_dev
 
 trigger-car-rental:
   stage: testDeployed
@@ -263,8 +270,7 @@ trigger-car-rental:
   trigger:
     project: monticore/umlp-anwendungen/car-rental
     branch: main
-  only:
-    - dev
+  only: *only_main_dev
 
 trigger-promo-db:
   stage: testDeployed
@@ -272,8 +278,7 @@ trigger-promo-db:
   trigger:
     project: monticore/umlp-anwendungen/promodb
     branch: dev
-  only:
-    - dev
+  only: *only_main_dev
 
 trigger-iop-datamodel-demonstrator:
   stage: testDeployed
@@ -281,8 +286,7 @@ trigger-iop-datamodel-demonstrator:
   trigger:
     project: monticore/umlp-anwendungen/iop-datamodel-demonstrator
     branch: dev
-  only:
-    - dev
+  only: *only_main_dev
 
 trigger-wirca-demonstrator:
   stage: testDeployed
@@ -290,8 +294,7 @@ trigger-wirca-demonstrator:
   trigger:
     project: monticore/umlp-anwendungen/wirca-demonstrator
     branch: dev
-  only:
-    - dev
+  only: *only_main_dev
 
 trigger-montigem3-tutorial:
   stage: testDeployed
@@ -299,8 +302,7 @@ trigger-montigem3-tutorial:
   trigger:
     project: monticore/umlp-anwendungen/montigem3-tutorial
     branch: dev
-  only:
-    - dev
+  only: *only_main_dev
 
 trigger-artifacts:
   stage: testDeployed
@@ -308,8 +310,7 @@ trigger-artifacts:
   trigger:
     project: monticore/artifacts/artifacts
     branch: dev
-  only:
-    - dev
+  only: *only_main_dev
 
 trigger-template:
   stage: testDeployed
@@ -317,8 +318,7 @@ trigger-template:
   trigger:
     project: monticore/umlp-anwendungen/montigem-templates/montigem-template
     branch: main
-  only:
-    - dev
+  only: *only_main_dev
 
 trigger-digital-twin:
   stage: testDeployed
@@ -326,8 +326,7 @@ trigger-digital-twin:
   trigger:
     project: monticore/umlp-anwendungen/digital-twin
     branch: main
-  only:
-    - dev
+  only: *only_main_dev
 
 checkMDLinks:
   stage: check
@@ -338,7 +337,10 @@ checkMDLinks:
     - "echo \"$linkCheckRes\""
     - "if [[ $linkCheckRes == *\"ERROR\"* ]]; then exit 1; fi"
   only:
-    - master
+    refs:
+      - master
+    variables:
+      - $CI_PROJECT_PATH == $MAIN_PROJECT_PATH
 
 deploy-python-package:
   stage: build
@@ -354,6 +356,6 @@ deploy-python-package:
     HATCH_INDEX_AUTH: $CI_JOB_TOKEN
     HATCH_INDEX_USER: gitlab-ci-token
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "dev"' # only publish on pushes/merged to dev (not on upstream triggers)
+    - if: '$CI_PROJECT_PATH == $MAIN_PROJECT_PATH && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "dev"' # only publish on pushes/merged to dev (not on upstream triggers)
       changes:
         - experiments/python-client/runtime-package/**/* # and on changes to the runtime package dir
