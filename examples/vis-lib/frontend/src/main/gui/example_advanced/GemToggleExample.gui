@@ -1,0 +1,31 @@
+package example_advanced;
+
+import mc.fenix.advanced.GemToggle;
+import mc.fenix.basic.GemButton;
+import common.ExamplePage;
+import mc.fenix.arrange.GemColumn;
+
+page GemToggleExample(boolean notificationsOn = true, ?boolean codeSwitchedOn = false) {
+  @ExamplePage(
+    component = @GemColumn(components = [
+      @GemToggle(
+        label = "Notifications",
+        switchedOn = notificationsOn,
+        onColor = "#16a34a",
+        toggled = showState()
+      ),
+      @GemToggle(
+        label = "Disabled",
+        disabled = true,
+        offColor = "#64748b"
+      ),
+      codeToggle@GemToggle(
+        label = "Switched from code",
+        switchedOn = codeSwitchedOn
+      ),
+      @GemButton(label = "Switch toggle from code", leftClick = switchFromCode())
+    ]),
+    basePath = "example_advanced",
+    componentName = "GemToggleExample"
+  );
+}
