@@ -18,6 +18,21 @@ Refer to cells by name in user-facing answers. Use IDs only in tool calls; they 
    change. Follow the grid bounds and overlap rules in the tool description.
 3. Report the applied change only after the tool succeeds.
 
+## Keep the info of cells and views current
+
+Every cell and view has an `info` that captures the intent of the diagram
+concisely, usually one sentence on what it shows and which question it answers
+(e.g., "Number of issues each team closed per week."). Users see the cell info
+as a tooltip of the cell and the view info in the info dialog of the view.
+
+- Pass an `info` to `createCell` for every new cell. Describe the purpose of the
+  data, not the visualization type or the script.
+- When a change alters what a cell shows (its script, filters, or a duplicate
+  repurposed for other data), update its `info` with `updateCell` as well.
+- `getCurrentLayout` returns the view info. If cells are created, changed, or
+  removed such that the purpose of the view changes, update it with
+  `setViewInfo` to summarize what the cells show together.
+
 ## Place new cells in available space
 
 Use this workflow when creating or duplicating cells. `createCell` and
@@ -57,7 +72,7 @@ user first. Otherwise:
 1. Find the target ID with `getCurrentLayout`, then call `getCell` to inspect its
    script, visualization, options, and geometry.
 2. Choose the operation the user requested:
-   - `updateCell` renames a cell or changes its script or visualization.
+   - `updateCell` renames a cell or changes its info, script, or visualization.
    - `setCellOptions` changes chart options or table column filters and render
      scripts. Follow `dashboard-chart-data` for column expressions.
    - `duplicateCell` copies a cell into the current view.

@@ -9,6 +9,7 @@ import mc.fenix.arrange.GemCard;
 import mc.fenix.basic.GemIcon;
 import mc.fenix.basic.GemButton;
 import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemTooltip;
 
 component Cell(
     boolean activateEditing,
@@ -29,8 +30,10 @@ component Cell(
     boolean create,
     //tutorial
     int tutorialStep,
-    Event<Integer> changeTutorialStep
+    Event<Integer> changeTutorialStep,
     //
+    // local date and time the shown data was retrieved at, appended to the info tooltip
+    String retrievedAt = ""
     ) {
 
       @guard(localDelete) {
@@ -41,10 +44,14 @@ component Cell(
       };
       card@GemCard(
         height = "100%",
-        title = cell.name,
+        titleComponent = titleRow@GemRow(colGap = "5px", hAlign = "space-between", vAlign = "center", components = [
+          @GemText(value = cell.name),
+          // the info of the cell is shown when hovering the icon, so that the chart stays visible
+          infoTooltip@GemTooltip(text = getInfoText(), component = @GemIcon(name = "info_outline", size = "20px"))
+        ]),
         component = cardBodyWrapper@GemColumn(
           components=[
-             display@CellDisplay(cell = cell),
+             display@CellDisplay(cell = cell, dataRetrieved = dataRetrieved()),
               @guard(activateEditing) {
                 overlay@GemRow(colGap = "5px", hAlign = "center", vAlign = "center", components = [
                   @guard(checkIfTutorialStep23()) {

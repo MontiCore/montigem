@@ -26,7 +26,9 @@ import mc.fenix.basic.GemButton;
 component ExtraCellOptions(
      CellConfig cell,
      int tutorialStep,
-     Event<Integer> changeTutorialStep
+     Event<Integer> changeTutorialStep,
+     // the CellDialog interprets the data to check it, shown in the preview
+     boolean interpreting = false
    ) {
 
       @GemColumn(components = [
@@ -88,11 +90,11 @@ component ExtraCellOptions(
            },
            @guard(checkIfTutorialStep15()) {
              tutorialDisplay@GemColumn(width = "450px", height = "300px", components = [
-               @CellDisplay(cell = cell)
+               @CellDisplay(cell = cell, interpreting = interpreting)
              ]);
            } else {
               displayColumn@GemColumn(width = "450px", height = "300px", components = [
-                 @CellDisplay(cell = cell)
+                 @CellDisplay(cell = cell, interpreting = interpreting)
               ]);
            }
          ])
