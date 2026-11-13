@@ -1,0 +1,33 @@
+// no min-height: the card body fills the cell, a fixed minimum would let the pie overflow small cells
+// covers the chart while it is interpreted (the containers of the display in Cell and ExtraCellOptions are positioned);
+// !important as GemRow sets an inline width/height: auto
+:host ::ng-deep .loadingIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1;
+  background-color: color-mix(in srgb, var(--background-color) 70%, transparent);
+  color: var(--text-color);
+}
+
+:host ::ng-deep .pieChart {
+  background-color: var(--background-color) !important;
+}
+
+:host ::ng-deep .legend .bg {
+  fill: var(--background-color) !important;
+}
+
+:host ::ng-deep  .legendtext {
+  fill: var(--text-color) !important;
+}
+
+:host ::ng-deep .svg-container > svg.main-svg:first-of-type {
+  background: var(--background-color) !important;
+  background-color: var(--background-color) !important;
+}
+
+
+

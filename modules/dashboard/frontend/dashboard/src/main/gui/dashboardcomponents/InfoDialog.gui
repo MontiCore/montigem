@@ -1,0 +1,26 @@
+package dashboardcomponents;
+
+import DashboardModule.CellConfig;
+import DashboardModule.VewConfig;
+import mc.fenix.basic.GemIcon;
+import component.MainCellOptions;
+import component.ExtraCellOptions;
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+
+component InfoDialog(
+  String info,
+  Event<Void> close
+  ) {
+      @GemColumn(rowGap = "10px", components = [
+        @GemText(weight = "bold", value = info),
+        @GemRow(colGap = "10px", hAlign = "center", components = [
+          @GemButton(leftClick = closeDialog(close), label = "Close")
+        ])
+      ]);
+
+
+}

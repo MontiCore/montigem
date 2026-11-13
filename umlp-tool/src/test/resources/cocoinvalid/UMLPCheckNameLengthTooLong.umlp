@@ -1,0 +1,30 @@
+umlp UMLPCheckNameLengthTooLong {
+  enum ThatsAVeryLongNameThatMightCertainlyComeUpAtSomePoint {
+  // -> ThatsAVeryLongNameThatMightCertainlyComeUpAtSomePoint
+
+    SYSTEM, USER, ASSISTANT, TOOL;
+  }
+
+  class TheNameIsOnly59CharsLongButItsStillTruncatedAfterGeneration {
+  // the_name_is_only59_chars_long_but_its_still_truncated_after_generation
+  // -> the_name_is_only59_chars_long_but_its_still_truncated_after_gen
+
+    String AttributesShouldntHaveLongNamesEitherBecauseOtherwiseTheyllBeTruncated ;
+    // attributes_shouldnt_have_long_names_either_because_otherwise_theyll_be_truncated
+    // -> attributes_shouldnt_have_long_names_either_because_otherwise_th
+
+    String aboutMe;
+  }
+
+  class MakeSureTheClassNamesArentTooLongOtherwiseTheAssociationNamesWillBeEvenLonger {
+  // make_sure_the_class_names_arent_too_long_otherwise_the_association_names_will_be_even_longer
+  // -> make_sure_the_class_names_arent_too_long_otherwise_the_associat
+
+    String street;
+    int house;
+  }
+
+  association [1] TheNameIsOnly59CharsLongButItsStillTruncatedAfterGeneration -> (and) MakeSureTheClassNamesArentTooLongOtherwiseTheAssociationNamesWillBeEvenLonger [0..1];
+  // assoc_the_name_is_only59_chars_long_but_its_still_truncated_after_generation_the_name_is_only59_chars_long_but_its_still_truncated_after_generation_and_make_sure_the_class_names_arent_too_long_otherwise_the_association_names_will_be_even_longer
+  // -> assoc_the_name_is_only59_chars_long_but_its_still_truncated_aft
+}

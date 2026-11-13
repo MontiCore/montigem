@@ -9,7 +9,7 @@ import mc.fenix.arrange.GemRow;
 
 component UserForm(User u, String formName, GUIViewElement confirm, GUIViewElement back){
   @GemCard(title = formName, component =
-    @GemColumn(width = "40ch", rowGap = "5px", components = [
+    @GemColumn(width = "min(40ch, calc(100vw - 4rem))", rowGap = "5px", components = [
 
       name@GemTextInput(
         labelText = "Name: ",

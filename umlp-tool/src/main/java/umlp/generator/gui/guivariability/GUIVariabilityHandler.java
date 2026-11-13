@@ -7,8 +7,9 @@ import de.monticore.guidsl._ast.ASTGUIBlock;
 import de.monticore.guidsl._ast.ASTGUIBlockContent;
 import de.monticore.guidsl._ast.ASTGUICompilationUnit;
 import de.monticore.guidsl._ast.ASTGUIComponent;
+import de.monticore.guidsl._ast.ASTGUIGuard;
+import de.monticore.guidsl._ast.ASTGUIIterate;
 import de.monticore.guidsl._ast.ASTGUIRemove;
-import de.monticore.guidsl._util.IGUIDSLTypeDispatcher;
 import de.monticore.guidsl._visitor.GUIDSLHandler;
 import de.monticore.guidsl._visitor.GUIDSLTraverser;
 import de.monticore.ocl.setexpressions._ast.ASTSetCollectionItem;
@@ -169,21 +170,19 @@ public class GUIVariabilityHandler implements GUIDSLHandler, SetExpressionsHandl
      */
     public void handle(ASTSetEnumeration node){
         if(componentNameToChange != null) {  //otherwise traversing GUIVariability AST
-          IGUIDSLTypeDispatcher typeDispatcher = GUIDSLMill.typeDispatcher();
             for (ASTSetCollectionItem item : node.getSetCollectionItemList()) {
-                if (typeDispatcher.isSetExpressionsASTSetValueItem(item)) {
-                  ASTSetValueItem argValue = typeDispatcher.asSetExpressionsASTSetValueItem(item);
+                if (item instanceof ASTSetValueItem argValue) {
                   ASTExpression expression = argValue.getExpression();
 
-                  if ((typeDispatcher.isGUIDSLASTGUIComponent(expression)
-                      &&typeDispatcher.asGUIDSLASTGUIComponent(expression).isPresentId()
-                      && typeDispatcher.asGUIDSLASTGUIComponent(expression).getId().getName().equals(componentNameToChange)) ||
-                      (typeDispatcher.isGUIDSLASTGUIGuard(expression)
-                          && typeDispatcher.asGUIDSLASTGUIGuard(expression).isPresentId()
-                          && typeDispatcher.asGUIDSLASTGUIGuard(expression).getId().getName().equals(componentNameToChange)) ||
-                      (typeDispatcher.isGUIDSLASTGUIIterate(expression)
-                          &&typeDispatcher.asGUIDSLASTGUIIterate(expression).isPresentId()
-                          && typeDispatcher.asGUIDSLASTGUIIterate(expression).getId().getName().equals(componentNameToChange))
+                  if ((expression instanceof ASTGUIComponent guiComponent
+                      && guiComponent.isPresentId()
+                      && guiComponent.getId().getName().equals(componentNameToChange)) ||
+                      (expression instanceof ASTGUIGuard guiGuard
+                          && guiGuard.isPresentId()
+                          && guiGuard.getId().getName().equals(componentNameToChange)) ||
+                      (expression instanceof ASTGUIIterate guiIterate
+                          && guiIterate.isPresentId()
+                          && guiIterate.getId().getName().equals(componentNameToChange))
                   ) {
                     int index = node.indexOfSetCollectionItem(argValue);
                     switch (adaptionOptions) {
@@ -230,9 +229,9 @@ public class GUIVariabilityHandler implements GUIDSLHandler, SetExpressionsHandl
 
             for (ASTGUIBlockContent blockContent : blockContents) {
                 if ((blockContent.isPresentExpression()
-                        && GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(blockContent.getExpression())
-                        && ((ASTGUIComponent) blockContent.getExpression()).isPresentId()
-                        && ((ASTGUIComponent) blockContent.getExpression()).getId().getName().equals(componentNameToChange)) ||
+                        && blockContent.getExpression() instanceof ASTGUIComponent guiComponent
+                        && guiComponent.isPresentId()
+                        && guiComponent.getId().getName().equals(componentNameToChange)) ||
                     (blockContent.isPresentGUIGuard()
                         && blockContent.getGUIGuard().isPresentId()
                         && blockContent.getGUIGuard().getId().getName().equals(componentNameToChange)) ||
@@ -284,27 +283,18 @@ public class GUIVariabilityHandler implements GUIDSLHandler, SetExpressionsHandl
      * @return the GUIBlockContext containing the parameter
      */
     private ASTGUIBlockContent buildGUIBlockContext(ASTSetCollectionItem argValue){
-      if (GUIDSLMill.typeDispatcher().isSetExpressionsASTSetValueItem(argValue)) {
-        ASTSetValueItem val = GUIDSLMill.typeDispatcher().asSetExpressionsASTSetValueItem(argValue);
-        if (GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(val.getExpression())) {
-          return GUIDSLMill.gUIBlockContentBuilder()
-              .setExpression(GUIDSLMill.typeDispatcher().asGUIDSLASTGUIComponent(val.getExpression()))
-              .build();
+      if (argValue instanceof ASTSetValueItem val) {
+        if (val.getExpression() instanceof ASTGUIComponent guiComponent) {
+          return GUIDSLMill.gUIBlockContentBuilder().setExpression(guiComponent).build();
         }
-        if (GUIDSLMill.typeDispatcher().isGUIDSLASTGUIIterate(val.getExpression())) {
-          return GUIDSLMill.gUIBlockContentBuilder()
-              .setGUIIterate(GUIDSLMill.typeDispatcher().asGUIDSLASTGUIIterate(val.getExpression()))
-              .build();
+        if (val.getExpression() instanceof ASTGUIIterate guiIterate) {
+          return GUIDSLMill.gUIBlockContentBuilder().setGUIIterate(guiIterate).build();
         }
-        if (GUIDSLMill.typeDispatcher().isGUIDSLASTGUIGuard(val.getExpression())) {
-          return GUIDSLMill.gUIBlockContentBuilder()
-              .setGUIGuard(GUIDSLMill.typeDispatcher().asGUIDSLASTGUIGuard(val.getExpression()))
-              .build();
+        if (val.getExpression() instanceof ASTGUIGuard guiGuard) {
+          return GUIDSLMill.gUIBlockContentBuilder().setGUIGuard(guiGuard).build();
         }
-        if (GUIDSLMill.typeDispatcher().isExpressionsBasisASTExpression(val.getExpression())) {
-          return GUIDSLMill.gUIBlockContentBuilder()
-              .setExpression(GUIDSLMill.typeDispatcher().asExpressionsBasisASTExpression(val.getExpression()))
-              .build();
+        if (val.getExpression() instanceof ASTExpression expression) {
+          return GUIDSLMill.gUIBlockContentBuilder().setExpression(expression).build();
         }
       }
       Log.error("0x45c0003 encountered unknown type of guiArgValue, this is likely due to grammar changes");
@@ -320,10 +310,10 @@ public class GUIVariabilityHandler implements GUIDSLHandler, SetExpressionsHandl
      */
     private List<ASTSetCollectionItem> flatMapGUIArgValue(ASTSetValueItem argValue){
       LinkedList<ASTSetCollectionItem> result = new LinkedList<>();
-      if(GUIDSLMill.typeDispatcher().isSetExpressionsASTSetEnumeration(argValue.getExpression())) { //Lists need to be mapped to a single list
-        for (ASTSetCollectionItem argValueFromList : GUIDSLMill.typeDispatcher().asSetExpressionsASTSetEnumeration(argValue.getExpression()).getSetCollectionItemList()) {
-          if (GUIDSLMill.typeDispatcher().isSetExpressionsASTSetValueItem(argValueFromList)) {
-            result.addAll(flatMapGUIArgValue(GUIDSLMill.typeDispatcher().asSetExpressionsASTSetValueItem(argValueFromList)));
+      if(argValue.getExpression() instanceof ASTSetEnumeration setEnumeration) { //Lists need to be mapped to a single list
+        for (ASTSetCollectionItem argValueFromList : setEnumeration.getSetCollectionItemList()) {
+          if (argValueFromList instanceof ASTSetValueItem setValueItem) {
+            result.addAll(flatMapGUIArgValue(setValueItem));
           }
         }
       }

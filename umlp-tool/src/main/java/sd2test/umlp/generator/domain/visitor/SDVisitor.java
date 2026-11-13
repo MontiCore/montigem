@@ -7,6 +7,7 @@ import de.monticore.lang.sd4development._ast.ASTSDCall;
 import de.monticore.lang.sd4development._ast.ASTSDClass;
 import de.monticore.lang.sd4development._ast.ASTSDCondition;
 import de.monticore.lang.sd4development._ast.ASTSDEndCall;
+import de.monticore.lang.sd4development._ast.ASTSDIncompleteExpression;
 import de.monticore.lang.sd4development._ast.ASTSDNew;
 import de.monticore.lang.sd4development._ast.ASTSDReturn;
 import de.monticore.lang.sd4development._ast.ASTSDThrow;
@@ -832,9 +833,7 @@ public final class SDVisitor implements SDBasisVisitor2,
   }
 
   private Optional<String> stringifyExpression(ASTExpression expression) {
-    return SD4DevelopmentMill
-        .typeDispatcher()
-        .isSD4DevelopmentASTSDIncompleteExpression(expression) ?
+    return expression instanceof ASTSDIncompleteExpression ?
         Optional.empty() :
         Optional.of(SD4DevelopmentMill.prettyPrint(expression, false));
   }

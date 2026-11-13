@@ -1,0 +1,39 @@
+package dashboardcomponents;
+
+import DashboardModule.Preset;
+import DashboardModule.CellConfig;
+import DashboardModule.VewConfig;
+import mc.fenix.basic.GemButton;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemImage;
+
+component ViewDialog(
+  int selectedPreset = 0,
+  Event<Integer> createView,
+  Event<Void> close,
+  //tutorial
+  int tutorialStep,
+  Event<Integer> changeTutorialStep
+  ) {
+
+  @GemColumn(rowGap = "10px", hAlign = "center", components = [
+    header@GemText(weight = "bold", value = "Choose a starting view"),
+    @iterate(Preset preset: getPresetList()) {
+      @guard(checkCurrentPreset(preset)) {
+        selectedPreset@GemButton(leftClick = selectPreset(preset), content = [@GemImage(height = "200px", width = "400px", source = getPresetSource(preset))]);
+      } else {
+        presetButton@GemButton(leftClick = selectPreset(preset), content = [@GemImage(height = "200px", width = "400px", source = getPresetSource(preset))]);
+      }
+    },
+    @GemRow(colGap = "10px", hAlign = "center", components = [
+      closeButton@GemButton(leftClick = closeDialog(), disabled = alwaysDisabledByTutorial(), label = "Close"),
+      @guard(checkIfTutorialStep29()) {
+        tutorialViewCreate@GemButton(leftClick = createNewView(), label = "Create");
+      } else {
+        createButton@GemButton(leftClick = createNewView(), disabled = alwaysDisabledByTutorial(), label = "Create");
+      }
+    ])
+  ]);
+}

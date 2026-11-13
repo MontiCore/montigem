@@ -2,6 +2,10 @@
 import {DeSer} from '../command/DeSer';
 
 export class StringDeSer implements DeSer<string> {
+
+  public isPojoDeSer(): boolean {
+    return false;
+  }
   constructor() {
   }
 

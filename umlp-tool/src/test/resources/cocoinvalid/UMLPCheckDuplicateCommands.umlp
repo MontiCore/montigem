@@ -1,0 +1,15 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+umlp UMLPCheckDuplicateCommands {
+  <<singleton>>
+  class MyCommands {
+    void doX();
+    void doX(int i);
+    void doY();
+  }
+
+  <<singleton>>
+  class MyCommands2 {
+    void doY();
+  }
+}

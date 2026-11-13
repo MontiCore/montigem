@@ -17,8 +17,6 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
     env:
-      CI_REGISTRY_USER: ${{ secrets.REGISTRY_USER }} # required for jib configuration
-      CI_REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }} # required for jib configuration
       GRADLE_COMMON_ARGS: "-P mavenPassword=${{ secrets.mavenPassword }} -P mavenUser=${{ secrets.mavenUser }}"
       PUPPETEER_SKIP_DOWNLOAD: "true"
       CHROME_BIN: "/usr/bin/google-chrome-stable"
@@ -28,7 +26,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Build and deploy
+      - name: Build and Deploy Jars
         shell: bash
         run: |
           # Workspace-relative paths are set here, as env values in the job are not shell-expanded
@@ -63,3 +61,38 @@ jobs:
 
           # >(tee -a ...) starts tee background process, wait to ensure everything is written
           wait
+
+      # Reuses the workspace (build outputs, .gradle, .m2, .npm) of the previous step
+      # GitLab: ciDeployImages in build_with_deploy
+      - name: Deploy Example App Images
+        shell: bash
+        env:
+          # Jib pulls the base image (container_from_image) with these
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          # Jib pushes the images with these
+          UMLP_REGISTRY_USER: ${{ secrets.UMLP_REGISTRY_USER }}
+          UMLP_REGISTRY_PASSWORD: ${{ secrets.UMLP_REGISTRY_PASSWORD }}
+          # Frontend images are pushed to $CI_REGISTRY_IMAGE/<example>_frontend:latest,
+          # backend images to container_target_image_base (gradle.properties)
+          CI_REGISTRY_IMAGE: "registry.git.rwth-aachen.de/monticore/umlp"
+        run: |
+          # Exports of the previous step do not carry over to this shell
+          export GRADLE_OPTS="-Dmaven.repo.local=$GITHUB_WORKSPACE/.m2"
+          export GRADLE_USER_HOME="$GITHUB_WORKSPACE/.gradle"
+          export NPM_CONFIG_CACHE="$GITHUB_WORKSPACE/.npm"
+          export JAVA_OPTS="-Xmx2g"
+          LOG="$GITHUB_WORKSPACE/build.log"
+
+          gradle ciDeployImages --stacktrace $GRADLE_COMMON_ARGS $GRADLE_OPTS $ARGS1 $ARGS3 >> "$LOG" 2> >(tee -a "$LOG" >&2)
+
+          # >(tee -a ...) starts tee background process, wait to ensure everything is written
+          wait
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
+          if-no-files-found: ignore

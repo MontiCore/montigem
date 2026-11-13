@@ -1,0 +1,21 @@
+import mc.fenix.functiondisplay.FunctionStructure4Fenix.Function4Display;
+
+umlp MontiArcVizExperiment {
+
+  class RenderData {
+    String mainFunctionName;
+    String src;
+    String errors = "";
+    /boolean valid;
+  }
+
+  <<singleton>>
+  class DemoApp {
+    String mainFunctionNameInput = "demo.Main";
+    String srcInput = "package demo;\n\ncomponent Main {\n    port in int i1;\n    component Inner {\n        port in int i2;\n    }\n\n    Inner inner;\n\n    i1 -> inner.i2;\n}";
+
+    Function4Display render(RenderData data);
+  }
+
+  association [*] DemoApp -> (renderedFunction) RenderData [0..1];
+}

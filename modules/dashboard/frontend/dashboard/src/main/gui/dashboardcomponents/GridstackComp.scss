@@ -1,0 +1,30 @@
+@use "sass:meta";
+
+// the styles of the gridstack library; global, as gridstack creates its elements (e.g., the widgets) itself
+::ng-deep {
+  @include meta.load-css("gridstack/dist/gridstack.min");
+}
+
+:host ::ng-deep .grid-stack {
+  text-align: center;
+  background-color: var(--view-background);
+}
+
+:host ::ng-deep .grid-stack-item {
+  border-radius: 10px;
+  padding: 1px;
+}
+
+// the card of a cell
+:host ::ng-deep .grid-stack-item-content {
+  text-align: center;
+  border-radius: 10px;
+  padding: 1px;
+  margin: 1px;
+  border: 1px solid #e0e0e0;
+  background-color: var(--background-color);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.08),
+    0 8px 20px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}

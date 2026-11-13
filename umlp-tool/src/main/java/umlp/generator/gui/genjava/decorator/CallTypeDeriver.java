@@ -9,7 +9,6 @@ import de.monticore.guidsl._ast.ASTGUINamedArg;
 import de.monticore.guidsl._ast.ASTGUIParam;
 import de.monticore.guidsl._ast.ASTGUIShortIterateControl;
 import de.monticore.guidsl._symboltable.BuiltInTypes;
-import de.monticore.guidsl._util.IGUIDSLTypeDispatcher;
 import de.monticore.guidsl._visitor.GUIDSLTraverser;
 import de.monticore.guidsl._visitor.GUIDSLVisitor2;
 import de.monticore.symbols.basicsymbols._symboltable.TypeSymbol;
@@ -83,19 +82,13 @@ public class CallTypeDeriver implements GUIDSLVisitor2 {
 
   @Override
   public void visit(ASTGUINamedArg node) {
-    IGUIDSLTypeDispatcher td = GUIDSLMill.typeDispatcher();
-    if (!td.isGUIDSLASTGUIIterate(node)
-        && !td.isGUIDSLASTGUIGuard(node) &&
-        !td.isGUIDSLASTGUIComponent(node) &&
-        !td.isSetExpressionsASTSetEnumeration(node)) {
-      if (!node.isPresentNameSymbol()) {
-        Log.error("0x0000E Unable to find symbol for '" + node.getName()
-            + "' at " + node.get_SourcePositionStart().toString()
-            + " - " + node.get_SourcePositionEnd().toString()
-        );
-      }
-      exp2Type.put(node.getExpression(), node.getNameSymbol().getType());
+    if (!node.isPresentNameSymbol()) {
+      Log.error("0x0000E Unable to find symbol for '" + node.getName()
+          + "' at " + node.get_SourcePositionStart().toString()
+          + " - " + node.get_SourcePositionEnd().toString()
+      );
     }
+    exp2Type.put(node.getExpression(), node.getNameSymbol().getType());
   }
 
   @Override

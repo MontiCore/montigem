@@ -1,14 +1,14 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
 <#-- Generates ComponentObserverManager for the current domain model -->
-${tc.signature("AST", "cdName", "cDNames", "domainClassNamesCDMap")}
+${tc.signature("AST", "cdName", "cDNames", "domainClassNamesCDMap", "cdTSLibraryMap")}
 
 import { ComponentObserverManager, GemIdentifiable } from "@umlp/commonj2ts";
 <#list cDNames as specificCDName>
-  import { ${specificCDName}Manager } from "${specificCDName?lower_case}/${specificCDName}Manager";
+  import { ${specificCDName}Manager } from "<#if cdTSLibraryMap[specificCDName]??>${cdTSLibraryMap[specificCDName]}<#else>${specificCDName?lower_case}/${specificCDName}Manager</#if>";
 </#list>
 
 <#list domainClassNamesCDMap as domainClassName, package>
-import { ${domainClassName}AllObserver } from "${package?lower_case}/${domainClassName}AllObserver";
+import { ${domainClassName}AllObserver } from "<#if cdTSLibraryMap[package]??>${cdTSLibraryMap[package]}<#else>${package?lower_case}/${domainClassName}AllObserver</#if>";
 </#list>
 
 export class ${cdName}ComponentObserverManager extends ComponentObserverManager {

@@ -8,7 +8,6 @@ import de.monticore.expressions.commonexpressions._ast.ASTFieldAccessExpression;
 import de.monticore.expressions.commonexpressions.codegen.javagen.CommonExpressionsJavaGenVisitor;
 import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
 import de.monticore.ocl.types3.OCLCollectionSymTypeRelations;
-import de.monticore.symbols.basicsymbols.BasicSymbolsMill;
 import de.monticore.symbols.basicsymbols._symboltable.VariableSymbol;
 import de.monticore.symboltable.ISymbol;
 import de.monticore.types.check.SymTypeExpression;
@@ -16,7 +15,6 @@ import de.monticore.types3.SymTypeRelations;
 import de.monticore.types3.TypeCheck3;
 import de.se_rwth.commons.StringTransformations;
 import de.se_rwth.commons.logging.Log;
-import oclwitherrormessages.OCLWithErrorMessagesMill;
 import umlp.generator.ocl.TypeUtil;
 import umlp.generator.ocl.javagen.field_access.FieldAccessInfo;
 
@@ -35,11 +33,9 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
 
   @Override
   public void handle(ASTCallExpression node) {
-    boolean isFieldAccess = OCLWithErrorMessagesMill.typeDispatcher().isCommonExpressionsASTFieldAccessExpression(node.getExpression());
     boolean handled = false;
 
-    if (isFieldAccess) {
-      ASTFieldAccessExpression fa = OCLWithErrorMessagesMill.typeDispatcher().asCommonExpressionsASTFieldAccessExpression(node.getExpression());
+    if (node.getExpression() instanceof ASTFieldAccessExpression fa) {
       handled = handleTranslatedListCall(fa, node);
       if (!handled) {
         callees.add(fa);
@@ -297,8 +293,7 @@ public class CommonExpressionsOCLJavaGenVisitor extends CommonExpressionsJavaGen
         return;
       }
       ISymbol sourceSymbol = sourceSymbolOpt.get();
-      if (BasicSymbolsMill.typeDispatcher().isBasicSymbolsVariable(sourceSymbol)) {
-        VariableSymbol varSymbol = BasicSymbolsMill.typeDispatcher().asBasicSymbolsVariable(sourceSymbol);
+      if (sourceSymbol instanceof VariableSymbol varSymbol) {
         varType = varSymbol.getType();
         isCollectionType = TypeUtil.getInstance().isCollectionType(varType);
         isDomainType = TypeUtil.getInstance().isDomainType(varType);

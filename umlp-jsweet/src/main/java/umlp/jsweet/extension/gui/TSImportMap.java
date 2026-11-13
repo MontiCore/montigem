@@ -18,7 +18,9 @@ public enum TSImportMap {
   NETWORKGRAPH("mc.fenix.networkgraph", "@umlp/networkgraph"),
   EDITOR("mc.fenix.editor", "@umlp/editor"),
   LOGIN("loginmodule", "@montigem/login"),
-  COMMENT("commentmodule", "@montigem/comment")
+  COMMENT("commentmodule", "@montigem/comment"),
+  DASHBOARD("dashboardmodule", "@montigem/dashboard"),
+  CHAT("chatmodule", "@montigem/chat")
   ;
 
   private final String tsPackage;

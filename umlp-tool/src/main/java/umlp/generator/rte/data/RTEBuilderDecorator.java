@@ -148,7 +148,7 @@ public class RTEBuilderDecorator extends AbstractDecorator {
       } else if(GenService.isOptional(assoc)) {
         fullType = getMCTypeFacade().createBasicGenericTypeOf("Optional",type).printType();
       }
-      getCD4C().addMethod(builderClass, "umlp.builder.Attr",
+      getCD4C().addMethod(builderClass, "rte.builder.Assoc",
           assoc.getName(), fullType,
           getClassName(domainClass.getName()), isList);
       getCD4C().addMethod(builderClass, "umlp.builder.CheckAttr",

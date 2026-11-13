@@ -101,8 +101,10 @@ repositories {
     mavenLocal()
   }
   maven {
-    credentials.username mavenUser
-    credentials.password mavenPassword
+    if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+      credentials.username mavenUser
+      credentials.password mavenPassword
+    }
     url repo
   }
   mavenCentral()
@@ -222,8 +224,10 @@ jar.dependsOn(sourcesJar)
 // configure deployment
 publishing {
   repositories.maven {
-    credentials.username mavenUser
-    credentials.password mavenPassword
+    if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+      credentials.username mavenUser
+      credentials.password mavenPassword
+    }
 
     def releasesRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-releases/"
     def snapshotsRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-snapshots/"

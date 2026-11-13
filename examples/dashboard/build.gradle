@@ -1,0 +1,4 @@
+tasks.register("run") {
+  group = "application"
+  dependsOn ":examples:dashboard:frontend:run", ':examples:dashboard:backend:run'
+}

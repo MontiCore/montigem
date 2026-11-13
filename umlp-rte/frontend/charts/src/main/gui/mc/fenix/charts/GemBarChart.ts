@@ -135,6 +135,8 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
       }
 
       this.plotlyData = parsedTraces;
+      // a missing axis bound depends on the data
+      this.updateAxisBounds();
       if (this.lastWidth > 0) {
         this.applyLegendFallback(this.lastWidth);
       }
@@ -148,12 +150,42 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
       this._layout.yaxis.autorange = true;
       this._layout.yaxis.range = undefined;
     } else {
+      // plotly 2.18 cannot autorange only one end of an axis (a null bound falls back to [-1, 1]),
+      // so a missing bound is derived from the data
+      const bounds = this.getValueBounds();
+      const padding = Math.max((bounds.max - bounds.min) * 0.05, 1);
       this._layout.yaxis.autorange = false;
       this._layout.yaxis.range = [
-        this._minValue != null ? this._minValue : 0,
-        this._maxValue != null ? this._maxValue : null
+        this._minValue != null ? this._minValue : Math.min(bounds.min - padding, 0),
+        this._maxValue != null ? this._maxValue : Math.max(bounds.max + padding, 0)
       ];
     }
+  }
+
+  /** Lowest and highest bar value; stacked bars count with the sum of their positive or negative parts. */
+  private getValueBounds(): { min: number; max: number } {
+    const stacked = this._stacked && !this._overlapping;
+    const positive: number[] = [];
+    const negative: number[] = [];
+    let min = 0;
+    let max = 0;
+    for (const trace of this.plotlyData) {
+      (trace.y ?? []).forEach((value: number, i: number) => {
+        if (typeof value !== 'number' || isNaN(value)) return;
+        if (stacked) {
+          if (value >= 0) positive[i] = (positive[i] ?? 0) + value;
+          else negative[i] = (negative[i] ?? 0) + value;
+        } else {
+          min = Math.min(min, value);
+          max = Math.max(max, value);
+        }
+      });
+    }
+    if (stacked) {
+      min = Math.min(0, ...negative.filter(v => v != null));
+      max = Math.max(0, ...positive.filter(v => v != null));
+    }
+    return { min, max };
   }
 
   @Input()
@@ -222,6 +254,8 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
     } else {
       this._layout.barmode = 'group';
     }
+    // stacked bars need a larger range
+    this.updateAxisBounds();
     this.updatePlot();
     this.cdr.detectChanges();
   }

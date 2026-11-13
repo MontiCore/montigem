@@ -8,6 +8,10 @@ plugins {
   id "de.rwth.se.montigem-frontend"
 }
 
+montigem {
+  publishDomainModels = true
+}
+
 dependencies {
   testImplementation project(':umlp-test-rte')
 }

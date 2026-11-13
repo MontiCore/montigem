@@ -36,6 +36,39 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-11-05: 7.10.0-SNAPSHOT
+* New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`
+  for AI chats.
+* Integration of the chat module into the dashboard module and example.
+
+## 2026-10-28: 7.10.0-SNAPSHOT
+* The domain model can be copied into the assets of the app, where it is served as
+  `assets/models/<Name>.umlp`. It is off by default. 
+  Enable it in the`build.gradle` of the frontend:
+  ```groovy
+  montigem {
+    publishDomainModels = true
+  }
+  ```
+  If the domain consists of several `.umlp` files, the merged model is copied.
+* The generator uses the npm libraries (`@umlp/*`, `@montigem/*`) of the same build
+  via the dist-tag `g-<version>`, e.g. `g-7.10.0` or `g-7.10.0-SNAPSHOT`.
+  The libraries are published as prerelease versions, even if a maven release version of MontiGem is published.
+  An existing `package-lock.json` keeps the old library versions:
+  run `gradle :frontend:clean :frontend:npmInstall` (or `npm update`) to get the current ones
+* `*.override.json` files can use Gradle properties, e.g. `"@umlp/editor": "g-${mg_version}"`
+  in `package.override.json` (preferred way to add further `@umlp/*` or `@montigem/*` libraries)
+
+## 2026-10-23: 7.10.0-SNAPSHOT
+* MontiCore (and CD4A, GUIDSL, CD2GUI, MontiArc, MCLSG) updated to 7.10.0-SNAPSHOT
+
+## 2026-10-20: 7.9.3-SNAPSHOT
+* **Breaking:** Reusing class diagrams no longer uses the `<<extends="...">>` stereotype.
+  A class diagram now extends every UMLP class diagram it imports from, either via a star
+  import (`import CDBase.*;`) or an import of a single class (`import CDBase.BaseClass;`).
+  Remove the stereotype and keep the import.
+* Cyclic imports between class diagrams are reported as an error (`0x70881`)
+
 ## 2026-10-14: 7.9.3-SNAPSHOT
 * Support for the `local` modifier of class diagrams 
  

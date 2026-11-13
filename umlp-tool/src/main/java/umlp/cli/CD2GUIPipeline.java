@@ -47,7 +47,7 @@ public class CD2GUIPipeline extends Pipeline<UMLPPipelineData> {
     register("setupUMLPReports", setupUMLPReports);
     register("check_umlp_filetype", isUMLPFileCheck);
     register("init", init = data -> {
-      MillConf.switchTo(MillConf.TAGS, MillConf.UMLP, MillConf.GUIDSL);
+      MillConf.switchTo(MillConf.TAGS, MillConf.GUIDSL, MillConf.UMLP);
       UMLPMill.globalScope().setSymbolPath(data.importedSymbolPath);
       return true;
     });

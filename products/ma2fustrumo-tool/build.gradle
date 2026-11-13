@@ -1,0 +1,25 @@
+plugins {
+  id 'java-library'
+}
+group = "de.se-rwth.dt"
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
+
+dependencies {
+  api project(':products:simple-function-structure')
+  implementation project(':umlp-rte')
+  api "montiarc.languages:montiarc:$ma_version"
+  api "montiarc.languages:basis:$ma_version"
+  api "montiarc.generators:cd2pojo:$ma_version"
+
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.7.1'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+  useJUnitPlatform()
+}

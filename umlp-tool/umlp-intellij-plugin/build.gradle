@@ -30,8 +30,10 @@ repositories {
     mavenLocal()
   }
   maven {
-    credentials.username mavenUser
-    credentials.password mavenPassword
+    if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+      credentials.username mavenUser
+      credentials.password mavenPassword
+    }
     url repo
   }
   mavenCentral()

@@ -1,0 +1,20 @@
+package dashboardcomponents;
+
+import DashboardModule.ViewConfig;
+
+component GridstackComp (
+  ViewConfig view,
+  boolean edit = false,
+  Event<Boolean> changeRunning,
+  Event<Boolean> changeDownload,
+  boolean download,
+  boolean editCellFlag = false,
+  Event<Long> editCell,
+  boolean delete,
+  Event<Boolean> changeDelete,
+  int tutorialStep,
+  Event<Integer> changeTutorialStep,
+  boolean create = false)
+{
+
+}

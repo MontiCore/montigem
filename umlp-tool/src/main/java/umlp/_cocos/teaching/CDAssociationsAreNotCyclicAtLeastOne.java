@@ -2,7 +2,11 @@
 package umlp._cocos.teaching;
 
 import de.monticore.cdassociation._ast.ASTCDAssociation;
-import de.monticore.cdassociation._util.CDAssociationTypeDispatcher;
+import de.monticore.cdassociation._ast.ASTCDBiDir;
+import de.monticore.cdassociation._ast.ASTCDCardOne;
+import de.monticore.cdassociation._ast.ASTCDCardAtLeastOne;
+import de.monticore.cdassociation._ast.ASTCDLeftToRightDir;
+import de.monticore.cdassociation._ast.ASTCDRightToLeftDir;
 import de.monticore.cdbasis._ast.ASTCDDefinition;
 import de.monticore.cdbasis._cocos.CDBasisASTCDDefinitionCoCo;
 import umlp._cocos.CoCoTestable;
@@ -16,23 +20,24 @@ public class CDAssociationsAreNotCyclicAtLeastOne implements CDBasisASTCDDefinit
 
   Map<String, List<String>> graph = new LinkedHashMap<>();
 
-  CDAssociationTypeDispatcher dispatcher = new CDAssociationTypeDispatcher();
-
   @Override
   public void check(ASTCDDefinition node) {
 
     for (ASTCDAssociation assoc: node.getCDAssociationsList()) {
-      if (dispatcher.isCDAssociationASTCDRightToLeftDir(assoc.getCDAssocDir()) || dispatcher.isCDAssociationASTCDBiDir(assoc.getCDAssocDir())) {
-        if (assoc.getLeft().isPresentCDCardinality() && (dispatcher.isCDAssociationASTCDCardOne(assoc.getLeft().getCDCardinality()) ||
-                dispatcher.isCDAssociationASTCDCardAtLeastOne(assoc.getLeft().getCDCardinality()))) {
+      if (assoc.getCDAssocDir() instanceof ASTCDRightToLeftDir ||
+          assoc.getCDAssocDir() instanceof ASTCDBiDir) {
+        if (assoc.getLeft().isPresentCDCardinality() &&
+            (assoc.getLeft().getCDCardinality() instanceof ASTCDCardOne ||
+                assoc.getLeft().getCDCardinality() instanceof ASTCDCardAtLeastOne)) {
           List<String> adj = graph.getOrDefault(assoc.getRight().getMCQualifiedType().getMCQualifiedName().getQName(), new ArrayList<>());
           adj.add(assoc.getLeft().getMCQualifiedType().getMCQualifiedName().getQName());
           graph.put(assoc.getRight().getMCQualifiedType().getMCQualifiedName().getQName(), adj);
         }
       }
-      if (dispatcher.isCDAssociationASTCDLeftToRightDir(assoc.getCDAssocDir()) || dispatcher.isCDAssociationASTCDBiDir(assoc.getCDAssocDir())) {
-        if (assoc.getRight().isPresentCDCardinality() && (dispatcher.isCDAssociationASTCDCardOne(assoc.getRight().getCDCardinality()) ||
-                dispatcher.isCDAssociationASTCDCardAtLeastOne(assoc.getRight().getCDCardinality()))) {
+      if (assoc.getCDAssocDir() instanceof ASTCDLeftToRightDir || assoc.getCDAssocDir() instanceof ASTCDBiDir) {
+        if (assoc.getRight().isPresentCDCardinality() &&
+            (assoc.getRight().getCDCardinality() instanceof ASTCDCardOne ||
+                assoc.getRight().getCDCardinality() instanceof ASTCDCardAtLeastOne)) {
           List<String> adj = graph.getOrDefault(assoc.getLeft().getMCQualifiedType().getMCQualifiedName().getQName(), new ArrayList<>());
           adj.add(assoc.getRight().getMCQualifiedType().getMCQualifiedName().getQName());
           graph.put(assoc.getLeft().getMCQualifiedType().getMCQualifiedName().getQName(), adj);

@@ -1,3 +1,5 @@
+@import "variables";
+
 :host ::ng-deep {
   .gem-button {
     color: black;
@@ -139,5 +141,61 @@
 
   .grid > * {
     align-self: center;
+  }
+}
+
+:host ::ng-deep {
+  .titleSlot {
+    min-width: 0;
+  }
+
+  .mainText {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+}
+
+@include phone {
+  :host ::ng-deep {
+    gem-grid.grid,
+    .grid,
+    [class*="grid"] {
+      grid-template-columns: 44px 1fr 44px !important;
+      column-gap: 8px !important;
+      padding-top: 8px;
+    }
+
+    .titleSlot {
+      column-gap: 8px !important;
+    }
+
+    .img {
+      width: 40px !important;
+      height: 40px !important;
+    }
+
+    button:has(mat-icon),
+    .gem-button {
+      width: 44px !important;
+      height: 44px !important;
+      min-width: 44px;
+      line-height: 44px;
+
+      mat-icon, i, svg, span, p {
+        font-size: 44px !important;
+        line-height: 44px;
+      }
+    }
+
+    mat-progress-spinner,
+    .gem-spinner,
+    mat-loading-spinner {
+      width: 36px !important;
+      height: 36px !important;
+      max-width: 36px;
+      max-height: 36px;
+      margin: 0 !important;
+    }
   }
 }

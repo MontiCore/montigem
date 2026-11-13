@@ -17,10 +17,13 @@ import de.monticore.ocl.ocl.OCLMill;
 import de.monticore.ocl.util.SymbolTableUtil;
 import de.monticore.symbols.basicsymbols._ast.ASTType;
 import de.monticore.symbols.basicsymbols._symboltable.DiagramSymbol;
+import de.monticore.symbols.basicsymbols._symboltable.TypeSymbol;
 import de.monticore.symboltable.IScope;
 import de.monticore.types.check.SymTypeExpression;
+import de.monticore.types.mcbasictypes._ast.ASTMCImportStatement;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
-import de.se_rwth.commons.logging.Log;
+import de.monticore.types3.TypeCheck3;
+import de.se_rwth.commons.Joiners;
 import umlp.UMLPMill;
 import umlp._symboltable.CDRoleSymbol2VariableSymbolAdapterDeSer;
 import umlp._symboltable.IUMLPArtifactScope;
@@ -122,7 +125,16 @@ public class UMLPSymbolTables {
   }
 
   public static ASTCDCompilationUnit getDiagramFor(ASTMCType type){
-    return getDiagramFor(type.getDefiningSymbol().get().getAstNode());
+    return getDiagramFor(getTypeSymbol(type).get().getAstNode());
+  }
+
+  /**
+   * Type symbol of {@code type}, e.g. List for List&lt;Foo&gt;.
+   * Replaces {@link ASTMCType#getDefiningSymbol()}, which TypeCheck3 leaves empty.
+   */
+  public static Optional<TypeSymbol> getTypeSymbol(ASTMCType type) {
+    SymTypeExpression symType = TypeCheck3.symTypeFromAST(type);
+    return symType.hasTypeInfo() ? Optional.of(symType.getTypeInfo()) : Optional.empty();
   }
 
   public static ASTCDCompilationUnit getDiagramFor(ASTCDType type){
@@ -179,30 +191,31 @@ public class UMLPSymbolTables {
     }
     ASTCDDefinition currentCdDefinition = (ASTCDDefinition) currentDiagram.getAstNode();
 
-    LinkedHashSet<DiagramSymbol> currentExtensions = getExtendedCDs(currentCdDefinition);
+    LinkedHashSet<DiagramSymbol> currentExtensions = getExtendedCDs(getDiagramFor(currentCdDefinition));
     extensionDiamond.put(currentDiagram, currentExtensions);
     currentExtensions.forEach(diagramSymbol -> getExtensionDiamond(diagramSymbol, extensionDiamond));
   }
 
-  protected static LinkedHashSet<DiagramSymbol> getExtendedCDs(ASTCDDefinition astcdDefinition) {
+  /**
+   * A class diagram extends every other UMLP class diagram it imports from, either by a star import
+   * of the diagram ({@code import CD.*;}) or by importing one of its types ({@code import CD.Type;}).
+   * Imports of Java types or of class diagrams only available as symbols (e.g., GUI component types)
+   * are no extensions.
+   */
+  public static LinkedHashSet<DiagramSymbol> getExtendedCDs(ASTCDCompilationUnit cd) {
+    String ownName = cd.getCDDefinition().getSymbol().getFullName();
     LinkedHashSet<DiagramSymbol> extendedCDs = new LinkedHashSet<>();
-    if(!astcdDefinition.getModifier().isPresentStereotype()) {
-      return extendedCDs;
+    for (ASTMCImportStatement importStatement : cd.getMCImportStatementList()) {
+      List<String> parts = importStatement.getMCQualifiedName().getPartsList();
+      List<String> diagramParts = importStatement.isStar() ? parts : parts.subList(0, parts.size() - 1);
+      if (diagramParts.isEmpty()) {
+        continue;
+      }
+      cd.getEnclosingScope().resolveDiagram(Joiners.DOT.join(diagramParts))
+          .filter(DiagramSymbol::isPresentAstNode)
+          .filter(diagram -> !diagram.getFullName().equals(ownName))
+          .ifPresent(extendedCDs::add);
     }
-    astcdDefinition.getModifier().getStereotype().getValuesList().forEach(value -> {
-      if (!value.getName().equals("extends")) {
-        return;
-      }
-      String extendedCDName = value.getValue();
-      Optional<DiagramSymbol> extendedCDSymbol = astcdDefinition.getSymbol().getEnclosingScope()
-          .resolveDiagram(extendedCDName);
-      if(extendedCDSymbol.isPresent()) {
-        extendedCDs.add(extendedCDSymbol.get());
-      } else {
-        Log.error("0xABF643: Can not resolve extended diagram "+extendedCDName + " in "
-            +astcdDefinition.getName());
-      }
-    });
     return extendedCDs;
   }
 

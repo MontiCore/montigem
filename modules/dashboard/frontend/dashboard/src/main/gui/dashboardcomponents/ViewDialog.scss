@@ -1,0 +1,49 @@
+:host ::ng-deep .selectedPreset .gem-button{
+  background-color : #2F5F9F;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+:host ::ng-deep .presetButton .gem-button{
+  padding: 0px;
+  margin: 0px !important;
+  background-color : var(--view-background);
+}
+
+:host ::ng-deep .closeButton .gem-button{
+  margin-top: 20px !important;
+  background-color: red  !important;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+:host ::ng-deep .createButton .gem-button{
+  margin-top: 20px !important;
+  background-color: green  !important;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+:host ::ng-deep .tutorialViewCreate .gem-button{
+  margin-top: 20px !important;
+  background-color: green  !important;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 14px;
+  border: 3px solid red;
+  animation: flash-border 1s ease-in-out infinite;
+}
+@keyframes flash-border {
+  0%, 100% {
+    border-color:transparent;
+  }
+  50% {
+    border-color: #ff0000;
+  }
+}
+
+.header{
+  text-align : center;
+}

@@ -1,5 +1,5 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("classList")}
+${tc.signature("deSerTypes")}
 ${cd4c.method("protected Object deserSingleValue(JsonElement val, String tp)")}
 
 // Prefer the runtime type discriminator written by the sender over the declared
@@ -21,9 +21,9 @@ if(BaseClassObjectMapper.canDeSer(requestedTp)){
   res = BaseClassObjectMapper.deserialize(value.toString(), requestedTp).orElse(null);
 }else {
   switch (requestedTp) {
-<#list classList as className>
-    case "${className}": {
-      res = new ${className}DeSer().fromJson(val).orElse(null);
+<#list deSerTypes as fqn, simpleName>
+    case "${fqn}": {
+      res = new ${simpleName}DeSer().fromJson(val).orElse(null);
       break;
     }
 </#list>

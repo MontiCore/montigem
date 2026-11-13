@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp.generator.domain.decorator;
 
+import umlp.generator.util.UMLPSymbolTables;
 import de.monticore.cd._symboltable.CDSymbolTables;
 import de.monticore.cd.facade.CDModifier;
 import de.monticore.cd4codebasis._ast.ASTCDMethodSignature;
@@ -109,7 +110,7 @@ public class ShellAPIClassDecorator extends DomainClassDecorator {
     ArrayList<String> annotations = new ArrayList<>();
     for (ASTCDAttribute attribute : domainAttributes) {
       String type = attribute.getMCType().printType();
-      Optional<TypeSymbol> typeSymbol = attribute.getMCType().getDefiningSymbol().map(it -> (TypeSymbol) it);
+      Optional<TypeSymbol> typeSymbol = UMLPSymbolTables.getTypeSymbol(attribute.getMCType());
       if(typeSymbol.isPresent()){
         String fullName = typeSymbol.get().getFullName();
         if(!fullName.isEmpty() && Character.isUpperCase(fullName.charAt(0))){

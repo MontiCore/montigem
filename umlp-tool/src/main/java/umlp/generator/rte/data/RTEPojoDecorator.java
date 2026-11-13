@@ -133,6 +133,8 @@ public class RTEPojoDecorator extends DomainTypeDecorator {
     for (ASTCDAttribute attr : nonDerivedAttrs) {
       if (GenService.isList(attr)) {
         glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(defaultListValue()));
+      } else if (GenService.isOptional(attr) && attributes.attrAssocs.contains(attr)) {
+        glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint("= Optional.empty()"));
       }
     }
 
@@ -145,7 +147,7 @@ public class RTEPojoDecorator extends DomainTypeDecorator {
     createGetterSetterForAttrs(domainClass, clazz, filterDerivedAttributes(attributes.attrFields, false), false);
     createGetterSetterForAttrs(domainClass, clazz, derivedAttribFields, false);
 
-    createGetterSetterForAttrs(domainClass, clazz,  attributes.attrAssocs, false);
+    createAssociationMethods(domainClass, clazz, attributes.attrAssocs);
 
     // Constructors
     getCD4C().addConstructor(clazz, getConstructorTemplate(), domainClass.getName(), nonDerivedAttrs);
@@ -175,6 +177,35 @@ public class RTEPojoDecorator extends DomainTypeDecorator {
         getCD4C().addImport(ast, importName);
       }
     });
+  }
+
+  protected void createAssociationMethods(ASTCDClass domainClass, ASTCDClass clazz,
+                                          List<ASTCDAttribute> attributes) {
+    // Keep the established read API, but route all writes through association
+    // mutators so builders and ordinary instances maintain the same links.
+    createGetterSetterForAttrs(domainClass, clazz, attributes, false);
+    for (ASTCDAssocSide assoc : CDSymbolTables.getAssociationsInHierarchy(domainClass)) {
+      if (!GenService.isVisibleNotDerived(assoc)) {
+        continue;
+      }
+      String name = assoc.getName();
+      String cap = de.se_rwth.commons.StringTransformations.capitalize(name);
+      clazz.getCDMethodList().stream()
+          .filter(m -> m.getName().equals("set" + cap) || m.getName().equals("set" + cap + "List")
+              || m.getName().equals("add" + cap) || m.getName().equals("remove" + cap))
+          .collect(Collectors.toList()).forEach(clazz::removeCDMember);
+      if (GenService.isList(assoc)) {
+        clazz.getCDMethodList().stream().filter(m -> m.getName().equals("get" + cap + "List"))
+            .forEach(m -> glex.replaceTemplate("cd2java.EmptyBody", m,
+                new StringHookPoint("return Collections.unmodifiableList(this._" + name + ");")));
+        getCD4C().addMethod(clazz, "rte.association.Add", assoc);
+        getCD4C().addMethod(clazz, "rte.association.AddIndex", assoc);
+        getCD4C().addMethod(clazz, "rte.association.Remove", assoc);
+        getCD4C().addMethod(clazz, "rte.association.SetList", assoc);
+      } else {
+        getCD4C().addMethod(clazz, "rte.association.Set", assoc);
+      }
+    }
   }
 
   protected void createIsBuildFinishedMethod(ASTCDClass clazz) {
@@ -326,11 +357,11 @@ public class RTEPojoDecorator extends DomainTypeDecorator {
                   getTypeFromFQNString(assocSide.getSymbol().getType().printFullName()))));
     });
     domainType.getInterfaceList().forEach(cdInterface ->
-        cdInterface.getDefiningSymbol().ifPresent(definingSymbol ->
+        UMLPSymbolTables.getTypeSymbol(cdInterface).ifPresent(definingSymbol ->
             getCD4C().addImport(cdType, Joiners.DOT.join(definingSymbol.getPackageName().toLowerCase(),
                 definingSymbol.getName()))));
     domainType.getSuperclassList().forEach(cdExtension ->
-        cdExtension.getDefiningSymbol().ifPresent(definingSymbol ->
+        UMLPSymbolTables.getTypeSymbol(cdExtension).ifPresent(definingSymbol ->
             getCD4C().addImport(cdType, Joiners.DOT.join(definingSymbol.getPackageName().toLowerCase(),
                 definingSymbol.getName()))));
 

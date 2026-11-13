@@ -86,7 +86,12 @@ export class JsonPrinter {
   }
 
   valueJson(value : string) : void {
-    this.internalStringValue(value);
+    const parsed = JSON.parse(value);
+    if (this.currElements.length > 0 && Array.isArray(this.getCurrentElement())) {
+      this.getCurrentElement().push(parsed);
+    } else {
+      throw new Error('A JSON value must be added inside an array');
+    }
   }
 
   internalNumberValue(value : number) : void{

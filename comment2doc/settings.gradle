@@ -5,8 +5,10 @@ pluginManagement {
       mavenLocal()
     }
     maven {
-      credentials.username mavenUser
-      credentials.password mavenPassword
+      if (settings.providers.gradleProperty('mavenUser').present && settings.providers.gradleProperty('mavenPassword').present) {
+        credentials.username mavenUser
+        credentials.password mavenPassword
+      }
       url = repo
     }
     gradlePluginPortal()

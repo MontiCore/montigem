@@ -86,8 +86,8 @@ export class FunctionDisplay extends FunctionDisplayComponent {
        let existing = this.channelIdentityMap[i];
        if (existing === channel) return "ch_" + i;
 
-       let ports1 = (await GemListUtil.toArraySync(existing.getPort4DisplayList())) || [];
-       let ports2 = (await GemListUtil.toArraySync(channel.getPort4DisplayList())) || [];
+       let ports1 = (await GemListUtil.toArraySync(await existing.getPort4DisplayList())) || [];
+       let ports2 = (await GemListUtil.toArraySync(await channel.getPort4DisplayList())) || [];
        if (ports1.length === ports2.length && ports1.length > 0) {
           let allMatch = true;
           for (let p of ports1) {
@@ -599,11 +599,10 @@ export class FunctionDisplay extends FunctionDisplayComponent {
    * correctly as a child of a containing system.
    */
   private async addWrapper(funk: Function4Display): Promise<Function4Display> {
-    return (await (await new Function4DisplayBuilder().__Function4DisplayBuilderConstructor())
-      .name(FunctionDisplay.wrapperId)
-      .subFunction(await new AsyncList<Function4Display>().__AsyncListConstructor([funk])))
-      .owner(undefined)
-      .build();
+    const builder = (await new Function4DisplayBuilder().__Function4DisplayBuilderConstructor())
+      .name(FunctionDisplay.wrapperId);
+    await builder.subFunction(await new AsyncList<Function4Display>().__AsyncListConstructor([funk]));
+    return builder.build();
   }
 
   /**
@@ -621,8 +620,8 @@ export class FunctionDisplay extends FunctionDisplayComponent {
 
     let subports : Port4Elk[] = [];
     let subfunkElks : Funktion4Elk[] = [];
-    if (funk.getSubFunctionList() != null) {
-      for await (let sf of funk.getSubFunctionList()) {
+    if (await funk.getSubFunctionList() != null) {
+      for await (let sf of await funk.getSubFunctionList()) {
         let sfelk = await this.funk2elkfunk(sf, depth - 1);
         subfunkElks.push(sfelk);
         subports.push(...(await this.getTransformedPorts(sf, sfelk)));
@@ -633,7 +632,7 @@ export class FunctionDisplay extends FunctionDisplayComponent {
     let connections : [Port4Elk,Port4Elk][] = [];
     for(let port of ports){
       if (port.self.getChannel4Display()) {
-        for await (let innerPort of port.self.getChannel4Display().getPort4DisplayList()){
+        for await (let innerPort of await port.self.getChannel4Display().getPort4DisplayList()){
           if (!this.portElkMap.has(innerPort)) continue;
           for (let innerPortElk of this.portElkMap.get(innerPort)) {
             // Check for connections between this function's ports and its children's ports
@@ -652,7 +651,7 @@ export class FunctionDisplay extends FunctionDisplayComponent {
       // Connections between ports of the same level (sibling connections)
       for(let toPort of ports){
         if (toPort != port && port.isIn && !toPort.isIn && toPort.self.getChannel4Display() &&
-          await toPort.self.getChannel4Display().getPort4DisplayList().contains(port.self)){
+          await (await toPort.self.getChannel4Display().getPort4DisplayList()).contains(port.self)){
           connections.push([port,toPort]);
           this.connectionMap.set(this.portsToString(port, toPort), port.self.getChannel4Display());
         }
@@ -662,7 +661,7 @@ export class FunctionDisplay extends FunctionDisplayComponent {
     // Connections from children's output ports to other sibling children's input ports
     for(let port of subports){
       if (!port.isIn && port.self.getChannel4Display()){
-        for await (let toPort of port.self.getChannel4Display().getPort4DisplayList()){
+        for await (let toPort of await port.self.getChannel4Display().getPort4DisplayList()){
           if (!this.portElkMap.has(toPort)){
             continue;
           }
@@ -686,16 +685,16 @@ export class FunctionDisplay extends FunctionDisplayComponent {
    */
   private async getTransformedPorts(funk : Function4Display, elkfunk: Funktion4Elk) : Promise<Port4Elk[]> {
     let ports : Port4Elk[] = [];
-    if (funk.getInList() != null){
-      ports.push(...(await GemListUtil.toArraySync(funk.getInList())).map(p => {
+    if (await funk.getInList() != null){
+      ports.push(...(await GemListUtil.toArraySync(await funk.getInList())).map(p => {
         let ret = {id:funk.getName() + '.' + p.getName(), isIn: true, funktion:elkfunk, self:p}
         if (!this.portElkMap.has(p)) this.portElkMap.set(p, []);
         this.portElkMap.get(p).push(ret);
         return ret;
       }));
     }
-    if (funk.getOutList() != null) {
-      ports.push(...(await GemListUtil.toArraySync(funk.getOutList())).map(p => {
+    if (await funk.getOutList() != null) {
+      ports.push(...(await GemListUtil.toArraySync(await funk.getOutList())).map(p => {
         let ret = {id: funk.getName() + '.' + p.getName(), isIn: false, funktion: elkfunk, self: p}
         if (!this.portElkMap.has(p)) this.portElkMap.set(p, []);
         this.portElkMap.get(p).push(ret);

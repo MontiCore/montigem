@@ -27,6 +27,7 @@ page Subtotal(User user){
   column@GemColumn(hAlign = "center", rowGap = "1rem", components = [
   @Header(headline = user.formattedName, timerNeeded = true, backBtnNeeded = true),
       table@GemTable(
+        width = "min(720px, calc(100vw - 1.5rem))",
         layout = "fixed",
         headers = [
           @GemTableHeader(cells = [

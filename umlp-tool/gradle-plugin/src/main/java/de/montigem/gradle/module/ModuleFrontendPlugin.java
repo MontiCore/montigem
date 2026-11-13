@@ -4,6 +4,7 @@ import com.github.gradle.node.NodeExtension;
 import com.github.gradle.node.NodePlugin;
 import com.github.gradle.node.npm.task.NpmTask;
 import com.github.gradle.node.npm.task.NpxTask;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.monticore.gradle.common.CommonMCTask;
@@ -13,7 +14,8 @@ import de.montigem.gradle.specific.CreateNpmrcTask;
 import de.montigem.gradle.specific.GUIJava2TSTask;
 import de.montigem.gradle.specific.GUI2JavaTask;
 import de.montigem.gradle.specific.GUI2SymTask;
-import de.montigem.gradle.specific.LocalNpmAdduserTask;
+import de.montigem.gradle.specific.integrationtesting.LocalNpmAdduserTask;
+import de.montigem.gradle.specific.integrationtesting.StartLocalNpmRegistryTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
 import de.montigem.gradle.specific.UMLP2TSTask;
 import de.montigem.gradle.specific.UMLPJava2TSTask;
@@ -53,13 +55,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.UncheckedIOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -78,9 +76,10 @@ import static de.montigem.gradle.FrontendBasePlugin.addProjectDependencies;
 import static de.montigem.gradle.FrontendBasePlugin.getModels;
 import static de.montigem.gradle.FrontendBasePlugin.inRTE;
 import static de.montigem.gradle.FrontendBasePlugin.inUMLP;
-import static de.montigem.gradle.FrontendBasePlugin.mcVersion;
+import static de.montigem.gradle.FrontendBasePlugin.npmDistTag;
 import static de.montigem.gradle.FrontendBasePlugin.umlpVersion;
 import static de.montigem.gradle.FrontendBasePlugin.useLocalDependencies;
+import static de.montigem.gradle.FrontendBasePlugin.useNpmDistTag;
 import static de.montigem.gradle.FrontendPlugin.CD2JAVA_TASK;
 import static de.montigem.gradle.FrontendPlugin.CD2SYM_TASK;
 import static de.montigem.gradle.FrontendPlugin.GUI_JAVA2TS_TASK;
@@ -101,6 +100,7 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
   public static final String GUI2SYM_JAR_TASK = "gui2symJar";
   public static final String BUILD_LIB_TASK = "buildLib";
   public static final String TEST_LIB_TASK = "testLib";
+  public static final String PUBLISH_LIBS_LOCAL_TASK = "publishLibsToLocalNpmRepo";
   public static final String INSTALL_TEST_BROWSER_TASK = "installTestBrowser";
 
   @Inject
@@ -137,6 +137,10 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
         .gradleProperty("publishToLocalNpmRepo")
         .map(Boolean::parseBoolean)
         .orElse(false);
+    // the libs are published as prepatch versions, e.g. 9.0.3 -> 9.0.4-20261028143012, with the
+    // dist-tag of the MontiGem version, e.g. `g-7.10.0`, and their peer dependencies on @umlp and
+    // @montigem libs point to this tag
+    String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
     Provider<Map<String, String>> isolatedNpmEnvironment = project.getProviders().provider(() ->
         useLocalNpmRepo.get() || publishToLocalNpmRepo.get()
             ? Map.of("npm_config_userconfig", project.getLayout().getProjectDirectory()
@@ -154,6 +158,9 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
       task.dependsOn(npmrc4download);
       task.getEnvironment().putAll(isolatedNpmEnvironment);
     });
+    if (useLocalNpmRepo.get() || publishToLocalNpmRepo.get()) {
+      StartLocalNpmRegistryTask.requiredBy(project, npmInstall);
+    }
 
     // browser-based lib tests need the browser revision of the installed playwright,
     // the install is a no-op if that revision is present already
@@ -180,6 +187,9 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.getNpmrcFile().set(localNpmrc);
           task.onlyIf("local npm publishing is enabled", t -> publishToLocalNpmRepo.get());
         });
+    if (publishToLocalNpmRepo.get()) {
+      StartLocalNpmRegistryTask.requiredBy(project, localNpmAdduser);
+    }
 
     // default models folder
     Directory models = getModels(project);
@@ -604,64 +614,29 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
               publishToLocalNpmRepo);
         });
 
-        // Pack the built lib for to compare if the hashes are exactly the same for publishLib
-        Provider<Directory> packDestDir = subproject.getLayout().getBuildDirectory().dir("publishCheck");
-        TaskProvider<NpmTask> packLibForPublish = subproject.getTasks().register("packLibForPublish", NpmTask.class, task -> {
-          task.setGroup(UMLP_GROUP_NAME);
-          task.dependsOn(buildLib, npmrc4publish);
-          // use buildLib's output for uptodate checks
-          task.getInputs().dir(libBuildDir).withPropertyName("libBuildDirContent");
-          task.getArgs().set(packDestDir.map(dir -> List.of("pack", "--pack-destination", dir.getAsFile().getAbsolutePath())));
-          task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
-          task.getEnvironment().putAll(publishToLocalNpmRepo.map(publishLocal -> publishLocal
-              ? Map.of("npm_config_userconfig", localNpmrc.get().getAsFile().getAbsolutePath())
-              : Map.of()));
-          task.doFirst(t -> packDestDir.get().getAsFile().mkdirs());
-          task.getOutputs().dir(packDestDir);
-        });
-
         TaskProvider<NpmTask> publishLib = subproject.getTasks().register("publishLib", NpmTask.class, task -> {
           task.setGroup("publishing");
-          task.dependsOn(npmrc4publish, packLibForPublish, localNpmAdduser);
-          task.getArgs().set(List.of("publish"));
+          task.dependsOn(npmrc4publish, localNpmAdduser);
+          // npm refuses prerelease versions without a tag, this also keeps `latest` unchanged
+          task.getArgs().set(List.of("publish", "--tag", npmDistTag(project.getVersion().toString())));
           // e.g. `build/dist/basic/`
           task.getWorkingDir().set(libBuildDir.map(dir -> dir.file(".")));
           task.getEnvironment().putAll(publishToLocalNpmRepo.map(publishLocal -> publishLocal
               ? Map.of("npm_config_userconfig", localNpmrc.get().getAsFile().getAbsolutePath())
               : Map.of()));
-          task.onlyIf("version is not yet published to the configured npm repository", t -> {
+          task.doFirst(t -> {
             try {
-              JsonObject packageJson = readJson(libBuildDir.get().file("package.json").getAsFile());
-              String name = packageJson.get("name").getAsString();
-              String version = packageJson.get("version").getAsString();
-
-              String[] registryAndAuth = parseNpmrc(libBuildDir.get().file(".npmrc").getAsFile());
-              String remoteShasum = fetchRemoteShasum(registryAndAuth[0], registryAndAuth[1], name, version);
-              if (remoteShasum == null) {
-                // version not published yet -> publish it
-                return true;
+              String version = readJson(subproject.file("package.json")).get("version").getAsString();
+              File builtPackageJson = libBuildDir.get().file("package.json").getAsFile();
+              JsonObject packageJson = readJson(builtPackageJson);
+              packageJson.addProperty("version", prepatchVersion(version, timestamp));
+              if (packageJson.has("peerDependencies")) {
+                useNpmDistTag(packageJson.getAsJsonObject("peerDependencies"), project.getVersion().toString());
               }
-
-              // version already published in the configured repository -> skip
-              // Report differing content as a warning instead, so that a forgotten
-              // version bump stays visible without breaking every pipeline run.
-              File tarball = new File(packDestDir.get().getAsFile(), npmPackFileName(name, version));
-              if (tarball.isFile() && !sha1Hex(tarball).equals(remoteShasum)) {
-                t.getLogger().warn(
-                    "Not publishing {}: {}@{} is already published, but the locally built "
-                        + "package differs (local shasum {} != remote shasum {}). Bump the package "
-                        + "version if this change has to be released.",
-                    t.getPath(), name, version, sha1Hex(tarball), remoteShasum);
-              }
-              else {
-                t.getLogger().lifecycle("Skipping {}: {}@{} is already published.",
-                    t.getPath(), name, version);
-              }
-              return false;
+              Files.writeString(builtPackageJson.toPath(),
+                  new GsonBuilder().setPrettyPrinting().create().toJson(packageJson));
             }
             catch (IOException e) {
-              t.getLogger().error("Failed to check whether {} is already published to Nexus: {}"
-                  + "\nRun with --stacktrace for the full failure detail.", t.getPath(), e.toString());
               throw new UncheckedIOException(e);
             }
           });
@@ -674,6 +649,21 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
     build.configure(task -> task.dependsOn(buildSubprojects));
     TaskProvider<Task> publish = project.getTasks().named("publish");
     publish.configure(task -> task.dependsOn(publishSubprojects));
+    // Like publish, but can never publish to Nexus: without -PpublishToLocalNpmRepo=true it has no
+    // dependencies and fails, instead of publishing the libraries to the configured repository.
+    project.getTasks().register(PUBLISH_LIBS_LOCAL_TASK, task -> {
+      task.setGroup("publishing");
+      task.setDescription("Publishes the libraries to the local npm registry (publishToLocalNpmRepo=true).");
+      if (publishToLocalNpmRepo.get()) {
+        task.dependsOn(publishSubprojects);
+      }
+      else {
+        task.doFirst(t -> {
+          throw new GradleException(PUBLISH_LIBS_LOCAL_TASK + " requires -PpublishToLocalNpmRepo=true; "
+              + "it refuses to publish to the Nexus npm repository.");
+        });
+      }
+    });
     TaskProvider<Task> test = project.getTasks().named("test");
     test.configure(task -> task.dependsOn(testSubprojects));
   }
@@ -770,83 +760,14 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
   }
 
   /**
-   * @return the file name `npm pack` gives to {@code name@version}, e.g. `umlp-input-10.0.1.tgz`
-   * for `@umlp/input`. Looking the tarball up by name (instead of expecting the pack directory to
-   * hold exactly one file) keeps stale tarballs from earlier versions harmless.
+   * @return the prepatch version of {@code version} with the prerelease identifier {@code preid}, e.g. `9.0.4-20261028143012` for `9.0.3`
    */
-  private static String npmPackFileName(String name, String version) {
-    return name.replace("@", "").replace("/", "-") + "-" + version + ".tgz";
-  }
-
-
-  private static String sha1Hex(File file) throws IOException {
-    MessageDigest digest;
-    try {
-      digest = MessageDigest.getInstance("SHA-1");
+  private static String prepatchVersion(String version, String preid) {
+    String[] parts = version.split("-", 2)[0].split("\\.");
+    if (parts.length != 3) {
+      throw new GradleException("Expected a major.minor.patch version, but got " + version);
     }
-    catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException(e);
-    }
-    byte[] hash = digest.digest(Files.readAllBytes(file.toPath()));
-    StringBuilder hex = new StringBuilder(hash.length * 2);
-    for (byte b : hash) {
-      hex.append(String.format("%02x", b));
-    }
-    return hex.toString();
-  }
-
-  /**
-   * @return {registryUrl, optionalBase64AuthToken} as resolved from the .npmrc created by {@link CreateNpmrcTask}.
-   */
-  private static String[] parseNpmrc(File npmrcFile) throws IOException {
-    String registryUrl = null;
-    String authToken = null;
-    for (String line : Files.readAllLines(npmrcFile.toPath())) {
-      if (line.startsWith("registry=")) {
-        registryUrl = line.substring("registry=".length()).trim();
-      }
-      else if (line.contains(":_auth=")) {
-        authToken = line.substring(line.indexOf(":_auth=") + ":_auth=".length()).trim().replace("\"", "");
-      }
-    }
-    if (registryUrl == null) {
-      throw new GradleException("Could not find registry in " + npmrcFile);
-    }
-    return new String[]{registryUrl, authToken};
-  }
-
-  /**
-   * @return the shasum of {@code name@version} in the configured registry, or {@code null} if that version does not exist there yet.
-   */
-  private static String fetchRemoteShasum(String registryUrl, String authToken, String name, String version) throws IOException {
-    String base = registryUrl.endsWith("/") ? registryUrl : registryUrl + "/";
-    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-        .uri(URI.create(base + name.replace("/", "%2f")));
-    if (authToken != null && !authToken.isBlank()) {
-      requestBuilder.header("Authorization", "Basic " + authToken);
-    }
-    HttpRequest request = requestBuilder.GET().build();
-    HttpResponse<String> response;
-    try {
-      response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new IllegalStateException(e);
-    }
-    if (response.statusCode() == 404) {
-      return null;
-    }
-    if (response.statusCode() != 200) {
-      throw new GradleException("Unexpected HTTP " + response.statusCode()
-          + " from npm registry while checking " + name + "@" + version);
-    }
-    JsonObject root = JsonParser.parseString(response.body()).getAsJsonObject();
-    JsonObject versions = root.has("versions") ? root.getAsJsonObject("versions") : null;
-    if (versions == null || !versions.has(version)) {
-      return null;
-    }
-    return versions.getAsJsonObject(version).getAsJsonObject("dist").get("shasum").getAsString();
+    return parts[0] + "." + parts[1] + "." + (Integer.parseInt(parts[2]) + 1) + "-" + preid;
   }
 
   protected void addJSweetDependencies(Project project) {
