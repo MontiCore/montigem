@@ -36,6 +36,20 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-11-13: 7.10.0-SNAPSHOT
+* `Map<K, V>` attributes with a domain class value become type qualified associations, as
+  `List<V>` attributes become `[*]` associations:
+  ```
+  class Roster { Map<String, Person> byNick; }
+  // is
+  association Roster [String] (byNickRoster) -> (byNick) Person [1];
+  ```
+  The attribute has the API of the GemMap (`putByNick(key, person)`, `getByNick(key)`,
+  `getByNickMap()`, ...). The key type follows the rules of type qualifiers (`0xCDC6F`), other value
+  types than domain classes are rejected (`0xCDC6E`); before, all `Map` attributes were rejected
+  (`0x70876`). Unlike a `java.util.Map`, a value is stored under one key only (a put under another
+  key moves it), `null` is no key, and the entries keep their insertion order.
+
 ## 2026-11-09: 7.10.0-SNAPSHOT
 * Qualified associations (attribute and type qualified) may be bidirectional. The owner side
   needs an explicit cardinality, `[1]`, `[0..1]` or `[*]` (`0xCDC6D`); the value side stays `[1]`:

@@ -1,0 +1,18 @@
+/* (c) https://github.com/MontiCore/monticore */
+package trafo;
+
+classdiagram CardMap {
+  package trafo {
+    class Foo {
+      java.util.Map<String, Bar> byName;
+      java.util.Map<Baz, Bar> byBaz;
+      // no domain class value: not transformed (rejected by the CoCo UMLPMapAttributeValueType)
+      java.util.Map<String, Integer> counts;
+    }
+
+    public class Bar;
+
+    public class Baz;
+  }
+
+}

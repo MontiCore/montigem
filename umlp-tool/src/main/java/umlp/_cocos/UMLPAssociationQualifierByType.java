@@ -31,11 +31,19 @@ public class UMLPAssociationQualifierByType implements CDAssociationASTCDAssocia
   }
   private void checkKeyType(ASTMCType type) {
     SymTypeExpression ste = TypeCheck3.symTypeFromAST(type);
-    boolean integral = SymTypeRelations.isNumericType(ste)
-        && !UMLPAssociationQualifierByAttributeName.isUnsupportedKey(ste);
-    if (!integral && !SymTypeRelations.isString(ste) && !UMLPAssociationQualifierByAttributeName.isDomainKey(ste)) {
+    if (!isTypeKey(ste)) {
       logError((ASTCNode) type, ste.getTypeInfo().getName());
     }
+  }
+
+  /**
+   * whether the type can be the key type of a type qualified association (also of a {@code Map} attribute, see
+   * {@link UMLPMapAttributeKeyType}), see the class comment
+   */
+  public static boolean isTypeKey(SymTypeExpression type) {
+    boolean integral = SymTypeRelations.isNumericType(type)
+        && !UMLPAssociationQualifierByAttributeName.isUnsupportedKey(type);
+    return integral || SymTypeRelations.isString(type) || UMLPAssociationQualifierByAttributeName.isDomainKey(type);
   }
 
   @Override

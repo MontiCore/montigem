@@ -11,14 +11,16 @@ public class UMLPNotAllCollectionsImplemented implements CDBasisASTCDAttributeCo
 
   public static final String ERROR_CODE = "0x70876";
 
-  public static final String ERROR_MSG_FORMAT = " Currently only the generic classes List and Optional are supported, but attribute %s uses %s";
+  public static final String ERROR_MSG_FORMAT = " Currently only the generic classes List, Optional and Map are supported, but attribute %s uses %s";
 
   @Override
   public void check(ASTCDAttribute attr) {
     SymTypeExpression type = attr.getSymbol().getType();
 
     if (type.isGenericType()) {
-      if(!(GenService.isList(type) || GenService.isOptional(type))) {
+      // Map attributes become type qualified associations, checked by UMLPMapAttributeValueType and
+      // UMLPMapAttributeKeyType
+      if(!(GenService.isList(type) || GenService.isOptional(type) || GenService.isMap(type))) {
         Log.error(
             String.format(ERROR_CODE + ERROR_MSG_FORMAT, attr.getName(), type.print()),
             attr.get_SourcePositionStart()
