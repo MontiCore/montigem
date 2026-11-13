@@ -1,0 +1,24 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPAssocQualifierNavigability {
+  class A {
+    String name;
+  }
+
+  class B {
+    int number;
+  }
+
+  // An attribute qualified association becomes a GemMap in the qualified class (here B). It must be navigable from
+  // the qualified class only: bidirectional qualified associations (a back reference in A kept in sync with the map)
+  // are not supported yet, and without navigability from B there is no map at all.
+
+  // valid: navigable from the qualified class B only
+  association B [[name]] -> A [1];
+
+  // invalid: bidirectional
+  association B [[name]] <-> A [1];
+  // invalid: navigable from A only, B has no map
+  association B [[name]] <- A [1];
+  // invalid: bidirectional, with the qualifier on the right side
+  association [1] B <-> [[number]] A;
+}

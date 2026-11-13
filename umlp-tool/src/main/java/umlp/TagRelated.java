@@ -1,6 +1,13 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp;
 
+import de.monticore.cdassociation._ast.ASTCDAssocSide;
+import de.monticore.cdassociation._ast.ASTCDAssociation;
+import de.monticore.cdassociation._visitor.CDAssociationVisitor2;
+import umlp.generator.domain.decorator.GenService;
+import umlp.generator.util.TagLookUp;
+import java.util.List;
+
 import com.google.common.collect.Iterables;
 import de.monticore.ast.Comment;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
@@ -85,6 +92,7 @@ public class TagRelated {
     SimpleSymbolTagger tagger = new SimpleSymbolTagger(() -> Collections.singleton(tagUnit));
     traverser.add4CDBasis(new DomainModelTagVisitor(tagger, hasTags));
     traverser.add4CDBasis(new PojoTaggerVisitor(tagger, hasTags, isPojoCD));
+    traverser.add4CDAssociation(new AttributeQualifiedRoleTagVisitor(tagger, hasTags));
     ast.accept(traverser);
 
     if (tagPath != null) {
@@ -235,6 +243,32 @@ public class TagRelated {
         ASTTag astTag = TagsMill.simpleTagBuilder().setName("derived").build();
         hasTags[0] = true;
         tagger.addTag(node.getSymbol(), astTag);
+      }
+    }
+  }
+
+  /**
+   * Tags the target roles of attribute qualified associations ({@code Owner [[attr]] -> (role) Target}),
+   * which are GemMaps, with 'attributeQualified', so the GUI generation can reject them
+   * (GUI models do not support GemMaps yet)
+   */
+  public static class AttributeQualifiedRoleTagVisitor implements CDAssociationVisitor2 {
+    SimpleSymbolTagger tagger;
+    boolean[] hasTags;
+
+    protected AttributeQualifiedRoleTagVisitor(SimpleSymbolTagger tagger, boolean[] hasTags) {
+      this.tagger = tagger;
+      this.hasTags = hasTags;
+    }
+
+    @Override
+    public void visit(ASTCDAssociation node) {
+      for (ASTCDAssocSide side : List.of(node.getLeft(), node.getRight())) {
+        if (side.isPresentSymbol() && GenService.isMap(side)) {
+          ASTTag astTag = TagsMill.simpleTagBuilder().setName(TagLookUp.ATTRIBUTE_QUALIFIED).build();
+          hasTags[0] = true;
+          tagger.addTag(side.getSymbol(), astTag);
+        }
       }
     }
   }

@@ -1,5 +1,6 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("name", "managerName", "assocs")}
+<#-- keyObservers: the key observers of the map roles that may hold objects of the class (GemMapKeyRole) -->
+${tc.signature("name", "managerName", "assocs", "keyObservers")}
 ${cd4c.method("protected void _doAddWithScope${name}(${name} o, NotificationScope scope)")}
 
 ${name?uncap_first}s.put(o.getGemId(), o);
@@ -7,6 +8,11 @@ ${name?uncap_first}GemList.add(o);
 if (!o.containsObserver(the${name}CommandObserver)) {
   o.addObserver(the${name}CommandObserver);
 }
+<#list keyObservers as keyObserver>
+if (!o.containsObserver(${keyObserver})) {
+  o.addObserver(${keyObserver});
+}
+</#list>
 
 <#list assocs as assoc>
   <#assign type = assoc.getSymbol().getType().print()>

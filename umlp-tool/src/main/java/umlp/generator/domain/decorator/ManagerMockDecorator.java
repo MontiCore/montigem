@@ -22,6 +22,7 @@ import umlp.generator.util.PathUtil;
 import umlp.generator.util.TagLookUp;
 import umlp.generator.util.UMLPSymbolTables;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -87,10 +88,28 @@ public class ManagerMockDecorator extends AbstractDecorator {
 
     getNonDerivedDomainInterfaces(origCD).forEach(i -> addInterfaceElements(origCD, i, managerClass));
 
+    // rekeying the values of the map roles in the maps of the owners
+    GemMapKeyRole.declaredIn(origCD).forEach(r -> getCD4C().addMethod(managerClass, "umlp.managermock.DoRekey",
+        r.getRekeyName(), r.getRole(), r.getKeyType(), r.getOwners()));
+
     // Imports
     addImports(managerClass);
 
     return managerClass;
+  }
+
+  /**
+   * the key observers of the map roles that may hold objects of the concrete class domainClass, one per role (see
+   * GemMapKeyRole)
+   */
+  protected void addKeyObserverAttributes(ASTCDCompilationUnit origCD, ASTCDClass domainClass,
+                                          ASTCDClass managerClass) {
+    for (GemMapKeyRole role : GemMapKeyRole.observing(origCD, domainClass)) {
+      String type = role.getKeyObserverClass(domainClass.getName());
+      addAttribute(managerClass, "protected " + type + " " + role.getKeyObserverAttribute(domainClass.getName()),
+          "new " + type + "()");
+      getCD4C().addImport(managerClass, getPackageName(origCD, GEMMAP_PACKAGE) + "." + type);
+    }
   }
 
   protected void addClassElements(ASTCDCompilationUnit origCD, ASTCDClass domainClass,
@@ -106,10 +125,12 @@ public class ManagerMockDecorator extends AbstractDecorator {
 
     List<ASTCDAssocSide> assocs = CDSymbolTables.getAssociations(domainClass);
     Set<ASTCDType> concreteSubclassesInclSelf = UMLPSymbolTables.collectConcreteSubclassesInclSelf(origCD, domainClass);
+    List<String> keyObservers = GemMapKeyRole.keyObserverAttributes(origCD, domainClass);
     if (isSingleton) {
       getCD4C().addMethod(managerClass, "umlp.managermock.DoOptSingletonElement", name);
     } else {
-      getCD4C().addMethod(managerClass, "umlp.managermock.DoOpt", name, concreteSubclassesInclSelf);
+      getCD4C().addMethod(managerClass, "umlp.managermock.DoOpt", name, concreteSubclassesInclSelf,
+          GemMapKeyRole.keyObserverAttributes(origCD, concreteSubclassesInclSelf));
     }
     getCD4C().addMethod(managerClass, "umlp.managermock.DoGetSure", name);
     if (!isSingleton) {
@@ -118,7 +139,7 @@ public class ManagerMockDecorator extends AbstractDecorator {
     getCD4C().addImport(managerClass, Joiners.DOT.join(getPackageName(origCD, GEMLIST_PACKAGE), domainClass.getName() + "GemList"));
 
     if (isSingleton) {
-      getCD4C().addMethod(managerClass, "umlp.managermock.DoGetSingletonElement", name);
+      getCD4C().addMethod(managerClass, "umlp.managermock.DoGetSingletonElement", name, keyObservers);
     }
 
 
@@ -130,7 +151,7 @@ public class ManagerMockDecorator extends AbstractDecorator {
       } else {
         getCD4C().addMethod(managerClass, "umlp.managermock.DoGetList", name, concreteSubclassesInclSelf);
         getCD4C().addMethod(managerClass, "umlp.managermock.DoGetFilteredList", name, concreteSubclassesInclSelf);
-        getCD4C().addMethod(managerClass, "umlp.managermock.DoRegister", name);
+        getCD4C().addMethod(managerClass, "umlp.managermock.DoRegister", name, keyObservers);
       }
       
       if (isSingleton) {
@@ -142,6 +163,7 @@ public class ManagerMockDecorator extends AbstractDecorator {
       }
       addAttribute(managerClass, "protected GemList<" + name + "> " + lName + "GemList", "new " + name + "GemList().build().get()");
       addAttribute(managerClass, "protected " + name + "CommandSendingObserver the" + name + "CommandObserver", "new " + name + "CommandSendingObserver()");
+      addKeyObserverAttributes(origCD, domainClass, managerClass);
 
       getCD4C().addMethod(managerClass, "umlp.managermock.DoBuilderParam", name);
       getCD4C().addMethod(managerClass, "umlp.managermock.DoDeSerBuilder", name);
@@ -150,8 +172,10 @@ public class ManagerMockDecorator extends AbstractDecorator {
             assocs.stream()
                 .filter(GenService::isBidirectional)
                 .filter(Predicate.not(GenService::isSymbolDerived))
-                .collect(Collectors.toList()));
-        getCD4C().addMethod(managerClass, "umlp.managermock.DoDelete", name, managerName);
+                .collect(Collectors.toList()),
+            keyObservers);
+        getCD4C().addMethod(managerClass, "umlp.managermock.DoDelete", name, managerName,
+            GemMapOwnerRole.holding(origCD, domainClass));
       }
       getCD4C().addImport(managerClass, Joiners.DOT.join(getPackageName(origCD, CLIENT_PACKAGE), domainClass.getName() + CommandSendingObserverDecorator.SUFFIX));
     } else {
@@ -187,7 +211,8 @@ public class ManagerMockDecorator extends AbstractDecorator {
 
     List<ASTCDAssocSide> assocs = CDSymbolTables.getAssociations(domainClass);
     Set<ASTCDType> concreteSubclassesInclSelf = UMLPSymbolTables.collectConcreteSubclassesInclSelf(origCD, domainClass);
-    getCD4C().addMethod(managerClass, "umlp.managermock.DoOpt", name, concreteSubclassesInclSelf);
+    getCD4C().addMethod(managerClass, "umlp.managermock.DoOpt", name, concreteSubclassesInclSelf,
+        GemMapKeyRole.keyObserverAttributes(origCD, concreteSubclassesInclSelf));
     getCD4C().addMethod(managerClass, "umlp.managermock.DoGetSure", name);
     getCD4C().addMethod(managerClass, "umlp.managermock.DoGetList", name, concreteSubclassesInclSelf);
     getCD4C().addMethod(managerClass, "umlp.managermock.DoGetFilteredList", name, concreteSubclassesInclSelf);

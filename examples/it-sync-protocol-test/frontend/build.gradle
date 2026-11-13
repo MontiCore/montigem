@@ -22,10 +22,12 @@ dependencies {
 
 def syncProtocolTestGenerator = project(":examples:it-sync-protocol-test:sync-protocol-test-generator")
 def generatedSyncProtocolTestsDir = layout.buildDirectory.dir("generated/sync-protocol-tests/java")
+def generatedGemMapSyncProtocolTestsDir = layout.buildDirectory.dir("generated/gemmap-sync-protocol-tests/java")
 
 sourceSets {
   test {
     java.srcDir(generatedSyncProtocolTestsDir)
+    java.srcDir(generatedGemMapSyncProtocolTestsDir)
   }
 }
 
@@ -47,8 +49,27 @@ tasks.register("generateSyncProtocolTests", JavaExec) {
   }
 }
 
+tasks.register("generateGemMapSyncProtocolTests", JavaExec) {
+  group = "umlp"
+  description = "Generates lightweight JUnit tests for the sync protocol of attribute qualified associations (GemMaps)."
+
+  dependsOn(syncProtocolTestGenerator.tasks.named("classes"))
+
+  classpath = syncProtocolTestGenerator.sourceSets.main.runtimeClasspath
+  mainClass = "syncprotocol.testgenerator.GemMapSyncTestGenerator"
+
+  outputs.dir(generatedGemMapSyncProtocolTestsDir)
+
+  doFirst {
+    args = [
+        generatedGemMapSyncProtocolTestsDir.get().asFile.absolutePath
+    ]
+  }
+}
+
 tasks.named("compileTestJava") {
   dependsOn(tasks.named("generateSyncProtocolTests"))
+  dependsOn(tasks.named("generateGemMapSyncProtocolTests"))
 }
 
 test {

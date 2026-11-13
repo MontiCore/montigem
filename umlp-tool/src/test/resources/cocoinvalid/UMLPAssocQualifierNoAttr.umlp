@@ -10,5 +10,5 @@ umlp UMLPAssocQualifierNoAttr {
 
   class C;
 
-  association A [[noMatchingAttr]] -> B [*];
+  association A [[noMatchingAttr]] -> B [1];
 }

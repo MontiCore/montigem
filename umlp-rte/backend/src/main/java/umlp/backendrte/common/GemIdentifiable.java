@@ -5,6 +5,10 @@ import umlp.backendrte.command.JsonDeSer;
 
 public interface GemIdentifiable {
 
+  /**
+   * The gemId is valid from construction on, also for builders before build().
+   * build() only registers the object with its manager; it never assigns the id.
+   */
   long getGemId();
 
   /**

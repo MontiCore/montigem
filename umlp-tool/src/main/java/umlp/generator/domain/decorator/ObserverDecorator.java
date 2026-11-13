@@ -4,6 +4,7 @@ package umlp.generator.domain.decorator;
 
 import de.monticore.cd._symboltable.CDSymbolTables;
 import de.monticore.cd.methodtemplates.CD4C;
+import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cd4codebasis._ast.ASTCDMethodSignature;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
@@ -37,6 +38,10 @@ public class ObserverDecorator extends AbstractDecorator {
   public static final String MAYBE_NOTIFY_REMOVE_TEMPLATE = "umlp.observer.MaybeNotifyRemove";
   public static final String NOTIFY_TEMPLATE = "umlp.observer.Notify";
   public static final String MAYBE_NOTIFY_TEMPLATE = "umlp.observer.MaybeNotify";
+  public static final String NOTIFY_PUT_TEMPLATE = "umlp.observer.NotifyPut";
+  public static final String MAYBE_NOTIFY_PUT_TEMPLATE = "umlp.observer.MaybeNotifyPut";
+  public static final String NOTIFY_REKEY_TEMPLATE = "umlp.observer.NotifyRekey";
+  public static final String MAYBE_NOTIFY_REKEY_TEMPLATE = "umlp.observer.MaybeNotifyRekey";
 
   protected Collection<GenerationSummary> generationDetails = List.of();
 
@@ -121,11 +126,15 @@ public class ObserverDecorator extends AbstractDecorator {
         });
     addImport(observerInterface, attributes);
 
-    // Add Notify for list associations
+    // Add Notify for list and map associations
     CDSymbolTables.getAssociations(domainClass).stream()
         .filter(Predicate.not(GenService::isSymbolDerived))
-        .filter(GenService::isList)
+        .filter(GenService::isMultiValued)
         .forEach(a -> {
+          if (GenService.isMap(a)) {
+            addMapNotifyMethods(observerInterface, generationSummary, a, className);
+            return;
+          }
           generationSummary.addSignature(cd4C.addMethod(observerInterface,
                                                         NOTIFY_ADD_TEMPLATE,
                                                         a.getName(),
@@ -163,7 +172,7 @@ public class ObserverDecorator extends AbstractDecorator {
     // Add Notify for associations
     CDSymbolTables.getAssociations(domainClass).stream()
         .filter(Predicate.not(GenService::isSymbolDerived))
-        .filter(Predicate.not(GenService::isList))
+        .filter(Predicate.not(GenService::isMultiValued))
         .forEach(a -> {
           generationSummary.addSignature(cd4C.addMethod(observerInterface, NOTIFY_TEMPLATE, a.getName(), className, "long", false),
                                          NOTIFY_TEMPLATE);
@@ -183,6 +192,25 @@ public class ObserverDecorator extends AbstractDecorator {
   }
 
   protected void addImport(ASTCDType observerType, List<ASTCDAttribute> attributes) {
+  }
+
+  /**
+   * the GemMap of an attribute qualified association: values are put under a key and rekeyed when their
+   * qualifying attribute changes; removed like list elements (by gemId); there are no positions
+   */
+  protected void addMapNotifyMethods(ASTCDInterface observerInterface, GenerationSummary generationSummary,
+                                     ASTCDAssocSide a, String className) {
+    CD4C cd4C = getCD4C();
+    String keyType = QualifierKey.of(a).getStoredKeyType();
+    for (String template : List.of(NOTIFY_PUT_TEMPLATE, MAYBE_NOTIFY_PUT_TEMPLATE,
+                                   NOTIFY_REKEY_TEMPLATE, MAYBE_NOTIFY_REKEY_TEMPLATE)) {
+      generationSummary.addSignature(cd4C.addMethod(observerInterface, template, a.getName(), className, keyType),
+                                     template);
+    }
+    generationSummary.addSignature(cd4C.addMethod(observerInterface, NOTIFY_REMOVE_TEMPLATE, a.getName(),
+                                                  className, "long"), NOTIFY_REMOVE_TEMPLATE);
+    generationSummary.addSignature(cd4C.addMethod(observerInterface, MAYBE_NOTIFY_REMOVE_TEMPLATE, a.getName(),
+                                                  className, "long"), MAYBE_NOTIFY_REMOVE_TEMPLATE);
   }
 
   protected void addImportForImportedObservers(ASTCDType domainClass, ASTCDType observerType) {
