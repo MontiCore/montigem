@@ -3,7 +3,13 @@ export * from "./src/main/gui/mc/fenix/advanced/contenteditable.directive";
 export * from "./src/main/gui/mc/fenix/advanced/context.types";
 export * from "./src/main/gui/mc/fenix/advanced/ContextMenu";
 export * from "./src/main/gui/mc/fenix/advanced/GemMarkdown";
+export * from "./src/main/gui/mc/fenix/advanced/GemStatusIcon";
 export * from "./src/main/gui/mc/fenix/advanced/moveable.directive";
 export * from "./build/gui2java2ts/mc/fenix/advanced/Snackbar";
 export * from "./build/gui2java2ts/mc/fenix/advanced/ToastElement";
 export * from "./src/main/gui/mc/fenix/advanced/TouchWrapper.directive";
+
+export * from './build/gui2java2ts/mc/fenix/advanced/gemstatusicontypes/GemStatus';
+export * from './build/gui2java2ts/mc/fenix/advanced/gemstatusicontypes/GemStatusBuilder';
+export * from './build/gui2java2ts/mc/fenix/advanced/gemstatusicontypes/GemStatusDeSer';
+export * from './build/gui2java2ts/mc/fenix/advanced/gemstatusicontypes/GemStatusIconTypesDeSer';

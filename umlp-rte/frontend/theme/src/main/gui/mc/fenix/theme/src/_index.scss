@@ -7,6 +7,7 @@
 @import "./components/GemLoadingSpinner";
 @import "./components/GemAudio";
 @import "./components/GemIcon";
+@import "./components/GemStatusIcon";
 @import "./components/GemNavItem";
 @import "./components/GemNavList";
 @import "./components/GemMarkdown";
@@ -44,6 +45,7 @@
   @include loading-spinner-theme();
   @include gem-audio-theme();
   @include gem-image-theme();
+  @include gem-status-icon-theme();
   @include gem-nav-item-theme();
   @include gem-video-theme();
   @include gem-nav-list-theme();
