@@ -57,9 +57,8 @@ public class TestLoading extends AbstractLoadingTestsE2ETest {
 
 
     // PlayWright cannot handle long values as args
-    personGemIds.forEach(id ->
-      assertEquals(Boolean.TRUE,page.evaluate(isLoadedPersonFunction, id.intValue()))
-    );
+    personGemIds.forEach(id -> waitUntil(() -> Boolean.TRUE.equals(page.evaluate(isLoadedPersonFunction, id.intValue())),
+        "person " + id + " in the browser"));
 
     animalGemIds.forEach(id ->
         assertEquals(Boolean.FALSE,page.evaluate(isLoadedAnimalFunction,id.intValue()))
@@ -78,9 +77,9 @@ public class TestLoading extends AbstractLoadingTestsE2ETest {
     // We need this to ensure that all Client Request were answered from the Backend
     page.waitForLoadState(LoadState.NETWORKIDLE);
 
-    // Assert person was loaded
-    assertEquals(Boolean.TRUE,page.evaluate(isLoadedPersonFunction,
-        gemIdOfPersonWithAnimals.intValue()));
+    // Assert person was loaded (over the websocket, which NETWORKIDLE does not wait for)
+    waitUntil(() -> Boolean.TRUE.equals(page.evaluate(isLoadedPersonFunction, gemIdOfPersonWithAnimals.intValue())),
+        "person " + gemIdOfPersonWithAnimals + " in the browser");
 
     // Assert no other person was loaded
     // Fails because pet <-> owner is bidirectional
@@ -93,7 +92,8 @@ public class TestLoading extends AbstractLoadingTestsE2ETest {
     List<Long> attachedGemIds = LoadingTestsManager.getPersonSure(gemIdOfPersonWithAnimals).getPetList().stream().map(Animal::getGemId).toList();
     animalGemIds.forEach(id -> {
       if (attachedGemIds.contains(id)) {
-        assertEquals(Boolean.TRUE, page.evaluate(isLoadedAnimalFunction, id.intValue()), "Animal gemId=" + id + " was not loaded, " + attachedGemIds);
+        waitUntil(() -> Boolean.TRUE.equals(page.evaluate(isLoadedAnimalFunction, id.intValue())),
+            "Animal gemId=" + id + " was not loaded, " + attachedGemIds);
       }
       else {
         assertEquals(Boolean.FALSE, page.evaluate(isLoadedAnimalFunction, id.intValue()), "Animal gemId=" + id + " was loaded despite not being attached to " + attachedGemIds);
@@ -110,9 +110,8 @@ public class TestLoading extends AbstractLoadingTestsE2ETest {
     page.waitForLoadState(LoadState.NETWORKIDLE);
 
     // Assert animals were loaded
-    animalGemIds.forEach(id -> {
-      assertEquals(Boolean.TRUE,page.evaluate(isLoadedAnimalFunction,id.intValue()));
-    });
+    animalGemIds.forEach(id -> waitUntil(() -> Boolean.TRUE.equals(page.evaluate(isLoadedAnimalFunction, id.intValue())),
+        "animal " + id + " in the browser"));
 
     // Assert that animals are displayed
     assertThat(page.locator(GemText.selector())).hasCount(animalGemIds.size());
@@ -123,11 +122,10 @@ public class TestLoading extends AbstractLoadingTestsE2ETest {
     Log.info("Building new animal now.", this.getClass().getName());
     Long gemId = LoadingTestsManager.animalBuilder().name("animalName").legs(0).food(Set.of()).build().get().getGemId();
 
-    // Give client and server time to synchronize
-    page.waitForLoadState(LoadState.NETWORKIDLE);
-
-    // Assert that new animal was synchronized
-    assertEquals(Boolean.TRUE,page.evaluate(isLoadedAnimalFunction,gemId.intValue()));
+    // Assert that new animal was synchronized: the backend pushes it over the websocket, which NETWORKIDLE does not
+    // wait for
+    waitUntil(() -> Boolean.TRUE.equals(page.evaluate(isLoadedAnimalFunction, gemId.intValue())),
+        "animal " + gemId + " in the browser");
 
     // and is also displayed
     assertThat(page.locator(GemText.selector())).hasCount(animalGemIds.size() + 1);
