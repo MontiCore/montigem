@@ -2,7 +2,7 @@
 import {Component, ChangeDetectionStrategy,ElementRef, ViewChild, AfterViewInit, OnDestroy, HostBinding, Input} from '@angular/core';
 import {GemTimeSeriesChartComponent, config} from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemTimeSeriesChartComponent';
 import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
-import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
+import { isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import ApexCharts from 'apexcharts';
 import { TimeSeriesData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeriesData';
 import { TimeSeries } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeries';
@@ -45,6 +45,9 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
   // chosen in the settings menu
   public chartStyle: 'area' | 'line' = null;
   public legendSide: LegendSide = 'bottom';
+  public displayLegend = true;
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
 
   constructor(private hostElement: ElementRef) {
     super();
@@ -91,7 +94,7 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
       // distinguishable (a full-opacity area fill turns them into one blob)
       stroke: { curve: 'smooth', width: 2 },
       fill: this.fillFor(chartType),
-      legend: { position: this.legendSide },
+      legend: { show: this.displayLegend, position: this.legendSide },
       chart: {
         id: this.chartId,
         type: chartType,
@@ -473,11 +476,18 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
 
   public override setLegendPosition(position: LegendPosition | string) {
     const legendPosition = toLegendSide(position, this.legendSide);
-    super.setLegendPosition(toLegendPosition(legendPosition));
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
     this.legendSide = legendPosition;
     if (!this.chart) return;
-    this.options.legend = { position: legendPosition };
-    this.chart.updateOptions({ legend: { position: legendPosition } }, false, false);
+    this.options.legend = { show: this.displayLegend, position: legendPosition };
+    this.chart.updateOptions({ legend: this.options.legend }, false, false);
   }
 
   @Input()

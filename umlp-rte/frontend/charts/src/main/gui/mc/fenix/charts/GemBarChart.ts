@@ -10,7 +10,7 @@ import { GemChartOptions } from './GemChartOptions';
 import { PlotlyModule } from 'angular-plotly.js';
 import * as Plotly from 'plotly.js-dist-min';
 import { setupResizeObserver } from './ResizeObserverUtil';
-import { fitsSideLegend, topLegendFallback, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
+import { fitsSideLegend, topLegendFallback, isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemListUtil } from '@umlp/commonj2ts';
 
 PlotlyModule.plotlyjs = Plotly;
@@ -37,6 +37,8 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
   @ViewChild('outerContainer') outerContainer!: ElementRef;
 
   public legendSide: LegendSide = 'right';
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
   private resizeObserver!: ResizeObserver;
   private lastWidth: number = 0;
   // true while a side legend is shown above the plot because the chart is too narrow
@@ -326,7 +328,14 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
 
   public override setLegendPosition(position: LegendPosition | string) {
     const legendPosition = toLegendSide(position, this.legendSide);
-    super.setLegendPosition(toLegendPosition(legendPosition));
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
     this.legendSide = legendPosition;
     this.legendFallback = false;
     this.applyLegendPosition(legendPosition);
@@ -359,7 +368,10 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
     this._layout.showlegend = this.displayLegend;
     const baseMargin = { t: this.topMargin, b: this.bottomMargin, l: this.leftMargin, r: this.rightMargin };
 
-    if (legendPosition === 'top') {
+    if (!this.displayLegend) {
+      // no legend, so no space has to be reserved for it
+      this._layout.margin = baseMargin;
+    } else if (legendPosition === 'top') {
       this._layout.legend = { orientation: "h", yanchor: "bottom", y: 1.02, xanchor: "center", x: 0.5 };
       this._layout.margin = { ...baseMargin, t: this.topMargin + 40 };
     } else if (legendPosition === 'bottom') {

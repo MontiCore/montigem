@@ -6,13 +6,14 @@ import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   Test page for the legendPosition attribute of the charts: every chart with a
-  legend in every legend position.
+  legend in every legend position, including NONE (no legend).
 */
 page GemLegendPositionTest() {
   @GemColumn(rowGap = "40px", components = [
     legendLeft@LegendPositionCharts(position = LegendPosition.LEFT, title = "Legend LEFT"),
     legendTop@LegendPositionCharts(position = LegendPosition.TOP, title = "Legend TOP"),
     legendRight@LegendPositionCharts(position = LegendPosition.RIGHT, title = "Legend RIGHT"),
-    legendBottom@LegendPositionCharts(position = LegendPosition.BOTTOM, title = "Legend BOTTOM")
+    legendBottom@LegendPositionCharts(position = LegendPosition.BOTTOM, title = "Legend BOTTOM"),
+    legendNone@LegendPositionCharts(position = LegendPosition.NONE, title = "Legend NONE")
   ]);
 }

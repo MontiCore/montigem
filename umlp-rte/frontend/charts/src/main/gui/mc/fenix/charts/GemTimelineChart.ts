@@ -19,7 +19,7 @@ import { Timeline } from "../../../../../../build/gui2java2ts/mc/fenix/charts/ge
 import { GemListUtil } from '@umlp/commonj2ts';
 import { autoColors } from './colors';
 import { GemChartOptions } from './GemChartOptions';
-import { fitsSideLegend, topLegendFallback, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
+import { fitsSideLegend, topLegendFallback, isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { PlotlyModule } from 'angular-plotly.js';
 import * as Plotly from 'plotly.js-dist-min';
 import { setupResizeObserver } from './ResizeObserverUtil';
@@ -98,6 +98,8 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
 
   public displayLegend: boolean = true;
   public legendSide: LegendSide = 'right';
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
   private lastWidth: number = 0;
   // true while the right legend is shown above the plot because the chart is too narrow
   private legendFallback: boolean = false;
@@ -255,7 +257,14 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
     const requested = toLegendSide(position, this.legendSide);
     // no 'left' position: the lane labels of the y-axis occupy that side
     const legendPosition: LegendSide = requested === 'left' ? 'right' : requested;
-    super.setLegendPosition(toLegendPosition(legendPosition));
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
     this.legendSide = legendPosition;
     this.legendFallback = false;
     this.applyLegendPosition(legendPosition);

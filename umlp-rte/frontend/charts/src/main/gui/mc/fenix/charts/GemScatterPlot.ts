@@ -14,7 +14,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { config, GemScatterPlotComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemScatterPlotComponent';
 import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
-import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
+import { isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemScatterPlotAxis } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemscatterplottypes/GemScatterPlotAxis';
 import { GemScatterPlotData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemscatterplottypes/GemScatterPlotData';
 import { GemScatterPlotShape } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemscatterplottypes/GemScatterPlotShape';
@@ -60,6 +60,8 @@ export class GemScatterPlot extends GemScatterPlotComponent implements OnInit, A
 
   /** Current legend position. */
   public legendSide: LegendSide = 'bottom';
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
 
   private _rawData?: GemScatterPlotData;
   private _xAxisValue?: GemScatterPlotAxis;
@@ -127,7 +129,14 @@ export class GemScatterPlot extends GemScatterPlotComponent implements OnInit, A
 
   public override setLegendPosition(position: LegendPosition | string) {
     const legendPosition = toLegendSide(position, this.legendSide);
-    super.setLegendPosition(toLegendPosition(legendPosition));
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
     this.legendSide = legendPosition;
     this.applyLegendPosition(legendPosition);
     this.updatePlot();
@@ -312,7 +321,10 @@ export class GemScatterPlot extends GemScatterPlotComponent implements OnInit, A
     this._layout.showlegend = this.displayLegend;
     const baseMargin = { t: 30, b: 30, l: 30, r: 30 };
 
-    if (legendPosition === 'top') {
+    if (!this.displayLegend) {
+      // no legend, so no space has to be reserved for it
+      this._layout.margin = baseMargin;
+    } else if (legendPosition === 'top') {
       this._layout.legend = { orientation: 'h', yanchor: 'bottom', y: 1.02, xanchor: 'center', x: 0.5 };
       this._layout.margin = { ...baseMargin, t: 50 };
     } else if (legendPosition === 'bottom') {

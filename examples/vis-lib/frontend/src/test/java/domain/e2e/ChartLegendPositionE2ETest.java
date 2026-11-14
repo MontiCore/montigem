@@ -7,6 +7,7 @@ import com.microsoft.playwright.options.BoundingBox;
 import com.microsoft.playwright.options.WaitForSelectorState;
 import domain.test_infrastructure.AbstractDomainE2ETest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -19,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Checks that the legendPosition attribute places the legend of every chart on the
  * requested side and that the legend stays inside the chart.
  * Uses the page manual.GemLegendPositionTest, which shows every chart with a legend
- * once per legend position.
+ * once per legend position, and that NONE hides the legend.
  */
 public class ChartLegendPositionE2ETest extends AbstractDomainE2ETest {
 
@@ -60,6 +61,27 @@ public class ChartLegendPositionE2ETest extends AbstractDomainE2ETest {
       // the timeline chart has no legend on the left (the lane labels are there), it falls back to the right
       String expected = chart[0].equals("timelineChart") && position.equals("left") ? "right" : position;
       errors.addAll(checkLegend(page, section + " ." + chart[0], chart[1], chart[0], expected));
+    }
+    assertTrue(errors.isEmpty(), String.join("\n", errors));
+  }
+
+  @Test
+  void testLegendNoneHidesLegend(Page page) {
+    List<String> errors = new ArrayList<>();
+    for (String[] chart : CHARTS) {
+      Locator host = page.locator(".legendNone ." + chart[0]).first();
+      host.scrollIntoViewIfNeeded();
+      // wait until the chart itself is drawn, so that a legend would be there by now
+      host.locator("svg").first()
+          .waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.VISIBLE).setTimeout(15000));
+      page.waitForTimeout(500);
+      Locator legends = host.locator(chart[1]);
+      for (int i = 0; i < legends.count(); i++) {
+        if (legends.nth(i).isVisible()) {
+          errors.add(chart[0] + " (none): legend is visible");
+          break;
+        }
+      }
     }
     assertTrue(errors.isEmpty(), String.join("\n", errors));
   }

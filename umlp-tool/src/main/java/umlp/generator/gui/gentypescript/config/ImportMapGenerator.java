@@ -49,7 +49,9 @@ public class ImportMapGenerator {
     for (ASTCDType ast : cd.getCDDefinition().getCDInterfacesList()) {
       qNames.add(pkg + "." + ast.getName());
     }
-    String out = "cd_" + toFileName(tslib) + "_import.map";
+    // one file per class diagram: a library usually has several class diagrams, and a shared
+    // file would only keep the types of the class diagram generated last
+    String out = "cd_" + toFileName(tslib) + "_" + toFileName(pkg) + "_import.map";
     generatorEngine.generateNoA("umlp.GUI2ImportMap", Paths.get(out), tslib, qNames);
     Reporting.reportFileCreation(
         Paths.get(setup.getOutputDirectory().getPath(), out).toString());

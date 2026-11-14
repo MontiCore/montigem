@@ -88,7 +88,7 @@ export type LegendSide = 'left' | 'top' | 'right' | 'bottom';
 /**
  * Normalizes a legend position, given either as `LegendPosition` from the model (the generated enum is
  * numeric, values from the backend may also arrive as their name) or as a string from the
- * chart's configuration panel. Unknown or missing values keep the given fallback.
+ * chart's configuration panel. Unknown or missing values and `NONE` keep the given fallback.
  */
 export function toLegendSide(position: LegendPosition | string | null | undefined, fallback: LegendSide): LegendSide {
   if (position === null || position === undefined) {
@@ -97,6 +97,15 @@ export function toLegendSide(position: LegendPosition | string | null | undefine
   const name = typeof position === 'number' ? LegendPosition[position] : String(position);
   const side = name?.toLowerCase();
   return side === 'left' || side === 'top' || side === 'right' || side === 'bottom' ? side : fallback;
+}
+
+/** whether the legend position is `NONE`, i.e. the legend is hidden */
+export function isLegendNone(position: LegendPosition | string | null | undefined): boolean {
+  if (position === null || position === undefined) {
+    return false;
+  }
+  const name = typeof position === 'number' ? LegendPosition[position] : String(position);
+  return name?.toLowerCase() === 'none';
 }
 
 /** the `LegendPosition` matching a legend side */

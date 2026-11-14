@@ -17,6 +17,6 @@ component GemVennDiagram(
     GemVennDiagramData data,
     /** Whether the chart's configuration panel is shown. */
     boolean showConfig = false,
-    /** Position of the legend relative to the plot (default: RIGHT). */
+    /** Position of the legend relative to the plot (default: RIGHT). NONE hides the legend. */
     LegendPosition legendPosition
 )

@@ -14,7 +14,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { config, GemRadarChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemRadarChartComponent';
 import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
-import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
+import { isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemRadarChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemradarcharttypes/GemRadarChartData';
 import { GemListUtil } from '@umlp/commonj2ts';
 import { autoColors } from './colors';
@@ -61,6 +61,8 @@ export class GemRadarChart extends GemRadarChartComponent implements OnInit, Aft
 
   /** Current legend position. */
   public legendSide: LegendSide = 'bottom';
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
 
   private _rawData?: GemRadarChartData;
   private resizeObserver!: ResizeObserver;
@@ -295,7 +297,14 @@ export class GemRadarChart extends GemRadarChartComponent implements OnInit, Aft
 
   public override setLegendPosition(position: LegendPosition | string) {
     const legendPosition = toLegendSide(position, this.legendSide);
-    super.setLegendPosition(toLegendPosition(legendPosition));
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
     this.legendSide = legendPosition;
     this.applyLegendPosition(legendPosition);
     this.updatePlot();

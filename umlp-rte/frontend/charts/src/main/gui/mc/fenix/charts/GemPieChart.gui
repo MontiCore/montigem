@@ -19,6 +19,6 @@ component GemPieChart(
     Integer innerRadius,
     /** Whether the chart's configuration panel is shown. */
     boolean showConfig = false,
-    /** Position of the legend relative to the plot (default: BOTTOM). */
+    /** Position of the legend relative to the plot (default: BOTTOM). NONE hides the legend. */
     LegendPosition legendPosition
 )

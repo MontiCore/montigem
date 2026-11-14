@@ -9,9 +9,10 @@ classdiagram GemChartTypes {
 
   /**
    * Position of a chart's legend relative to the plot.
+   * NONE hides the legend.
    */
   public enum LegendPosition {
-    LEFT, TOP, RIGHT, BOTTOM;
+    LEFT, TOP, RIGHT, BOTTOM, NONE;
   }
 
 }

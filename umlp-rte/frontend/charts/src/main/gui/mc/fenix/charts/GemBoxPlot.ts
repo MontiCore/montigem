@@ -15,7 +15,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { config, GemBoxPlotComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemBoxPlotComponent';
 import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
-import { LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
+import { isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemBoxPlotData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemboxplottypes/GemBoxPlotData';
 import { autoColors } from './colors';
 import { GemChartOptions } from './GemChartOptions';
@@ -59,6 +59,8 @@ export class GemBoxPlot extends GemBoxPlotComponent implements OnInit, AfterView
   public displayLegend = true;
 
   public legendSide: LegendSide = 'right';
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
   private resizeObserver!: ResizeObserver;
   private lastWidth: number = 0;
   private lastHeight: number = 0;
@@ -350,12 +352,22 @@ export class GemBoxPlot extends GemBoxPlotComponent implements OnInit, AfterView
 
   public override setLegendPosition(position: LegendPosition | string) {
     const legendPosition = toLegendSide(position, this.legendSide);
-    super.setLegendPosition(toLegendPosition(legendPosition));
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
     this.legendSide = legendPosition;
     this._layout.showlegend = this.displayLegend;
     const baseMargin = { t: this.topMargin, b: this.bottomMargin, l: this.leftMargin, r: this.rightMargin };
 
-    if (legendPosition === 'top') {
+    if (!this.displayLegend) {
+      // no legend, so no space has to be reserved for it
+      this._layout.margin = baseMargin;
+    } else if (legendPosition === 'top') {
       this._layout.legend = { orientation: "h", yanchor: "bottom", y: 1.02, xanchor: "center", x: 0.5 };
       this._layout.margin = { ...baseMargin, t: this.topMargin + 40 };
     } else if (legendPosition === 'bottom') {

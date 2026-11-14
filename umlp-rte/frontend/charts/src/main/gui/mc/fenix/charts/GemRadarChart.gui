@@ -66,6 +66,6 @@ component GemRadarChart(
       Opacity of the fill color (0.0 to 1.0).
     */
     Optional<Double> opacity,
-    /** Position of the legend relative to the plot (default: BOTTOM). */
+    /** Position of the legend relative to the plot (default: BOTTOM). NONE hides the legend. */
     LegendPosition legendPosition
 )
