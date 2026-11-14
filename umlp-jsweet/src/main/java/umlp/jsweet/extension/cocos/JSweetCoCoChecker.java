@@ -166,6 +166,14 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
    * Checks the use of Java APIs that are not or only partially supported according to the User Guide
    * and issues corresponding warnings.
    */
+  /** sorted maps, whose order AsyncMap does not keep */
+  protected static final java.util.Set<String> SORTED_MAPS = java.util.Set.of(
+      "java.util.SortedMap",
+      "java.util.NavigableMap",
+      "java.util.TreeMap",
+      "java.util.concurrent.ConcurrentNavigableMap",
+      "java.util.concurrent.ConcurrentSkipListMap");
+
   protected void checkUnsupportedApis(Tree tree, Symbol.MethodSymbol methodSymbol) {
 
     if (methodSymbol == null) {
@@ -222,6 +230,13 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
           return;
         default:
       }
+    }
+
+    if (SORTED_MAPS.contains(ownerFqn)) {
+      Log.warn("0xEE012: " + ownerFqn + " is transpiled to AsyncMap, which keeps the insertion order: "
+              + "its keys are not sorted in transpiled code. Sort the keys explicitly where the order matters.",
+          getStartSourcePosition(getContext(),getCurrentPath().getCompilationUnit(),tree));
+      return;
     }
 
     if ("java.util.Objects".equals(ownerFqn)) {

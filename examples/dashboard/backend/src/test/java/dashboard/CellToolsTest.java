@@ -5,6 +5,7 @@ import de.monticore.symboltable.serialization.JsonPrinter;
 import de.monticore.symboltable.serialization.json.JsonObject;
 
 import dashboardmodule.CellTools;
+import dashboardmodule.LayoutTools;
 
 import chatmodule.ChatModuleManager;
 import chatmodule.MessageHistory;
@@ -70,7 +71,7 @@ class CellToolsTest extends DashboardMockTestSetup {
   @BeforeEach
   void setUp() {
     getBackend().activate();
-    view = DashboardModuleManager.viewConfigBuilder().vid(0).name("Current view").build().get();
+    view = DashboardModuleManager.viewConfigBuilder().vid(0).name("Current view").info("").build().get();
     tools = new CellTools(view);
   }
 
@@ -84,9 +85,9 @@ class CellToolsTest extends DashboardMockTestSetup {
 
   @Test
   void createsCellsWithStoredScriptDefaultOptionsAndNonoverlappingGeometry() {
-    ViewConfig other = DashboardModuleManager.viewConfigBuilder().vid(1).name("Other view").build().get();
-    assertTrue(tools.createCell("First chart", "PIE", PIE_SCRIPT).startsWith("Created cell"));
-    assertTrue(tools.createCell("Second chart", "PIE", PIE_SCRIPT).startsWith("Created cell"));
+    ViewConfig other = DashboardModuleManager.viewConfigBuilder().vid(1).name("Other view").info("").build().get();
+    assertTrue(tools.createCell("First chart", "Test info.", "PIE", PIE_SCRIPT).startsWith("Created cell"));
+    assertTrue(tools.createCell("Second chart", "Test info.", "PIE", PIE_SCRIPT).startsWith("Created cell"));
     assertEquals(2, view.getCellsList().size());
     CellConfig first = view.getCellsList().get(0);
     CellConfig second = view.getCellsList().get(1);
@@ -101,14 +102,41 @@ class CellToolsTest extends DashboardMockTestSetup {
   }
 
   @Test
+  void storesUpdatesAndCopiesTheInfoOfCellsAndViews() throws Exception {
+    CellConfig cell = pie();
+    assertEquals("Test info.", cell.getInfo());
+    assertEquals("Test info.", JsonParser.parseJsonObject(tools.getCell(cell.getGemId())).getStringMember("info"));
+
+    assertTrue(tools.updateCell(cell.getGemId(), "{'info':' Share of the tasks. '}".replace('\'', '"'))
+        .startsWith("Updated cell"));
+    assertEquals("Share of the tasks.", cell.getInfo());
+    assertEquals("Original", cell.getName());
+    assertTrue(tools.updateCell(cell.getGemId(), "{'info':' '}".replace('\'', '"')).startsWith("Invalid cell:"));
+    assertEquals("Share of the tasks.", cell.getInfo());
+
+    tools.duplicateCell(cell.getGemId(), "Copy");
+    assertEquals("Share of the tasks.", view.getCellsList().get(view.getCellsList().size() - 1).getInfo());
+
+    assertTrue(tools.setViewInfo(" Progress of the teams. ").startsWith("Updated info"));
+    assertEquals("Progress of the teams.", view.getInfo());
+    assertEquals("Progress of the teams.",
+        JsonParser.parseJsonObject(new LayoutTools(view).getCurrentLayout()).getStringMember("info"));
+    assertTrue(tools.setViewInfo("").startsWith("Invalid view info"));
+    assertEquals("Progress of the teams.", view.getInfo());
+    assertTrue(new CellTools(null).setViewInfo("Info").contains("No current"));
+  }
+
+  @Test
   void invalidRequestsDoNotAddCells() {
-    assertTrue(tools.createCell("Chart", "BAR", PIE_SCRIPT).contains("expected GemBarChartData"));
-    assertTrue(tools.createCell("Chart", "PIE", "broken;").startsWith("Interpreter error:"));
-    assertTrue(tools.createCell(" ", "PIE", PIE_SCRIPT).startsWith("Invalid cell:"));
-    assertTrue(tools.createCell("Chart", "FILTERABLE_TABLE", PIE_SCRIPT).contains("GemFilterableTableData"));
-    assertTrue(tools.createCell("Chart", "TILE", PIE_SCRIPT).startsWith("Unsupported visualization"));
+    assertTrue(tools.createCell("Chart", "Test info.", "BAR", PIE_SCRIPT).contains("expected GemBarChartData"));
+    assertTrue(tools.createCell("Chart", "Test info.", "PIE", "broken;").startsWith("Interpreter error:"));
+    assertTrue(tools.createCell(" ", "Test info.", "PIE", PIE_SCRIPT).startsWith("Invalid cell:"));
+    assertTrue(tools.createCell("Chart", " ", "PIE", PIE_SCRIPT).startsWith("Invalid cell:"));
+    assertTrue(tools.createCell("Chart", null, "PIE", PIE_SCRIPT).startsWith("Invalid cell:"));
+    assertTrue(tools.createCell("Chart", "Test info.", "FILTERABLE_TABLE", PIE_SCRIPT).contains("GemFilterableTableData"));
+    assertTrue(tools.createCell("Chart", "Test info.", "TILE", PIE_SCRIPT).startsWith("Unsupported visualization"));
     assertTrue(tools.checkInterpreterCode("PIE", "").startsWith("Interpreter error:"));
-    assertTrue(new CellTools(null).createCell("Chart", "PIE", PIE_SCRIPT).contains("No current"));
+    assertTrue(new CellTools(null).createCell("Chart", "Test info.", "PIE", PIE_SCRIPT).contains("No current"));
     assertTrue(view.getCellsList().isEmpty());
   }
 
@@ -123,6 +151,7 @@ class CellToolsTest extends DashboardMockTestSetup {
     JsonPrinter create = new JsonPrinter(true);
     create.beginObject();
     create.member("name", "Completed");
+    create.member("info", "Share of the completed tasks.");
     create.member("viz", "PIE");
     create.member("data", PIE_SCRIPT);
     create.endObject();
@@ -156,7 +185,7 @@ class CellToolsTest extends DashboardMockTestSetup {
         .people(Set.of(alice)).tasks(Set.of(task)).build().get();
     String script = TEAM_TABLE_SCRIPT;
 
-    assertTrue(tools.createCell("Teams", "FILTERABLE_TABLE", script).startsWith("Created cell"));
+    assertTrue(tools.createCell("Teams", "Test info.", "FILTERABLE_TABLE", script).startsWith("Created cell"));
     CellConfig cell = view.getCellsList().get(0);
     assertEquals(VizType.FILTERABLE_TABLE, cell.getViz());
     assertTrue(tools.getCell(cell.getGemId()).contains("\"options\":{\"columns\":[]}"));
@@ -180,7 +209,7 @@ class CellToolsTest extends DashboardMockTestSetup {
         .education(Education.MASTER).international(false).age(29)
         .statistics(DashboardManager.statisticsBuilder().build().get()).build().get();
 
-    assertTrue(tools.createCell("People", "FILTERABLE_TABLE", PEOPLE_TABLE_SCRIPT)
+    assertTrue(tools.createCell("People", "Test info.", "FILTERABLE_TABLE", PEOPLE_TABLE_SCRIPT)
         .startsWith("Created cell"));
     CellConfig cell = view.getCellsList().get(0);
     assertTrue(tools.getCell(cell.getGemId()).contains("\"options\":{\"columns\":[]}"));
@@ -209,7 +238,7 @@ class CellToolsTest extends DashboardMockTestSetup {
 
   @Test
   void genericTableExampleWorksWithoutApplicationData() throws IOException {
-    assertTrue(tools.createCell("Sample", "FILTERABLE_TABLE",
+    assertTrue(tools.createCell("Sample", "Test info.", "FILTERABLE_TABLE",
         exampleOfTheSkill("### Filterable table\n\n```java\n")).startsWith("Created cell"));
     var preview = JsonParser.parseJsonObject(tools.previewCell(view.getCells(0).getGemId()));
     assertEquals(2, preview.getIntegerMember("itemCount"));
@@ -284,7 +313,7 @@ class CellToolsTest extends DashboardMockTestSetup {
   }
 
   private CellConfig pie() {
-    assertTrue(tools.createCell("Original", "PIE", PIE_SCRIPT).startsWith("Created cell"));
+    assertTrue(tools.createCell("Original", "Test info.", "PIE", PIE_SCRIPT).startsWith("Created cell"));
     return view.getCellsList().get(view.getCellsList().size() - 1);
   }
 
@@ -399,7 +428,7 @@ class CellToolsTest extends DashboardMockTestSetup {
   void removesOnlyRequestedCurrentViewLinksAndValidatesWholeRequest() {
     CellConfig first = pie();
     CellConfig second = pie();
-    ViewConfig other = DashboardModuleManager.viewConfigBuilder().vid(1).name("Other").build().get();
+    ViewConfig other = DashboardModuleManager.viewConfigBuilder().vid(1).name("Other").info("").build().get();
     other.addCells(first);
     assertTrue(tools.removeCells(List.of(first.getGemId(), -1L)).startsWith("Invalid"));
     assertTrue(tools.removeCells(List.of(first.getGemId(), first.getGemId())).startsWith("Invalid"));
@@ -431,7 +460,7 @@ class CellToolsTest extends DashboardMockTestSetup {
   @Test
   void allNewToolsRejectCellsOutsideSelectedViewAndMissingViews() {
     CellConfig cell = pie();
-    ViewConfig other = DashboardModuleManager.viewConfigBuilder().vid(1).name("Other").build().get();
+    ViewConfig other = DashboardModuleManager.viewConfigBuilder().vid(1).name("Other").info("").build().get();
     for (CellTools scoped : List.of(new CellTools(other), new CellTools(null))) {
       assertFalse(scoped.getCell(cell.getGemId()).startsWith("{"));
       assertFalse(scoped.updateCell(cell.getGemId(), "{'name':'Wrong'}".replace('\'', '"')).startsWith("Updated"));

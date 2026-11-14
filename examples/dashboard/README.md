@@ -48,7 +48,7 @@ The chat UI displays user messages and final replies; internal exchanges are sep
 
 The chat has two tools for the view selected when a message is sent:
 
-- `getCurrentLayout` returns JSON with the view name/ID, the 12-column grid limits, and
+- `getCurrentLayout` returns JSON with the view name/ID and info, the 12-column grid limits, and
   every tile's ID, name, `x`, `y`, `width`, and `height` in grid units (not pixels).
 - `setCurrentLayout(tiles)` applies a complete list of placements for that view. Include
   every tile exactly once. Coordinates must be nonnegative integers, width and height
@@ -75,9 +75,11 @@ Two more tools let the assistant add charts:
 
 - `checkInterpreterCode(viz, data)` executes a script with the dashboard interpreter and returns
   parse, type, runtime, or incorrect return type errors so the assistant can repair it.
-- `createCell(name, viz, data)` validates the script again, creates the cell with default chart
+- `createCell(name, info, viz, data)` validates the script again, creates the cell with default chart
   options, and adds it to the selected view. New cells appear immediately below existing cells,
   with width 6 and height 4. The assistant can then rearrange them with the layout tools.
+  `info` concisely captures the intent of the cell (shown as tooltip of its info icon);
+  `setViewInfo(info)` does the same for the selected view, shown in its info dialog.
 
 Supported visualizations are `BAR`, `LINE`, `PIE`, `SCATTER`, `BOX`, `SPEED`, `NETWORK`, and `FILTERABLE_TABLE`.
 A `FILTERABLE_TABLE` cell computes typed columns (numbers, texts, or booleans), which can be sorted by clicking their

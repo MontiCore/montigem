@@ -5,13 +5,11 @@ import de.monticore.cd.methodtemplates.CD4C;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdmerge.CDMerge;
 import de.monticore.cdmerge.config.MergeParameter;
-import de.monticore.class2mc.Class2MCResolver;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.generating.templateengine.reporting.Reporting;
 import de.monticore.io.paths.MCPath;
 import de.monticore.ocl.ocl._ast.ASTOCLCompilationUnit;
 import de.monticore.ocl.util.SymbolTableUtil;
-import de.monticore.symbols.basicsymbols.BasicSymbolsMill;
 import de.monticore.symboltable.serialization.JsonPrinter;
 import de.se_rwth.commons.Names;
 import de.se_rwth.commons.logging.Log;
@@ -302,6 +300,9 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
   public final IOperation.ISimpleOperation<DataWithCDASTAndTool> create_pipe_recreate_st = data -> {
     data.setSymbolTable(data.getTool().recreateSymbolTable(data.getAST()));
   };
+  public final IOperation.ISimpleOperation<DataWithCDASTAndTool> create_pipe_run_afterTrafoCocos = data -> {
+    data.getTool().runAfterTrafoCoCos(data.getAST());
+  };
 
   <T extends DataWithCDASTAndTool> Pipeline<T> createPipe(Class<T> clazz) {
     Pipeline<DataWithCDASTAndTool> pipe = new Pipeline<>();
@@ -310,6 +311,7 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
     pipe.register("create_pipe_run_def_coco", create_pipe_run_def_coco);
     pipe.register("create_pipe_run_def_trafos", create_pipe_run_def_trafos);
     pipe.register("create_pipe_recreate_st", create_pipe_recreate_st);
+    pipe.register("create_pipe_run_afterTrafoCocos", create_pipe_run_afterTrafoCocos);
     return (Pipeline<T>) pipe;
   }
 

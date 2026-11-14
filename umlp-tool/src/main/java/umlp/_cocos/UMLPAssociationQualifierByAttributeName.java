@@ -10,19 +10,24 @@ import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types3.SymTypeRelations;
 import de.monticore.types3.util.WithinTypeBasicSymbolsResolver;
 
+import umlp.generator.domain.decorator.GenService;
+
 import java.util.Optional;
 
 
+/**
+ * The attribute that qualifies an attribute qualified association ({@code Owner [[attr]] -> Value}) has a type that
+ * can be a key: a primitive or String (GemValueMap) or a domain class (GemEntryMap). Optional, collection and array
+ * types are rejected as well, they would give a value object no key or several keys. That the attribute exists is
+ * checked by {@link UMLPAssociationQualifierAttributeExists}, the cardinality of a role that is used as qualifier by
+ * {@link UMLPAssociationQualifierKeyCardinality}.
+ */
 public class UMLPAssociationQualifierByAttributeName implements CDAssociationASTCDAssociationCoCo, CoCoTestable {
 
-  //TODO every coco should only check one thing and not two, even if they are similar
   public static final String TYPE_ERROR_CODE = "0xCDC68";
-  public static final String NO_ATTR_ERROR_CODE = "0xCDC69";
 
   public static final String TYPE_ERROR_MSG_FORMAT = " Qualified association with attribute %s " +
-      "has incompatible type, qualified associations only support numeric or string type qualifiers.";
-  public static final String NO_ATTR_ERROR_MSG_FORMAT = " Attribute %s of qualified association " +
-      "does not exist in class %s.";
+      "has incompatible type, qualified associations only support primitive, String or domain class attributes as qualifiers.";
 
   private final WithinTypeBasicSymbolsResolver resolver;
 
@@ -34,33 +39,42 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
   public void check(ASTCDAssociation assoc) {
     if (assoc.getLeft().isPresentCDQualifier() && assoc.getLeft().getCDQualifier()
         .isPresentByAttributeName()) {
-      checkTypeExists(assoc.getLeft(), assoc.getRight());
+      checkType(assoc.getLeft(), assoc.getRight());
 
     }else if (assoc.getRight().isPresentCDQualifier() && assoc.getRight().getCDQualifier()
         .isPresentByAttributeName()) {
-      checkTypeExists(assoc.getRight(), assoc.getLeft());
+      checkType(assoc.getRight(), assoc.getLeft());
     }
   }
 
-  private void checkTypeExists(ASTCDAssocSide qSide, ASTCDAssocSide attrSide) {
+  private void checkType(ASTCDAssocSide qSide, ASTCDAssocSide attrSide) {
     SymTypeExpression ste = TypeCheck3.symTypeFromAST(attrSide.getMCQualifiedType());
     final String attributeName = qSide.getCDQualifier().getByAttributeName();
     Optional<SymTypeExpression> expr = this.resolver.resolveVariable(ste, attributeName,
         BasicAccessModifier.ALL_INCLUSION, x -> true);
-    if (expr.isPresent()) {
-      if (!SymTypeRelations.isNumericType(expr.get()) && !SymTypeRelations.isString(expr.get())){
-        logError(qSide.getCDQualifier().get_SourcePositionStart(),
-                 TYPE_ERROR_CODE,
-                 TYPE_ERROR_MSG_FORMAT,
-                 attributeName);
-      }
-    } else {
+    if (expr.isPresent() && !isValueKey(expr.get()) && !isDomainKey(expr.get())) {
       logError(qSide.getCDQualifier().get_SourcePositionStart(),
-               NO_ATTR_ERROR_CODE,
-               NO_ATTR_ERROR_MSG_FORMAT,
-               attributeName,
-               attrSide.getMCQualifiedType().getMCQualifiedName());
+               TYPE_ERROR_CODE,
+               TYPE_ERROR_MSG_FORMAT,
+               attributeName);
     }
+    // a qualifier that is no attribute is a role (a domain object key) or does not exist
+    // (UMLPAssociationQualifierAttributeExists)
+  }
+
+  /**
+   * primitive (MontiCore typecheck, String included) qualifiers are keys of a GemValueMap
+   */
+  public static boolean isValueKey(SymTypeExpression type) {
+    return type.isPrimitive() || SymTypeRelations.isNumericType(type)
+        || SymTypeRelations.isBoolean(type) || SymTypeRelations.isString(type);
+  }
+
+  /**
+   * domain class qualifiers are keys of a GemEntryMap
+   */
+  public static boolean isDomainKey(SymTypeExpression type) {
+    return type.hasTypeInfo() && GenService.isDomainType(type.getTypeInfo()) && !GenService.isCDEnum(type);
   }
 
   @Override

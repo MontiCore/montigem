@@ -1,0 +1,29 @@
+/* (c) https://github.com/MontiCore/monticore */
+package test_gemmap;
+
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemButton;
+
+import LoadingTests.Course;
+import LoadingTests.Student;
+import LoadingTests.Tutor;
+import LoadingTests.Enrollment;
+
+// Attribute qualified associations (GemMaps) cannot be accessed in GUI models (CoCo 0x00032):
+// the buttons run the scenarios in the hwc, which shows what it read in the browser in result
+page TestGemMap(Course c, Student s, Tutor t, Enrollment e, String result = "loaded") {
+  resultText@GemText(value = result);
+
+  putByOwner@GemButton(label = "Put By Owner", leftClick = putByOwner(c, s));
+  putByMap@GemButton(label = "Put By Map", leftClick = putByMap(c, s));
+  removeByOwner@GemButton(label = "Remove By Owner", leftClick = removeByOwner(c, s));
+  removeByMap@GemButton(label = "Remove By Map", leftClick = removeByMap(c, s));
+  removeByKeySet@GemButton(label = "Remove By KeySet", leftClick = removeByKeySet(c, s));
+  read@GemButton(label = "Read", leftClick = read(c));
+  rekey@GemButton(label = "Rekey", leftClick = rekey(c, s));
+  putTutor@GemButton(label = "Put Tutor", leftClick = putTutor(c, t));
+  rekeyTutor@GemButton(label = "Rekey Tutor", leftClick = rekeyTutor(c, t));
+  putEnrollment@GemButton(label = "Put Enrollment", leftClick = putEnrollment(c, e, s));
+  buildCourse@GemButton(label = "Build Course", leftClick = buildCourse(s));
+  clear@GemButton(label = "Clear", leftClick = clear(c));
+}

@@ -14,6 +14,11 @@ Packages are stored in the directory given by `-PlocalNpmRepoDir=<dir>`, which i
 (the CI pipeline uses it to hand the packages to downstream jobs).
 Without `localNpmRepoDir`, only a registry that already runs can be used. If one already answers at `http://127.0.0.1:4873/` (e.g. the docker one below), it is used and left running.
 
+The port can be changed with `-PlocalNpmRepoPort=<port>`, it is then also used in the generated `.npmrc` files.
+Builds that run at the same time on one host and each bring their own `localNpmRepoDir` need different ports
+(e.g. CI jobs that share the network of their host), otherwise they publish to and install from the registry of each other.
+With both properties set, a registry that already answers at the port is therefore an error instead of being used.
+
 ## Start and stop with docker
 
 From this directory:

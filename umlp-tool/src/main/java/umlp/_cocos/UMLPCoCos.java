@@ -3,8 +3,11 @@
 package umlp._cocos;
 
 import de.monticore.cd4analysis.cocos.CD4AnalysisCoCosDelegator;
+import de.monticore.cdassociation._cocos.CDAssociationASTCDAssociationCoCo;
 import de.monticore.cdassociation.cocos.ebnf.RoleAndFieldNamesUnique;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
+import de.monticore.cdbasis._cocos.CDBasisASTCDClassCoCo;
+import de.monticore.cdinterfaceandenum._cocos.CDInterfaceAndEnumASTCDInterfaceCoCo;
 
 /**
  * Collection of all CoCos of the UMLP language
@@ -18,8 +21,26 @@ public class UMLPCoCos {
     checker.checkAll(ast);
   }
 
+  /**
+   * This method runs CoCo checks that appear the default trafos like UMLSetDefaultsTrafo
+   */
+  public static void checkAfterTrafo(ASTCDCompilationUnit ast) {
+    UMLPCoCoChecker checker = new UMLPCoCoChecker();
+    addAllCDCoCosAfterTrafo(checker);
+    checker.checkAll(ast);
+  }
+
   public static void addAllUMLPCoCos(UMLPCoCoChecker checker){
     // TODO add cocos, once these are implemented
+  }
+
+  public static void addAllCDCoCosAfterTrafo(UMLPCoCoChecker checker) {
+    checker.addChecker(new CD4AnalysisCoCosDelegator().getCheckerForAllCoCos());
+    // CoCos for generation after Trafo
+
+    checker.addCoCo((CDBasisASTCDClassCoCo) new PostgresTableNameLengthCoCo());
+    checker.addCoCo((CDInterfaceAndEnumASTCDInterfaceCoCo) new PostgresTableNameLengthCoCo());
+    checker.addCoCo((CDAssociationASTCDAssociationCoCo) new PostgresTableNameLengthCoCo());
   }
 
   public static void addAllCDCoCos(UMLPCoCoChecker checker){
@@ -29,7 +50,11 @@ public class UMLPCoCos {
     checker.addCoCo(new UMLPCheckDiagramName());
     checker.addCoCo(new UMLPNoCyclicCDImports());
     checker.addCoCo(new UMLPAssociationQualifierByType());
+    checker.addCoCo(new UMLPAssociationQualifierAttributeExists());
     checker.addCoCo(new UMLPAssociationQualifierByAttributeName());
+    checker.addCoCo(new UMLPAssociationQualifierUnidirectional());
+    checker.addCoCo(new UMLPAssociationQualifierKeyCardinality());
+    checker.addCoCo(new UMLPAssociationQualifierTargetCardinality());
     checker.addCoCo(new UMLPAssociationCardinality());
     checker.addCoCo(new UMLPCheckAttributeModifier());
     checker.addCoCo(new UMLPAttributeTypeIsNotJavaUtilSet());

@@ -5,6 +5,8 @@ import mc.fenix.networkgraph.NetworkGraphTypes.GraphNode;
 import mc.fenix.networkgraph.NetworkGraphTypes.GraphEdge;
 import mc.fenix.networkgraph.NetworkGraphTypes.NodePos;
 import mc.fenix.networkgraph.NetworkGraphTypes.Graph;
+import mc.fenix.networkgraph.NetworkGraphTypes.InitialGraphLayout;
+import mc.fenix.networkgraph.NetworkGraphTypes.ComplexGraphLayout;
 
 /**
   GemGraph is a graphical representation of a network. It is composed of nodes and
@@ -26,10 +28,10 @@ component GemGraph(
   boolean showInformation=true,
   /** Keys of the node/edge metrics that can be selected for coloring/filtering. */
   List<String> metricKeys,
-  /** Initial layout configuration used to arrange the graph. Use type `InitialGraphLayoutConfiguration` or `null`. */
-  Object initialLayout = null,
-  /** Advanced layout configuration for more complex layouting strategies. Use type `ComplexGraphLayoutConfiguration` or `null`. */
-  Object complexLayout = null,
+  /** Initial layout used to arrange the graph, e.g., circular or hierarchical, see `InitialGraphLayout`. */
+  InitialGraphLayout initialLayout = null,
+  /** Complex layout that refines the positions of the initial layout, e.g., force-directed, see `ComplexGraphLayout`. */
+  ComplexGraphLayout complexLayout = null,
   /** Callback that is executed on each iteration of the layout algorithm. */
   Event<Integer> layoutIteration,
   /** Callback that is executed once with the final node positions after layouting. */

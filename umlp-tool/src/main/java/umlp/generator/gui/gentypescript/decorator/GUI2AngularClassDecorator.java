@@ -84,7 +84,7 @@ public class GUI2AngularClassDecorator extends GUI2ClassDecorator implements GUI
     addDestroy();
     addConstructor();
     if(!isRTELibrary) {
-      addImportString("import { IUMLPList,AsyncList } from '@umlp/commonj2ts';");
+      addImportString("import { IUMLPList,AsyncList,IUMLPMap } from '@umlp/commonj2ts';");
     } else {
       addImportString("import { IUMLPList, GemListUtil } from '@umlp/commonj2ts';");
     }

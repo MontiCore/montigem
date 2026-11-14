@@ -3,6 +3,7 @@ package de.montigem.gradle.specific.integrationtesting;
 
 import com.github.gradle.node.NodeExtension;
 import com.github.gradle.node.variant.VariantComputer;
+import de.montigem.gradle.specific.CreateNpmrcTask;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.file.Directory;
@@ -21,6 +22,8 @@ import java.io.IOException;
  * Tasks that need the registry are connected with {@link #requiredBy(Project, TaskProvider)}.
  * The storage directory must be given with the gradle property <code>localNpmRepoDir</code>,
  * unless a registry is already running.
+ * The port is 4873, unless the gradle property <code>localNpmRepoPort</code> is set. With both
+ * properties the registry is exclusive to this build: one that already runs at the port is an error.
  */
 public abstract class StartLocalNpmRegistryTask extends DefaultTask {
 
@@ -69,6 +72,8 @@ public abstract class StartLocalNpmRegistryTask extends DefaultTask {
     Provider<LocalNpmRegistryService> service = project.getGradle().getSharedServices()
         .registerIfAbsent(SERVICE_NAME, LocalNpmRegistryService.class, spec -> {
           spec.getParameters().getStorageDir().set(storage);
+          spec.getParameters().getPort().set(CreateNpmrcTask.localNpmPort(project));
+          spec.getParameters().getPortIsExplicit().set(CreateNpmrcTask.hasLocalNpmPort(project));
           spec.getParameters().getToolDir().set(localNpmDir.map(dir -> dir.dir("tool")));
           spec.getParameters().getNodeExecutable().set(nodeExec);
           spec.getParameters().getNpmExecutable().set(npmExec);

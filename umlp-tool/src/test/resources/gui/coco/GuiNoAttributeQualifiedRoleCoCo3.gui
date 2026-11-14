@@ -1,0 +1,13 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+package coco;
+
+import packaged.QualifiedDomain.Directory;
+import packaged.QualifiedDomain.Member;
+import util.I;
+
+component GuiNoAttributeQualifiedRoleCoCo3(Directory d) {
+  @iterate(Member m : d.byLogin) {
+    @I(i = m.number);
+  }
+}

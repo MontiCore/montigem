@@ -3,6 +3,7 @@ package de.montigem.gradle.specific;
 
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.Project;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
@@ -23,7 +24,14 @@ import java.util.Optional;
  */
 abstract public class CreateNpmrcTask extends DefaultTask {
 
-  public static final String LOCAL_NPM_REPOSITORY = "http://127.0.0.1:4873/";
+  /** Port of the local npm repository, unless the gradle property <code>localNpmRepoPort</code> is set. */
+  public static final int DEFAULT_LOCAL_NPM_PORT = 4873;
+  /**
+   * Gradle property with the port of the local npm repository, e.g. <code>-PlocalNpmRepoPort=24873</code>.
+   * Builds that run at the same time on one host (CI jobs sharing the network of their host) need
+   * different ports, otherwise they would publish to and install from the registry of each other.
+   */
+  public static final String LOCAL_NPM_PORT_PROPERTY = "localNpmRepoPort";
   public static final String NEXUS_NPM_REPOSITORY =
       "https://nexus.se.rwth-aachen.de/repository/montigem-frontendrte-snapshots/";
 
@@ -34,7 +42,46 @@ abstract public class CreateNpmrcTask extends DefaultTask {
     getGitignore().convention(getProject().getObjects().fileProperty().fileValue(getProject().file(".gitignore")));
     getUnscoped().convention(false);
     getUseLocalNpmRepo().convention(false);
+    getLocalNpmRepository().convention(getProject().provider(() -> localNpmRepository(getProject())));
   }
+
+  /** @return whether the port of the local npm repository is given by the gradle property */
+  public static boolean hasLocalNpmPort(Project project) {
+    Object port = project.findProperty(LOCAL_NPM_PORT_PROPERTY);
+    return port != null && !port.toString().isBlank();
+  }
+
+  /** @return the port of the local npm repository of this build */
+  public static int localNpmPort(Project project) {
+    if (!hasLocalNpmPort(project)) {
+      return DEFAULT_LOCAL_NPM_PORT;
+    }
+    String value = project.findProperty(LOCAL_NPM_PORT_PROPERTY).toString().trim();
+    try {
+      int port = Integer.parseInt(value);
+      if (port >= 1 && port <= 65535) {
+        return port;
+      }
+    }
+    catch (NumberFormatException e) {
+      // reported below
+    }
+    throw new GradleException("-P" + LOCAL_NPM_PORT_PROPERTY + " must be a port (1-65535), but is '" + value + "'");
+  }
+
+  /** @return the URL of the local npm repository at the given port, e.g. http://127.0.0.1:4873/ */
+  public static String localNpmRepository(int port) {
+    return "http://127.0.0.1:" + port + "/";
+  }
+
+  /** @return the URL of the local npm repository of this build */
+  public static String localNpmRepository(Project project) {
+    return localNpmRepository(localNpmPort(project));
+  }
+
+  /** Only an input: the file has to be written again if the port of the local npm repository changes. */
+  @Input
+  public abstract Property<String> getLocalNpmRepository();
 
   @OutputFile
   public abstract RegularFileProperty getNpmrcFile();
@@ -86,8 +133,9 @@ abstract public class CreateNpmrcTask extends DefaultTask {
    */
   public static String getNpmrcContent(
       Project project, boolean unscoped, boolean useLocalNpmRepo) {
+    String localNpmRepository = localNpmRepository(project);
     if (useLocalNpmRepo && unscoped) {
-      return "registry=" + LOCAL_NPM_REPOSITORY + "\n";
+      return "registry=" + localNpmRepository + "\n";
     }
 
     Optional<String> encodedAuthData = Optional.empty();
@@ -100,9 +148,9 @@ abstract public class CreateNpmrcTask extends DefaultTask {
 
     if (useLocalNpmRepo) {
       return "@monticore:registry=" + NEXUS_NPM_REPOSITORY + "\n" +
-          "@umlp:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
+          "@umlp:registry=" + localNpmRepository + "\n" +
           // npm libraries of the MontiGem modules (e.g., @montigem/dashboard)
-          "@montigem:registry=" + LOCAL_NPM_REPOSITORY + "\n" +
+          "@montigem:registry=" + localNpmRepository + "\n" +
           encodedAuthData.map(auth -> "@monticore:_auth=\"" + auth + "\"").orElse("");
     }
 

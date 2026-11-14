@@ -24,7 +24,7 @@ public class LayoutTools {
   /** Coordinates and dimensions are integral GridStack units, not pixels. */
   public record TilePlacement(Long id, Integer x, Integer y, Integer width, Integer height) {}
 
-  @Tool("Returns the current view's layout as JSON: viewId, name, columns=12, minWidth=3, minHeight=3, "
+  @Tool("Returns the current view's layout as JSON: viewId, name, info (intent of the view), columns=12, minWidth=3, minHeight=3, "
       + "and tiles with id, name, x, y, width, height. "
       + "Call for layout questions and before rearranging tiles. Coordinates start at zero.")
   public String getCurrentLayout() {
@@ -35,6 +35,7 @@ public class LayoutTools {
     printer.beginObject();
     printer.member("viewId", view.getGemId());
     printer.member("name", view.getName());
+    printer.member("info", view.getInfo());
     printer.member("columns", 12);
     printer.member("minWidth", 3);
     printer.member("minHeight", 3);

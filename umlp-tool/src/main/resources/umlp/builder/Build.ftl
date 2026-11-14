@@ -12,7 +12,7 @@ if (!buildFinished) {
   }
 
 <#list assocList as assoc>
-    <#if genService.isList(assoc)>
+    <#if genService.isMultiValued(assoc)>
       this._${assoc.getName()}.build();
     <#else>
     {
