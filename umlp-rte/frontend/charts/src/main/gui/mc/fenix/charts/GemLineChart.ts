@@ -3,6 +3,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, Input, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemLineChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemLineChartComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+import { isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemLineChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemlinecharttypes/GemLineChartData';
 import { autoColors } from './colors';
 import { GemChartOptions } from './GemChartOptions';
@@ -41,7 +43,9 @@ export class GemLineChart extends GemLineChartComponent implements OnInit, After
   public labels: string[] = [];
   public plotlyData: any[] = [];
   public displayLegend = true;
-  public legendPosition: string = 'right';
+  public legendSide: LegendSide = 'right';
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
   public _enableBackgroundColor = false;
 
   public _maxValue: number | undefined = undefined;
@@ -175,7 +179,7 @@ export class GemLineChart extends GemLineChartComponent implements OnInit, After
 
   public ngOnInit(): void {
     super.ngOnInit();
-    this.applyLegendPosition(this.legendPosition);
+    this.applyLegendPosition(this.legendSide);
     this.updateAxisBounds();
   }
 
@@ -189,8 +193,17 @@ export class GemLineChart extends GemLineChartComponent implements OnInit, After
     }
   }
 
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
+    this.legendSide = legendPosition;
     this.applyLegendPosition(legendPosition);
     this.updatePlot();
     this.cdr.detectChanges();
@@ -269,7 +282,10 @@ export class GemLineChart extends GemLineChartComponent implements OnInit, After
     this._layout.showlegend = this.displayLegend;
     const baseMargin = { t: 30, b: 55, l: 70, r: 40 }; // Keep consistent with default margin
 
-    if (legendPosition === 'top') {
+    if (!this.displayLegend) {
+      // no legend, so no space has to be reserved for it
+      this._layout.margin = baseMargin;
+    } else if (legendPosition === 'top') {
       this._layout.legend = { orientation: 'h', yanchor: 'bottom', y: 1.02, xanchor: 'center', x: 0.5 };
       this._layout.margin = { ...baseMargin, t: 70 };
     } else if (legendPosition === 'bottom') {

@@ -2,6 +2,7 @@
 package mc.fenix.charts;
 
 import mc.fenix.charts.GemLineChartTypes.GemLineChartData;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   A line chart is a graphical representation to describe the data changes over a
@@ -24,5 +25,7 @@ component GemLineChart(
   /** Minimum value shown on the value axis. */
   Integer minValue,
   /** Whether the chart's configuration panel is shown. */
-  boolean showConfig = false
+  boolean showConfig = false,
+  /** Position of the legend relative to the plot (default: RIGHT). NONE hides the legend. */
+  LegendPosition legendPosition
 )

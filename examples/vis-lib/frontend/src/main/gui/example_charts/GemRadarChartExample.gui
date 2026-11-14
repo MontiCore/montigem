@@ -10,6 +10,7 @@ import mc.fenix.basic.GemText;
 import mc.fenix.input.GemCheckBoxInput;
 import mc.fenix.input.GemRangeInput;
 import common.ExamplePage;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemRadarChartExample(
   List<Person> persons,
@@ -45,6 +46,7 @@ page GemRadarChartExample(
                   height = "100%",
                   components = [
                     radarchart@GemRadarChart(
+                      legendPosition = LegendPosition.BOTTOM,
                       data = getData(),
                       fill = true,
                       stepSize = 1.0,

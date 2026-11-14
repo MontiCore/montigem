@@ -2,6 +2,7 @@
 package mc.fenix.charts;
 
 import mc.fenix.charts.GemVennDiagramTypes.GemVennDiagramData;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   A Venn (Euler) diagram is a diagram style that shows the logical relation between
@@ -15,5 +16,7 @@ component GemVennDiagram(
     /** The sets and their overlaps to be displayed in the diagram. */
     GemVennDiagramData data,
     /** Whether the chart's configuration panel is shown. */
-    boolean showConfig = false
+    boolean showConfig = false,
+    /** Position of the legend relative to the plot (default: RIGHT). NONE hides the legend. */
+    LegendPosition legendPosition
 )

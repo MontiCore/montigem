@@ -1,0 +1,56 @@
+/* (c) https://github.com/MontiCore/monticore */
+package manual;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemText;
+import mc.fenix.charts.GemBarChart;
+import mc.fenix.charts.GemBoxPlot;
+import mc.fenix.charts.GemLineChart;
+import mc.fenix.charts.GemPieChart;
+import mc.fenix.charts.GemRadarChart;
+import mc.fenix.charts.GemScatterPlot;
+import mc.fenix.charts.GemSunburstChart;
+import mc.fenix.charts.GemTimeSeriesChart;
+import mc.fenix.charts.GemTimelineChart;
+import mc.fenix.charts.GemVennDiagram;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
+
+/**
+  All charts with a legend, each with the given legend position.
+*/
+component LegendPositionCharts(LegendPosition position, String title) {
+  @GemColumn(rowGap = "20px", components = [
+    @GemText(value = title, size = "1.5rem", weight = "bold", height = "auto"),
+
+    @GemColumn(height = "350px", components = [
+      barChart@GemBarChart(data = computeBarData(), legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      boxPlot@GemBoxPlot(data = computeBoxPlotData(), legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      lineChart@GemLineChart(data = computeLineData(), legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      pieChart@GemPieChart(data = computePieData(), legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      radarChart@GemRadarChart(data = computeRadarData(), width = "100%", height = "100%", legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      scatterPlot@GemScatterPlot(data = computeScatterData(), legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      sunburstChart@GemSunburstChart(data = computeSunburstData(), legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      timeSeriesChart@GemTimeSeriesChart(data = computeTimeSeriesData(), hideLiveDataToggle = true, height = "100%", legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      timelineChart@GemTimelineChart(data = computeTimelineData(), height = "100%", legendPosition = position)
+    ]),
+    @GemColumn(height = "350px", components = [
+      vennDiagram@GemVennDiagram(data = computeVennData(), legendPosition = position)
+    ])
+  ]);
+}

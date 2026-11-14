@@ -111,7 +111,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "GemScatterPlotTest", target = "/manual/GemScatterPlotTest");
         @GemNavItem(title = "GemVennDiagramTest", target = "/manual/GemVennDiagramTest");
         @GemNavItem(title = "GemGraphTest", target = "/manual/GemGraphTest");
-        @GemNavItem(title = "GemCardTest", target = "/manual/GemCardTest");
+        @GemNavItem(title = "GemLegendPositionTest", target = "/manual/GemLegendPositionTest");
       },
 
       @guard(activeCategory == "Other") {

@@ -1,5 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+
 // Estimates the size of a Plotly legend before it is rendered, so that a chart can decide
 // whether a legend next to the plot still fits into its container.
 
@@ -79,4 +81,34 @@ export function verticalLegendWidth(names: string[]): number {
 /** whether a vertical legend fits next to the plot of a chart with the given width */
 export function fitsSideLegend(names: string[], chartWidth: number): boolean {
   return verticalLegendWidth(names) <= chartWidth * MAX_SIDE_LEGEND_SHARE;
+}
+
+export type LegendSide = 'left' | 'top' | 'right' | 'bottom';
+
+/**
+ * Normalizes a legend position, given either as `LegendPosition` from the model (the generated enum is
+ * numeric, values from the backend may also arrive as their name) or as a string from the
+ * chart's configuration panel. Unknown or missing values and `NONE` keep the given fallback.
+ */
+export function toLegendSide(position: LegendPosition | string | null | undefined, fallback: LegendSide): LegendSide {
+  if (position === null || position === undefined) {
+    return fallback;
+  }
+  const name = typeof position === 'number' ? LegendPosition[position] : String(position);
+  const side = name?.toLowerCase();
+  return side === 'left' || side === 'top' || side === 'right' || side === 'bottom' ? side : fallback;
+}
+
+/** whether the legend position is `NONE`, i.e. the legend is hidden */
+export function isLegendNone(position: LegendPosition | string | null | undefined): boolean {
+  if (position === null || position === undefined) {
+    return false;
+  }
+  const name = typeof position === 'number' ? LegendPosition[position] : String(position);
+  return name?.toLowerCase() === 'none';
+}
+
+/** the `LegendPosition` matching a legend side */
+export function toLegendPosition(side: LegendSide): LegendPosition {
+  return LegendPosition[side.toUpperCase() as keyof typeof LegendPosition];
 }

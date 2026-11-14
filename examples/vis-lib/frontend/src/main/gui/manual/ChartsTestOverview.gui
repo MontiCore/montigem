@@ -19,6 +19,7 @@ import manual.GemSunburstChartTest;
 import manual.GemTimelineChartTest;
 import manual.GemTimeSeriesChartTest;
 import manual.GemVennDiagramTest;
+import manual.GemLegendPositionTest;
 
 page ChartsTestOverview() {
   @GemColumn(
@@ -46,7 +47,8 @@ page ChartsTestOverview() {
             @ComponentCard(title = "Time Series Test", icon = "timeline", description = "Test scenarios for Time Series Charts.", click = navigate(@GemTimeSeriesChartTest())),
             @ComponentCard(title = "Box Plot Test", icon = "candlestick_chart", description = "Test scenarios for Box Plots.", click = navigate(@GemBoxPlotTest())),
             @ComponentCard(title = "Bullet Chart Test", icon = "linear_scale", description = "Test scenarios for Bullet Charts.", click = navigate(@GemBulletChartTest())),
-            @ComponentCard(title = "Candlestick Test", icon = "waterfall_chart", description = "Test scenarios for Candlestick Charts.", click = navigate(@GemCandlestickChartTest()))
+            @ComponentCard(title = "Candlestick Test", icon = "waterfall_chart", description = "Test scenarios for Candlestick Charts.", click = navigate(@GemCandlestickChartTest())),
+            @ComponentCard(title = "Legend Position Test", icon = "legend_toggle", description = "Every chart with a legend in every legend position.", click = navigate(@GemLegendPositionTest()))
         ]
       )
     ]

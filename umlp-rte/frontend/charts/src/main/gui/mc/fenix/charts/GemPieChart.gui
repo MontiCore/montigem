@@ -2,6 +2,7 @@
 package mc.fenix.charts;
 
 import mc.fenix.charts.GemPieChartTypes.GemPieChartData;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   A pie chart, also called circle chart, looks like a circle, which is divided into
@@ -17,5 +18,7 @@ component GemPieChart(
     /** Radius of the inner hole in pixels; a value greater than 0 turns the pie chart into a donut chart. */
     Integer innerRadius,
     /** Whether the chart's configuration panel is shown. */
-    boolean showConfig = false
+    boolean showConfig = false,
+    /** Position of the legend relative to the plot (default: BOTTOM). NONE hides the legend. */
+    LegendPosition legendPosition
 )

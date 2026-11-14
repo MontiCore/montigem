@@ -4,10 +4,12 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemPieChart;
 import common.ExamplePage;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemPieChartExample(List<Person> persons) {
   @ExamplePage(
     component = chart@GemPieChart(
+      legendPosition = LegendPosition.BOTTOM,
       data = null,
       innerRadius = 10,
       showConfig = true

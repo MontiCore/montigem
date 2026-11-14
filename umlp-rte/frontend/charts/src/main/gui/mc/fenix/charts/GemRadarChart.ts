@@ -13,6 +13,8 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { config, GemRadarChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemRadarChartComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+import { isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import { GemRadarChartData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemradarcharttypes/GemRadarChartData';
 import { GemListUtil } from '@umlp/commonj2ts';
 import { autoColors } from './colors';
@@ -58,7 +60,9 @@ export class GemRadarChart extends GemRadarChartComponent implements OnInit, Aft
   public displayLegend = true;
 
   /** Current legend position. */
-  public legendPosition: string = 'bottom';
+  public legendSide: LegendSide = 'bottom';
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
 
   private _rawData?: GemRadarChartData;
   private resizeObserver!: ResizeObserver;
@@ -277,7 +281,7 @@ export class GemRadarChart extends GemRadarChartComponent implements OnInit, Aft
 
   public ngOnInit(): void {
     super.ngOnInit();
-    this.applyLegendPosition(this.legendPosition);
+    this.applyLegendPosition(this.legendSide);
     this.updateAxisConfig();
   }
 
@@ -291,8 +295,17 @@ export class GemRadarChart extends GemRadarChartComponent implements OnInit, Aft
     }
   }
 
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
+    this.legendSide = legendPosition;
     this.applyLegendPosition(legendPosition);
     this.updatePlot();
     this.cdr.detectChanges();
@@ -457,31 +470,31 @@ export class GemRadarChart extends GemRadarChartComponent implements OnInit, Aft
     const hostRect = this.el.nativeElement.getBoundingClientRect();
     const width = hostRect.width > 0 ? hostRect.width : (this._lastWidth > 0 ? this._lastWidth : 500);
     const height = hostRect.height > 0 ? hostRect.height : (this._lastHeight > 0 ? this._lastHeight : 400);
-    const horizontal = this.legendPosition === 'top' || this.legendPosition === 'bottom';
+    const horizontal = this.legendSide === 'top' || this.legendSide === 'bottom';
     const measured = this.legendSize && this.legendSize.horizontal === horizontal ? this.legendSize : null;
 
     if (horizontal) {
       const legendHeight = measured ? measured.h : this.getHorizontalLegendHeight(width);
-      const offset = this.legendPosition === 'top' ? margin.t : margin.b;
-      if (this.legendPosition === 'top') {
+      const offset = this.legendSide === 'top' ? margin.t : margin.b;
+      if (this.legendSide === 'top') {
         margin.t += legendHeight + gap;
       } else {
         margin.b += legendHeight + gap;
       }
       const plotHeight = Math.max(1, height - margin.t - margin.b);
-      this._layout.legend = this.legendPosition === 'top'
+      this._layout.legend = this.legendSide === 'top'
         ? { orientation: 'h', xanchor: 'center', x: 0.5, yanchor: 'bottom', y: 1 + offset / plotHeight }
         : { orientation: 'h', xanchor: 'center', x: 0.5, yanchor: 'top', y: -offset / plotHeight };
     } else {
       const legendWidth = Math.min(measured ? measured.w : this.getVerticalLegendWidth(), width * 0.35);
-      const offset = this.legendPosition === 'left' ? margin.l : margin.r;
-      if (this.legendPosition === 'left') {
+      const offset = this.legendSide === 'left' ? margin.l : margin.r;
+      if (this.legendSide === 'left') {
         margin.l += legendWidth + gap;
       } else {
         margin.r += legendWidth + gap;
       }
       const plotWidth = Math.max(1, width - margin.l - margin.r);
-      this._layout.legend = this.legendPosition === 'left'
+      this._layout.legend = this.legendSide === 'left'
         ? { orientation: 'v', yanchor: 'middle', y: 0.5, xanchor: 'right', x: -offset / plotWidth }
         : { orientation: 'v', yanchor: 'middle', y: 0.5, xanchor: 'left', x: 1 + offset / plotWidth };
     }
@@ -519,7 +532,7 @@ export class GemRadarChart extends GemRadarChartComponent implements OnInit, Aft
     };
 
     const legendEl = gd.querySelector('.legend .bg') || gd.querySelector('.legend');
-    const horizontal = this.legendPosition === 'top' || this.legendPosition === 'bottom';
+    const horizontal = this.legendSide === 'top' || this.legendSide === 'bottom';
     let legendSize = this.legendSize;
     if (legendEl && this.displayLegend) {
       const l = legendEl.getBoundingClientRect();

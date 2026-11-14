@@ -4,10 +4,12 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemScatterPlot;
 import common.ExamplePage;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemScatterPlotExample(List<Person> persons) {
   @ExamplePage(
     component = @GemScatterPlot(
+      legendPosition = LegendPosition.BOTTOM,
       data = getSimpleData(),
       xAxis = null,
       yAxis = null,

@@ -1,7 +1,9 @@
 /* (c) https://github.com/MontiCore/monticore */
 
-import { Component, ChangeDetectionStrategy,EventEmitter, Input, Output } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ElementRef, EventEmitter, inject, Input, Output } from '@angular/core';
 import { config, GemVennDiagramComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemVennDiagramComponent';
+import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
+import { isLegendNone, LegendSide, toLegendPosition, toLegendSide } from './LegendLayout';
 import * as d3 from 'd3';
 import * as venn from 'venn.js';
 import { GemVennDiagramData } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemvenndiagramtypes/GemVennDiagramData';
@@ -29,6 +31,9 @@ export class GemVennDiagram extends GemVennDiagramComponent {
 
   public _chart = venn.VennDiagram()
 
+  // selections are scoped to this component, several Venn diagrams may be on one page
+  private readonly el: ElementRef<HTMLElement> = inject(ElementRef);
+
   /**labels for chart legend */
   public legendLabels: string[];
 
@@ -36,7 +41,9 @@ export class GemVennDiagram extends GemVennDiagramComponent {
   public legendColors: string[] = [];
 
   /** defines the position of the legend */
-  public legendPosition: string;
+  public legendSide: LegendSide = 'right';
+  // true while the legend is hidden by legendPosition NONE
+  private legendHiddenByPosition = false;
 
   /**variable that enables or disables the legend */
   public displayLegend = true;
@@ -100,7 +107,8 @@ export class GemVennDiagram extends GemVennDiagramComponent {
     if(!this._data) {
       return;
     }
-    let div = d3.select("#venn");
+    const host = d3.select(this.el.nativeElement);
+    let div = host.select("#venn");
     const entries = [];
     for await (const e of this._data.getEntriesList()) {
       const sets = (await GemListUtil.toArraySync(e.getSetsList()))
@@ -142,14 +150,14 @@ export class GemVennDiagram extends GemVennDiagramComponent {
           .style("fill-opacity", d.sets.length == 1 ? .25 : .0)
           .style("stroke-opacity", 0);
       });
-    d3.selectAll(".venn-circle path").style("fill", (event, d) => {
+    host.selectAll("#venn .venn-circle path").style("fill", (event, d) => {
       return this.getColor(d);
     });
-    d3.selectAll("#venn text").style("fill", (event, d) => {
+    host.selectAll("#venn text").style("fill", (event, d) => {
       return this.getColor(d);
     });
-    d3.selectAll("#venn .venn-circle").on("click", (event, d) => { console.log(d); this.emitClick(d); })
-    d3.selectAll("#venn .venn-intersection").on("click", (event, d) => { console.log(d); this.emitClick(d); })
+    host.selectAll("#venn .venn-circle").on("click", (event, d) => { console.log(d); this.emitClick(d); })
+    host.selectAll("#venn .venn-intersection").on("click", (event, d) => { console.log(d); this.emitClick(d); })
   }
 
   @Output() public onClick = new EventEmitter<string[]>();
@@ -158,13 +166,22 @@ export class GemVennDiagram extends GemVennDiagramComponent {
     this.onClick.emit(intersection.sets);
   }
 
-  public setLegendPosition(legendPosition: string) {
-    this.legendPosition = legendPosition;
+  public override setLegendPosition(position: LegendPosition | string) {
+    const legendPosition = toLegendSide(position, this.legendSide);
+    const hidden = isLegendNone(position);
+    super.setLegendPosition(hidden ? LegendPosition.NONE : toLegendPosition(legendPosition));
+    if (hidden) {
+      this.displayLegend = false;
+    } else if (this.legendHiddenByPosition) {
+      this.displayLegend = true;
+    }
+    this.legendHiddenByPosition = hidden;
+    this.legendSide = legendPosition;
   }
 
   /** changes container style depending on legend position */
   public changeContainer() {
-    switch (this.legendPosition) {
+    switch (this.legendSide) {
       case 'left':
         return 'wholeChartWithLegendLeftContainer';
       case 'top':

@@ -4,10 +4,12 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemTimelineChart;
 import common.ExamplePage;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemTimelineChartExample (List<Person> persons) {
   @ExamplePage(
     component = @GemTimelineChart(
+      legendPosition = LegendPosition.RIGHT,
       data = computeDate(persons),
       blockClick = getBlockClick(),
       showConfig = true
