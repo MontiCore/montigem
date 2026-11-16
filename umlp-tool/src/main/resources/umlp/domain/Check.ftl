@@ -2,7 +2,8 @@
 ${tc.signature("domain", "name", "reportError", "isAssocList")}
 ${cd4c.method("protected boolean check${name?cap_first}()")}
 
-boolean res = true;
+boolean res = false;
+res=true;
 
 <#if reportError>
   <#assign valueAccessor = isAssocList?then("_internal_get${name?cap_first}GemList()","_${name}")>
