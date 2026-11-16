@@ -1,0 +1,25 @@
+package home;
+
+import CollabTextModule.CollabText;
+import collabtextcomponents.CollabTextarea;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemText;
+
+page CollabDemo(List<CollabText> texts, String userName = "") {
+  pageContent@GemColumn(width = "100%", height = "100%", rowGap = "8px", components = [
+    toolbar@GemRow(width = "100%", hAlign = "space-between", vAlign = "center", wrap = "wrap", colGap = "12px", rowGap = "8px", components = [
+      explanation@GemText(value = "Everyone who has this page open edits the same text."),
+      currentUser@GemText(value = userName),
+      actions@GemRow(hAlign = "right", vAlign = "center", colGap = "12px", components = [
+        share@ShareButton(),
+        brands@BrandLinks()
+      ])
+    ]),
+    editors@GemColumn(width = "100%", components = [
+      @iterate(CollabText text : texts) {
+        editor@CollabTextarea(text = text, userName = userName, placeholder = "Shared notes", showChunks = true);
+      }
+    ])
+  ]);
+}

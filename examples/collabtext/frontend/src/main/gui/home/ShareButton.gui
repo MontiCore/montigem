@@ -1,0 +1,4 @@
+package home;
+
+/** Shares the current demo URL through a QR code or the clipboard. */
+component ShareButton()

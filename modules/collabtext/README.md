@@ -15,6 +15,9 @@ domain model. The module has the same structure as the chat module.
 
 Only plain text is supported, there is no styling of the text.
 
+The standalone [collaborative text example](../../examples/collabtext) demonstrates
+the component with a shared text and one cursor per browser connection.
+
 ## Usage
 
 The dependencies are those of the [chat module](../chat/README.md#usage), with

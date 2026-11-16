@@ -7,7 +7,7 @@ import umlp.jsweet.extension.annotation.Component;
 @Component
 public class CollabDemo extends CollabDemoTOP {
 
-  /** As in TestDashboard: the texts are of the domain of a module and thus not loaded automatically. */
+  /** Texts belong to the module domain and are therefore loaded explicitly. */
   @Override
   protected void initTexts() {
     super.initTexts();
