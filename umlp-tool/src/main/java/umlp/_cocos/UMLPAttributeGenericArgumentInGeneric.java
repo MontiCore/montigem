@@ -9,10 +9,7 @@ import de.se_rwth.commons.logging.Log;
 public class UMLPAttributeGenericArgumentInGeneric implements CDBasisASTCDAttributeCoCo {
 
   public static final String ERROR_CODE = "0x70249";
-  public static final String ERROR_MSG_FORMAT = """
-       Invalid argument: %s %s
-      Multi dimensional Generic types are not supported
-      """;
+  public static final String ERROR_MSG_FORMAT = " Nested Generic types are not supported, Invalid argument: %s %s";
 
   @Override
   public void check(ASTCDAttribute node) {

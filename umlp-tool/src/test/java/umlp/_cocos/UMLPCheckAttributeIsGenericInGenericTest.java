@@ -23,4 +23,19 @@ public class UMLPCheckAttributeIsGenericInGenericTest extends AbstractUMLPTest {
 
     assertTrue(Log.getFindings().getFirst().getMsg().startsWith(UMLPAttributeGenericArgumentInGeneric.ERROR_CODE));
   }
+
+  @Test
+  public void testValid() {
+    UMLPCoCoChecker checker = new UMLPCoCoChecker();
+    checker.addCoCo(new UMLPAttributeGenericArgumentInGeneric());
+
+    ASTCDCompilationUnit ast = parse("cocovalid/UMLPAttributeGenericNormalCase.umlp");
+
+    runAfterParseTrafo(ast);
+    createSymTab(ast);
+
+    checker.checkAll(ast);
+
+    assertNoErrors();
+  }
 }

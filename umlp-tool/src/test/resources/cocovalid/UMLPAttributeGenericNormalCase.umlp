@@ -1,0 +1,10 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+umlp UMLPAttributeGenericNormalCase {
+
+  class A {
+    List<String> something;
+    List<Integer> delta;
+    Optional<Integer> test;
+  }
+}
