@@ -343,6 +343,9 @@ subprojects {
 // CI specific tasks and configuration
 tasks.register("ciDeployImages"){
 
+  dependsOn project(":examples:collabtext:backend").tasks.jib
+  dependsOn project(":examples:collabtext:frontend").tasks.deployImageCI
+
   dependsOn project(":examples:sehub:backend").tasks.jib
   dependsOn project(":examples:sehub:frontend").tasks.deployImageCI
 

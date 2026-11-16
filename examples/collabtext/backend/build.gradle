@@ -4,7 +4,14 @@ import de.montigem.gradle.specific.UMLP2JavaTask
 
 plugins {
   id 'de.rwth.se.montigem-backend'
+  id 'com.google.cloud.tools.jib' version '3.4.4'
   id 'org.springframework.boot' version "${spring_version}"
+}
+
+jib {
+  container.mainClass = application.mainClass.get()
+  from.image = "$container_from_image"
+  to.image = "${container_target_image_base}collabtext_backend:latest"
 }
 
 dependencies {
