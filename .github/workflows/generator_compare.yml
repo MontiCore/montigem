@@ -64,6 +64,10 @@ jobs:
           # detached HEAD and does not have the base branch. So both get their local branch.
           # The base is the current tip of the base branch, which needs no history. Changes of
           # the base branch that the PR branch does not have yet show up in the diff as well.
+          # The workspace belongs to the user of the runner and not to the user of the container,
+          # git refuses to work in it otherwise. Holds for the following steps as well.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
           git checkout -B "$HEAD_REF"
           git fetch --no-tags --depth=1 origin "refs/heads/$BASE_REF:refs/heads/$BASE_REF"
 
