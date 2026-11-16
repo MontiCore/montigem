@@ -183,18 +183,8 @@ public class SoftValueHashMap<K,V> extends AbstractMap<K,V> {
    */
   public V put(K key, V value){
     processQueue();
-    V rtn = null;
-
-      if(hash.containsKey(key)) {
-        if(value!=null) {
-          rtn = hash.put(key, new SoftValueRef<K, V>(key, value, queue)).get();
-        }else{
-          hash.put(key, null);
-        }
-      }else{
-        hash.put(key, new SoftValueRef<K, V>(key, value, queue));
-      }
-    return rtn;
+    SoftValueRef<K, V> old = hash.put(key, value == null ? null : new SoftValueRef<K, V>(key, value, queue));
+    return old == null ? null : old.get();
   }
 
   /**
@@ -209,7 +199,8 @@ public class SoftValueHashMap<K,V> extends AbstractMap<K,V> {
   public V remove(Object key)
   {
     processQueue();
-    return hash.remove(key).get();
+    SoftValueRef<K, V> ref = hash.remove(key);
+    return ref == null ? null : ref.get();
   }
 
   /**

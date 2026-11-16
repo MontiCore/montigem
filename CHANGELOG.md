@@ -41,6 +41,25 @@ For MontiGem users:
   for AI chats.
 * Integration of the chat module into the dashboard module and example.
 
+## 2026-11-03: 7.10.0-SNAPSHOT
+* Attribute qualified associations become maps (GemMaps), keyed by an attribute or a to-one
+  association role of the value:
+  ```
+  association Course [[login]] -> (byLogin) Student [1];
+  ```
+  The owner gets `putByLogin(student)`, `getByLogin(key)`, `containsKeyByLogin(key)`,
+  `removeByLogin(key)` and the live `java.util.Map` `getByLoginMap()`; changing the key attribute
+  of a value moves it in every map holding it. Primitive and `String` keys make a `GemValueMap`,
+  domain object keys a `GemEntryMap`. The association must be unidirectional (`0xCDC6A`) and the
+  value side `[1]` (`0xCDC6C`); the qualifier must be an attribute or a role of the value
+  (`0xCDC69`), an attribute of a primitive, `String` or domain class type, not `Optional`, a
+  collection or an array (`0xCDC68`), and a role with the cardinality `[1]` (`0xCDC6B`).
+  Qualified roles are not supported in GUI models yet (`0x00032`).
+* **Breaking:** `java.util.Map` in transpiled Java becomes the asynchronous `IUMLPMap` of
+  `@umlp/commonj2ts`, like `java.util.List` becomes `IUMLPList`: handwritten TypeScript has to
+  `await` its methods, e.g. `await BaseClassObjectMapper.getInstance().getBaseDeSers().get(name)`
+* `@umlp/commonj2ts` moved to version 9.1.0
+
 ## 2026-10-28: 7.10.0-SNAPSHOT
 * The domain model can be copied into the assets of the app, where it is served as
   `assets/models/<Name>.umlp`. It is off by default. 

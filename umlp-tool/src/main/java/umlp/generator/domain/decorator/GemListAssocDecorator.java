@@ -151,6 +151,8 @@ public class GemListAssocDecorator extends AbstractDecorator {
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("NotificationScope"));
     getCD4C().addImport(ast, "umlp.backendrte.common.LoadResult");
     getCD4C().addImport(ast, "umlp.backendrte.common.LoadingState");
+    getCD4C().addImport(ast, "java.util.HashMap");
+    getCD4C().addImport(ast, "java.util.Map");
   }
 
   public static String getName(ASTCDType type, ASTCDAssocSide assoc) {
