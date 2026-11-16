@@ -1,0 +1,6 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+tasks.register("run") {
+  group = "application"
+  dependsOn ":examples:collabtext:frontend:run", ':examples:collabtext:backend:run'
+}

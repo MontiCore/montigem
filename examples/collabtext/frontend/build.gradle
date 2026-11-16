@@ -1,0 +1,27 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import de.montigem.gradle.specific.CreateSymlinkTask
+import de.montigem.gradle.specific.GUI2JavaTask
+
+plugins {
+  id "de.rwth.se.montigem-frontend"
+}
+
+dependencies {
+  montigemModuleUMLPModels project(':modules:collabtext')
+  montigemModuleUMLPSymbols project(':modules:collabtext')
+  montigemModuleGUISymbols project(':modules:collabtext:frontend')
+  montigemModuleImportMap project(':modules:collabtext:frontend')
+}
+
+tasks.named("gui2java", GUI2JavaTask) {
+  symbolPath.from(configurations.montigemModuleUMLPSymbols)
+}
+
+// Compile the example with the current library sources without publishing it first.
+def collabtextLib = project(':modules:collabtext:frontend:collabtext')
+tasks.named("createSymlink", CreateSymlinkTask) {
+  dependsOn collabtextLib.tasks.named("guiJava2ts")
+  links.put(layout.buildDirectory.dir("app/libs/@montigem/collabtext").get().asFile,
+      collabtextLib.layout.projectDirectory.asFile)
+}

@@ -1,0 +1,20 @@
+<button mat-flat-button type="button" (click)="openShare()">Share</button>
+
+<ng-template #shareDialog>
+  <h2 mat-dialog-title>Share this text</h2>
+  <mat-dialog-content>
+    <p>Scan the QR code or send the link to edit together.</p>
+    <img *ngIf="qrCodeUrl" class="share-qr" [src]="qrCodeUrl"
+         alt="QR code linking to this collaborative text" />
+    <label for="collab-share-link">Link to this text</label>
+    <input #link id="collab-share-link" class="share-link" type="url"
+           [value]="shareUrl" readonly (click)="link.select()" />
+    <p class="copy-status" role="status" aria-live="polite">{{ copyMessage }}</p>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" mat-dialog-close>Close</button>
+    <button mat-flat-button type="button" [disabled]="copying" (click)="copyLink(link)">
+      Copy link
+    </button>
+  </mat-dialog-actions>
+</ng-template>

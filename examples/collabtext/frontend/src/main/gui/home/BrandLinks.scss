@@ -1,0 +1,24 @@
+.brand-links {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  border-radius: 4px;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-primary, #00549f);
+  outline-offset: 3px;
+}
+
+img {
+  display: block;
+  height: 32px;
+  width: auto;
+}

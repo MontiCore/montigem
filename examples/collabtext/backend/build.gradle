@@ -1,0 +1,23 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import de.montigem.gradle.specific.UMLP2JavaTask
+
+plugins {
+  id 'de.rwth.se.montigem-backend'
+  id 'org.springframework.boot' version "${spring_version}"
+}
+
+dependencies {
+  implementation "com.h2database:h2:${h2_database}"
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: spring_version
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: spring_version
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: spring_version
+  implementation group: 'org.slf4j', name: 'slf4j-simple', version: slf4j_version
+
+  montigemModule project(':modules:collabtext')
+  montigemModuleUMLPModels project(':modules:collabtext')
+}
+
+tasks.named("umlp2java", UMLP2JavaTask) {
+  modelDir.from(configurations.montigemModuleUMLPModels)
+}

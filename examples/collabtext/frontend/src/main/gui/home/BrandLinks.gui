@@ -1,0 +1,4 @@
+package home;
+
+/** Links to the framework and the Chair of Software Engineering. */
+component BrandLinks()
