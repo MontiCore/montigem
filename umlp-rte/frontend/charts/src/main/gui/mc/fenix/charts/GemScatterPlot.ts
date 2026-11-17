@@ -61,7 +61,7 @@ export class GemScatterPlot extends GemScatterPlotComponent implements OnInit, A
   /** Current legend position. */
   public legendSide: LegendSide = 'bottom';
   // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
 
   private _rawData?: GemScatterPlotData;
   private _xAxisValue?: GemScatterPlotAxis;

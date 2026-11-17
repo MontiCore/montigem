@@ -99,7 +99,7 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
   public displayLegend: boolean = true;
   public legendSide: LegendSide = 'right';
   // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
   private lastWidth: number = 0;
   // true while the right legend is shown above the plot because the chart is too narrow
   private legendFallback: boolean = false;

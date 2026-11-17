@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Checks that the legendPosition attribute places the legend of every chart on the
  * requested side and that the legend stays inside the chart.
  * Uses the page manual.GemLegendPositionTest, which shows every chart with a legend
- * once per legend position, and that NONE hides the legend.
+ * once per legend position, and that NONE hides the legend, also when it is chosen in
+ * the configuration menu of the chart.
  */
 public class ChartLegendPositionE2ETest extends AbstractDomainE2ETest {
 
@@ -84,6 +85,48 @@ public class ChartLegendPositionE2ETest extends AbstractDomainE2ETest {
       }
     }
     assertTrue(errors.isEmpty(), String.join("\n", errors));
+  }
+
+  @Test
+  void testLegendNoneViaConfigurationMenu(Page page) {
+    List<String> errors = new ArrayList<>();
+    for (String[] chart : CHARTS) {
+      Locator host = page.locator(".legendConfig ." + chart[0]).first();
+      host.scrollIntoViewIfNeeded();
+      Locator legend = host.locator(chart[1]).first();
+      legend.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.VISIBLE).setTimeout(15000));
+
+      // open the configuration menu (gear) of this chart
+      Locator gear = host.locator("gem-chart-options button").first();
+      gear.click();
+      Locator menu = page.locator(".cdk-overlay-container .gem-settings-list").last();
+
+      menu.locator("button", new Locator.LocatorOptions().setHasText("None")).first().click();
+      page.waitForTimeout(500);
+      if (isAnyVisible(host.locator(chart[1]))) {
+        errors.add(chart[0] + ": legend is still visible after choosing None");
+      }
+
+      // the position can still be changed, which shows the legend again
+      menu.locator("button", new Locator.LocatorOptions().setHasText("Right")).first().click();
+      page.waitForTimeout(500);
+      if (!isAnyVisible(host.locator(chart[1]))) {
+        errors.add(chart[0] + ": legend is not shown again after choosing Right");
+      }
+
+      // close the menu again
+      gear.click();
+    }
+    assertTrue(errors.isEmpty(), String.join("\n", errors));
+  }
+
+  private static boolean isAnyVisible(Locator locator) {
+    for (int i = 0; i < locator.count(); i++) {
+      if (locator.nth(i).isVisible()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private List<String> checkLegend(Page page, String chartSelector, String legendSelector, String chartName,

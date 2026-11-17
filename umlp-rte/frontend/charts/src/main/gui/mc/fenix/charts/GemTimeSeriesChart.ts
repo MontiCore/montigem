@@ -47,7 +47,7 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
   public legendSide: LegendSide = 'bottom';
   public displayLegend = true;
   // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
 
   constructor(private hostElement: ElementRef) {
     super();

@@ -44,8 +44,7 @@ export class GemLineChart extends GemLineChartComponent implements OnInit, After
   public plotlyData: any[] = [];
   public displayLegend = true;
   public legendSide: LegendSide = 'right';
-  // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
   public _enableBackgroundColor = false;
 
   public _maxValue: number | undefined = undefined;

@@ -62,7 +62,7 @@ export class GemRadarChart extends GemRadarChartComponent implements OnInit, Aft
   /** Current legend position. */
   public legendSide: LegendSide = 'bottom';
   // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
 
   private _rawData?: GemRadarChartData;
   private resizeObserver!: ResizeObserver;

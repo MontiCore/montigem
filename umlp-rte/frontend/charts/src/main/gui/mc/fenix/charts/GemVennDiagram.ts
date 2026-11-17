@@ -43,7 +43,7 @@ export class GemVennDiagram extends GemVennDiagramComponent {
   /** defines the position of the legend */
   public legendSide: LegendSide = 'right';
   // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
 
   /**variable that enables or disables the legend */
   public displayLegend = true;

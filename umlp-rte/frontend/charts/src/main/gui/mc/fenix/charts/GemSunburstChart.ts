@@ -55,7 +55,7 @@ export class GemSunburstChart extends GemSunburstChartComponent implements OnIni
 
   public legendSide: LegendSide = 'bottom';
   // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
   public displayLegend = true;
   @Input() public showInChartLabels: boolean = false;
   @Input() public showMainPageInChartLabels: boolean = false;

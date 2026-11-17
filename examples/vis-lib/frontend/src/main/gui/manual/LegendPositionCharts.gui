@@ -18,39 +18,39 @@ import mc.fenix.charts.GemChartTypes.LegendPosition;
 /**
   All charts with a legend, each with the given legend position.
 */
-component LegendPositionCharts(LegendPosition position, String title) {
+component LegendPositionCharts(LegendPosition position, String title, boolean showConfig = false) {
   @GemColumn(rowGap = "20px", components = [
     @GemText(value = title, size = "1.5rem", weight = "bold", height = "auto"),
 
     @GemColumn(height = "350px", components = [
-      barChart@GemBarChart(data = computeBarData(), legendPosition = position)
+      barChart@GemBarChart(data = computeBarData(), legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      boxPlot@GemBoxPlot(data = computeBoxPlotData(), legendPosition = position)
+      boxPlot@GemBoxPlot(data = computeBoxPlotData(), legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      lineChart@GemLineChart(data = computeLineData(), legendPosition = position)
+      lineChart@GemLineChart(data = computeLineData(), legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      pieChart@GemPieChart(data = computePieData(), legendPosition = position)
+      pieChart@GemPieChart(data = computePieData(), legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      radarChart@GemRadarChart(data = computeRadarData(), width = "100%", height = "100%", legendPosition = position)
+      radarChart@GemRadarChart(data = computeRadarData(), width = "100%", height = "100%", legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      scatterPlot@GemScatterPlot(data = computeScatterData(), legendPosition = position)
+      scatterPlot@GemScatterPlot(data = computeScatterData(), legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      sunburstChart@GemSunburstChart(data = computeSunburstData(), legendPosition = position)
+      sunburstChart@GemSunburstChart(data = computeSunburstData(), legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      timeSeriesChart@GemTimeSeriesChart(data = computeTimeSeriesData(), hideLiveDataToggle = true, height = "100%", legendPosition = position)
+      timeSeriesChart@GemTimeSeriesChart(data = computeTimeSeriesData(), hideLiveDataToggle = true, height = "100%", legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      timelineChart@GemTimelineChart(data = computeTimelineData(), height = "100%", legendPosition = position)
+      timelineChart@GemTimelineChart(data = computeTimelineData(), height = "100%", legendPosition = position, showConfig = showConfig)
     ]),
     @GemColumn(height = "350px", components = [
-      vennDiagram@GemVennDiagram(data = computeVennData(), legendPosition = position)
+      vennDiagram@GemVennDiagram(data = computeVennData(), legendPosition = position, showConfig = showConfig)
     ])
   ]);
 }

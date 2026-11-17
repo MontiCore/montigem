@@ -60,7 +60,7 @@ export class GemBoxPlot extends GemBoxPlotComponent implements OnInit, AfterView
 
   public legendSide: LegendSide = 'right';
   // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
   private resizeObserver!: ResizeObserver;
   private lastWidth: number = 0;
   private lastHeight: number = 0;

@@ -38,7 +38,7 @@ export class GemBarChart extends GemBarChartComponent implements OnInit, AfterVi
 
   public legendSide: LegendSide = 'right';
   // true while the legend is hidden by legendPosition NONE
-  private legendHiddenByPosition = false;
+  public legendHiddenByPosition = false;
   private resizeObserver!: ResizeObserver;
   private lastWidth: number = 0;
   // true while a side legend is shown above the plot because the chart is too narrow

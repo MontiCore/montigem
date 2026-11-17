@@ -6,7 +6,8 @@ import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   Test page for the legendPosition attribute of the charts: every chart with a
-  legend in every legend position, including NONE (no legend).
+  legend in every legend position, including NONE (no legend), and every chart with
+  its configuration menu to change the legend position.
 */
 page GemLegendPositionTest() {
   @GemColumn(rowGap = "40px", components = [
@@ -14,6 +15,7 @@ page GemLegendPositionTest() {
     legendTop@LegendPositionCharts(position = LegendPosition.TOP, title = "Legend TOP"),
     legendRight@LegendPositionCharts(position = LegendPosition.RIGHT, title = "Legend RIGHT"),
     legendBottom@LegendPositionCharts(position = LegendPosition.BOTTOM, title = "Legend BOTTOM"),
-    legendNone@LegendPositionCharts(position = LegendPosition.NONE, title = "Legend NONE")
+    legendNone@LegendPositionCharts(position = LegendPosition.NONE, title = "Legend NONE"),
+    legendConfig@LegendPositionCharts(position = LegendPosition.RIGHT, title = "Legend via the configuration menu", showConfig = true)
   ]);
 }
