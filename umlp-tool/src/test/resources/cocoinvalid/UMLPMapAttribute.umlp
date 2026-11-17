@@ -5,7 +5,7 @@ umlp UMLPMapAttribute {
     java.util.Map<String, java.util.List<B>> lists;
     java.util.Map<String, java.util.Map<String, Integer>> maps;
     // invalid key types (0xCDC6F): the keys of type qualified associations, domain class keys only for domain class
-    // values, date/time keys only for simple values
+    // values
     java.util.Map<Double, B> byWeight;
     java.util.Map<Boolean, B> byFlag;
     java.util.Map<E, B> byKind;
@@ -13,7 +13,6 @@ umlp UMLPMapAttribute {
     java.util.Map<C, Integer> countByC;
     java.util.Map<Boolean, Integer> countByFlag;
     java.util.Map<E, Integer> countByKind;
-    java.util.Map<java.time.LocalDate, B> byDay;
     // valid
     java.util.Map<String, B> byName;
     java.util.Map<Long, B> byPhone;

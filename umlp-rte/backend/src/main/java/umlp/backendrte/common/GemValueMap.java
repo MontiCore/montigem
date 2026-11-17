@@ -268,10 +268,19 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
   /**
    * whether the browser represents key exactly: there, numbers are doubles, which hold the integers up to
    * {@link #MAX_SAFE_KEY} only; a larger long key would equal its neighbours in the browser, so the participants
-   * would disagree on the entries. Overridden by the maps of long keys, all other keys are safe.
+   * would disagree on the entries. Overridden by the maps of long keys and of chosen time keys (stored only to the
+   * microsecond), all other keys are safe.
    */
   public boolean isSafeKey(K key) {
     return true;
+  }
+
+  /**
+   * why a key is not safe, see {@link #isSafeKey}; overridden with it
+   */
+  public String unsafeKeyReason() {
+    return "keys must be within -" + MAX_SAFE_KEY + " and " + MAX_SAFE_KEY + ", the integers a browser represents "
+        + "exactly";
   }
 
   /**
@@ -283,8 +292,7 @@ public abstract class GemValueMap<K, V extends GemIdentifiable>
     if (isSafeKey(key)) {
       return false;
     }
-    Log.error("0xA7309 The key " + key + " of the object with id " + valueGemID + " is refused: keys must be within "
-        + "-" + MAX_SAFE_KEY + " and " + MAX_SAFE_KEY + ", the integers a browser represents exactly");
+    Log.error("0xA7309 The key " + key + " of the object with id " + valueGemID + " is refused: " + unsafeKeyReason());
     return true;
   }
 

@@ -14,6 +14,7 @@ import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.types.check.SymTypeExpression;
 import de.se_rwth.commons.StringTransformations;
 import umlp.UMLPMill;
+import umlp.generator.domain.decorator.BaseClassObjectMapperDecorator;
 import umlp.generator.domain.decorator.GenService;
 import umlp.generator.domain.decorator.QualifierKey;
 import umlp.generator.util.PathUtil;
@@ -184,8 +185,8 @@ public class PutDecorator extends AddDecorator {
           key.isEntryKey() ? "0xA7316" : "0xA7306", otherSide, otherSideIsList);
       // preconditions: the value exists, a long key is within what a browser represents (neither executed nor sent
       // on otherwise)
-      getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", false, key.isLongKey(), a.getName(), targetType,
-          getCorrectManagerOfTargetType(a), "", "");
+      getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", false, key.isLongKey(), false, a.getName(),
+          targetType, getCorrectManagerOfTargetType(a), "", "");
       return;
     }
     String keyTypeManager = "";
@@ -200,10 +201,10 @@ public class PutDecorator extends AddDecorator {
     getCD4C().addMethod(ast, "umlp.commands.put.DoRunKey", domainType.getName(), getCorrectManager(domainType),
         a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getKeyType(),
         keyTypeManager, otherSide, otherSideIsList);
-    // preconditions: the chosen key is present (and a long key within what a browser represents), the value and the
-    // key object exist; a put that fails them is neither executed nor sent on
-    getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", true, key.isLongKey(), a.getName(), targetType,
-        getCorrectManagerOfTargetType(a), key.getKeyType(), keyTypeManager);
+    // preconditions: the chosen key is present (a long key within what a browser represents, a time key in
+    // microseconds), the value and the key object exist; a put that fails them is neither executed nor sent on
+    getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", true, key.isLongKey(), key.isMicrosecondKey(),
+        a.getName(), targetType, getCorrectManagerOfTargetType(a), key.getKeyType(), keyTypeManager);
   }
 
   /**
@@ -230,10 +231,15 @@ public class PutDecorator extends AddDecorator {
         .setCDExtendUsage(getExtendUsageFacade().createCDExtendUsage("CommandDeSer<" + cmdName + ">"))
         .setName(cmdName + DE_SER)
         .build();
+    // time keys by the DeSers of the object mapper, like the keys of map attributes
+    QualifierKey key = QualifierKey.of(a);
+    String keyDeSerType = key.isTimeKey() ? key.getStoredKeyType() : "";
+    String objectMapperName = getPackageName(origCD, DEFAULT_PACKAGE) + "." + origCD.getCDDefinition().getName()
+        + BaseClassObjectMapperDecorator.SUFFIX;
     getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_FromJsonObject", cmdName, valueIdName,
-        getKeyFields(), QualifierKey.of(a).getStoredKeyJson(), hasOldValue(a), hasOldOwner(a));
+        getKeyFields(), key.getStoredKeyJson(), keyDeSerType, objectMapperName, hasOldValue(a), hasOldOwner(a));
     getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_BuildJson", cmdName, valueIdName, getKeyFields(),
-        hasOldValue(a), hasOldOwner(a));
+        keyDeSerType, objectMapperName, hasOldValue(a), hasOldOwner(a));
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.JsonPrinter");
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.json.JsonObject");
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandDeSer"));

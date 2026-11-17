@@ -30,6 +30,14 @@ umlp UMLPAssocQualifierKeys {
   association B [int] (byInt) -> A [1];
   association B [C] (byCKey) -> A [1];
   association [1] A (byLongFromRight) <- [long] B;
+  association B [java.time.LocalDate] (byDay) -> A [1];
+  association B [java.time.Instant] (byInstant) -> A [1];
+
+  // a time attribute as qualifier
+  class G {
+    java.time.LocalDateTime start;
+  }
+  association B [[start]] (byStart) -> G [1];
 
   // Map attributes: become type qualified associations (UMLAttrToAssocTrafo), or map attributes with simple values
   class E {
@@ -44,6 +52,7 @@ umlp UMLPAssocQualifierKeys {
     java.util.Map<java.time.LocalDateTime, String> notes;
     java.util.Map<java.time.LocalTime, java.time.LocalDate> nextByTime;
     java.util.Map<java.time.Instant, java.time.Instant> endByStart;
+    java.util.Map<java.time.LocalDate, A> aByDay;
   }
 
   enum F;

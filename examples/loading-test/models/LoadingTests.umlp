@@ -204,6 +204,9 @@ classdiagram LoadingTests {
   // GemValueMap, type qualified with long keys: the browser represents them exactly only up to 2^53-1
   association Course [long] (phoneCourse) -> (studentByPhone) Student [1];
 
+  // GemValueMap, type qualified with date keys: equal dates are the same key, also in the browser
+  association Course [java.time.LocalDate] (examCourse) -> (studentByExamDay) Student [1];
+
   // Bidirectional qualified associations: the value side is the map's other side
   class Club {
     String label;

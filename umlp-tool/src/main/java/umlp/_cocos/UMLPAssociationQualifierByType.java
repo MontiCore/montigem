@@ -8,19 +8,21 @@ import de.monticore.cdassociation._cocos.CDAssociationASTCDAssociationCoCo;
 import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.monticore.types3.SymTypeRelations;
+import umlp.generator.domain.decorator.GenService;
 
 /**
  * The type of a type qualified association ({@code Owner [Type] -> Target}) is the key type of its GemMap: the
  * integral types byte, short, int and long (not float, double or char, see
- * {@link UMLPAssociationQualifierByAttributeName#isUnsupportedKey}) and String are keys of a GemValueMap, domain
- * classes keys of a GemEntryMap.
+ * {@link UMLPAssociationQualifierByAttributeName#isUnsupportedKey}), String, LocalDate, LocalDateTime, LocalTime and
+ * Instant are keys of a GemValueMap, domain classes keys of a GemEntryMap.
  */
 public class UMLPAssociationQualifierByType implements CDAssociationASTCDAssociationCoCo, CoCoTestable {
 
   public static final String ERROR_CODE = "0xCDC63";
   public static final String ERROR_MSG_FORMAT = " Qualified association with type %s is invalid, " +
       "qualified associations only support byte, short, int, long (not float, double or char: Java and the " +
-      "browser would disagree on their keys), String or domain class type qualifiers.";
+      "browser would disagree on their keys), String, LocalDate, LocalDateTime, LocalTime, Instant or domain class " +
+      "type qualifiers.";
   @Override
   public void check(ASTCDAssociation a) {
     if (a.getLeft().isPresentCDQualifier() && a.getLeft().getCDQualifier().isPresentByType()) {
@@ -43,7 +45,8 @@ public class UMLPAssociationQualifierByType implements CDAssociationASTCDAssocia
   public static boolean isTypeKey(SymTypeExpression type) {
     boolean integral = SymTypeRelations.isNumericType(type)
         && !UMLPAssociationQualifierByAttributeName.isUnsupportedKey(type);
-    return integral || SymTypeRelations.isString(type) || UMLPAssociationQualifierByAttributeName.isDomainKey(type);
+    return integral || SymTypeRelations.isString(type) || GenService.isTimeType(type)
+        || UMLPAssociationQualifierByAttributeName.isDomainKey(type);
   }
 
   @Override

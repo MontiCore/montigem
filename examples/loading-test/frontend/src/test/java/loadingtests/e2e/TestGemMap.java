@@ -11,6 +11,7 @@ import loadingtests.test_infrastructure.AbstractLoadingTestsE2ETest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -291,5 +292,36 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     assertThat(result(page)).hasText("mentee=Anna");
     waitUntil(() -> course.containsKeyMenteeByTutor(tutor), "backend: course.containsKeyMenteeByTutor(tutor)");
     assertEquals(anna.getGemId(), course.getMenteeByTutor(tutor).getGemId());
+  }
+
+  /** date keys: the browser finds the loaded key with a key object of its own */
+  @Test
+  public void testTimeKeyRead(Page page) {
+    course.putStudentByExamDay(LocalDate.of(2026, 11, 17), anna);
+    open(page, anna);
+    click(page, "Read Exam Day");
+    assertThat(result(page)).hasText("size=1;exam=Anna");
+  }
+
+  /** a put in the browser under a key equal to the loaded one replaces the value, also in the backend */
+  @Test
+  public void testTimeKeyPutReplaces(Page page) {
+    course.putStudentByExamDay(LocalDate.of(2026, 11, 17), anna);
+    open(page, ben);
+    click(page, "Put Exam Day");
+    assertThat(result(page)).hasText("size=1;exam=Ben");
+    waitUntil(() -> course.getStudentByExamDay(LocalDate.of(2026, 11, 17)).getGemId() == ben.getGemId(),
+        "backend: Ben under the exam day");
+    assertEquals(1, course.sizeStudentByExamDays());
+  }
+
+  /** a remove in the browser with a key equal to the loaded one reaches the backend */
+  @Test
+  public void testTimeKeyRemove(Page page) {
+    course.putStudentByExamDay(LocalDate.of(2026, 11, 17), anna);
+    open(page, anna);
+    click(page, "Remove Exam Day");
+    waitUntil(() -> !course.containsKeyStudentByExamDay(LocalDate.of(2026, 11, 17)),
+        "backend: no student under the exam day");
   }
 }

@@ -89,7 +89,8 @@ public class QualifierKey {
     if (attr.isPresent()) {
       SymTypeExpression type = attr.get().getSymbol().getType();
       String print = new CdUtilsPrinter().printType(GenService.createType(attr.get()));
-      String keyType = type.isPrimitive() ? box(type.printFullName()) : print;
+      String keyType = type.isPrimitive() ? box(type.printFullName())
+          : GenService.isTimeType(type) ? type.printFullName() : print;
       CDTypeSymbol declaringType = (CDTypeSymbol) attr.get().getSymbol().getEnclosingScope().getSpanningSymbol();
       return new QualifierKey(attrName, targetSymbol.getName(), false, keyType, print,
           GenService.getGetterName(attrName, type), declaringType, GenService.calculateJSon(type), true, null);
@@ -127,7 +128,8 @@ public class QualifierKey {
     }
     // numeric or String (CoCo 0xCDC63): a GemValueMap
     String print = new CdUtilsPrinter().printType(qualifierType);
-    String keyType = type.isPrimitive() ? box(type.printFullName()) : print;
+    String keyType = type.isPrimitive() ? box(type.printFullName())
+        : GenService.isTimeType(type) ? type.printFullName() : print;
     return new QualifierKey(null, targetName, false, keyType, print, null, null,
         GenService.calculateJSon(type), false, null);
   }
@@ -189,6 +191,31 @@ public class QualifierKey {
   }
 
   /**
+   * @return whether the key is a date/time value (GemValueMap, see {@link GenService#isTimeType}), fully qualified:
+   * serialized by the DeSers of the object mapper, stored by the date/time templates of the DAOs
+   */
+  public boolean isTimeKey() {
+    return !isEntryKey && keyType.startsWith("java.time.");
+  }
+
+  /**
+   * @return whether the key is chosen on put (type qualified) and a time with nanoseconds: the association table stores
+   * it only to the microsecond, so finer keys are refused (GemValueMap#isSafeKey)
+   */
+  public boolean isMicrosecondKey() {
+    return !isDerived && !isEntryKey && GenService.isNanoTimeType(keyType);
+  }
+
+  /**
+   * @return the type the DAO templates (dao/Set, dao/SetNeo4j, dao/get) store a key as: a date/time type, or a type
+   * stored as it is (its simple name)
+   */
+  public String getDbType() {
+    String stored = getStoredKeyType();
+    return isTimeKey() ? stored : stored.substring(stored.lastIndexOf('.') + 1);
+  }
+
+  /**
    * @return the type a key is stored and synchronized as: the key itself (boxed) for GemValueMaps,
    * the gemId of the key object for GemEntryMaps
    */
@@ -225,6 +252,15 @@ public class QualifierKey {
    */
   public String getNeo4jKeyExpression(String valueExpr) {
     switch (getStoredKeyType()) {
+      case "java.time.LocalDate":
+        return valueExpr + ".asLocalDate()";
+      case "java.time.LocalDateTime":
+        return valueExpr + ".asLocalDateTime()";
+      case "java.time.LocalTime":
+        return valueExpr + ".asLocalTime()";
+      case "java.time.Instant":
+        // stored as a DateTime in UTC, see dao/set/java_time_Instant_Neo4j
+        return valueExpr + ".asOffsetDateTime().toInstant()";
       case "String":
         return valueExpr + ".asString()";
       case "java.lang.Integer":

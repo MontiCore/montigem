@@ -13,13 +13,15 @@ import {AsyncMap} from "../javautil/AsyncMap";
 import {AsyncSet} from "../javautil/AsyncSet";
 import {Collection} from "../javautil/Collection";
 import {JavaUtilUtils} from "../javautil/JavaUtilUtils";
+import {TemporalKeys} from "../javautil/TemporalKeys";
 
 /*
  * A lazy Map for Keys/Values
  * Elements are loaded as they are required.
  * Useful if e.g. the elements are loaded over a network.
  *
- * The keys are values (numbers, Strings), the values are domain objects. Keys are compared like ===.
+ * The keys are values (numbers, Strings, java.time values), the values are domain objects. Keys are compared like
+ * ===, java.time keys by value (see storedKey).
  *
  * Attribute qualified associations derive the key of a value from the value itself
  * (see {@link #deriveKey}). Values added by id only (e.g. when loading) are keyed
@@ -42,12 +44,16 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   // live entry set; keySet and values are projections of it
   protected entries: GemMapEntrySet<K, K, V> = new GemValueMapEntrySet<K, V>(this);
 
+  // finds the stored java.time keys of idMap by value, see storedKey
+  protected readonly temporalKeys: TemporalKeys<K> = new TemporalKeys<K>(() => this.idMap);
+
   public constructor() {
     super();
   }
 
   public async __GemValueMapConstructor(idMap?: IUMLPMap<K, number> | Map<K, number>): Promise<GemValueMap<K, V>> {
     this.idMap = new Map();
+    this.temporalKeys.reset();
     this.unkeyedValueIDs = [];
     if (idMap instanceof Map) {
       idMap.forEach((id, key) => this.idMap.set(key, id));
@@ -125,7 +131,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
 
   async containsKey(key: any): Promise<boolean> {
     await this.ensureKeyed();
-    return this.idMap.has(key);
+    return this.idMap.has(this.storedKey(key));
   }
 
   async containsValue(value: any): Promise<boolean> {
@@ -176,7 +182,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     if (this.isKeyDerived()) {
       // the key of a value is derived from the value, it cannot be chosen
       const derived: K = await this.deriveKey(value);
-      if (key !== derived) {
+      if (!JavaUtilUtils.equalsSync(key, derived)) {
         Log.error("0xA7305 Key " + key + " does not match the key " + derived
           + " derived from the object with id " + value.getGemId());
         return null;
@@ -229,6 +235,12 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     return true;
   }
 
+  /** why a key is not safe, see isSafeKey; overridden with it */
+  public unsafeKeyReason(): string {
+    return "keys must be within -" + GemValueMap.MAX_SAFE_KEY + " and " + GemValueMap.MAX_SAFE_KEY
+      + ", the integers a browser represents exactly";
+  }
+
   /**
    * reports a key that is not safe (see isSafeKey): such a key is refused, the map does not change
    *
@@ -238,15 +250,16 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     if (this.isSafeKey(key)) {
       return false;
     }
-    Log.error("0xA7309 The key " + key + " of the object with id " + valueGemID + " is refused: keys must be within "
-      + "-" + GemValueMap.MAX_SAFE_KEY + " and " + GemValueMap.MAX_SAFE_KEY
-      + ", the integers a browser represents exactly");
+    Log.error("0xA7309 The key " + key + " of the object with id " + valueGemID + " is refused: "
+      + this.unsafeKeyReason());
     return true;
   }
 
   public async _internal_put(key: K, valueGemID: number): Promise<void> {
+    key = this.storedKey(key);
     const old: number = this.lookupID(key);
     this.idMap.set(key, valueGemID);
+    this.temporalKeys.stored(key);
     if (old != null && old !== valueGemID) {
       await this.onValueRemoved(old, null);
     }
@@ -270,8 +283,10 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   }
 
   public async _internal_remove(key: K): Promise<void> {
+    key = this.storedKey(key);
     const old: number = this.lookupID(key);
     this.idMap.delete(key);
+    this.temporalKeys.removed(key);
     if (old != null) {
       await this.onValueRemoved(old, null);
     }
@@ -298,7 +313,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
    */
   public async derivesKey(valueGemID: number, key: K): Promise<boolean> {
     const value: LoadResult<V> = await this.loadSingleValueObject(valueGemID);
-    return value.isPresent() && (await this.deriveKey(value.get())) === key;
+    return value.isPresent() && JavaUtilUtils.equalsSync(await this.deriveKey(value.get()), key);
   }
 
   /**
@@ -337,7 +352,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
    */
   public async _internal_putValueID(key: K, valueGemID: number): Promise<void> {
     for (const otherKey of await this.currentKeys()) {
-      if (otherKey !== key && this.lookupID(otherKey) === valueGemID) {
+      if (!JavaUtilUtils.equalsSync(otherKey, key) && this.lookupID(otherKey) === valueGemID) {
         const present: number = this.lookupID(key);
         if (present != null && present !== valueGemID) {
           await this._internal_remove(key);
@@ -362,6 +377,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     for (const [key, id] of Array.from(this.idMap.entries())) {
       if (id === gemID) {
         this.idMap.delete(key);
+        this.temporalKeys.removed(key);
         await this.onValueRemoved(gemID, null);
         return true;
       }
@@ -450,7 +466,13 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
    * @return the id stored for key, without deriving pending keys
    */
   lookupID(key: any): number {
+    key = this.storedKey(key);
     return this.idMap.has(key) ? this.idMap.get(key) : null;
+  }
+
+  /** the stored key with the same value as a java.time key, otherwise the key itself */
+  storedKey(key: any): any {
+    return this.temporalKeys.find(key);
   }
 
   /**
@@ -476,7 +498,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
    * @return whether the value was moved; false if it is not (or no longer) stored under oldKey
    */
   public async _internal_rekey(oldKey: K, newKey: K, valueGemID: number): Promise<boolean> {
-    if (this.lookupID(oldKey) !== valueGemID || oldKey === newKey) {
+    if (this.lookupID(oldKey) !== valueGemID || JavaUtilUtils.equalsSync(oldKey, newKey)) {
       // not (or no longer) contained under oldKey
       return false;
     }
@@ -502,9 +524,12 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   }
 
   moveEntry(oldKey: K, newKey: K): void {
+    oldKey = this.storedKey(oldKey);
     const id = this.idMap.get(oldKey);
     this.idMap.delete(oldKey);
+    this.temporalKeys.removed(oldKey);
     this.idMap.set(newKey, id);
+    this.temporalKeys.stored(newKey);
   }
 
   /**
@@ -581,7 +606,7 @@ class GemValueMapEntrySet<K, V extends GemIdentifiable> extends GemMapEntrySet<K
   }
 
   toStoredKey(key: any): K {
-    return key;
+    return this._map.storedKey(key);
   }
 
   async keyObjects(storedKeys: Array<K>): Promise<Map<K, K>> {

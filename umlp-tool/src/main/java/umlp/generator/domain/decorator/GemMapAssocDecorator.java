@@ -119,6 +119,9 @@ public class GemMapAssocDecorator extends AbstractDecorator {
     }
     if (key.isLongKey()) {
       getCD4C().addMethod(ast, "umlp.gemmap.IsSafeKey", key.getKeyType());
+    } else if (key.isMicrosecondKey()) {
+      getCD4C().addMethod(ast, "umlp.gemmap.IsSafeTimeKey", key.getKeyType());
+      getCD4C().addMethod(ast, "umlp.gemmap.UnsafeTimeKeyReason");
     }
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveValueIDAndSync", assoc.getName());
     getCD4C().addMethod(ast, "umlp.gemmap.RemoveAndSync", key.getKeyType(), key.isEntryKey());

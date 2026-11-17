@@ -3,7 +3,7 @@ import {AbstractAsyncMap} from "./AbstractAsyncMap";
 import {AsyncSet} from "./AsyncSet";
 import {AsyncMapEntrySet} from "./AsyncMapEntrySet";
 import {Collection} from "./Collection";
-import {JavaUtilUtils} from "./JavaUtilUtils";
+import {TemporalKeys} from "./TemporalKeys";
 
 /**
  * java.util.HashMap, LinkedHashMap, TreeMap, ... in transpiled code: wraps a native Map, i.e. keeps the
@@ -13,10 +13,8 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
   /*private readonly*/
   _data: Map<K, V>;
 
-  /** the Temporal keys by their value (toString), see storedKey; built on first use */
-  private _temporalKeys: Map<string, K> = null;
-  /** the size of _data the index belongs to: a wrapped native Map changed from outside invalidates it */
-  private _temporalKeysSize = -1;
+  /** finds the stored java.time keys by value, see storedKey */
+  private readonly _temporalKeys: TemporalKeys<K> = new TemporalKeys<K>(() => this._data);
 
   constructor() {
     super();
@@ -74,7 +72,7 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
     key = this.storedKey(key);
     const oldValue = this._data.has(key) ? this._data.get(key) : null;
     this._data.set(key, value);
-    this.indexKey(key, true);
+    this._temporalKeys.stored(key);
     return oldValue;
   }
 
@@ -85,13 +83,13 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
     }
     const oldValue = this._data.get(key);
     this._data.delete(key);
-    this.indexKey(key, false);
+    this._temporalKeys.removed(key);
     return oldValue;
   }
 
   async clear(): Promise<void> {
     this._data.clear();
-    this._temporalKeys = null;
+    this._temporalKeys.reset();
   }
 
   /** live view, a projection of entrySet(), see AsyncMapEntrySet */
@@ -109,41 +107,9 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
     return AsyncSet.__viewOf(new AsyncMapEntrySet<K, V>(this));
   }
 
-  /** the stored key with the same value as a Temporal key, otherwise the key itself */
+  /** the stored key with the same value as a java.time key, otherwise the key itself */
   private storedKey(key: any): any {
-    if (!JavaUtilUtils.isTemporal(key) || this._data.has(key)) {
-      return key;
-    }
-    const stored = this.temporalKeys().get(key.toString());
-    return stored !== undefined && this._data.has(stored) ? stored : key;
-  }
-
-  private temporalKeys(): Map<string, K> {
-    if (this._temporalKeys == null || this._temporalKeysSize !== this._data.size) {
-      this._temporalKeys = new Map<string, K>();
-      for (const k of this._data.keys()) {
-        if (JavaUtilUtils.isTemporal(k)) {
-          this._temporalKeys.set(k.toString(), k);
-        }
-      }
-      this._temporalKeysSize = this._data.size;
-    }
-    return this._temporalKeys;
-  }
-
-  /** keeps a built index up to date after a put (stored) or a remove */
-  private indexKey(key: any, stored: boolean): void {
-    if (this._temporalKeys == null) {
-      return;
-    }
-    if (JavaUtilUtils.isTemporal(key)) {
-      if (stored) {
-        this._temporalKeys.set(key.toString(), key);
-      } else {
-        this._temporalKeys.delete(key.toString());
-      }
-    }
-    this._temporalKeysSize = this._data.size;
+    return this._temporalKeys.find(key);
   }
 
   __internalMap(): Map<K, V> {

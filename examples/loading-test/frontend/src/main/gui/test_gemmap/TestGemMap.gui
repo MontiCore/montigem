@@ -37,4 +37,7 @@ page TestGemMap(Course c, Student s, Tutor t, Enrollment e, String result = "loa
   removeSeatByMap@GemButton(label = "Remove Seat By Map", leftClick = removeSeatByMap(c));
   putMaxPhone@GemButton(label = "Put Max Phone", leftClick = putMaxPhone(c, s));
   putUnsafePhone@GemButton(label = "Put Unsafe Phone", leftClick = putUnsafePhone(c, s));
+  readExamDay@GemButton(label = "Read Exam Day", leftClick = readExamDay(c));
+  putExamDay@GemButton(label = "Put Exam Day", leftClick = putExamDay(c, s));
+  removeExamDay@GemButton(label = "Remove Exam Day", leftClick = removeExamDay(c));
 }
