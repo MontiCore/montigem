@@ -1,7 +1,6 @@
 export * from "./src/main/gui/mc/fenix/collabtext/GemCollabTextarea";
 export * from "./src/main/gui/mc/fenix/collabtext/GemCollabTextCursor";
 
-export * from './build/gui2java2ts/collabtextcomponents/CollabTextarea';
 export * from './build/umlpJava2ts/collabtextmodule/CollabText';
 export * from './build/umlpJava2ts/collabtextmodule/CollabTextAccessPolicy';
 export * from './build/umlpJava2ts/collabtextmodule/CollabTextAllObserver';

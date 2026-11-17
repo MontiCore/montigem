@@ -1,7 +1,7 @@
 package home;
 
 import CollabTextModule.CollabText;
-import collabtextcomponents.CollabTextarea;
+import mc.fenix.collabtext.GemCollabTextarea;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.basic.GemText;
@@ -18,7 +18,7 @@ page CollabDemo(List<CollabText> texts, String userName = "") {
     ]),
     editors@GemColumn(width = "100%", components = [
       @iterate(CollabText text : texts) {
-        editor@CollabTextarea(text = text, userName = userName, placeholder = "Shared notes");
+        editor@GemCollabTextarea(text = text, userName = userName, placeholder = "Shared notes");
       }
     ])
   ]);

@@ -1,22 +1,25 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import {
-  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, inject, Injector, Input,
+  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, forwardRef, HostBinding, HostListener, inject, Input,
   OnDestroy, ViewChild, ViewEncapsulation
 } from '@angular/core';
 import { config, GemCollabTextareaComponent } from '../../../../../../build/gui2java2ts/mc/fenix/collabtext/GemCollabTextareaComponent';
-import { GemListUtil } from '@umlp/commonj2ts';
+import { CommandManager, GemListUtil } from '@umlp/commonj2ts';
 import { CollabText } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabText';
 import { CollabTextChunk } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextChunk';
+import { CollabTextCursor } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextCursor';
 import { CollabTextAllObserver } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextAllObserver';
 import { CollabTextChunkAllObserver } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextChunkAllObserver';
+import { CollabTextCursorAllObserver } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextCursorAllObserver';
 import { CollabTextModuleManager } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextModuleManager';
 import { GEM_COLLAB_TEXT_CURSOR_HOST, GemCollabTextCursor } from './GemCollabTextCursor';
 
 @Component({
   standalone: true,
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [...config.imports],
+  imports: [...config.imports, GemCollabTextCursor],
+  providers: [{ provide: GEM_COLLAB_TEXT_CURSOR_HOST, useExisting: forwardRef(() => GemCollabTextarea) }],
   selector: config.selector,
   styleUrls: config.styleUrls,
   // The marks are created without Angular, encapsulated styles would not apply to them
@@ -31,18 +34,27 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
   _height: string = '100%';
 
   override _placeholder: string = '';
+  override _userName: string = '';
+  override _userColor: string = '';
   override _disabled: boolean = false;
   override _showChunks: boolean = false;
   private chunkLengths: number[] = [];
   loaded = false;
   private viewReady = false;
   private binding = 0;
+  private bindingTask: Promise<void> = Promise.resolve();
+  private requestedText: CollabText;
+  private refreshTask: Promise<void> = Promise.resolve();
   private refreshVersion = 0;
   private refreshScheduled = false;
   private boundText: CollabText;
   private textObserver: CollabTextAllObserver;
   private chunkObserver: CollabTextChunkAllObserver;
+  private cursorObserver: CollabTextCursorAllObserver;
   private observedChunks: CollabTextChunk[] = [];
+  private observedCursors: CollabTextCursor[] = [];
+  private ownCursor: CollabTextCursor;
+  participants: CollabTextCursor[] = [];
   private writing = false;
   private pendingValue: string | undefined;
   private changeDetector = inject(ChangeDetectorRef);
@@ -52,12 +64,6 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
 
   @ViewChild('marks', { static: true })
   marks: ElementRef<HTMLElement>;
-
-  // The cursors are rendered from templates of the using component, which do not see this component otherwise
-  cursorInjector = Injector.create({
-    providers: [{ provide: GEM_COLLAB_TEXT_CURSOR_HOST, useValue: this }],
-    parent: inject(Injector),
-  });
 
   private remoteCursors: GemCollabTextCursor[] = [];
   // Selection already written to the current user's cursor.
@@ -101,17 +107,25 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     this.binding++;
     this.refreshVersion++;
     this.resizeObserver?.disconnect();
-    void this.detachText();
+    this.bindingTask = this.bindingTask.then(() => this.detachText());
     super.ngOnDestroy();
   }
 
   private async detachText(): Promise<void> {
     const text = this.boundText;
+    this.boundText = undefined;
+    this.refreshVersion++;
+    await this.refreshTask;
     const observer = this.textObserver;
     const chunks = this.observedChunks;
     const chunkObserver = this.chunkObserver;
-    this.boundText = undefined;
+    const cursors = this.observedCursors;
+    const cursorObserver = this.cursorObserver;
+    const ownCursor = this.ownCursor;
     this.observedChunks = [];
+    this.observedCursors = [];
+    this.ownCursor = undefined;
+    this.participants = [];
     this.pendingValue = undefined;
     if (text && observer) {
       await text.removeObserver(observer);
@@ -119,13 +133,29 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     for (const chunk of chunks) {
       await chunk.removeObserver(chunkObserver);
     }
+    for (const cursor of cursors) {
+      await cursor.removeObserver(cursorObserver);
+    }
+    if (text && ownCursor) {
+      await text.removeCursors$collabtextmodule_CollabTextCursor(ownCursor);
+      await CollabTextModuleManager.deleteCollabTextCursor(ownCursor.getGemId());
+    }
   }
 
-  private async bindText(text: CollabText): Promise<void> {
-    if (text === this.boundText || this.destroyed) {
+  private bindText(text: CollabText): Promise<void> {
+    if (text === this.requestedText || this.destroyed) {
+      return this.bindingTask;
+    }
+    this.requestedText = text;
+    const binding = ++this.binding;
+    this.bindingTask = this.bindingTask.then(() => this.attachText(text, binding));
+    return this.bindingTask;
+  }
+
+  private async attachText(text: CollabText, binding: number): Promise<void> {
+    if (binding !== this.binding || this.destroyed) {
       return;
     }
-    const binding = ++this.binding;
     await this.detachText();
     if (binding !== this.binding || this.destroyed) {
       return;
@@ -138,19 +168,33 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     }
     const observer = await new CollabTextAllObserver().__CollabTextAllObserverConstructor(() => this.scheduleRefresh());
     const chunkObserver = await new CollabTextChunkAllObserver().__CollabTextChunkAllObserverConstructor(() => this.scheduleRefresh());
+    const cursorObserver = await new CollabTextCursorAllObserver().__CollabTextCursorAllObserverConstructor(() => {
+      this.changeDetector.markForCheck();
+    });
     if (binding !== this.binding || this.destroyed) {
       return;
     }
     this.boundText = text;
     this.textObserver = observer;
     this.chunkObserver = chunkObserver;
+    this.cursorObserver = cursorObserver;
+    const participant = CommandManager.getParticipantId();
+    const colors = ['#c2185b', '#1976d2', '#2e7d32', '#ef6c00', '#6a1b9a', '#00838f'];
+    this.ownCursor = await (await CollabTextModuleManager.collabTextCursorBuilder())
+      .userName(this.userName)
+      .color(this.userColor || colors[participant % colors.length])
+      .participant(participant)
+      .build();
+    await text.addCursors$collabtextmodule_CollabTextCursor(this.ownCursor);
+    this.reportedAnchor = 0;
+    this.reportedHead = 0;
     await text.addObserver(observer);
     await CollabTextModuleManager.loadAllCollabTextChunkWithIDs(await text._internal_getChunksGemList().getIDs());
     if (binding !== this.binding || this.destroyed) {
       await text.removeObserver(observer);
       return;
     }
-    await this.refreshFromChunks();
+    await this.refresh();
   }
 
   private scheduleRefresh(): void {
@@ -161,8 +205,13 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     this.refreshScheduled = true;
     queueMicrotask(() => {
       this.refreshScheduled = false;
-      void this.refreshFromChunks();
+      void this.refresh();
     });
+  }
+
+  private refresh(): Promise<void> {
+    this.refreshTask = this.refreshTask.then(() => this.refreshFromChunks());
+    return this.refreshTask;
   }
 
   private async refreshFromChunks(): Promise<void> {
@@ -175,6 +224,25 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     if (version !== this.refreshVersion || text !== this.boundText || this.writing || this.destroyed) {
       return;
     }
+    await CollabTextModuleManager.loadAllCollabTextCursorWithIDs(await text._internal_getCursorsGemList().getIDs());
+    const cursors = (await GemListUtil.toArraySync(await text.getCursorsList()))
+      .filter(cursor => cursor.getGemId() !== this.ownCursor?.getGemId());
+    if (version !== this.refreshVersion || text !== this.boundText || this.destroyed) {
+      return;
+    }
+    const previousCursors = this.observedCursors;
+    this.observedCursors = cursors;
+    for (const cursor of previousCursors) {
+      if (!cursors.includes(cursor)) {
+        await cursor.removeObserver(this.cursorObserver);
+      }
+    }
+    for (const cursor of cursors) {
+      if (!await cursor.containsObserver(this.cursorObserver)) {
+        await cursor.addObserver(this.cursorObserver);
+      }
+    }
+    this.participants = cursors;
     const previous = this.observedChunks;
     this.observedChunks = chunks;
     for (const chunk of previous) {
@@ -297,7 +365,7 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     if (anchor !== this.reportedAnchor || head !== this.reportedHead) {
       this.reportedAnchor = anchor;
       this.reportedHead = head;
-      const cursor = this.cursor;
+      const cursor = this.ownCursor;
       if (cursor) {
         void cursor.setAnchor(anchor);
         void cursor.setHead(head);
