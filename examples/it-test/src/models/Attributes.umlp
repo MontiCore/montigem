@@ -106,6 +106,8 @@ umlp Attributes {
       LocalDateTime bar_local_date_time;
       LocalTime bar_local_time;
       Instant bar_instant;
+      List<Instant> bar_list_instant;
+      Optional<Instant> bar_opt_instant;
   }
 
   class ListOfPrimitives{

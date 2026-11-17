@@ -18,7 +18,7 @@ This section complements the User Guide with technical details on the mapping of
 
 * `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`, `java.time.Instant`
   * are mapped to `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`, `Instant` (type mappings in `JavaTimeAdapter`,
-    `Temporal` from `@umlp/commonj2ts`); `java.util.Date` stays `Date` and is deprecated (warning `0xEE013`).
+    `Temporal` from `@umlp/commonj2ts`); `java.util.Date` is not supported (error `0xEE013`).
   * `now`, `parse`, comparison and getter methods as well as `toEpochSecond`/`ofEpochSecond` are explicitly translated into TS expressions.
   * Calculation operations (`plus*/minus*`, `atStartOfDay`) are delegated via `LocalDateTimeHelper` (`@umlp/commonj2ts`).
 
@@ -78,7 +78,7 @@ Each adapter can:
 
 ### 11.2 Adding Type Mappings
 
-**Goal:** A Java type `X` should appear as a different type in TS code (e.g., `Optional<T>` → `T`, `LocalDateTime` → `Date`).
+**Goal:** A Java type `X` should appear as a different type in TS code (e.g., `Optional<T>` → `T`, `LocalDateTime` → `Temporal.PlainDateTime`).
 
 **Procedure:**
 

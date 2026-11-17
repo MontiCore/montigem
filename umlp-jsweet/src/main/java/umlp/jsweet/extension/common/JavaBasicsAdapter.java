@@ -196,30 +196,16 @@ public class JavaBasicsAdapter extends AbstractAdapter {
             .print(")");
         return true;
       case "equals":
-        // java.util.Date by time; the java.time types are Temporal values with equals (JavaUtilUtils)
-        boolean isDate = false;
-        for (ExtendedElement argument : invocation.getArguments()) {
-          if ("java.util.Date".equals(argument.getType().toString())) {
-            isDate = true;
-          }
+        // java.time values are Temporal values, compared by JavaUtilUtils like in Java
+        getPrinter().useModule(new ModuleImportDescriptor("JavaUtilUtils", getLibraryLocation()));
+        boolean inAsyncMethod = isInAsyncMethod();
+        this.print("/* equals */");
+        if (inAsyncMethod) {
+          this.print("await ");
         }
-        if (isDate) {
-          this.print("/* equals */")
-              .print("((a, b) => a === b || (a != null && b != null && a.getTime() === b.getTime())) (")
-              .printArgList(invocation.getArguments())
-              .print(")");
-        }
-        else {
-          getPrinter().useModule(new ModuleImportDescriptor("JavaUtilUtils", getLibraryLocation()));
-          boolean inAsyncMethod = isInAsyncMethod();
-          this.print("/* equals */");
-          if (inAsyncMethod) {
-            this.print("await ");
-          }
-          this.print(inAsyncMethod ? "JavaUtilUtils.equals(" : "JavaUtilUtils.equalsSync(")
-              .printArgList(invocation.getArguments())
-              .print(")");
-        }
+        this.print(inAsyncMethod ? "JavaUtilUtils.equals(" : "JavaUtilUtils.equalsSync(")
+            .printArgList(invocation.getArguments())
+            .print(")");
         return true;
     }
     return false;
@@ -336,7 +322,9 @@ public class JavaBasicsAdapter extends AbstractAdapter {
     if (!invocation.getMethodName().equals("append") || invocation.getArgumentCount() != 1) {
       return false;
     }
-    if (!printsAwait(ExtendedElementFactory.toTree(invocation.getArgument(0)))) {
+    if (!printsAwait(ExtendedElementFactory.toTree(invocation.getArgument(0)))
+        || JavaTimeAdapter.isTemporal(invocation.getArgument(0))) {
+      // java.time values: JavaTimeAdapter
       return false;
     }
     print("(/* async append */ await (async sb => { sb.str += <any>")

@@ -65,8 +65,11 @@ export class LocalDateTimeHelper {
     return LocalDateTimeHelper.MONTHS[date.month - 1];
   }
 
-  /** withDayOfYear(dayOfYear) */
+  /** withDayOfYear(dayOfYear); a day beyond the year is rejected like in java.time */
   static withDayOfYear<T extends DateOrDateTime>(date: T, dayOfYear: number): T {
+    if (dayOfYear < 1 || dayOfYear > date.daysInYear) {
+      throw new RangeError("Invalid day of year " + dayOfYear + " for the year " + date.year);
+    }
     return date.with({month: 1, day: 1}).add({days: dayOfYear - 1}) as T;
   }
 
