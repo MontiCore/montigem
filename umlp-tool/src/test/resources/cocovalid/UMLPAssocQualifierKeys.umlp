@@ -39,6 +39,7 @@ umlp UMLPAssocQualifierKeys {
     java.util.Map<long, F> fById;
     java.util.Map<byte, String> labels;
     java.util.Map<short, boolean> flags;
+    java.util.Map<String, java.time.LocalDate> dates;
   }
 
   enum F;

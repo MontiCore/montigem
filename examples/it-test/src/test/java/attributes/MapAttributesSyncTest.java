@@ -8,6 +8,9 @@ import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.Test;
 import umlp.backendrte.command.CommandManager;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -301,6 +304,82 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     sut.removeStatusById(3);
     assertEquals(1, sut.sizeStatusByIds());
     assertEquals(Map.of(2, MaritalStatus.MARRIED), sutServer.getStatusByIdMap());
+  }
+
+  @Test
+  public void testMapOfDatesIsWritten() {
+    // client
+    getClients(0).activate();
+    Map<String, LocalDate> dates = new LinkedHashMap<>();
+    dates.put("start", LocalDate.of(2026, 11, 17));
+    dates.put("end", LocalDate.of(2027, 2, 28));
+    Map<Integer, LocalDateTime> timestamps = new LinkedHashMap<>();
+    timestamps.put(1, LocalDateTime.of(2026, 11, 17, 10, 30, 15));
+    Map<String, LocalTime> times = new LinkedHashMap<>();
+    times.put("lunch", LocalTime.of(12, 15));
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().dates(dates).timestamps(timestamps).times(times)
+        .build().get();
+
+    // check in backend
+    getBackend().activate();
+    var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
+    assertNotSame(sut, sutServer);
+    assertEquals(dates, sutServer.getDatesMap());
+    assertEquals(List.of("start", "end"), List.copyOf(sutServer.getDatesMap().keySet()));
+    assertEquals(timestamps, sutServer.getTimestampsMap());
+    assertEquals(times, sutServer.getTimesMap());
+  }
+
+  @Test
+  public void testPutToMapOfDates() {
+    // client
+    getClients(0).activate();
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().datesPut("start", LocalDate.of(2026, 11, 17))
+        .datesPut("end", LocalDate.of(2027, 2, 28)).build().get();
+
+    // backend
+    getBackend().activate();
+    var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
+    assertNotSame(sut, sutServer);
+    assertEquals(2, sutServer.sizeDatess());
+
+    // client: put a new key, added at the end
+    getClients(0).activate();
+    sut.putDates("exam", LocalDate.of(2027, 2, 10));
+    assertEquals(3, sut.sizeDatess());
+    assertEquals(List.of("start", "end", "exam"), List.copyOf(sutServer.getDatesMap().keySet()));
+
+    // put an existing key: the value is replaced in its position
+    sut.putDates("start", LocalDate.of(2026, 11, 18));
+    assertEquals(LocalDate.of(2026, 11, 18), sut.getDates("start"));
+    assertEquals(List.of("start", "end", "exam"), List.copyOf(sutServer.getDatesMap().keySet()));
+    assertEquals(LocalDate.of(2026, 11, 18), sutServer.getDates("start"));
+  }
+
+  @Test
+  public void testRemoveInMapOfDates() {
+    // client
+    getClients(0).activate();
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().datesPut("start", LocalDate.of(2026, 11, 17))
+        .datesPut("exam", LocalDate.of(2027, 2, 10)).datesPut("end", LocalDate.of(2027, 2, 28)).build().get();
+
+    // backend
+    getBackend().activate();
+    var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
+    assertNotSame(sut, sutServer);
+    assertEquals(3, sutServer.sizeDatess());
+
+    // client: remove the first key
+    getClients(0).activate();
+    sut.removeDates("start");
+    assertEquals(2, sut.sizeDatess());
+    assertEquals(2, sutServer.sizeDatess());
+    assertFalse(sutServer.containsKeyDates("start"));
+
+    // remove the last key
+    sut.removeDates("end");
+    assertEquals(1, sut.sizeDatess());
+    assertEquals(Map.of("exam", LocalDate.of(2027, 2, 10)), sutServer.getDatesMap());
   }
 
   @Test

@@ -53,4 +53,13 @@ public class TestMapAttributes extends TestMapAttributesTOP {
   public Consumer<Void> readStates(Gradebook g) {
     return $ -> setResult("size=" + g.sizeStatess() + ";max=" + g.getStates(9007199254740991L).name());
   }
+
+  /**
+   * puts the loaded due date of math unchanged under copy: the date is not read by its getters, which disagree with
+   * the frontend LocalDateDeSer on the time zone (known bug)
+   */
+  @Override
+  public Consumer<Void> copyDueDate(Gradebook g) {
+    return $ -> g.putDueDates("copy", g.getDueDates("math"));
+  }
 }

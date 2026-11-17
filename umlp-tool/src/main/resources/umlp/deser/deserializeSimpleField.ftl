@@ -36,7 +36,10 @@ ${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType
       }
       for(de.monticore.symboltable.serialization.json.JsonElement e : json.getArrayMember("${fieldName}")) {
       JsonObject entry = e.getAsJsonObject();
-      <#if genService.isCDEnum(valueSymType)>
+      <#if useDeSer>
+      de.monticore.symboltable.serialization.json.JsonElement value = entry.getMember("value");
+      result.put(entry.getMember("key").${genService.calculateJSon(keySymType)}, ${objectMapperName}.<${innerType}>deserialize(value.isJsonString() ? '"' + value.getAsJsonString().getValue() + '"' : value.toString(), "${innerType}").orElse(null));
+      <#elseif genService.isCDEnum(valueSymType)>
       result.put(entry.getMember("key").${genService.calculateJSon(keySymType)}, ${valueSymType.print()}.valueOf(entry.getMember("value").${jsonStr}));
       <#else>
       result.put(entry.getMember("key").${genService.calculateJSon(keySymType)}, entry.getMember("value").${jsonStr});

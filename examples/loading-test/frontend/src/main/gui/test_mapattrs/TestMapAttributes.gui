@@ -16,4 +16,5 @@ page TestMapAttributes(Gradebook g, String result = "loaded") {
   readGrades@GemButton(label = "Read Grades", leftClick = readGrades(g));
   putState@GemButton(label = "Put State", leftClick = putState(g));
   readStates@GemButton(label = "Read States", leftClick = readStates(g));
+  copyDueDate@GemButton(label = "Copy Due Date", leftClick = copyDueDate(g));
 }
