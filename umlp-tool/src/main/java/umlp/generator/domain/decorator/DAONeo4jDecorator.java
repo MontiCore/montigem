@@ -210,10 +210,6 @@ public class DAONeo4jDecorator extends DAODecorator {
                 GenService.createType(attr).printType(), GenService.getDBType(attr.getSymbol().getType()), true));
   }
 
-  private static boolean isInstant(SymTypeExpression type) {
-    return "java.time.Instant".equals(type.printFullName());
-  }
-
   /**
    * map attributes are two parallel array properties of the node, written together, see dao/mapattrs/WriteNeo4j
    */
@@ -227,7 +223,7 @@ public class DAONeo4jDecorator extends DAODecorator {
       getCD4C().addMethod(daoClass, "umlp.dao.mapattrs.SelectNeo4j", domainClass.getName(), attr.getName(), keyType,
           valueType, keySymType, valueSymType);
       getCD4C().addMethod(daoClass, "umlp.dao.mapattrs.WriteNeo4j", domainClass.getName(), attr.getName(), keyType,
-          valueType, GenService.isCDEnum(valueSymType), isInstant(keySymType), isInstant(valueSymType));
+          valueType, GenService.getDBType(keySymType), GenService.getDBType(valueSymType));
       // put, remove and insert write the whole map
       for (String template : List.of("Put", "Remove", "Insert")) {
         ASTCDMethod method = (ASTCDMethod) getCD4C().addMethod(daoClass, "umlp.daointerface.mapattrs." + template,

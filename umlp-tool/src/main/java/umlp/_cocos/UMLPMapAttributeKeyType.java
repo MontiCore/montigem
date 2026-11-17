@@ -37,9 +37,14 @@ public class UMLPMapAttributeKeyType implements CDBasisASTCDAttributeCoCo, CoCoT
     Optional<SymTypeExpression> key = GenService.getMapTypeArgument(type, 0);
     Optional<SymTypeExpression> value = GenService.getMapTypeArgument(type, 1);
     boolean domainValues = value.isPresent() && GenService.isAssociationTarget(value.get());
-    if (key.isPresent() && !(UMLPAssociationQualifierByType.isTypeKey(key.get())
-        && (domainValues || !UMLPAssociationQualifierByAttributeName.isDomainKey(key.get()))
-        || !domainValues && GenService.isTimeType(key.get()))) {
+    if (key.isEmpty()) {
+      return;
+    }
+    // the keys of a type qualifier (domain classes only for domain class values), time keys only for simple values
+    boolean qualifierKey = UMLPAssociationQualifierByType.isTypeKey(key.get())
+        && (domainValues || !UMLPAssociationQualifierByAttributeName.isDomainKey(key.get()));
+    boolean timeKey = !domainValues && GenService.isTimeType(key.get());
+    if (!qualifierKey && !timeKey) {
       logError(attr, key.get().print(), attr.getName());
     }
   }

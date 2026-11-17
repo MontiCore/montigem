@@ -1,6 +1,6 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
 <#-- puts value under key; returns the old value, null if none -->
-${tc.signature("domain", "name", "keyType", "valueType", "isLongKey")}
+${tc.signature("domain", "name", "keyType", "valueType", "isLongKey", "isNanoKey")}
 
 ${cd4c.method("public ${valueType} put${name?cap_first}(${keyType} key, ${valueType} value, NotificationScope scope)")}
 if (key == null || value == null) {
@@ -12,6 +12,13 @@ if (key == null || value == null) {
 if (key > GemValueMap.MAX_SAFE_KEY || key < -GemValueMap.MAX_SAFE_KEY) {
   Log.error("0xA7332 The ${name} of the object with id " + getGemId() + " cannot hold the key " + key
       + ", which a browser cannot represent exactly");
+  return null;
+}
+</#if>
+<#if isNanoKey>
+if (key.getNano() % 1000 != 0) {
+  Log.error("0xA7336 The ${name} of the object with id " + getGemId() + " cannot hold the key " + key
+      + ", which is finer than the microseconds a database stores");
   return null;
 }
 </#if>

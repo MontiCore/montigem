@@ -104,10 +104,10 @@ public class MapAttrPutDecorator extends AbstractDeSerDecorator {
         getPackageName(origCD, COMMAND_PACKAGE), keyType, valueType, hasValue());
     getCD4C().addMethod(ast, "umlp.commands.mapattrs.DoRun", domainType.getName(), getCorrectManager(domainType),
         a.getName(), hasValue());
-    // preconditions: no null key or value, a long key within what a browser represents (a put that fails them is
-    // neither executed nor sent on)
+    // preconditions: no null key or value, a long key within what a browser represents, a time key in microseconds
+    // (a put that fails them is neither executed nor sent on)
     getCD4C().addMethod(ast, "umlp.commands.mapattrs.CheckContract", hasValue(),
-        hasValue() && GenService.isLongType(keyType));
+        hasValue() && GenService.isLongType(keyType), hasValue() && GenService.isNanoTimeType(keyType));
     getCD4C().addMethod(ast, "umlp.commands.GeneralCheckAccessPolicy", domainType.getName(), getPermission());
     getCD4C().addMethod(ast, "umlp.commands.GetEffectedGemIds", Lists.newArrayList("getGemId()"));
 
@@ -122,9 +122,10 @@ public class MapAttrPutDecorator extends AbstractDeSerDecorator {
     SymTypeExpression keyType = GenService.getMapTypeArgument(type, 0).get();
     SymTypeExpression valueType = GenService.getMapTypeArgument(type, 1).get();
     Optional<SymTypeExpression> valueEnum = getValueEnum(a);
-    // keys and values with a DeSer of the object mapper (date/time types), like the elements of list attributes
+    // keys and values with a DeSer of the object mapper (date/time types), like the elements of list attributes; the
+    // key types are the ones of UMLPMapAttributeKeyType, see serializeSimpleField
     String keyTypeName = keyType.printFullName();
-    boolean keyUseDeSer = supportedDeSers.contains(keyTypeName);
+    boolean keyUseDeSer = GenService.isTimeType(keyType);
     String valueTypeName = valueType.printFullName();
     boolean useDeSer = supportedDeSers.contains(valueTypeName);
     String objectMapperName = getPackageName(origCD, DEFAULT_PACKAGE) + "." + origCD.getCDDefinition().getName()
