@@ -8,6 +8,7 @@ import de.montigem.gradle.specific.CreateSymlinkTask;
 import de.montigem.gradle.specific.GUIJava2TSTask;
 import de.montigem.gradle.specific.GUI2JavaTask;
 import de.montigem.gradle.specific.GUIVariabilityTask;
+import de.montigem.gradle.specific.PrepareGeneratorDiffTask;
 import de.montigem.gradle.specific.SetupFrontendTask;
 import de.montigem.gradle.specific.UMLP2JSweetObserverTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
@@ -400,6 +401,19 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       for (String s : defaultExcludedSources) {
         task.getExcludeSource().add(s); // via @Erased
       }
+    });
+
+    // prints where the generated GUI code is, for the scripts in devScripts/generatorcompare
+    PrepareGeneratorDiffTask.register(project).configure(task -> {
+      task.dependsOn(guiJava2ts, cd2java, cd2sym);
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getOutputDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getSymbolOutDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getJSweetAdapterDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getCD2JavaJSweetAdapterDir));
+      // only exist if the app has .cd files
+      task.addDir(cd2java.flatMap(CD2JavaTask::getOutputDir));
+      task.addDir(cd2sym.flatMap(CD2SymTask::getOutput));
+      task.addDir(cd2java.flatMap(CD2JavaTask::getSymbolOutDir));
     });
 
     TaskProvider<UMLP2JSweetObserverTask> umlp2jsweetObserver = project.getTasks().register(
