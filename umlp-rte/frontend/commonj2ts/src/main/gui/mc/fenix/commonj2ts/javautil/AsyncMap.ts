@@ -116,7 +116,7 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
 
   private static isTemporal(key: any): boolean {
     return key instanceof Temporal.PlainDate || key instanceof Temporal.PlainDateTime
-      || key instanceof Temporal.PlainTime;
+      || key instanceof Temporal.PlainTime || key instanceof Temporal.Instant;
   }
 
   __internalMap(): Map<K, V> {

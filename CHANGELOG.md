@@ -54,7 +54,7 @@ For MontiGem users:
 * `java.util.Date` is deprecated in transpiled code (warning `0xEE013`): use `Instant`, or `LocalDate`,
   `LocalDateTime`, `LocalTime`.
 * `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums,
-  `LocalDate`, `LocalDateTime`, `LocalTime`), like list attributes:
+  `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant`), like list attributes:
   ```
   class Person { Map<String, Integer> scores; }
   ```
@@ -64,7 +64,7 @@ For MontiGem users:
   `Person_putScores`, `Person_removeScores`) and stored per entry (SQL table `person$scores$map`,
   Neo4j properties `Scores_keys` and `Scores_values`); the entries keep their insertion order. The
   keys are those of type qualifiers without domain classes and `LocalDate`, `LocalDateTime`,
-  `LocalTime` (`0xCDC6F`); in the frontend, equal date/time keys are the same key, like in Java. As
+  `LocalTime`, `Instant` (`0xCDC6F`); in the frontend, equal date/time keys are the same key, like in Java. As
   with `get<Attr>List()`, changes through `getScoresMap()` are not synchronized.
 * Deleting an object deletes the rows of its list attributes in SQL; before, they stayed in the
   tables `<class>$<attr>`.

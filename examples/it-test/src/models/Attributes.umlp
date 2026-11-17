@@ -154,6 +154,8 @@ umlp Attributes {
     Map<LocalDate, int> countsByDay;
     Map<LocalDateTime, String> notesByTime;
     Map<LocalTime, String> slots;
+    Map<Instant, double> readings;
+    Map<String, Instant> lastSeen;
   }
 
   class ClassWithDefaults{
