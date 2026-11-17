@@ -8,8 +8,8 @@ part of a module with its own domain model. The module has the same structure as
 - `models/CollabTextModule.umlp`: `CollabText` with its chunks and cursors.
 - `backend`: `CollabText`, which reads and changes chunks using generated mutations and is also
   transpiled for the frontend.
-- `frontend/collabtext`: `collabtextcomponents.CollabTextarea` and the primitives
-  `GemCollabTextarea` and `GemCollabTextCursor` (package `mc.fenix.collabtext`), published
+- `frontend/collabtext`: `GemCollabTextarea` and `GemCollabTextCursor`
+  (package `mc.fenix.collabtext`), published
   together as `@montigem/collabtext`.
 
 Only plain text is supported, there is no styling of the text.
@@ -31,10 +31,10 @@ notes.replace(0, 0, "Initial content");
 
 ```java
 import CollabTextModule.CollabText;
-import collabtextcomponents.CollabTextarea;
+import mc.fenix.collabtext.GemCollabTextarea;
 
 component Notes(CollabText notes, String userName) {
-  editor@CollabTextarea(text = notes, userName = userName);
+  editor@GemCollabTextarea(text = notes, userName = userName);
 }
 ```
 
@@ -50,7 +50,7 @@ synchronized; the assembled string is local to the editor.
 
 ## Synchronization
 
-`GemCollabTextarea` receives the `CollabText` and the current user's `CollabTextCursor` directly.
+`GemCollabTextarea` receives the `CollabText` and creates the current user's `CollabTextCursor`.
 Typing sets the text's content; selection changes set the cursor's anchor and head attributes.
 Generated observers synchronize the data. The text area uses generated observers to refresh its
 rendering when chunk contents or associations change.
@@ -59,5 +59,5 @@ There are no edit events, change payload classes, edit histories, revision count
 or rebasing. Concurrent changes use the standard synchronization mechanism directly. A pending
 browser input value only serializes local asynchronous setter calls.
 
-`CollabTextarea` creates the user's cursor when opening a text and removes it when leaving. The
-primitive text area draws the chunks, cursors, and selections from the current domain data.
+`GemCollabTextarea` removes the user's cursor when leaving a text. It draws the chunks, cursors,
+and selections from the current domain data.

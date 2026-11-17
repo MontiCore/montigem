@@ -15,6 +15,10 @@
   (select)="reportSelection()"
   (focus)="reportSelection()"
 ></textarea>
-<ng-container *ngFor="let cursor of cursors">
-  <ng-container *ngTemplateOutlet="cursor; injector: cursorInjector"></ng-container>
-</ng-container>
+<gem-collab-text-cursor
+  *ngFor="let cursor of participants"
+  [label]="cursor.getUserName()"
+  [color]="cursor.getColor()"
+  [anchor]="cursor.getAnchor()"
+  [head]="cursor.getHead()"
+></gem-collab-text-cursor>

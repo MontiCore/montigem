@@ -3,6 +3,7 @@
 gem-collab-textarea {
   position: relative;
   display: block;
+  min-height: 0;
   box-sizing: border-box;
   overflow: hidden;
   border: 1px solid var(--color-border);

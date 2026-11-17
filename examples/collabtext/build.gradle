@@ -1,6 +1,2 @@
-/* (c) https://github.com/MontiCore/monticore */
-
-tasks.register("run") {
-  group = "application"
-  dependsOn ":examples:collabtext:frontend:run", ':examples:collabtext:backend:run'
-}
+clean.dependsOn(subprojects.collect{it.getTasksByName("clean", false)})
+build.dependsOn(subprojects.collect{ it.getTasksByName("build", false)})
