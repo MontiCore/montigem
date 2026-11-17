@@ -2,6 +2,9 @@ package resources.exectests;
 
 import util.JSweetTest;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -281,5 +284,27 @@ public class MapRuntimeCheck {
     check.count("y");
     check.count("x");
     return check.counts.get("x") * 10 + check.counts.get("y");
+  }
+
+  /** java.time keys are equal by value, like in Java: a newly created equal key finds the stored one */
+  @JSweetTest
+  public static String checkTimeKeys() {
+    Map<LocalDate, Integer> byDay = new LinkedHashMap<>();
+    byDay.put(LocalDate.of(2026, 11, 17), 1);
+    byDay.put(LocalDate.of(2026, 11, 18), 1);
+    byDay.put(LocalDate.of(2026, 11, 17), byDay.get(LocalDate.of(2026, 11, 17)) + 1);
+    Map<LocalDate, Integer> copy = new LinkedHashMap<>(byDay);
+    copy.put(LocalDate.of(2026, 11, 18), 5);
+    Map<Instant, String> byInstant = new HashMap<>();
+    byInstant.put(Instant.parse("2026-11-17T09:30:15.123456Z"), "a");
+    boolean found = byInstant.containsKey(Instant.ofEpochSecond(1_794_907_815L, 123_456_000));
+    String removed = byInstant.remove(Instant.parse("2026-11-17T09:30:15.123456Z"));
+    // keys of different types are different keys, even for the same day
+    Map<Object, String> mixed = new LinkedHashMap<>();
+    mixed.put(LocalDate.of(2026, 11, 17), "date");
+    mixed.put(LocalDateTime.of(2026, 11, 17, 0, 0), "dateTime");
+    mixed.put("2026-11-17", "text");
+    return byDay + " " + copy + " " + found + " " + removed + " " + byInstant.isEmpty() + " " + mixed.size() + " "
+        + mixed.get(LocalDateTime.of(2026, 11, 17, 0, 0));
   }
 }

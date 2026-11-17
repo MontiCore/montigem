@@ -389,6 +389,25 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
   }
 
   @Test
+  default void testPutAndRemoveWithInstantKeyInDb() {
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().readingsPut(Instant.parse("2026-11-17T09:30:15.123456Z"), 1.0)
+        .readingsPut(Instant.parse("2026-11-17T10:00:00Z"), 2.0).build().get();
+    var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
+
+    // put an existing key, as a new object: the value is replaced in its position
+    sut.putReadings(Instant.parse("2026-11-17T09:30:15.123456Z"), 3.0);
+    var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(List.of(Instant.parse("2026-11-17T09:30:15.123456Z"), Instant.parse("2026-11-17T10:00:00Z")),
+        List.copyOf(clone.getReadingsMap().keySet()));
+    assertEquals(3.0, clone.getReadings(Instant.parse("2026-11-17T09:30:15.123456Z")));
+
+    // remove a key
+    sut.removeReadings(Instant.parse("2026-11-17T09:30:15.123456Z"));
+    clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(Map.of(Instant.parse("2026-11-17T10:00:00Z"), 2.0), clone.getReadingsMap());
+  }
+
+  @Test
   default void testDeleteRemovesTheEntries() {
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().scoresPut("math", 3).weightsPut(1L, 2.0).build().get();
     long gemId = sut.gemId;

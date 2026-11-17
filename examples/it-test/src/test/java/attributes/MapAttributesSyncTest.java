@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package attributes;
 
+import attributes.commands.MapsOfSimpleTypes_putReadings;
 import attributes.commands.MapsOfSimpleTypes_putScores;
 import attributes.commands.MapsOfSimpleTypes_putWeights;
 import attributes.test_infrastructure.AttributesMockTestSetup;
@@ -442,6 +443,30 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
   }
 
   @Test
+  public void testPutAndRemoveWithInstantKey() {
+    // client
+    getClients(0).activate();
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().readingsPut(Instant.parse("2026-11-17T09:30:15.123456Z"), 1.0)
+        .readingsPut(Instant.parse("2026-11-17T10:00:00Z"), 2.0).build().get();
+
+    // backend
+    getBackend().activate();
+    var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
+    assertNotSame(sut, sutServer);
+
+    // client: put an existing key, the value is replaced in its position
+    getClients(0).activate();
+    sut.putReadings(Instant.parse("2026-11-17T09:30:15.123456Z"), 3.0);
+    assertEquals(List.of(Instant.parse("2026-11-17T09:30:15.123456Z"), Instant.parse("2026-11-17T10:00:00Z")),
+        List.copyOf(sutServer.getReadingsMap().keySet()));
+    assertEquals(3.0, sutServer.getReadings(Instant.parse("2026-11-17T09:30:15.123456Z")));
+
+    // remove a key
+    sut.removeReadings(Instant.parse("2026-11-17T09:30:15.123456Z"));
+    assertEquals(Map.of(Instant.parse("2026-11-17T10:00:00Z"), 2.0), sutServer.getReadingsMap());
+  }
+
+  @Test
   public void testServerChangesReachClients() {
     // client
     getClients(0).activate();
@@ -459,12 +484,17 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
   @Test
   public void testInvalidKeysAreRejected() {
     long unsafe = 9007199254740992L;
-    // client: owner and builder refuse null and unsafe long keys
+    // finer than the microseconds of a database
+    Instant fine = Instant.parse("2026-11-17T09:30:15.123456789Z");
+    // client: owner and builder refuse null and unsafe long keys and time keys finer than microseconds
     getClients(0).activate();
     var builder = AttributesManager.mapsOfSimpleTypesBuilder();
     assertLogs("0xA7332", () -> builder.weightsPut(unsafe, 1.0));
+    assertLogs("0xA7336", () -> builder.readingsPut(fine, 1.0));
     var sut = builder.build().get();
     assertLogs("0xA7332", () -> sut.putWeights(unsafe, 1.0));
+    assertLogs("0xA7336", () -> sut.putReadings(fine, 1.0));
+    assertEquals(0, sut.sizeReadingss());
     assertLogs("0xA7331", () -> sut.putScores(null, 1));
     assertLogs("0xA7331", () -> sut.putScores("math", null));
     assertEquals(0, sut.sizeWeightss());
@@ -480,9 +510,11 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
         new MapsOfSimpleTypes_putWeights(sut.gemId, unsafe, 1.0)).isSuccessful()));
     assertLogs("0xA7334", () -> assertFalse(CommandManager.executeCommand(
         new MapsOfSimpleTypes_putScores(sut.gemId, null, 1)).isSuccessful()));
+    assertLogs("0xA7337", () -> assertFalse(CommandManager.executeCommand(
+        new MapsOfSimpleTypes_putReadings(sut.gemId, fine, 1.0)).isSuccessful()));
     // neither the server nor the other client ran put<Attr>, which would have logged these errors
     assertTrue(Log.getFindings().stream().noneMatch(f -> f.getMsg().startsWith("0xA7331")
-        || f.getMsg().startsWith("0xA7332")));
+        || f.getMsg().startsWith("0xA7332") || f.getMsg().startsWith("0xA7336")));
 
     // backend
     getBackend().activate();
@@ -490,6 +522,7 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     for (var o : List.of(sutServer, sutOther)) {
       assertEquals(0, o.sizeWeightss());
       assertEquals(0, o.sizeScoress());
+      assertEquals(0, o.sizeReadingss());
     }
   }
 

@@ -164,7 +164,7 @@ public class BuilderDecorator extends AbstractDecorator {
     String valueType = GenService.getMapAttributeType(attribute, 1);
     String builder = getClassName(domainClass.getName());
     getCD4C().addMethod(builderClass, "umlp.builder.MapAttrPut", attribute.getName(), keyType, valueType, builder,
-        GenService.isLongType(keyType));
+        GenService.isLongType(keyType), GenService.isNanoTimeType(keyType));
     getCD4C().addImport(builderClass, "java.util.Map");
     getCD4C().addImport(builderClass, "java.util.LinkedHashMap");
     getCD4C().addImport(builderClass, PathUtil.getBackendRTECommonPath("GemValueMap"));

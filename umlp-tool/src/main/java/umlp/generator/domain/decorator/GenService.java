@@ -744,6 +744,16 @@ public class GenService {
    * @param type a type name as printed, e.g. a key type of {@link #getMapAttributeType}
    * @return whether it is long or Long, whose values a browser represents exactly only within +-(2^53-1)
    */
+  /**
+   * whether the type is a time type with nanoseconds (LocalDateTime, LocalTime, Instant), whose map keys are refused
+   * beyond the microseconds SQL stores (methods/mapattrs/Put)
+   */
+  public static boolean isNanoTimeType(String type) {
+    // qualified or not, like isLongType
+    return List.of("java.time.LocalDateTime", "java.time.LocalTime", "java.time.Instant", "LocalDateTime", "LocalTime",
+        "Instant").contains(type);
+  }
+
   public static boolean isLongType(String type) {
     return "java.lang.Long".equals(box(type)) || "Long".equals(type);
   }

@@ -1,7 +1,7 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-<#-- puts value under key into a map attribute with simple values; null keys and values and long keys a browser cannot
-     represent exactly are rejected like by the owner (methods/mapattrs/Put) -->
-${tc.signature("name", "keyType", "valueType", "builder", "isLongKey")}
+<#-- puts value under key into a map attribute with simple values; null keys and values, long keys a browser cannot
+     represent exactly and time keys finer than microseconds are rejected like by the owner (methods/mapattrs/Put) -->
+${tc.signature("name", "keyType", "valueType", "builder", "isLongKey", "isNanoKey")}
 ${cd4c.method("public ${builder} ${name}Put(${keyType} key, ${valueType} value)")}
 
 if (key == null || value == null) {
@@ -12,6 +12,13 @@ if (key == null || value == null) {
 <#if isLongKey>
 if (key > GemValueMap.MAX_SAFE_KEY || key < -GemValueMap.MAX_SAFE_KEY) {
   Log.error("0xA7332 The ${name} cannot hold the key " + key + ", which a browser cannot represent exactly");
+  return this.realBuilder;
+}
+</#if>
+<#if isNanoKey>
+if (key.getNano() % 1000 != 0) {
+  Log.error("0xA7336 The ${name} cannot hold the key " + key + ", which is finer than the microseconds a database "
+      + "stores");
   return this.realBuilder;
 }
 </#if>

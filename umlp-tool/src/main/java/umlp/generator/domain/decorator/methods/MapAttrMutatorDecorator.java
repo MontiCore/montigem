@@ -45,7 +45,8 @@ public class MapAttrMutatorDecorator extends MandatoryMutatorDecorator {
     String sourceName = this.ast.getName();
     boolean isLongKey = GenService.isLongType(keyType);
 
-    methodList.add(createMethod("umlp.methods.mapattrs.Put", sourceName, name, keyType, valueType, isLongKey));
+    methodList.add(createMethod("umlp.methods.mapattrs.Put", sourceName, name, keyType, valueType, isLongKey,
+        GenService.isNanoTimeType(keyType)));
     methodList.add(createMethod("umlp.methods.mapattrs.Remove", sourceName, name, keyType, valueType));
     // put/remove without scope
     methodList.addAll(createDelegatesWithScope(methodList));

@@ -37,7 +37,7 @@
       for (Map.Entry<${genService.getMapAttributeType(attr, 0)}, ${genService.getMapAttributeType(attr, 1)}> e : obj.get${fieldName?cap_first}Map().entrySet()) {
         printer.beginObject();
         <#if genService.isTimeType(keySymType)>
-        printer.memberJson("key", ${objectMapperName}.serialize(e.getKey(), "${keySymType.printFullName()}").orElse(""));
+        printer.memberJson("key", ${objectMapperName}.serialize(e.getKey(), "${keySymType.printFullName()}").orElseThrow());
         <#else>
         printer.member("key", e.getKey());
         </#if>
