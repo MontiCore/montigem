@@ -36,7 +36,11 @@
       for (Map.Entry<${genService.getMapAttributeType(attr, 0)}, ${genService.getMapAttributeType(attr, 1)}> e : obj.get${fieldName?cap_first}Map().entrySet()) {
         printer.beginObject();
         printer.member("key", e.getKey());
+        <#if useDeSer>
+        printer.memberJson("value", ${objectMapperName}.serialize(e.getValue(), "${innerType}").orElse(""));
+        <#else>
         printer.member("value", e.getValue()<#if genService.isCDEnum(valueSymType)>.name()</#if>);
+        </#if>
         printer.endObject();
       }
       printer.endArray();

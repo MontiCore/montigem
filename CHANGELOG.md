@@ -37,8 +37,8 @@ For MontiGem users:
   
 -->
 ## 2026-11-17: 7.10.0-SNAPSHOT
-* `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums), like list
-  attributes:
+* `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums,
+  `LocalDate`, `LocalDateTime`, `LocalTime`), like list attributes:
   ```
   class Person { Map<String, Integer> scores; }
   ```

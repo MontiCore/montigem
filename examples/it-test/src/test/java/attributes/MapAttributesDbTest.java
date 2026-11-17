@@ -7,6 +7,9 @@ import attributes.test_infrastructure.AttributesTestSetup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -268,6 +271,71 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
     assertEquals(1, sut.sizeStatusByIds());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(Map.of(2, MaritalStatus.MARRIED), clone.getStatusByIdMap());
+  }
+
+  @Test
+  default void testMapOfDatesIsWrittenToDb() {
+    Map<String, LocalDate> dates = new LinkedHashMap<>();
+    dates.put("start", LocalDate.of(2026, 11, 17));
+    dates.put("end", LocalDate.of(2027, 2, 28));
+    Map<Integer, LocalDateTime> timestamps = new LinkedHashMap<>();
+    timestamps.put(1, LocalDateTime.of(2026, 11, 17, 10, 30, 15));
+    Map<String, LocalTime> times = new LinkedHashMap<>();
+    times.put("lunch", LocalTime.of(12, 15));
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().dates(dates).timestamps(timestamps).times(times)
+        .build().get();
+
+    var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
+
+    var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(dates, clone.getDatesMap());
+    assertEquals(List.of("start", "end"), List.copyOf(clone.getDatesMap().keySet()));
+    assertEquals(timestamps, clone.getTimestampsMap());
+    assertEquals(times, clone.getTimesMap());
+  }
+
+  @Test
+  default void testPutToMapOfDatesInDb() {
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().datesPut("start", LocalDate.of(2026, 11, 17))
+        .datesPut("end", LocalDate.of(2027, 2, 28)).build().get();
+    var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
+    var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(2, clone.sizeDatess());
+
+    // put a new key: added at the end
+    sut.putDates("exam", LocalDate.of(2027, 2, 10));
+    assertEquals(3, sut.sizeDatess());
+    clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(List.of("start", "end", "exam"), List.copyOf(clone.getDatesMap().keySet()));
+
+    // put an existing key: the value is replaced in its position
+    sut.putDates("start", LocalDate.of(2026, 11, 18));
+    assertEquals(LocalDate.of(2026, 11, 18), sut.getDates("start"));
+    clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(List.of("start", "end", "exam"), List.copyOf(clone.getDatesMap().keySet()));
+    assertEquals(LocalDate.of(2026, 11, 18), clone.getDates("start"));
+  }
+
+  @Test
+  default void testRemoveInMapOfDatesInDb() {
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().datesPut("start", LocalDate.of(2026, 11, 17))
+        .datesPut("exam", LocalDate.of(2027, 2, 10)).datesPut("end", LocalDate.of(2027, 2, 28)).build().get();
+    var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
+    var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(3, clone.sizeDatess());
+
+    // remove the first key
+    sut.removeDates("start");
+    assertEquals(2, sut.sizeDatess());
+    clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(2, clone.sizeDatess());
+    assertFalse(clone.containsKeyDates("start"));
+
+    // remove the last key
+    sut.removeDates("end");
+    assertEquals(1, sut.sizeDatess());
+    clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(Map.of("exam", LocalDate.of(2027, 2, 10)), clone.getDatesMap());
   }
 
   @Test

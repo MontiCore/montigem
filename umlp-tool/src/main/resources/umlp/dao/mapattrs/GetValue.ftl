@@ -5,6 +5,8 @@ ${signature("statement", "type", "columnName", "neo4j")}
 <#assign numberValueCall=genService.getNumberValueCall(type)>
 <#if genService.isCDEnum(type)>
   ${includeArgs("umlp.dao.get.java_lang_Enum"+neo4j, statement, columnName, type.print())}
+<#elseif genService.getDBType(type, neo4j)?contains(".")>
+  ${includeArgs("umlp.dao.get."+genService.getDBType(type, neo4j)?replace(".", "_")+neo4j, statement, columnName)}
 <#elseif numberValueCall?has_content>
   ${value} == null ? null : ((Number) ${value})${numberValueCall}
 <#else>

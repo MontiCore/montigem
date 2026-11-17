@@ -566,15 +566,17 @@ public abstract class AbstractDecorator {
         getCD4C().addImport(domainType, type.asGenericType().getTypeConstructorFullName());
       }
 
-      if (GenService.isNotADomainType(type.asGenericType().getArgument(0))) {
-        String imp = GenService.getCorrectJavaFQN(type.asGenericType().getArgument(0).printFullName());
-        getCD4C().addImport(domainType, imp);
-      } else if(GenService.isCDEnum(type.asGenericType().getArgument(0))) {
-        String imp =
-            Joiners.DOT.join(type.asGenericType().getArgument(0).getTypeInfo()
-                    .getPackageName().toLowerCase(),
-                type.asGenericType().getArgument(0).getTypeInfo().getName());
-        getCD4C().addImport(domainType, imp);
+      // all type arguments, e.g. the key and value types of Map<K, V>
+      for (SymTypeExpression argument : type.asGenericType().getArgumentList()) {
+        if (GenService.isNotADomainType(argument)) {
+          String imp = GenService.getCorrectJavaFQN(argument.printFullName());
+          getCD4C().addImport(domainType, imp);
+        } else if(GenService.isCDEnum(argument)) {
+          String imp =
+              Joiners.DOT.join(argument.getTypeInfo().getPackageName().toLowerCase(),
+                  argument.getTypeInfo().getName());
+          getCD4C().addImport(domainType, imp);
+        }
       }
     } else if (GenService.isNotADomainType(type)) {
       getCD4C().addImport(domainType, GenService.getCorrectJavaFQN(type.printFullName()));

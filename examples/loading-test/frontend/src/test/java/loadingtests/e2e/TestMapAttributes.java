@@ -10,6 +10,7 @@ import loadingtests.test_infrastructure.AbstractLoadingTestsE2ETest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -91,5 +92,14 @@ public class TestMapAttributes extends AbstractLoadingTestsE2ETest {
     waitUntil(() -> gradebook.containsKeyStates(9007199254740991L), "backend: state under the max key");
     assertEquals(MyEnum.B, gradebook.getStates(9007199254740991L));
     clickUntil(page, "Read States", "size=1;max=B");
+  }
+
+  @Test
+  public void testDateValue(Page page) {
+    gradebook.putDueDates("math", LocalDate.of(2026, 11, 17));
+    open(page);
+    click(page, "Copy Due Date");
+    waitUntil(() -> gradebook.containsKeyDueDates("copy"), "backend: copied due date");
+    assertEquals(LocalDate.of(2026, 11, 17), gradebook.getDueDates("copy"));
   }
 }

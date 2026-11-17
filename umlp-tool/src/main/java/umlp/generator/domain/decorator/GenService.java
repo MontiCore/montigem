@@ -691,11 +691,20 @@ public class GenService {
 
   /**
    * whether the type can be the value of a map attribute with simple values ({@code Map<String, Integer> scores}):
-   * a primitive or boxed type, String or an enum, like the elements of list attributes
+   * a primitive or boxed type, String, an enum or a date/time type, like the elements of list attributes
    */
   public static boolean isSimpleMapValue(SymTypeExpression type) {
     return type.isPrimitive() || SymTypeRelations.isNumericType(type) || SymTypeRelations.isBoolean(type)
-        || SymTypeRelations.isString(type) || (type.hasTypeInfo() && isCDEnum(type));
+        || SymTypeRelations.isString(type) || (type.hasTypeInfo() && isCDEnum(type)) || isTimeType(type);
+  }
+
+  /**
+   * whether the type is a date/time type with built-in database and DeSer support: LocalDate, LocalDateTime,
+   * LocalTime
+   */
+  public static boolean isTimeType(SymTypeExpression type) {
+    return List.of("java.time.LocalDate", "java.time.LocalDateTime", "java.time.LocalTime")
+        .contains(type.printFullName());
   }
 
   /**
@@ -717,9 +726,16 @@ public class GenService {
 
   /**
    * @param attr a map attribute, see {@link #isMap(ASTCDAttribute)}
-   * @return its key type (index 0) or value type (index 1), boxed, e.g. Integer for {@code Map<String, int>}
+   * @return its key type (index 0) or value type (index 1), boxed, e.g. Integer for {@code Map<String, int>}; date/time
+   * types fully qualified (the generated classes do not import them)
    */
   public static String getMapAttributeType(ASTCDAttribute attr, int index) {
+    if (attr.isPresentSymbol()) {
+      Optional<SymTypeExpression> type = getMapTypeArgument(attr.getSymbol().getType(), index);
+      if (type.isPresent() && isTimeType(type.get())) {
+        return type.get().printFullName();
+      }
+    }
     ASTMCType argument = ((ASTMCGenericType) attr.getMCType()).getMCTypeArgument(index).getMCTypeOpt().get();
     return box(new CdUtilsPrinter().printType(argument));
   }

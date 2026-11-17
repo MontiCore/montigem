@@ -8,6 +8,7 @@ import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdbasis._ast.*;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.io.paths.MCPath;
+import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.SymTypeOfGenerics;
 import de.se_rwth.commons.Joiners;
 import umlp.UMLPMill;
@@ -139,7 +140,10 @@ public class DeSerDecorator extends DomainClassDecorator {
       useDeSer = supportedDesers.contains(innerTypeFull);
     } else if (GenService.isMap(attr)) {
       // map attributes with simple values, entries as pairs of key and value
-      jsonStr = GenService.calculateJSon(GenService.getMapTypeArgument(attr.getSymbol().getType(), 1).get());
+      SymTypeExpression valueType = GenService.getMapTypeArgument(attr.getSymbol().getType(), 1).get();
+      jsonStr = GenService.calculateJSon(valueType);
+      innerTypeFull = valueType.printFullName();
+      useDeSer = supportedDesers.contains(innerTypeFull);
       getCD4C().addImport(deSer, "java.util.Map");
       getCD4C().addImport(deSer, "java.util.LinkedHashMap");
     } else if (GenService.isOptional(attr)) {

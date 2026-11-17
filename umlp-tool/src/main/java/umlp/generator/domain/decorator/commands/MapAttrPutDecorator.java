@@ -13,12 +13,14 @@ import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.types.check.SymTypeExpression;
 import de.se_rwth.commons.StringTransformations;
 import umlp.UMLPMill;
+import umlp.generator.domain.decorator.BaseClassObjectMapperDecorator;
 import umlp.generator.domain.decorator.GenService;
 import umlp.generator.util.PathUtil;
 import umlp.generator.util.UMLPSymbolTables;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static umlp.generator.domain.decorator.commands.CommandDecorator.DE_SER;
@@ -32,8 +34,11 @@ public class MapAttrPutDecorator extends AbstractDeSerDecorator {
 
   public static final String PUT_SUFFIX = "_put";
 
-  public MapAttrPutDecorator(GlobalExtensionManagement glex) {
+  protected final Set<String> supportedDeSers;
+
+  public MapAttrPutDecorator(GlobalExtensionManagement glex, Set<String> supportedDeSers) {
     super(glex);
+    this.supportedDeSers = supportedDeSers;
   }
 
   @Override
@@ -117,6 +122,11 @@ public class MapAttrPutDecorator extends AbstractDeSerDecorator {
     SymTypeExpression keyType = GenService.getMapTypeArgument(type, 0).get();
     SymTypeExpression valueType = GenService.getMapTypeArgument(type, 1).get();
     Optional<SymTypeExpression> valueEnum = getValueEnum(a);
+    // values with a DeSer of the object mapper (date/time types), like the elements of list attributes
+    String valueTypeName = valueType.printFullName();
+    boolean useDeSer = supportedDeSers.contains(valueTypeName);
+    String objectMapperName = getPackageName(origCD, DEFAULT_PACKAGE) + "." + origCD.getCDDefinition().getName()
+        + BaseClassObjectMapperDecorator.SUFFIX;
     ASTCDClass ast = UMLPMill.cDClassBuilder()
         .setModifier(PUBLIC.build())
         .setCDExtendUsage(getExtendUsageFacade().createCDExtendUsage("CommandDeSer<" + cmdName + ">"))
@@ -124,9 +134,10 @@ public class MapAttrPutDecorator extends AbstractDeSerDecorator {
         .build();
     getCD4C().addMethod(ast, "umlp.commands.deser.MapAttrCommand_FromJsonObject", cmdName,
         GenService.calculateJSon(keyType), hasValue(), GenService.calculateJSon(valueType),
-        valueEnum.map(SymTypeExpression::print).orElse(""));
+        valueEnum.map(SymTypeExpression::print).orElse(""), useDeSer, valueTypeName, objectMapperName);
     getCD4C().addMethod(ast, "umlp.commands.deser.MapAttrCommand_BuildJson", cmdName, hasValue(),
-        GenService.getGetterName("value", valueType), valueEnum.isPresent());
+        GenService.getGetterName("value", valueType), valueEnum.isPresent(), useDeSer, valueTypeName,
+        objectMapperName);
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.JsonPrinter");
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.json.JsonObject");
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandDeSer"));

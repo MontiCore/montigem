@@ -139,6 +139,9 @@ umlp Attributes {
     java.util.Map<int, MaritalStatus> statusById;
     Map<short, boolean> flags;
     Map<byte, String> labels;
+    Map<String, LocalDate> dates;
+    Map<int, java.time.LocalDateTime> timestamps;
+    Map<String, LocalTime> times;
   }
 
   class ClassWithDefaults{
