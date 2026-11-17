@@ -36,6 +36,7 @@ class Customer extends Person { String customerId; }
 | `LocalDateTime` | `java.time.LocalDateTime` | `Temporal.PlainDateTime` | Temporal API from `@umlp/commonj2ts`. |
 | `LocalDate` | `java.time.LocalDate` | `Temporal.PlainDate` | |
 | `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
+| `Instant` | `java.time.Instant` | `Temporal.Instant` | A point in time; SQL `TIMESTAMP WITH TIME ZONE`. |
 | `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
 | `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
 

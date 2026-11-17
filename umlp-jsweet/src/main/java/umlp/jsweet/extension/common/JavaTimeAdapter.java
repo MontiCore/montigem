@@ -30,7 +30,12 @@ public class JavaTimeAdapter extends AbstractAdapter {
   public static final Map<String, String> TEMPORAL_TYPES = Map.of(
       "java.time.LocalDate", "Temporal.PlainDate",
       "java.time.LocalDateTime", "Temporal.PlainDateTime",
-      "java.time.LocalTime", "Temporal.PlainTime");
+      "java.time.LocalTime", "Temporal.PlainTime",
+      "java.time.Instant", "Temporal.Instant");
+
+  /** the Temporal duration units of the plus and minus methods of Instant, e.g. plusMillis */
+  private static final Map<String, String> INSTANT_UNITS = Map.of(
+      "Seconds", "seconds", "Millis", "milliseconds", "Nanos", "nanoseconds");
 
   /** a printed Temporal type or call, e.g. "Temporal.PlainDate" */
   private static final Pattern TEMPORAL_USE = Pattern.compile("\\bTemporal\\.");
@@ -119,7 +124,12 @@ public class JavaTimeAdapter extends AbstractAdapter {
           return true;
       }
     }
-    if (TEMPORAL_TYPES.containsKey(targetType) && substituteMethodInvocation_Temporal(invocation, targetType)) {
+    if ("java.time.Instant".equals(targetType)) {
+      if (substituteMethodInvocation_Instant(invocation)) {
+        return true;
+      }
+    } else if (TEMPORAL_TYPES.containsKey(targetType)
+        && substituteMethodInvocation_Temporal(invocation, targetType)) {
       return true;
     }
     if ("java.util.Date".equals(targetType) && substituteMethodInvocation_Date(invocation)) {
@@ -252,6 +262,80 @@ public class JavaTimeAdapter extends AbstractAdapter {
           printHelper("ofTime", args);
         }
         print(")");
+        return true;
+    }
+    return false;
+  }
+
+  /**
+   * the methods of Instant on Temporal.Instant; the ones without a direct counterpart call LocalDateTimeHelper
+   */
+  private boolean substituteMethodInvocation_Instant(MethodInvocationElement invocation) {
+    String methodName = invocation.getMethodName();
+    List<ExtendedElement> args = invocation.getArguments();
+    ExtendedElement target = invocation.getTargetExpression();
+    useTemporal();
+
+    // static methods
+    switch (methodName) {
+      case "now":
+        printMacroName(methodName);
+        print("Temporal.Now.instant()");
+        return true;
+      case "parse":
+        printMacroName(methodName);
+        print("Temporal.Instant.from(").print(args.get(0)).print(")");
+        return true;
+      case "ofEpochMilli":
+        printMacroName(methodName);
+        print("Temporal.Instant.fromEpochMilliseconds(").print(args.get(0)).print(")");
+        return true;
+      case "ofEpochSecond":
+        printMacroName(methodName);
+        printHelper("instantOfEpochSecond", args);
+        return true;
+    }
+    if (target == null) {
+      return false;
+    }
+
+    // plusSeconds, minusMillis, ...
+    boolean isPlus = methodName.startsWith("plus");
+    if (isPlus || methodName.startsWith("minus")) {
+      String unit = INSTANT_UNITS.get(methodName.substring(isPlus ? 4 : 5));
+      if (unit != null && args.size() == 1) {
+        printMacroName(methodName);
+        printTarget(target).print(isPlus ? ".add({" : ".subtract({").print(unit + ": ").print(args.get(0))
+            .print("})");
+        return true;
+      }
+    }
+
+    switch (methodName) {
+      case "toEpochMilli":
+        printMacroName(methodName);
+        printTarget(target).print(".epochMilliseconds");
+        return true;
+      case "equals":
+        printMacroName(methodName);
+        print("((a, b) => b instanceof Temporal.Instant && a.equals(b))(").print(target).print(", ")
+            .printArgList(args).print(")");
+        return true;
+      case "isAfter":
+      case "isBefore":
+        printMacroName(methodName);
+        print("(Temporal.Instant.compare(").print(target).print(", ").print(args.get(0))
+            .print(")" + ("isAfter".equals(methodName) ? " > 0" : " < 0") + ")");
+        return true;
+      case "compareTo":
+        printMacroName(methodName);
+        print("Temporal.Instant.compare(").print(target).print(", ").print(args.get(0)).print(")");
+        return true;
+      case "toString":
+      case "getNano":
+      case "getEpochSecond":
+        printMacroName(methodName);
+        printHelper(methodName, List.of(target));
         return true;
     }
     return false;
