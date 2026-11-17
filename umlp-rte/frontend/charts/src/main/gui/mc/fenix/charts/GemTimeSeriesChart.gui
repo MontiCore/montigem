@@ -17,6 +17,9 @@ component GemTimeSeriesChart(
   /**
     The data to be displayed in the chart.
     Contains series of data points (timestamp, value) and events.
+    The time stamps are LocalDateTime values, shown as they are (wall time).
+    Handwritten TypeScript may also pass Temporal.Instant time stamps (points in time), shown in the
+    browser's time zone.
   */
   TimeSeriesData data,
   /**
