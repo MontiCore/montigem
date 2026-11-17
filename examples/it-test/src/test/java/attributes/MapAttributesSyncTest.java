@@ -8,6 +8,7 @@ import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.Test;
 import umlp.backendrte.command.CommandManager;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -393,8 +394,13 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     notesByTime.put(LocalDateTime.of(2026, 11, 17, 10, 30, 15, 123_000_000), "start");
     Map<LocalTime, String> slots = new LinkedHashMap<>();
     slots.put(LocalTime.of(12, 15), "lunch");
+    // Instant: microseconds, the precision of TIMESTAMP(6) WITH TIME ZONE
+    Map<Instant, Double> readings = new LinkedHashMap<>();
+    readings.put(Instant.parse("2026-11-17T09:30:15.123456Z"), 21.5);
+    Map<String, Instant> lastSeen = new LinkedHashMap<>();
+    lastSeen.put("sensor", Instant.parse("2026-11-17T09:30:15.123456Z"));
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().countsByDay(countsByDay).notesByTime(notesByTime)
-        .slots(slots).build().get();
+        .slots(slots).readings(readings).lastSeen(lastSeen).build().get();
 
     // check in backend
     getBackend().activate();
@@ -405,6 +411,8 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
         List.copyOf(sutServer.getCountsByDayMap().keySet()));
     assertEquals(notesByTime, sutServer.getNotesByTimeMap());
     assertEquals(slots, sutServer.getSlotsMap());
+    assertEquals(readings, sutServer.getReadingsMap());
+    assertEquals(lastSeen, sutServer.getLastSeenMap());
   }
 
   @Test

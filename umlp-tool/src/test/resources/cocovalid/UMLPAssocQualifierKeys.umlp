@@ -43,6 +43,7 @@ umlp UMLPAssocQualifierKeys {
     java.util.Map<java.time.LocalDate, Integer> countByDay;
     java.util.Map<java.time.LocalDateTime, String> notes;
     java.util.Map<java.time.LocalTime, java.time.LocalDate> nextByTime;
+    java.util.Map<java.time.Instant, java.time.Instant> endByStart;
   }
 
   enum F;

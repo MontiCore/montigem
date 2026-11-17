@@ -700,10 +700,10 @@ public class GenService {
 
   /**
    * whether the type is a date/time type with built-in database and DeSer support: LocalDate, LocalDateTime,
-   * LocalTime
+   * LocalTime, Instant
    */
   public static boolean isTimeType(SymTypeExpression type) {
-    return List.of("java.time.LocalDate", "java.time.LocalDateTime", "java.time.LocalTime")
+    return List.of("java.time.LocalDate", "java.time.LocalDateTime", "java.time.LocalTime", "java.time.Instant")
         .contains(type.printFullName());
   }
 

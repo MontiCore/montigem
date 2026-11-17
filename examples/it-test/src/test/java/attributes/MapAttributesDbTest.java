@@ -7,6 +7,7 @@ import attributes.test_infrastructure.AttributesTestSetup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -347,8 +348,13 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
     notesByTime.put(LocalDateTime.of(2026, 11, 17, 10, 30, 15, 123_000_000), "start");
     Map<LocalTime, String> slots = new LinkedHashMap<>();
     slots.put(LocalTime.of(12, 15), "lunch");
+    // Instant: microseconds, the precision of TIMESTAMP(6) WITH TIME ZONE
+    Map<Instant, Double> readings = new LinkedHashMap<>();
+    readings.put(Instant.parse("2026-11-17T09:30:15.123456Z"), 21.5);
+    Map<String, Instant> lastSeen = new LinkedHashMap<>();
+    lastSeen.put("sensor", Instant.parse("2026-11-17T09:30:15.123456Z"));
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().countsByDay(countsByDay).notesByTime(notesByTime)
-        .slots(slots).build().get();
+        .slots(slots).readings(readings).lastSeen(lastSeen).build().get();
 
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
 
@@ -358,6 +364,8 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         List.copyOf(clone.getCountsByDayMap().keySet()));
     assertEquals(notesByTime, clone.getNotesByTimeMap());
     assertEquals(slots, clone.getSlotsMap());
+    assertEquals(readings, clone.getReadingsMap());
+    assertEquals(lastSeen, clone.getLastSeenMap());
   }
 
   @Test

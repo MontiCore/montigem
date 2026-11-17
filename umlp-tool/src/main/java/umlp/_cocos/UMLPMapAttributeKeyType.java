@@ -23,7 +23,7 @@ public class UMLPMapAttributeKeyType implements CDBasisASTCDAttributeCoCo, CoCoT
   public static final String ERROR_MSG_FORMAT = " The key type %s of the Map attribute %s is invalid: a Map attribute "
       + "has the keys of a type qualified association: byte, short, int, long (not float, double or char: Java and the "
       + "browser would disagree on their keys), String, a domain class if the values are domain classes, and LocalDate, "
-      + "LocalDateTime or LocalTime if they are not.";
+      + "LocalDateTime, LocalTime or Instant if they are not.";
 
   @Override
   public void check(ASTCDAttribute attr) {
