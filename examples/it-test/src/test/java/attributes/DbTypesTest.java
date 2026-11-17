@@ -479,6 +479,8 @@ public interface DbTypesTest extends AttributesTestSetup {
         .bar_local_time(LocalTime.now())
         .bar_local_date_time(LocalDateTime.now())
         .bar_instant(Instant.parse("2026-11-17T09:30:15.123456Z"))
+        .bar_list_instant(List.of(Instant.parse("2026-11-17T09:30:15.123456Z"), Instant.parse("1969-12-31T23:59:59Z")))
+        .bar_opt_instant(Optional.of(Instant.parse("2026-11-17T09:30:15.123456Z")))
         .build().get();
 
     // db
@@ -490,5 +492,7 @@ public interface DbTypesTest extends AttributesTestSetup {
     assertEquals(sut.getBar_local_date_time().truncatedTo(ChronoUnit.MILLIS), clone.getBar_local_date_time().truncatedTo(ChronoUnit.MILLIS));
     assertEquals(sut.getBar_local_date(), clone.getBar_local_date());
     assertEquals(sut.getBar_instant(), clone.getBar_instant());
+    assertEquals(sut.getBar_list_instantList(), clone.getBar_list_instantList());
+    assertEquals(sut.getBar_opt_instant(), clone.getBar_opt_instant());
   }
 }

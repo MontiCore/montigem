@@ -64,15 +64,17 @@ For MontiGem users:
   `with*`, `atTime`, `toLocalTime`, `toString` in string concatenation); handwritten TypeScript that treats
   these values as `Date` has to use the Temporal API (e.g. `Temporal.Now.plainDateTimeISO()` instead of
   `new Date()`). `LocalDateTimeHelper.toDate`/`fromDate` convert for libraries that need a `Date`.
-  `GemDateInput`, `GemTimeSeriesChart` and `GemTimelineChart` take Temporal values.
+  `GemDateInput`, `GemTimeSeriesChart` and `GemTimelineChart` take Temporal values. The static methods of
+  `LocalDateTimeHelper` on `Date` (`plusDays(date, n)`, `withYear`, `setHours`, `atStartOfDay`, `atEndOfDay`, ...)
+  are removed, and `LocalDateDeSer` no longer extends `DateDeSer`.
 * `Objects.equals` with dates in transpiled code is null-safe, and values of different java.time types are not
   equal, like in Java.
 * `java.time.Instant` for points in time: as attribute type (SQL `TIMESTAMP(6) WITH TIME ZONE`, Neo4j `DateTime`,
   JSON as ISO string in UTC, e.g. `"2026-11-17T09:30:15.123Z"`) and in transpiled code as `Temporal.Instant`.
   `GemTimeSeriesChart` also takes `Instant` time stamps from handwritten TypeScript (its data types keep
   `LocalDateTime`).
-* `java.util.Date` is deprecated in transpiled code (warning `0xEE013`): use `Instant`, or `LocalDate`,
-  `LocalDateTime`, `LocalTime`.
+* **Breaking:** `java.util.Date` is not supported in transpiled code any more (error `0xEE013`): use `Instant`
+  for points in time, or `LocalDate`, `LocalDateTime`, `LocalTime`.
 
 ## 2026-11-05: 7.10.0-SNAPSHOT
 * New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`

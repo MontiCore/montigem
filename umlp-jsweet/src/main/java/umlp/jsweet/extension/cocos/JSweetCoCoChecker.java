@@ -83,6 +83,9 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
   @Override
   public Void visitVariable(VariableTree variableTree, Trees trees) {
     Symbol.VarSymbol varSymbol = (Symbol.VarSymbol) trees.getElement(getCurrentPath());
+    if (varSymbol != null && "java.util.Date".equals(varSymbol.asType().toString())) {
+      logDateError(variableTree);
+    }
     if(varSymbol.enclClass() == null || !(varSymbol.owner instanceof Symbol.ClassSymbol)) {
       super.visitVariable(variableTree, trees);
       return null;
@@ -111,6 +114,12 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
 
     super.visitVariable(variableTree, trees);
     return null;
+  }
+
+  private void logDateError(Tree tree) {
+    Log.error("0xEE013: java.util.Date is not supported in transpiled code. Use java.time.Instant for points in "
+            + "time, java.time.LocalDate, LocalDateTime or LocalTime for dates and wall times.",
+        getStartSourcePosition(getContext(),getCurrentPath().getCompilationUnit(),tree));
   }
 
   /**
@@ -258,9 +267,7 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
     }
 
     if ("java.util.Date".equals(ownerFqn)) {
-      Log.warn("0xEE013: java.util.Date is deprecated in transpiled code. Use java.time.Instant for points in time, "
-              + "java.time.LocalDate, LocalDateTime or LocalTime for dates and wall times.",
-          getStartSourcePosition(getContext(),getCurrentPath().getCompilationUnit(),tree));
+      logDateError(tree);
       return;
     }
 

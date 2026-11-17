@@ -35,9 +35,9 @@ This functionality is available in both profiles.
 | `String.format(...)` | `StringHelper.format(...)` | `StringHelper` comes from the RTE library (`@umlp/commonj2ts` or `@umlp/common`). |
 | `String.isBlank()` | `str.trim().length === 0` | |
 | `java.util.Objects.requireNonNull(x[, msg])` | Lambda with null check and thrown Error instance | Prevents `null`/`undefined`. |
-| `Objects.equals(a, b)` | `JavaUtilUtils.equals` (`equals` of the object, null-safe); `java.util.Date`: time comparison | |
+| `Objects.equals(a, b)` | `JavaUtilUtils.equals` (`equals` of the object, null-safe; java.time values only equal to values of the same type) | |
 
-#### Date & Time (`java.time` / `java.util.Date`)
+#### Date & Time (`java.time`)
 
 The `java.time` types are mapped to the **Temporal API**, imported from `@umlp/commonj2ts` (which takes it from the
 polyfill `@js-temporal/polyfill`, as not every browser has Temporal yet). Like in Java, the values have no time zone
@@ -49,10 +49,9 @@ and are exact to the nanosecond:
 | `java.time.LocalDateTime` | `Temporal.PlainDateTime` |
 | `java.time.LocalTime` | `Temporal.PlainTime` |
 | `java.time.Instant` | `Temporal.Instant` |
-| `java.util.Date` (deprecated, `0xEE013`) | `Date` |
 
-`java.util.Date` is deprecated in transpiled code: use `Instant` for points in time, `LocalDate`, `LocalDateTime` or
-`LocalTime` for dates and wall times.
+`java.util.Date` is not supported in transpiled code (error `0xEE013`): use `Instant` for points in time,
+`LocalDate`, `LocalDateTime` or `LocalTime` for dates and wall times.
 
 Important methods:
 
@@ -65,9 +64,9 @@ Important methods:
 | `equals(other)` | `other instanceof Temporal.PlainDate && this.equals(other)` |
 | `getYear()`, `getMonthValue()`, `getDayOfMonth()`, `getDayOfYear()`, `getHour()`, `getMinute()`, `getSecond()` | `.year`, `.month`, `.day`, `.dayOfYear`, `.hour`, `.minute`, `.second` |
 | `plusDays(n)`, `minusHours(n)`, ... (also `Nanos`) | `.add({days: n})`, `.subtract({hours: n})` |
-| `withYear(n)`, `withMonth(n)`, `withDayOfMonth(n)`, `withHour(n)`, ... | `.with({year: n})`, ... |
+| `withYear(n)`, `withMonth(n)`, `withDayOfMonth(n)`, `withHour(n)`, ... | `.with({year: n})`, ... (invalid values are rejected like in Java, `withYear`/`withMonth` adjust the day) |
 | `toLocalDate()`, `toLocalTime()`, `atStartOfDay()`, `atTime(...)`, `LocalDateTime.of(date, time)` | `.toPlainDate()`, `.toPlainTime()`, `.toPlainDateTime(...)` |
-| `toString()`, string concatenation (`"" + date`) | `LocalDateTimeHelper.toString(...)`, the format of java.time |
+| `toString()`, string concatenation (`"" + date`, `s += date`, `sb.append(date)`, `String.valueOf(date)`) | `LocalDateTimeHelper.toString(...)`, the format of java.time |
 | `getNano()`, `getDayOfWeek()`, `getMonth()`, `withDayOfYear(n)` | `LocalDateTimeHelper.*(...)` |
 | `toEpochSecond(offset)`, `ofEpochSecond(sec, nanos, offset)` | `LocalDateTimeHelper.*(...)`, the offset is taken as UTC |
 
@@ -584,7 +583,7 @@ The latter might work technically but are not specifically secured by our transp
 
 **Not recommended / not supported:**
 
-* `java.util.Date`: deprecated (`0xEE013`), use `Instant`.
+* `java.util.Date`: not supported (error `0xEE013`), use `Instant`.
 * Other `java.time` types like `ZonedDateTime`, `OffsetDateTime`, `Period`, `Duration`, etc.; conversions between
   `Instant` and the local types (they need a time zone).
 * Methods working with `TemporalAmount`/`TemporalAdjuster` (`plus(TemporalAmount)`, `with(TemporalAdjuster)`, etc.).
@@ -709,7 +708,7 @@ Other `Collections` helper functions not specifically supported by us (e.g., `Co
 | `java.util.Optional` | ⚠️ | Basic API usable, but no streams; test complex patterns. |
 | `java.util.Objects` | ⚠️ | `requireNonNull`/`equals` ok; avoid other methods if possible. |
 | `java.lang.String` | ✅ | Well usable (incl. `format`, `isBlank`). |
-| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant` | ✅ | Recommended for date/time, avoid other `java.time` types and `java.util.Date` (deprecated). |
+| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant` | ✅ | Recommended for date/time, avoid other `java.time` types; `java.util.Date` is not supported. |
 | `java.util.List` & Implementations | ✅ | Use standard List API + targeted factories, no streams/`List.of`. |
 | `java.util.Map` & Implementations | ✅ | Standard Map API, avoid `Map.of`/`unmodifiableMap`. |
 | `java.util.Set` & Guava Sets | ⚠️ | Basic usage ok, avoid complex set logic. |

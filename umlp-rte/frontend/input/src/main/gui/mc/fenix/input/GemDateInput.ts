@@ -66,6 +66,7 @@ export class GemDateInput extends GemDateInputComponent implements AfterViewInit
 
   @Input()
   override set entry(dateTime: Temporal.PlainDateTime) {
+    this._entry = dateTime;
     this._pickerEntry = dateTime ? LocalDateTimeHelper.toDate(dateTime) : null;
     if (this.picker) {
       this.picker.setDate(this._pickerEntry);
@@ -124,42 +125,27 @@ export class GemDateInput extends GemDateInputComponent implements AfterViewInit
     this.picker.setDate(this.pickerEntry);
   }
 
+  /**
+   * the entry with the fields the picker shows (the date, hours and minutes) from the picked date; the others, e.g. the
+   * seconds and their fraction, stay
+   */
   private onDateTimeChange(date: Date) {
+    if (!date) {
+      this.entryChange.emit(null);
+      return;
+    }
+    const picked = LocalDateTimeHelper.fromDate(date);
+    const dateFields = {year: picked.year, month: picked.month, day: picked.day};
+    const timeFields = {hour: picked.hour, minute: picked.minute};
+    const current = this._entry
+        ?? (this.timeOnlyEnabled ? Temporal.Now.plainDateISO() : picked.toPlainDate()).toPlainDateTime();
     if (this.timeOnlyEnabled) {
-      this.onTimeChange(date);
+      this.entryChange.emit(current.with(timeFields));
+    } else if (!this.dateTimeEnabled) {
+      this.entryChange.emit(current.with(dateFields));
+    } else {
+      this.entryChange.emit(current.with({...dateFields, ...timeFields}));
     }
-    else if (!this.timeOnlyEnabled && !this.dateTimeEnabled) {
-      this.onDateChange(date);
-    }
-    else {
-      this.entryChange.emit(date ? LocalDateTimeHelper.fromDate(date) : null);
-    }
-  }
-
-  private onDateChange(date: Date) {
-    const current = this.pickerEntry;
-    const newDate = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        current.getHours(),
-        current.getMinutes(),
-        current.getSeconds()
-    );
-    this.entryChange.emit(LocalDateTimeHelper.fromDate(newDate));
-  }
-
-  private onTimeChange(time: Date) {
-    const current = this.pickerEntry;
-    const newTime = new Date(
-        current.getFullYear(),
-        current.getMonth(),
-        current.getDate(),
-        time.getHours(),
-        time.getMinutes(),
-        time.getSeconds()
-    );
-    this.entryChange.emit(LocalDateTimeHelper.fromDate(newTime));
   }
 
   private getFormat(): string {
