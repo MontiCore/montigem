@@ -3,8 +3,6 @@ package collabtextdemo;
 
 import collabtextmodule.CollabText;
 import collabtextmodule.CollabTextModuleManager;
-import collabtextmodule.CollabTextSync;
-import collabtextmodule.TextEdit;
 import jakarta.annotation.PostConstruct;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,7 +26,7 @@ public class CollabTextDemoServerApplication extends CollabTextDemoServerApplica
   public void init() throws IOException {
     super.init();
     CollabText sharedNotes = CollabTextModuleManager.collabTextBuilder().build().get();
-    CollabTextSync.apply(sharedNotes, new TextEdit(0, 0,
-        "Open this page in a second window and type in both of them.\n"));
+    sharedNotes.replace(0, 0,
+        "Open this page in a second window and type in both of them.\n");
   }
 }
