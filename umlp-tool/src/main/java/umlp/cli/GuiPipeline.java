@@ -113,6 +113,7 @@ public class GuiPipeline extends Pipeline<UMLPPipelineData> {
             new GUIDSLReports(data.getData().outDir.getPath(), data.getData().reportDir.getPath(),
                 data.getData().reportPathOutput, data.getData().hwcPath);
         reports.setReportLevel(UMLPToolOptions.reportLevel(data.getData().cmd));
+        reports.setTemplateSourceMapping(UMLPToolOptions.templateSourceMapping(data.getData().cmd));
         data.getData().guidsl_reportManagerFactory = reports;
         Reporting.init(data.getData().outDir.getPath(), data.getData().reportDir.getPath(),
             data.getData().guidsl_reportManagerFactory);

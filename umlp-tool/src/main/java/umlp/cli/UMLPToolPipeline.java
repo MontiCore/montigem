@@ -73,6 +73,7 @@ public class UMLPToolPipeline extends Pipeline<UMLPPipelineData> {
     setupUMLPReports = data -> {
       UMLPReports reports = new UMLPReports(data.outDir.getPath(), data.reportDir.getPath(), data.reportPathOutput, data.hwcPath, data.tool.buildJsonData(data.cmd));
       reports.setReportLevel(UMLPToolOptions.reportLevel(data.cmd));
+      reports.setTemplateSourceMapping(UMLPToolOptions.templateSourceMapping(data.cmd));
       data.umlp_reportManagerFactory = reports;
       Reporting.init(data.outDir.getPath(), data.reportDir.getPath(), data.umlp_reportManagerFactory);
       String report_on = data.inputFile.getName().replace(".", "__");   // TODO: Is this name unique? Should it be unique?

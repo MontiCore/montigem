@@ -33,6 +33,7 @@ public class UMLPReports implements ReportManager.ReportManagerFactory {
   protected List<AReporter> reporters = new ArrayList<>();
 
   protected ReportLevel reportLevel = ReportLevel.ALL;
+  protected TemplateSourceMapping templateSourceMapping = TemplateSourceMapping.OFF;
 
   // protected MCPath templatePath;
 
@@ -54,6 +55,10 @@ public class UMLPReports implements ReportManager.ReportManagerFactory {
 
   public void setReportLevel(ReportLevel reportLevel) {
     this.reportLevel = reportLevel;
+  }
+
+  public void setTemplateSourceMapping(TemplateSourceMapping mapping){
+    this.templateSourceMapping = mapping;
   }
 
   /**
@@ -103,6 +108,16 @@ public class UMLPReports implements ReportManager.ReportManagerFactory {
       }
     };
     StatisticsReporter statisticsReporter = new StatisticsReporter(jsonElement, "UMLP_JAR_JSON", this.reportDirectory, modelName, repository, traverserNodeTree);
+    TemplateSourceMappingReporter templateSourceMappingReporter = null;
+    if(templateSourceMapping != TemplateSourceMapping.OFF) {
+      templateSourceMappingReporter = new TemplateSourceMappingReporter(this.reportDirectory, templateSourceMapping == TemplateSourceMapping.INCLUDE_SOURCES);
+    }
+
+    // Check if source-mapping is required before early exit in case of
+    // inc-gen report level
+    if(templateSourceMappingReporter != null){
+      reports.addReportEventHandler(templateSourceMappingReporter);
+    }
 
     if (reportLevel == ReportLevel.INCGEN) {
       reports.addReportEventHandler(incGenGradleReporter);
