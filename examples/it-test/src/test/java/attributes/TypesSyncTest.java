@@ -5,7 +5,10 @@ import attributes.test_infrastructure.AttributesMockTestSetup;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,6 +21,27 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TypesSyncTest extends AttributesMockTestSetup {
   public TypesSyncTest() {
     super(1);
+  }
+
+  @Test
+  public void testJavaTimeIsWritten() {
+    // client
+    getClients(0).activate();
+    var sut = AttributesManager.minimalJavaTimeBuilder()
+        .bar_local_date(LocalDate.of(2026, 11, 17))
+        .bar_local_time(LocalTime.of(9, 30, 15, 123_456_789))
+        .bar_local_date_time(LocalDateTime.of(2026, 11, 17, 9, 30, 15, 123_456_789))
+        .bar_instant(Instant.parse("2026-11-17T09:30:15.123456789Z"))
+        .build().get();
+
+    // check in backend: exact to the nanosecond
+    getBackend().activate();
+    var sutServer = AttributesManager.getMinimalJavaTimeSure(sut.gemId);
+    assertNotSame(sut, sutServer);
+    assertEquals(sut.getBar_local_date(), sutServer.getBar_local_date());
+    assertEquals(sut.getBar_local_time(), sutServer.getBar_local_time());
+    assertEquals(sut.getBar_local_date_time(), sutServer.getBar_local_date_time());
+    assertEquals(sut.getBar_instant(), sutServer.getBar_instant());
   }
 
   @Test

@@ -64,6 +64,7 @@ public class BEDecorator extends AbstractDecorator {
     standardSupportedDeSers.add("java.time.LocalDate");
     standardSupportedDeSers.add("java.time.LocalDateTime");
     standardSupportedDeSers.add("java.time.LocalTime");
+    standardSupportedDeSers.add("java.time.Instant");
     return standardSupportedDeSers;
   }
 

@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -477,6 +478,7 @@ public interface DbTypesTest extends AttributesTestSetup {
         .bar_local_date(LocalDate.now())
         .bar_local_time(LocalTime.now())
         .bar_local_date_time(LocalDateTime.now())
+        .bar_instant(Instant.parse("2026-11-17T09:30:15.123456Z"))
         .build().get();
 
     // db
@@ -487,5 +489,6 @@ public interface DbTypesTest extends AttributesTestSetup {
     assertEquals(sut.getBar_local_time().truncatedTo(ChronoUnit.MILLIS), clone.getBar_local_time().truncatedTo(ChronoUnit.MILLIS));
     assertEquals(sut.getBar_local_date_time().truncatedTo(ChronoUnit.MILLIS), clone.getBar_local_date_time().truncatedTo(ChronoUnit.MILLIS));
     assertEquals(sut.getBar_local_date(), clone.getBar_local_date());
+    assertEquals(sut.getBar_instant(), clone.getBar_instant());
   }
 }
