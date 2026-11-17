@@ -22,8 +22,10 @@ public class TypeScriptBasicTypesPrettyPrinter extends MCBasicTypesPrettyPrinter
     if (this.isPrintComments()) {
       de.monticore.prettyprint.CommentPrettyPrinter.printPreComments(node, getPrinter());
     }
-    // print only last
-    if (!node.getPartsList().isEmpty()) {
+    // print only last, except for a TypeScript type in a namespace (Temporal.PlainDate)
+    if (!node.getPartsList().isEmpty() && TypeScriptTypes.isNamespacedTSType(node.getQName())) {
+      getPrinter().print(node.getQName());
+    } else if (!node.getPartsList().isEmpty()) {
       getPrinter().print(TypeScriptTypes.toTSType(node.getBaseName()));
       if (TypeScriptTypes.TEMPLATE_REF.getMCType().equals(node.getQName())) {
         // GUIViewElement is TemplateRef<any>

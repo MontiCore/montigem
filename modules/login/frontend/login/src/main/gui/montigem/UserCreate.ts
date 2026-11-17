@@ -6,6 +6,7 @@ import { LoginModuleManager } from '../../../../build/umlpJava2ts/loginmodule/Lo
 import { config, UserCreateComponent } from '../../../../build/gui2java2ts/montigem/UserCreateComponent';
 import { LoginModuleUser } from '../loginmodule/LoginModuleUser';
 import { GemTextInputValidity } from '@umlp/input';
+import { Temporal } from '@umlp/commonj2ts';
 
 // import { ActivatedRoute, Router } from '@angular/router';
 @Component({
@@ -54,7 +55,7 @@ export class UserCreate extends UserCreateComponent {
       this.validateUser().then(errorMessage => {
         if (!errorMessage) {
           // this.user.activated(ActivationStatus.AKTIVIERT);
-          this.newUser.setRegistrationDate(new Date());
+          this.newUser.setRegistrationDate(Temporal.Now.plainDateTimeISO());
           // this.newUser.setRole(DtcockpitRole.USER);
           this.newUser.build();
           this._router.navigate(['gui', 'loginmodule', 'LoginPage']);

@@ -16,8 +16,9 @@ This section complements the User Guide with technical details on the mapping of
 
 ### 10.2 Date/Time
 
-* `java.time.LocalDateTime`, `java.time.LocalDate`, `java.util.Date`
-  * are mapped to `Date` (via type mappings in `JavaBasicsAdapter`).
+* `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`
+  * are mapped to `Temporal.PlainDateTime`, `PlainDate`, `PlainTime` (type mappings in `JavaTimeAdapter`, `Temporal`
+    from `@umlp/commonj2ts`); `java.util.Date` stays `Date`.
   * `now`, `parse`, comparison and getter methods as well as `toEpochSecond`/`ofEpochSecond` are explicitly translated into TS expressions.
   * Calculation operations (`plus*/minus*`, `atStartOfDay`) are delegated via `LocalDateTimeHelper` (`@umlp/commonj2ts`).
 

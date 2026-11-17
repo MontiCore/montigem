@@ -12,6 +12,7 @@ import {
   ViewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { LocalDateTimeHelper, Temporal } from '@umlp/commonj2ts';
 import { config, GemTimelineChartComponent } from '../../../../../../build/gui2java2ts/mc/fenix/charts/GemTimelineChartComponent';
 import { LegendPosition } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition';
 import { TimelineData } from "../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimelinecharttypes/TimelineData";
@@ -195,15 +196,18 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
         const blocks = blockList ? await GemListUtil.toArraySync(blockList) : undefined;
         if (!blocks) continue;
         for (const dataBlock of blocks) {
-        const startMs = dataBlock.getStart().getTime();
-        const endMs = dataBlock.getEnd().getTime();
+        // start and end (LocalDateTime) in local time, as the chart shows it
+        const start = LocalDateTimeHelper.toDate(dataBlock.getStart());
+        const end = LocalDateTimeHelper.toDate(dataBlock.getEnd());
+        const startMs = start.getTime();
+        const endMs = end.getTime();
 
         baseArray.push(startMs);
         xArray.push(endMs - startMs);
         yArray.push(dataBlock.getLane());
 
-        const startDateStr = dataBlock.getStart().toLocaleDateString("de-DE", {timeZone: "Europe/Berlin", hour: "2-digit", minute:"2-digit", second:"2-digit"});
-        const endDateStr = dataBlock.getEnd().toLocaleDateString("de-DE", {timeZone: "Europe/Berlin", hour: "2-digit", minute:"2-digit", second:"2-digit"});
+        const startDateStr = start.toLocaleDateString("de-DE", {hour: "2-digit", minute:"2-digit", second:"2-digit"});
+        const endDateStr = end.toLocaleDateString("de-DE", {hour: "2-digit", minute:"2-digit", second:"2-digit"});
 
         hoverTextArray.push(`${dataBlock.getLane()}<br>Start: ${startDateStr}<br>End: ${endDateStr}`);
         blockArray.push(dataBlock);
@@ -314,8 +318,8 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
   }
 
   public setShowAfter(event: any) {
-    if (event && event instanceof Date) {
-      const date: Date = event;
+    if (event && (event instanceof Date || event instanceof Temporal.PlainDateTime)) {
+      const date: Date = event instanceof Date ? event : LocalDateTimeHelper.toDate(event);
       this._layout.xaxis.range = [date.getTime(), undefined];
       this._layout.xaxis.autorange = false;
     } else {
