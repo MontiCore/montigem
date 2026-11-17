@@ -1,0 +1,6 @@
+umlp UMLPAssociationBidirectionalCase {
+    class TestAssoc_2_A;
+    class TestAssoc_2_D;
+
+    association [0..1] TestAssoc_2_A (opt) <-> (opt) TestAssoc_2_D [0..1];
+}
