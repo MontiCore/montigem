@@ -1,10 +1,16 @@
 /* (c) https://github.com/MontiCore/monticore */
 
 import {
-  AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostBinding, HostListener, inject, Injector, Input,
+  AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, HostBinding, HostListener, inject, Injector, Input,
   OnDestroy, ViewChild, ViewEncapsulation
 } from '@angular/core';
 import { config, GemCollabTextareaComponent } from '../../../../../../build/gui2java2ts/mc/fenix/collabtext/GemCollabTextareaComponent';
+import { GemListUtil } from '@umlp/commonj2ts';
+import { CollabText } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabText';
+import { CollabTextChunk } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextChunk';
+import { CollabTextAllObserver } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextAllObserver';
+import { CollabTextChunkAllObserver } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextChunkAllObserver';
+import { CollabTextModuleManager } from '../../../../../../build/umlpJava2ts/collabtextmodule/CollabTextModuleManager';
 import { GEM_COLLAB_TEXT_CURSOR_HOST, GemCollabTextCursor } from './GemCollabTextCursor';
 
 @Component({
@@ -24,10 +30,22 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
   @HostBinding('style.height')
   _height: string = '100%';
 
-  override _value: string = '';
   override _placeholder: string = '';
   override _disabled: boolean = false;
-  override _chunks: string = '';
+  override _showChunks: boolean = false;
+  private chunkLengths: number[] = [];
+  loaded = false;
+  private viewReady = false;
+  private binding = 0;
+  private refreshVersion = 0;
+  private refreshScheduled = false;
+  private boundText: CollabText;
+  private textObserver: CollabTextAllObserver;
+  private chunkObserver: CollabTextChunkAllObserver;
+  private observedChunks: CollabTextChunk[] = [];
+  private writing = false;
+  private pendingValue: string | undefined;
+  private changeDetector = inject(ChangeDetectorRef);
 
   @ViewChild('input', { static: true })
   input: ElementRef<HTMLTextAreaElement>;
@@ -42,8 +60,7 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
   });
 
   private remoteCursors: GemCollabTextCursor[] = [];
-  // Text and selection the using component knows, i.e., as of the last edit and selection it was told
-  private reportedText = '';
+  // Selection already written to the current user's cursor.
   private reportedAnchor = 0;
   private reportedHead = 0;
   private drawingScheduled = false;
@@ -51,35 +68,133 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
   private resizeObserver: ResizeObserver;
 
   @Input()
-  override set value(text: string) {
-    super.value = text;
-    this.showText(text ?? '');
+  override set text(text: CollabText) {
+    super.text = text;
+    if (this.viewReady) {
+      void this.bindText(text);
+    }
   }
 
-  override get value(): string {
-    return super.value;
+  override get text(): CollabText {
+    return super.text;
   }
 
   @Input()
-  override set chunks(chunks: string) {
-    super.chunks = chunks;
+  override set showChunks(show: boolean) {
+    super.showChunks = show;
     this.cursorChanged();
   }
 
-  override get chunks(): string {
-    return super.chunks;
+  override get showChunks(): boolean {
+    return super.showChunks;
   }
 
   ngAfterViewInit(): void {
-    this.showText(this.value ?? '');
+    this.viewReady = true;
     this.resizeObserver = new ResizeObserver(() => this.alignMarks());
     this.resizeObserver.observe(this.input.nativeElement);
+    void this.bindText(this.text);
   }
 
   override ngOnDestroy(): void {
     this.destroyed = true;
+    this.binding++;
+    this.refreshVersion++;
     this.resizeObserver?.disconnect();
+    void this.detachText();
     super.ngOnDestroy();
+  }
+
+  private async detachText(): Promise<void> {
+    const text = this.boundText;
+    const observer = this.textObserver;
+    const chunks = this.observedChunks;
+    const chunkObserver = this.chunkObserver;
+    this.boundText = undefined;
+    this.observedChunks = [];
+    this.pendingValue = undefined;
+    if (text && observer) {
+      await text.removeObserver(observer);
+    }
+    for (const chunk of chunks) {
+      await chunk.removeObserver(chunkObserver);
+    }
+  }
+
+  private async bindText(text: CollabText): Promise<void> {
+    if (text === this.boundText || this.destroyed) {
+      return;
+    }
+    const binding = ++this.binding;
+    await this.detachText();
+    if (binding !== this.binding || this.destroyed) {
+      return;
+    }
+    this.loaded = false;
+    this.changeDetector.markForCheck();
+    if (!text) {
+      this.showText('');
+      return;
+    }
+    const observer = await new CollabTextAllObserver().__CollabTextAllObserverConstructor(() => this.scheduleRefresh());
+    const chunkObserver = await new CollabTextChunkAllObserver().__CollabTextChunkAllObserverConstructor(() => this.scheduleRefresh());
+    if (binding !== this.binding || this.destroyed) {
+      return;
+    }
+    this.boundText = text;
+    this.textObserver = observer;
+    this.chunkObserver = chunkObserver;
+    await text.addObserver(observer);
+    await CollabTextModuleManager.loadAllCollabTextChunkWithIDs(await text._internal_getChunksGemList().getIDs());
+    if (binding !== this.binding || this.destroyed) {
+      await text.removeObserver(observer);
+      return;
+    }
+    await this.refreshFromChunks();
+  }
+
+  private scheduleRefresh(): void {
+    this.refreshVersion++;
+    if (this.refreshScheduled || this.destroyed) {
+      return;
+    }
+    this.refreshScheduled = true;
+    queueMicrotask(() => {
+      this.refreshScheduled = false;
+      void this.refreshFromChunks();
+    });
+  }
+
+  private async refreshFromChunks(): Promise<void> {
+    const version = ++this.refreshVersion;
+    const text = this.boundText;
+    if (!text || this.writing || this.destroyed) {
+      return;
+    }
+    const chunks = await GemListUtil.toArraySync(await text.getChunksList());
+    if (version !== this.refreshVersion || text !== this.boundText || this.writing || this.destroyed) {
+      return;
+    }
+    const previous = this.observedChunks;
+    this.observedChunks = chunks;
+    for (const chunk of previous) {
+      if (!chunks.includes(chunk)) {
+        await chunk.removeObserver(this.chunkObserver);
+      }
+    }
+    for (const chunk of chunks) {
+      if (!await chunk.containsObserver(this.chunkObserver)) {
+        await chunk.addObserver(this.chunkObserver);
+      }
+    }
+    if (version !== this.refreshVersion || text !== this.boundText || this.writing || this.destroyed) {
+      return;
+    }
+    this.chunkLengths = chunks.map(chunk => chunk.getContent().length);
+    this.showText(chunks.map(chunk => chunk.getContent()).join(''));
+    this.loaded = true;
+    this.changeDetector.markForCheck();
+    this.cursorChanged();
   }
 
   addCursor(cursor: GemCollabTextCursor): void {
@@ -135,37 +250,39 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     input.setSelectionRange(start, end, direction);
     input.scrollTop = scrollTop;
 
-    this.reportedText = text;
-    // The using component moves the cursors along with the edits itself
     this.reportedAnchor = direction === 'backward' ? end : start;
     this.reportedHead = direction === 'backward' ? start : end;
     this.cursorChanged();
   }
 
   onInput(): void {
-    const input = this.input.nativeElement;
-    const text = input.value;
-    const old = this.reportedText;
-    // The change ends at the cursor. Otherwise, typing a character next to the same one is ambiguous.
-    const maxSuffix = Math.min(old.length, text.length, text.length - input.selectionEnd);
-    let suffix = 0;
-    while (suffix < maxSuffix && old[old.length - 1 - suffix] === text[text.length - 1 - suffix]) {
-      suffix++;
+    if (!this.boundText || !this.loaded) {
+      return;
     }
-    const maxPrefix = Math.min(old.length, text.length) - suffix;
-    let prefix = 0;
-    while (prefix < maxPrefix && old[prefix] === text[prefix]) {
-      prefix++;
-    }
-    const inserted = text.substring(prefix, text.length - suffix);
-    const deleteCount = old.length - suffix - prefix;
-    this.reportedText = text;
-    if (deleteCount > 0 || inserted.length > 0) {
-      this.reportedAnchor = this.reportedHead = prefix + inserted.length;
-      this.edit.emit(prefix + '|' + deleteCount + '|' + inserted);
-      this.cursorChanged();
-    }
+    this.pendingValue = this.input.nativeElement.value;
+    this.cursorChanged();
     this.reportSelection();
+    if (!this.writing) {
+      void this.writeInput();
+    }
+  }
+
+  private async writeInput(): Promise<void> {
+    this.writing = true;
+    const text = this.boundText;
+    try {
+      while (this.pendingValue !== undefined && text === this.boundText && !this.destroyed) {
+        const value = this.pendingValue;
+        this.pendingValue = undefined;
+        await text.setContent(value);
+      }
+    } finally {
+      this.writing = false;
+      this.scheduleRefresh();
+      if (this.pendingValue !== undefined && this.boundText && !this.destroyed) {
+        void this.writeInput();
+      }
+    }
   }
 
   @HostListener('document:selectionchange')
@@ -180,7 +297,11 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     if (anchor !== this.reportedAnchor || head !== this.reportedHead) {
       this.reportedAnchor = anchor;
       this.reportedHead = head;
-      this.selectionChange.emit(anchor + '|' + head);
+      const cursor = this.cursor;
+      if (cursor) {
+        void cursor.setAnchor(anchor);
+        void cursor.setHead(head);
+      }
     }
   }
 
@@ -202,9 +323,9 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     // Start of each chunk, the shading stops at the end of the text if the chunks do not fit it
     const chunkStarts: number[] = [];
     let chunkEnd = 0;
-    for (const length of (this.chunks ?? '').split(',').filter(l => l !== '')) {
+    for (const length of this.showChunks ? this.chunkLengths : []) {
       chunkStarts.push(clamp(chunkEnd));
-      chunkEnd += Number(length);
+      chunkEnd += length;
     }
     const bounds = new Set<number>([0, text.length, ...chunkStarts]);
     cursors.forEach(c => bounds.add(c.from).add(c.to).add(c.head));

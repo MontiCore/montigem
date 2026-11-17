@@ -7,7 +7,7 @@
   #input
   class="gem-collab-textarea-input gem-collab-textarea-text"
   [placeholder]="placeholder"
-  [disabled]="disabled"
+  [disabled]="disabled || !loaded"
   (input)="onInput()"
   (scroll)="alignMarks()"
   (keyup)="reportSelection()"

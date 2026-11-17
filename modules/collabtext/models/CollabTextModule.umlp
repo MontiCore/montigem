@@ -9,10 +9,6 @@ umlp CollabTextModule {
     // The text is the content of the chunks in this order. An edit only changes the chunks it
     // touches, so the text is neither stored nor sent as a whole when a user types.
     List<CollabTextChunk> chunks;
-    // The most recently applied edit as
-    // "<revision>|<gemId of the author's cursor>|<length of the text after the edit>|<TextEdit>".
-    // The backend sets it after the chunks, so every client sees all edits in the same order.
-    String lastEdit = "";
     List<CollabTextCursor> cursors;
   }
 
@@ -27,15 +23,8 @@ umlp CollabTextModule {
     // Indices into the text. The selection starts at the anchor and ends at the head, where the cursor is.
     int anchor = 0;
     int head = 0;
-    // Websocket participant of the user, the backend removes the cursor when it has disconnected.
+    // Websocket participant of the user.
     long participant;
-  }
-
-  <<singleton>>
-  class CollabTextService {
-    // `edit` was made on the text after `baseRevision` edits. The backend adapts it to the
-    // edits of other users applied since then.
-    void applyEdit(CollabText text, CollabTextCursor author, int baseRevision, String edit);
   }
 
 }

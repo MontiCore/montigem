@@ -18,7 +18,7 @@ page CollabDemo(List<CollabText> texts, String userName = "") {
     ]),
     editors@GemColumn(width = "100%", components = [
       @iterate(CollabText text : texts) {
-        editor@CollabTextarea(text = text, userName = userName, placeholder = "Shared notes", showChunks = true);
+        editor@CollabTextarea(text = text, userName = userName, placeholder = "Shared notes");
       }
     ])
   ]);

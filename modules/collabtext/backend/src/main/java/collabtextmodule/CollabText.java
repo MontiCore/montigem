@@ -1,18 +1,14 @@
 /* (c) https://github.com/MontiCore/monticore */
 package collabtextmodule;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class CollabText extends CollabTextTOP {
+  public static final int MAX_CHUNK_LENGTH = 10;
 
-  public static String encodeLastEdit(int revision, long authorGemId, int length, TextEdit edit) {
-    return revision + "|" + authorGemId + "|" + length + "|" + edit.encode();
-  }
-
-  /**
-   * The whole text. In the frontend, this loads all chunks that are not loaded yet. To follow
-   * the changes of the text, apply the edits published as {@code lastEdit} instead of calling it again.
-   */
+  /** Joins the current chunk contents. */
   public String getContent() {
-    CollabTextModuleManager.loadAllCollabTextChunkWithIDs(_internal_getChunksGemList().getIDs());
     StringBuilder content = new StringBuilder();
     for (CollabTextChunk chunk : getChunksList()) {
       content.append(chunk.getContent());
@@ -20,37 +16,82 @@ public class CollabText extends CollabTextTOP {
     return content.toString();
   }
 
-  /** Number of edits applied to the text so far. */
-  public int getRevision() {
-    if (getLastEdit().isEmpty()) {
-      return 0;
-    }
-    return Integer.parseInt(getLastEdit().substring(0, separator(1)));
-  }
-
-  /** GemId of the cursor of the user who made the last edit, 0 if the backend made it itself. */
-  public long getLastEditAuthor() {
-    return Long.parseLong(getLastEdit().substring(separator(1) + 1, separator(2)));
-  }
-
-  /** Length of the text, without reading its chunks. */
   public int getLength() {
-    if (getLastEdit().isEmpty()) {
-      return 0;
+    int length = 0;
+    for (CollabTextChunk chunk : getChunksList()) {
+      length += chunk.getContent().length();
     }
-    return Integer.parseInt(getLastEdit().substring(separator(2) + 1, separator(3)));
+    return length;
   }
 
-  public TextEdit getLastTextEdit() {
-    return TextEdit.decode(getLastEdit().substring(separator(3) + 1));
+  /** Updates the changed range of the chunks through generated setters and association mutations. */
+  public void setContent(String content) {
+    String previous = getContent();
+    int common = Math.min(previous.length(), content.length());
+    int prefix = 0;
+    while (prefix < common && previous.charAt(prefix) == content.charAt(prefix)) {
+      prefix++;
+    }
+    int suffix = 0;
+    while (suffix < common - prefix
+        && previous.charAt(previous.length() - 1 - suffix) == content.charAt(content.length() - 1 - suffix)) {
+      suffix++;
+    }
+    if (prefix != previous.length() || prefix != content.length()) {
+      replace(prefix, previous.length() - prefix - suffix, content.substring(prefix, content.length() - suffix));
+    }
   }
 
-  // Index of the given separator in lastEdit, the edit behind the third one may contain more
-  private int separator(int number) {
-    int index = -1;
-    for (int i = 0; i < number; i++) {
-      index = getLastEdit().indexOf("|", index + 1);
+  /** Replaces a range without constructing or synchronizing an edit object. */
+  public boolean replace(int position, int deleteCount, String inserted) {
+    List<Integer> lengths = new ArrayList<>();
+    int length = 0;
+    for (CollabTextChunk chunk : getChunksList()) {
+      lengths.add(chunk.getContent().length());
+      length += chunk.getContent().length();
     }
-    return index;
+    if (position < 0 || deleteCount < 0 || position > length - deleteCount) {
+      return false;
+    }
+    int first = 0;
+    int firstStart = 0;
+    while (first < lengths.size() - 1 && firstStart + lengths.get(first) < position) {
+      firstStart += lengths.get(first);
+      first++;
+    }
+    int touchedCount = 0;
+    if (!lengths.isEmpty()) {
+      int last = first;
+      int touchedEnd = firstStart + lengths.get(first);
+      while (last < lengths.size() - 1 && touchedEnd < position + deleteCount) {
+        last++;
+        touchedEnd += lengths.get(last);
+      }
+      touchedCount = last - first + 1;
+    }
+    StringBuilder touched = new StringBuilder();
+    for (int i = first; i < first + touchedCount; i++) {
+      touched.append(getChunks(i).getContent());
+    }
+    String previous = touched.toString();
+    int localPosition = position - firstStart;
+    String changed = previous.substring(0, localPosition) + inserted + previous.substring(localPosition + deleteCount);
+    // Leave room in newly split chunks for subsequent typing.
+    int pieceLength = changed.length() <= MAX_CHUNK_LENGTH ? MAX_CHUNK_LENGTH : MAX_CHUNK_LENGTH / 2;
+    int newCount = 0;
+    for (int start = 0; start < changed.length(); start += pieceLength) {
+      String content = changed.substring(start, Math.min(changed.length(), start + pieceLength));
+      if (newCount >= touchedCount) {
+        addChunks(first + newCount, CollabTextModuleManager.collabTextChunkBuilder().content(content).build().get());
+      } else if (!getChunks(first + newCount).getContent().equals(content)) {
+        getChunks(first + newCount).setContent(content);
+      }
+      newCount++;
+    }
+    for (int i = touchedCount - 1; i >= newCount; i--) {
+      CollabTextChunk removed = removeChunks(first + i);
+      CollabTextModuleManager.deleteCollabTextChunk(removed.getGemId());
+    }
+    return true;
   }
 }
