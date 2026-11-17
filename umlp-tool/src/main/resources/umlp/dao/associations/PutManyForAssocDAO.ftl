@@ -1,6 +1,7 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-<#-- ownerIsLeft: whether the owner (the qualified side) is the left side of the association -->
-${tc.signature("association", "ownerName", "keyType", "ownerIsLeft")}
+<#-- ownerIsLeft: whether the owner (the qualified side) is the left side of the association; keyDbType: the type
+     dao/Set stores the key as (QualifierKey#getDbType) -->
+${tc.signature("association", "ownerName", "keyType", "ownerIsLeft", "keyDbType")}
 ${cd4c.method("public void putMany${association.getName()?cap_first}(long ${ownerName}GemId, Map<${keyType}, Long> ids)")}
   ensurePut${association.getName()?cap_first}Created();
   if(ids.isEmpty()) {
@@ -19,7 +20,7 @@ ${cd4c.method("public void putMany${association.getName()?cap_first}(long ${owne
         st.setLong(1, entry.getValue());
         st.setLong(2, ${ownerName}GemId);
 </#if>
-        st.setObject(3, entry.getKey());
+        ${includeArgs("umlp.dao.Set", "st", 3, keyDbType, "entry.getKey()", false, "")};
         st.addBatch();
       }
       st.executeBatch();

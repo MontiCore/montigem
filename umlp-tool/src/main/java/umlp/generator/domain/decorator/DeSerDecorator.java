@@ -173,10 +173,12 @@ public class DeSerDecorator extends DomainClassDecorator {
     if (GenService.isMap(attr)) {
       // pairs of key and gemId of the value
       QualifierKey key = QualifierKey.of(attr);
+      // time keys by the DeSers of the object mapper
+      String keyDeSerType = key.isTimeKey() ? key.getStoredKeyType() : "";
       getCD4C().addMethod(deSer, "umlp.deser.serializeGemMapField", originalClassName, attr.getName(),
-          key.getStoredKeyType());
+          key.getStoredKeyType(), keyDeSerType, cdName + BaseClassObjectMapperDecorator.SUFFIX);
       getCD4C().addMethod(deSer, "umlp.deser.deserializeGemMapField", originalClassName, attr.getName(),
-          key.getStoredKeyType(), key.getStoredKeyJson());
+          key.getStoredKeyType(), key.getStoredKeyJson(), keyDeSerType, cdName + BaseClassObjectMapperDecorator.SUFFIX);
       getCD4C().addImport(deSer, "java.util.Map");
       getCD4C().addImport(deSer, "java.util.LinkedHashMap");
     } else if (GenService.isList(attr)) {

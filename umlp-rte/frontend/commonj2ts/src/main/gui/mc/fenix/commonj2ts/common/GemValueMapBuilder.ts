@@ -8,6 +8,8 @@ import {IUMLPMap} from "./IUMLPMap";
 import {AsyncList} from "../javautil/AsyncList";
 import {AsyncMap} from "../javautil/AsyncMap";
 import {AsyncSet} from "../javautil/AsyncSet";
+import {JavaUtilUtils} from "../javautil/JavaUtilUtils";
+import {TemporalKeys} from "../javautil/TemporalKeys";
 
 // GemMap that has to be used while objects are created, as in this state it cannot be
 // synchronized with other participants yet.
@@ -18,6 +20,9 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
   // by id, so they are kept here locally. build() clears this storage, it is not used afterwards.
   // a Map keeps the insertion order
   protected builderElemStorage: Map<K, IDOrBuilder<V>> = new Map();
+
+  // finds the stored java.time keys of builderElemStorage by value, see storedKey
+  protected readonly builderTemporalKeys: TemporalKeys<K> = new TemporalKeys<K>(() => this.builderElemStorage);
 
   // The values put as objects (built values or builders) before build(): the managers observe the values of the
   // owners they know, an owner that is a builder is not known yet, so build() derives their keys again
@@ -50,6 +55,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     for (const [key, element] of Array.from(this.builderElemStorage.entries())) {
       this.idMap.set(key, await element.getIDAndMaybeBuild());
     }
+    this.temporalKeys.reset();
 
     this.buildFinished = true;
 
@@ -69,7 +75,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
         for (const [key, element] of Array.from(this.builderElemStorage.entries())) {
           if (element.getGemId() === value.getGemId()) {
             const derived: K = await this.deriveKey(value);
-            if (key !== derived) {
+            if (!JavaUtilUtils.equalsSync(key, derived)) {
               await this._internal_rekey(key, derived, value.getGemId());
             }
             break;
@@ -116,8 +122,10 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       return super.removeKey(key);
     } else {
       await this.ensureKeyed();
+      key = this.storedKey(key);
       const old: IDOrBuilder<V> = this.storageGet(key);
       this.builderElemStorage.delete(key);
+      this.builderTemporalKeys.removed(key);
       await this.valueLeft(old, -1);
       return old == null ? null : this.resolveValue(old);
     }
@@ -128,7 +136,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       return super.containsKey(key);
     } else {
       await this.ensureKeyed();
-      return this.builderElemStorage.has(key);
+      return this.builderElemStorage.has(this.storedKey(key));
     }
   }
 
@@ -145,8 +153,10 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if (this.buildFinished) {
       await super._internal_put(key, valueGemID);
     } else {
+      key = this.storedKey(key);
       const old: IDOrBuilder<V> = this.storageGet(key);
       this.builderElemStorage.set(key, new IDOrBuilder<V>(valueGemID));
+      this.builderTemporalKeys.stored(key);
       await this.valueLeft(old, valueGemID);
     }
   }
@@ -156,18 +166,21 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       await super._internal_putValue(value);
     } else {
       // keep the element itself, it may be an unbuilt builder
-      const key: K = await this.deriveKey(value);
-      if (this.refusesKey(key, value.getGemId())) {
+      const derived: K = await this.deriveKey(value);
+      if (this.refusesKey(derived, value.getGemId())) {
         return;
       }
       // stored under one key only, see _internal_putValueID
       for (const [otherKey, other] of Array.from(this.builderElemStorage.entries())) {
-        if (otherKey !== key && other.getGemId() === value.getGemId()) {
+        if (!JavaUtilUtils.equalsSync(otherKey, derived) && other.getGemId() === value.getGemId()) {
           this.builderElemStorage.delete(otherKey);
+          this.builderTemporalKeys.removed(otherKey);
         }
       }
+      const key: K = this.storedKey(derived);
       const old: IDOrBuilder<V> = this.storageGet(key);
       this.builderElemStorage.set(key, new IDOrBuilder<V>(value));
+      this.builderTemporalKeys.stored(key);
       await this.valueLeft(old, value.getGemId());
       this.valuesPutBeforeBuild.set(value.getGemId(), value);
       await this.onValueKeyed(value);
@@ -184,14 +197,17 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       await this.ensureKeyed();
       // stored under one key only, see _internal_putValueID
       for (const [otherKey, other] of Array.from(this.builderElemStorage.entries())) {
-        if (otherKey !== key && other.getGemId() === value.getGemId()) {
+        if (!JavaUtilUtils.equalsSync(otherKey, key) && other.getGemId() === value.getGemId()) {
           this.builderElemStorage.delete(otherKey);
+          this.builderTemporalKeys.removed(otherKey);
         }
       }
       // Map might contain builders, which a normal GemMap will not
       // Thus, the elements themselves are stored, not only their ids
+      key = this.storedKey(key);
       const old: IDOrBuilder<V> = this.storageGet(key);
       this.builderElemStorage.set(key, new IDOrBuilder<V>(value));
+      this.builderTemporalKeys.stored(key);
       await this.valueLeft(old, value.getGemId());
     }
   }
@@ -208,6 +224,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     for (const [key, value] of Array.from(this.builderElemStorage.entries())) {
       if (value.getGemId() === gemID) {
         this.builderElemStorage.delete(key);
+        this.builderTemporalKeys.removed(key);
         await this.valueLeft(value, -1);
         return true;
       }
@@ -219,8 +236,10 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if (this.buildFinished) {
       await super._internal_remove(key);
     } else {
+      key = this.storedKey(key);
       const old: IDOrBuilder<V> = this.storageGet(key);
       this.builderElemStorage.delete(key);
+      this.builderTemporalKeys.removed(key);
       await this.valueLeft(old, -1);
     }
   }
@@ -231,6 +250,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     } else {
       const removed: Array<IDOrBuilder<V>> = Array.from(this.builderElemStorage.values());
       this.builderElemStorage.clear();
+      this.builderTemporalKeys.reset();
       this.unkeyedValueIDs.length = 0;
       for (const old of removed) {
         await this.valueLeft(old, -1);
@@ -287,9 +307,12 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     if (this.buildFinished) {
       super.moveEntry(oldKey, newKey);
     } else {
+      oldKey = this.storedKey(oldKey);
       const value: IDOrBuilder<V> = this.storageGet(oldKey);
       this.builderElemStorage.delete(oldKey);
+      this.builderTemporalKeys.removed(oldKey);
       this.builderElemStorage.set(newKey, value);
+      this.builderTemporalKeys.stored(newKey);
     }
   }
 
@@ -346,7 +369,13 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
   }
 
   /*private*/ storageGet(key: any): IDOrBuilder<V> {
+    key = this.storedKey(key);
     return this.builderElemStorage.has(key) ? this.builderElemStorage.get(key) : null;
+  }
+
+  /** before build, the stored key of builderElemStorage, see GemValueMap#storedKey */
+  override storedKey(key: any): any {
+    return this.buildFinished ? super.storedKey(key) : this.builderTemporalKeys.find(key);
   }
 }
 

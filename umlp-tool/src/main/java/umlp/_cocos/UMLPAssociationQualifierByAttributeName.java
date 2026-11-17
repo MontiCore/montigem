@@ -28,7 +28,8 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
 
   public static final String TYPE_ERROR_MSG_FORMAT = " Qualified association with attribute %s " +
       "has incompatible type, qualified associations only support primitive (not float, double or char: Java and " +
-      "the browser would disagree on their keys), String or domain class attributes as qualifiers.";
+      "the browser would disagree on their keys), String, LocalDate, LocalDateTime, LocalTime, Instant or domain " +
+      "class attributes as qualifiers.";
 
   private final WithinTypeBasicSymbolsResolver resolver;
 
@@ -64,12 +65,13 @@ public class UMLPAssociationQualifierByAttributeName implements CDAssociationAST
   }
 
   /**
-   * primitive (MontiCore typecheck, String included) qualifiers are keys of a GemValueMap, except the ones the
-   * participants would not agree on (see {@link #isUnsupportedKey})
+   * primitive (MontiCore typecheck, String included) and date/time qualifiers are keys of a GemValueMap, except the
+   * ones the participants would not agree on (see {@link #isUnsupportedKey})
    */
   public static boolean isValueKey(SymTypeExpression type) {
     return (type.isPrimitive() || SymTypeRelations.isNumericType(type)
-        || SymTypeRelations.isBoolean(type) || SymTypeRelations.isString(type)) && !isUnsupportedKey(type);
+        || SymTypeRelations.isBoolean(type) || SymTypeRelations.isString(type) || GenService.isTimeType(type))
+        && !isUnsupportedKey(type);
   }
 
   /**

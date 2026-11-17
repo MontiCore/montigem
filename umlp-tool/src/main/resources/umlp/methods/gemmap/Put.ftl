@@ -13,7 +13,7 @@ ${keyType} key = this._${name}.<#if isEntry>deriveKeyID<#else>deriveKey</#if>(o)
 <#if !isEntry>
 if (!this._${name}.isSafeKey(key)) {
   Log.error("0xA7326 The object with id " + o.getGemId() + " cannot be put under the key " + key
-      + ", which a browser cannot represent exactly");
+      + ": " + this._${name}.unsafeKeyReason());
   return;
 }
 </#if>

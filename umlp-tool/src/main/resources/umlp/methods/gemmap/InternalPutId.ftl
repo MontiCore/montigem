@@ -22,7 +22,7 @@ if (key == null) {
 <#if !isEntry>
 if (!this._${name}.isSafeKey(key)) {
   Log.error("0xA7326 The object with id " + gemID + " cannot be put under the key " + key
-      + ", which a browser cannot represent exactly");
+      + ": " + this._${name}.unsafeKeyReason());
   return;
 }
 </#if>

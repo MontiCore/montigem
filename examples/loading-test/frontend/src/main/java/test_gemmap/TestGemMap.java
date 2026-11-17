@@ -7,6 +7,7 @@ import loadingtests.LoadingTestsManager;
 import loadingtests.Student;
 import loadingtests.Tutor;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -207,5 +208,31 @@ public class TestGemMap extends TestGemMapTOP {
       c.putMenteeByTutor(t, s);
       setResult("mentee=" + c.getMenteeByTutor(t).getName());
     };
+  }
+
+  /**
+   * date keys: a key created here finds the equal one loaded from the server; "-" for a day without a student
+   */
+  @Override
+  public Consumer<Void> readExamDay(Course c) {
+    return $ -> {
+      Student s = c.getStudentByExamDay(LocalDate.of(2026, 11, 17));
+      setResult("size=" + c.sizeStudentByExamDays() + ";exam=" + (s == null ? "-" : s.getName()));
+    };
+  }
+
+  /** a put under a key equal to the loaded one replaces its value */
+  @Override
+  public Consumer<Void> putExamDay(Course c, Student s) {
+    return $ -> {
+      c.putStudentByExamDay(LocalDate.of(2026, 11, 17), s);
+      setResult("size=" + c.sizeStudentByExamDays() + ";exam="
+          + c.getStudentByExamDay(LocalDate.of(2026, 11, 17)).getName());
+    };
+  }
+
+  @Override
+  public Consumer<Void> removeExamDay(Course c) {
+    return $ -> c.removeStudentByExamDay(LocalDate.of(2026, 11, 17));
   }
 }

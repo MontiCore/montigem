@@ -71,6 +71,12 @@ For MontiGem users:
   `LocalTime`, `Instant` (`0xCDC6F`), time keys only to the microsecond (`0xA7336`); in the
   frontend, equal date/time keys are the same key, like in Java. As with `get<Attr>List()`,
   changes through `getScoresMap()` are not synchronized.
+* Qualified associations take date/time keys: `LocalDate`, `LocalDateTime`, `LocalTime` and
+  `Instant` as type qualifier (`association Directory [java.time.LocalDate] -> (byBirthday) Person [1];`),
+  as qualifying attribute (`[[start]]`) and as key of a `Map` attribute with domain class values.
+  Chosen keys are stored only to the microsecond (the association table), finer ones are refused
+  (`0xA7309`, `0xA7326`, commands `0xA7338`); in the frontend, equal keys are the same key, like in
+  Java.
 * Deleting an object deletes the rows of its list attributes in SQL; before, they stayed in the
   tables `<class>$<attr>`.
 

@@ -48,6 +48,15 @@ umlp QualifiedAssocs {
   association Directory [[code]] (badgeDirectory) -> (byBadgeCode) Badge [1];
   association Directory [long] (phoneDirectory) -> (byPhone) Person [1];
 
+  /* time keys: chosen dates and points in time, derived date-times; chosen keys only to the microsecond, which the
+     association table stores */
+  class Meeting {
+    java.time.LocalDateTime start;
+  }
+  association Directory [java.time.LocalDate] (birthdayDirectory) -> (byBirthday) Person [1];
+  association Directory [java.time.Instant] (shiftDirectory) -> (byShiftStart) Person [1];
+  association Directory [[start]] (meetingDirectory) -> (meetingByStart) Meeting [1];
+
   /* a singleton owner of type qualified maps: deleting a value or a key object removes its entries there as well */
   <<singleton>>
   class Registry;
@@ -74,5 +83,6 @@ umlp QualifiedAssocs {
   class Roster {
     Map<String, Person> byNick;
     java.util.Map<Department, Person> deputyByDepartment;
+    Map<java.time.LocalDate, Person> byDay;
   }
 }

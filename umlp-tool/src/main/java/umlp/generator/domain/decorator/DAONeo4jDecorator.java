@@ -162,9 +162,9 @@ public class DAONeo4jDecorator extends DAODecorator {
         ownerSide.getSymbol().getType().print(), mapSide.getSymbol().getType().print(), mapSide.getName(),
         key.getNeo4jPropertyName(), otherSideRole);
     getCD4C().addMethod(daoClass, "umlp.dao.associations.PutForAssocDAONeo4j", assoc, key.getStoredKeyType(),
-        ownerSide.isLeft());
+        ownerSide.isLeft(), key.getDbType());
     getCD4C().addMethod(daoClass, "umlp.dao.associations.PutManyForAssocDAONeo4j", assoc, ownerSide.getName(),
-        key.getStoredKeyType());
+        key.getStoredKeyType(), key.getDbType());
     getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectInitNeo4jWithKeysForAssocDAO", ownerSide.getName(),
         mapSide.getName(), CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), key.getNeo4jPropertyName());
     getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectWithKeysForAssocDAONeo4j", ownerSide.getName(),

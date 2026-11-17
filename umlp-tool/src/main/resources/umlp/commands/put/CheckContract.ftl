@@ -5,9 +5,11 @@
      chosen: type qualified association, the key is chosen on put, so it must be present (the owner rejects a null key
      before sending, see methods/gemmap/InternalPutId);
      longKey: a long key must be within the integers a browser represents exactly (GemValueMap#isSafeKey);
+     microsecondKey: a chosen time key must be whole microseconds, which the association table stores;
      the server (participant 0) checks that the value exists and, for a chosen key object (keyTypeManager not empty),
      that the key object exists; the other participants trust the server -->
-${tc.signature("chosen", "longKey", "name", "targettype", "targetTypeManager", "keyType", "keyTypeManager")}
+${tc.signature("chosen", "longKey", "microsecondKey", "name", "targettype", "targetTypeManager", "keyType",
+    "keyTypeManager")}
 ${cd4c.method("public boolean checkContract()")}
 <#if chosen>
 if (key == null) {
@@ -19,6 +21,13 @@ if (key == null) {
 if (key != null && (key < -9007199254740991L || key > 9007199254740991L)) {
   Log.warn("0xA7327 The put of the object with id " + getGemId() + " under the key " + key
       + " is rejected: a browser cannot represent the key exactly");
+  return false;
+}
+</#if>
+<#if microsecondKey>
+if (key != null && key.getNano() % 1000 != 0) {
+  Log.warn("0xA7338 The put of the object with id " + getGemId() + " under the key " + key
+      + " is rejected: a database stores the key only to the microsecond");
   return false;
 }
 </#if>
