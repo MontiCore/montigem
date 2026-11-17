@@ -308,17 +308,20 @@ public class DAODecorator extends DAOInterfaceDecorator {
   protected void deleteMethod(ASTCDType daoClass, ASTCDClass domainClass, Map<ASTCDAssocSide, ASTCDAssociation> assocSideToAssoc) {
     getCD4C().addMethod(daoClass, "umlp.dao.Delete", cdName, SQLSchemaGenerator.convertClassName(domainClass.getName(), SQLSchemaGenerator.AttributeType.ESCAPED_QUOTED),
         domainClass.getName(), assocSideToAssoc, getAssocToSourceDefinitionCD(assocSideToAssoc.values().stream()),
-        GemMapOwnerRole.typeQualifiedKeyedBy(origCD, domainClass), getMapAttributeTables(domainClass));
+        GemMapOwnerRole.typeQualifiedKeyedBy(origCD, domainClass), getListAndMapAttributeTables(domainClass));
   }
 
   /**
-   * @return the tables of the map attributes of the class, named after the classes declaring them (see
+   * @return the tables of the list and map attributes of the class, named after the classes declaring them (see
    * SQLSchemaGenerator); their rows go with the object
    */
-  protected List<String> getMapAttributeTables(ASTCDClass domainClass) {
+  protected List<String> getListAndMapAttributeTables(ASTCDClass domainClass) {
     return UMLPSymbolTables.getAttributesInHierarchyWithDefiningType(domainClass).entrySet().stream()
-        .filter(e -> !e.getKey().getModifier().isDerived() && GenService.isMap(e.getKey()))
-        .map(e -> SQLSchemaGenerator.convertMapAttributeTableName(e.getValue().getName(), e.getKey().getName()))
+        .filter(e -> !e.getKey().getModifier().isDerived())
+        .filter(e -> GenService.isList(e.getKey()) || GenService.isMap(e.getKey()))
+        .map(e -> GenService.isList(e.getKey())
+            ? SQLSchemaGenerator.convertListAttributeTableName(e.getValue().getName(), e.getKey().getName())
+            : SQLSchemaGenerator.convertMapAttributeTableName(e.getValue().getName(), e.getKey().getName()))
         .collect(Collectors.toList());
   }
 

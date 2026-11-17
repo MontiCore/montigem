@@ -67,6 +67,8 @@ For MontiGem users:
   Neo4j properties `Scores_keys` and `Scores_values`); the entries keep their insertion order. The
   keys are those of type qualifiers without domain classes (`0xCDC6F`). As with `get<Attr>List()`,
   changes through `getScoresMap()` are not synchronized.
+* Deleting an object deletes the rows of its list attributes in SQL; before, they stayed in the
+  tables `<class>$<attr>`.
 
 ## 2026-11-13: 7.10.0-SNAPSHOT
 * `Map<K, V>` attributes with a domain class value become type qualified associations, as

@@ -201,6 +201,16 @@ public interface DbTypesTest extends AttributesTestSetup {
   }
 
   @Test
+  default void testDeleteRemovesTheListEntries() {
+    var sut = AttributesManager.listOfStringsBuilder().strings(List.of("A", "B")).build().get();
+    long gemId = sut.gemId;
+
+    assertTrue(AttributesManager.deleteListOfStrings(gemId));
+    var dao = AttributesDAOFactory.getListOfStringsDAO();
+    assertTrue(dao.selectStrings(gemId).isEmpty());
+  }
+
+  @Test
   default void testOptionalOfStringIsWritten() {
     Optional<String> value = Optional.of("A");
     var sut = AttributesManager.optionalOfStringBuilder().str(value).build().get();
