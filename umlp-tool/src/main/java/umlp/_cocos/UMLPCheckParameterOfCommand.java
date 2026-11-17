@@ -16,7 +16,6 @@ public class UMLPCheckParameterOfCommand implements CDBasisASTCDClassCoCo {
 
   public static final String ERROR_CODE = "0x40251";
 
-  public static final String ERROR_MSG_ENUM = " The singleton class %s must not have any enums as parameters of its method %s";
   public static final String ERROR_MSG_ARRAY = " The singleton class %s must not have any array as parameters of its method %s, use List";
   public static final String ERROR_MSG_MAP = " The singleton class %s must not have any maps as parameters of its method %s";
 
@@ -33,9 +32,7 @@ public class UMLPCheckParameterOfCommand implements CDBasisASTCDClassCoCo {
 
           for (ASTCDParameter parameter : method.getCDParameterList()) {
             SymTypeExpression expression = TypeCheck3.symTypeFromAST(parameter.getMCType());
-            if (OOSymbolsSymTypeRelations.isEnum(expression)) {
-              Log.error(ERROR_CODE + String.format(ERROR_MSG_ENUM, clazz.getName(), method.getName()) + ERROR_SUFFIX, parameter.get_SourcePositionStart());
-            } else if (expression.isArrayType()) {
+            if (expression.isArrayType()) {
               Log.error(ERROR_CODE + String.format(ERROR_MSG_ARRAY, clazz.getName(), method.getName()) + ERROR_SUFFIX, parameter.get_SourcePositionStart());
             } else if (MCCollectionSymTypeRelations.isMap(expression)) {
               Log.error(ERROR_CODE + String.format(ERROR_MSG_MAP, clazz.getName(), method.getName()) + ERROR_SUFFIX, parameter.get_SourcePositionStart());
