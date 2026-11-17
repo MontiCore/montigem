@@ -131,6 +131,16 @@ umlp Attributes {
     List<boolean> bVals;
   }
 
+  /* map attributes with simple values: the keys of type qualifiers (byte, short, int, long, String), the values of
+     list attributes (primitive and boxed types, String, enums) */
+  class MapsOfSimpleTypes{
+    Map<String, int> scores;
+    Map<long, Double> weights;
+    java.util.Map<int, MaritalStatus> statusById;
+    Map<short, boolean> flags;
+    Map<byte, String> labels;
+  }
+
   class ClassWithDefaults{
     int i = 0;
     MaritalStatus status = MaritalStatus.SINGLE;

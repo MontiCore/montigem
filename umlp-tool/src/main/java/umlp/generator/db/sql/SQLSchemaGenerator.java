@@ -17,6 +17,7 @@ import de.monticore.generating.GeneratorEngine;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.symboltable.ISymbol;
+import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.SymTypeOfGenerics;
 import de.se_rwth.commons.logging.Log;
 import umlp._prettyprint.UMLPFullPrettyPrinter;
@@ -79,6 +80,10 @@ public class SQLSchemaGenerator {
     return resolveIdentifier(listAttributeTableName(className, attributeName), hashedIdentifiers);
   }
 
+  public static String convertMapAttributeTableName(String className, String attributeName) {
+    return resolveIdentifier(mapAttributeTableName(className, attributeName), hashedIdentifiers);
+  }
+
   // PostgreSQL silently truncates identifiers to 63 bytes, we truncate the same way
   public static String truncateIdentifier(String identifier) {
     return truncate(identifier, MAX_IDENTIFIER_BYTES);
@@ -124,6 +129,10 @@ public class SQLSchemaGenerator {
 
   private static String listAttributeTableName(String className, String attributeName) {
     return className(className) + "$" + attributeName(attributeName);
+  }
+
+  private static String mapAttributeTableName(String className, String attributeName) {
+    return listAttributeTableName(className, attributeName) + "$map";
   }
 
   protected void initClassNameToType() {
@@ -242,7 +251,8 @@ public class SQLSchemaGenerator {
     for (ASTCDAttribute attribute : relevantAttributes) {
       Optional<? extends ISymbol> typeSym = attribute.getMCType().getDefiningSymbol();
       if (!GenService.isList(attribute)
-          && !GenService.isOptional(attribute)) {
+          && !GenService.isOptional(attribute)
+          && !GenService.isMap(attribute)) {
         p.print(",");
         generateSimpleField(cd, node, attribute, p);
       }
@@ -256,6 +266,7 @@ public class SQLSchemaGenerator {
     p.println(");");
 
     generateListAttributeTables(cd, node, p);
+    generateMapAttributeTables(cd, node, p);
   }
 
   private void generateListAttributeTables(ASTCDDefinition cd, ASTCDType node, IndentPrinter p) {
@@ -309,6 +320,52 @@ public class SQLSchemaGenerator {
 
     p.unindent();
     p.println(");");
+  }
+
+  private void generateMapAttributeTables(ASTCDDefinition cd, ASTCDType node, IndentPrinter p) {
+    // like list attribute tables: once for the class declaring the attribute
+    node.getCDAttributeList()
+        .stream()
+        .filter(a -> !a.getModifier().isStatic())
+        .filter(a -> !a.getModifier().isDerived())
+        .filter(GenService::isMap)
+        .forEach(a -> generateMapFieldTable(cd, node, a, p));
+  }
+
+  /**
+   * the entries of a map attribute with simple values: one row per key, index keeps the insertion order (a replaced
+   * value keeps its position)
+   */
+  protected void generateMapFieldTable(ASTCDDefinition cd, ASTCDType typeNode, ASTCDAttribute attribute,
+                                       IndentPrinter p) {
+    p.print("CREATE TABLE ");
+    String tableName = mapAttributeTableName(typeNode.getName(), attribute.getName());
+    String origin = "attribute " + cd.getName() + "." + typeNode.getName() + "." + attribute.getName();
+    p.print(checkIdentifier("", tableName, origin));
+    p.println("(");
+    p.indent();
+
+    p.println("id BIGINT NOT NULL,");
+    p.println("_key " + getMapFieldType(cd, typeNode, attribute, 0) + " NOT NULL,");
+    p.println("_value " + getMapFieldType(cd, typeNode, attribute, 1) + " NOT NULL,");
+    p.println("index BIGINT NOT NULL,");
+    p.println("CONSTRAINT " + checkIdentifier("", "pk_" + tableName, origin) + " PRIMARY KEY (id,_key)");
+
+    p.unindent();
+    p.println(");");
+  }
+
+  /**
+   * @param index 0: the key type, 1: the value type
+   */
+  protected String getMapFieldType(ASTCDDefinition cd, ASTCDType typeNode, ASTCDAttribute attribute, int index) {
+    SymTypeExpression argument = GenService.getMapTypeArgument(attribute.getSymbol().getType(), index).get();
+    String type = GenService.isCDEnum(argument) ? "java.lang.Enum" : argument.printFullName();
+    if (!fqnClassNameToType.containsKey(type)) {
+      Log.error("0xdf10c Can not convert type to SQL: " + type + " used in " + cd.getName() + "."
+          + typeNode.getName() + "." + attribute.getName());
+    }
+    return fqnClassNameToType.get(type);
   }
 
   protected void generateIdField(String tableName, IndentPrinter p) {

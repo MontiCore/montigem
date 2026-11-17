@@ -162,6 +162,12 @@ classdiagram LoadingTests {
     int ects;
   }
 
+  // map attributes with simple values
+  class Gradebook {
+    Map<String, int> grades;
+    Map<long, MyEnum> states;
+  }
+
   class Staff {
     String staffId;
   }

@@ -54,6 +54,20 @@ For MontiGem users:
   builder `@angular/build:unit-test` instead of `@angular-devkit/build-angular:karma`
     * Use `vitest`
 
+## 2026-11-17: 7.10.0-SNAPSHOT
+* `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums), like list
+  attributes:
+  ```
+  class Person { Map<String, Integer> scores; }
+  ```
+  The attribute has the API of a GemMap: `putScores(key, value)`, `removeScores(key)`,
+  `getScores(key)`, `containsKeyScores(key)`, `sizeScoress()`, `getScoresMap()`; builder
+  `scores(map)` and `scoresPut(key, value)`. Puts and removes are synchronized per entry (commands
+  `Person_putScores`, `Person_removeScores`) and stored per entry (SQL table `person$scores$map`,
+  Neo4j properties `Scores_keys` and `Scores_values`); the entries keep their insertion order. The
+  keys are those of type qualifiers without domain classes (`0xCDC6F`). As with `get<Attr>List()`,
+  changes through `getScoresMap()` are not synchronized.
+
 ## 2026-11-13: 7.10.0-SNAPSHOT
 * `Map<K, V>` attributes with a domain class value become type qualified associations, as
   `List<V>` attributes become `[*]` associations:

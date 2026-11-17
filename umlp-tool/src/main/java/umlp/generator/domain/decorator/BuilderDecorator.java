@@ -156,6 +156,21 @@ public class BuilderDecorator extends AbstractDecorator {
         GemMapAssocDecorator.getName(declaringType, assocSide));
   }
 
+  /**
+   * a map attribute with simple values: the put of an entry
+   */
+  protected void createMapAttrMethods(ASTCDClass domainClass, ASTCDClass builderClass, ASTCDAttribute attribute) {
+    String keyType = GenService.getMapAttributeType(attribute, 0);
+    String valueType = GenService.getMapAttributeType(attribute, 1);
+    String builder = getClassName(domainClass.getName());
+    getCD4C().addMethod(builderClass, "umlp.builder.MapAttrPut", attribute.getName(), keyType, valueType, builder,
+        GenService.isLongType(keyType));
+    getCD4C().addImport(builderClass, "java.util.Map");
+    getCD4C().addImport(builderClass, "java.util.LinkedHashMap");
+    getCD4C().addImport(builderClass, PathUtil.getBackendRTECommonPath("GemValueMap"));
+    getCD4C().addImport(builderClass, "de.se_rwth.commons.logging.Log");
+  }
+
   protected String getConstructorTemplate() {
     return "umlp.builder.Constructor";
   }
@@ -172,10 +187,13 @@ public class BuilderDecorator extends AbstractDecorator {
     for (ASTCDAttribute attribute : attrList) {
       getCD4C().addMethod(builderClass, "umlp.builder.Attr",
           attribute.getName(), getCDPrinter().prettyprint(createType(attribute)),
-          getClassName(domainClass.getName()), GenService.isList(attribute));
+          getClassName(domainClass.getName()), GenService.isList(attribute), GenService.isMap(attribute));
+      if (GenService.isMap(attribute)) {
+        createMapAttrMethods(domainClass, builderClass, attribute);
+      }
       getCD4C().addMethod(builderClass, "umlp.builder.CheckAttr",
           attribute.getName(), domainClass.getName(),
-          !GenService.isList(attribute) && !GenService.isOptional(attribute));
+          !GenService.isList(attribute) && !GenService.isOptional(attribute) && !GenService.isMap(attribute));
     }
     for (ASTCDAssocSide assoc : assocList) {
       // the other side of a GemMap is never mandatory (a value need not be in a map) and is set by ids only (loading),

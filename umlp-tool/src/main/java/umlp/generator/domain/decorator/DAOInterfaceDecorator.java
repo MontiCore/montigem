@@ -15,6 +15,7 @@ import umlp.generator.AbstractDecorator;
 import umlp.generator.util.PathUtil;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -97,6 +98,7 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
     updateAttrMethod(daoInterface, domainClass);
     updateOptionalAttrMethod(daoInterface, domainClass);
     updateAndSelectListAttrMethods(daoInterface, domainClass);
+    mapAttrMethods(daoInterface, domainClass);
   }
 
   protected void deleteMethod(ASTCDType daoInterface, ASTCDClass domainClass,
@@ -153,6 +155,21 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
               getCD4C().addMethod(daoInterface, "umlp.daointerface.SelectListAttr", attr, innerType);
             }
         );
+  }
+
+  /**
+   * select, put, remove and insert of the entries of map attributes with simple values
+   */
+  protected void mapAttrMethods(ASTCDType daoInterface, ASTCDClass domainClass) {
+    getMapAttributes(domainClass).forEach(attr -> {
+      String keyType = GenService.getMapAttributeType(attr, 0);
+      String valueType = GenService.getMapAttributeType(attr, 1);
+      for (String template : List.of("Select", "Put", "Remove", "Insert")) {
+        getCD4C().addMethod(daoInterface, "umlp.daointerface.mapattrs." + template, attr.getName(), keyType,
+            valueType);
+      }
+      getCD4C().addImport(daoInterface, "java.util.Map");
+    });
   }
 
   // Interface of Assoc Daos for each domain class

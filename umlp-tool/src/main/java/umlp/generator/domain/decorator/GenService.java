@@ -29,6 +29,7 @@ import de.monticore.types.mccollectiontypes._ast.ASTMCOptionalType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCSetType;
 import de.monticore.types.mcsimplegenerictypes._ast.ASTMCBasicGenericType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCGenericType;
+import de.monticore.types3.SymTypeRelations;
 import de.monticore.cd.codegen.CdUtilsPrinter;
 import de.monticore.umlmodifier._ast.ASTModifier;
 import de.se_rwth.commons.StringTransformations;
@@ -689,6 +690,49 @@ public class GenService {
   }
 
   /**
+   * whether the type can be the value of a map attribute with simple values ({@code Map<String, Integer> scores}):
+   * a primitive or boxed type, String or an enum, like the elements of list attributes
+   */
+  public static boolean isSimpleMapValue(SymTypeExpression type) {
+    return type.isPrimitive() || SymTypeRelations.isNumericType(type) || SymTypeRelations.isBoolean(type)
+        || SymTypeRelations.isString(type) || (type.hasTypeInfo() && isCDEnum(type));
+  }
+
+  /**
+   * whether the attribute is a map attribute with simple values, typed {@code Map<K, V>}: after UMLAttrToAssocTrafo
+   * (a map with domain class values becomes an association) every remaining Map attribute is one; checked on the
+   * type as written, so it works for the decorated fields as well
+   */
+  public static boolean isMap(ASTCDAttribute attr) {
+    return isMap(attr.getMCType());
+  }
+
+  public static boolean isMap(ASTMCType mcType) {
+    if (mcType instanceof ASTMCGenericType) {
+      List<String> nameList = ((ASTMCGenericType) mcType).getNameList();
+      return !nameList.isEmpty() && "Map".equals(nameList.get(nameList.size() - 1));
+    }
+    return false;
+  }
+
+  /**
+   * @param attr a map attribute, see {@link #isMap(ASTCDAttribute)}
+   * @return its key type (index 0) or value type (index 1), boxed, e.g. Integer for {@code Map<String, int>}
+   */
+  public static String getMapAttributeType(ASTCDAttribute attr, int index) {
+    ASTMCType argument = ((ASTMCGenericType) attr.getMCType()).getMCTypeArgument(index).getMCTypeOpt().get();
+    return box(new CdUtilsPrinter().printType(argument));
+  }
+
+  /**
+   * @param type a type name as printed, e.g. a key type of {@link #getMapAttributeType}
+   * @return whether it is long or Long, whose values a browser represents exactly only within +-(2^53-1)
+   */
+  public static boolean isLongType(String type) {
+    return "java.lang.Long".equals(box(type)) || "Long".equals(type);
+  }
+
+  /**
    * whether the type is a domain class or interface (no enum, no POJO), i.e. a GemIdentifiable that can be the value
    * of an association
    */
@@ -873,6 +917,26 @@ public class GenService {
   }
 
   public static String getTypeConversionCall(SymTypeExpression type) {
+    return "";
+  }
+
+  /**
+   * @return for a numeric type the call converting a {@link Number} to it, e.g. ".shortValue()", empty otherwise
+   */
+  public static String getNumberValueCall(SymTypeExpression type) {
+    if (TypeCheck.isByte(type)) {
+      return ".byteValue()";
+    } else if (TypeCheck.isShort(type)) {
+      return ".shortValue()";
+    } else if (TypeCheck.isInt(type)) {
+      return ".intValue()";
+    } else if (TypeCheck.isLong(type)) {
+      return ".longValue()";
+    } else if (TypeCheck.isFloat(type)) {
+      return ".floatValue()";
+    } else if (TypeCheck.isDouble(type)) {
+      return ".doubleValue()";
+    }
     return "";
   }
 

@@ -1,5 +1,5 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("typeName", "cdName", "attributes", "optionalAttributes", "listAttributes", "listAssocs", "gemAssocs", "neo4j")}
+${tc.signature("typeName", "cdName", "attributes", "optionalAttributes", "listAttributes", "mapAttributes", "listAssocs", "gemAssocs", "neo4j")}
 ${cd4c.method("public Boolean insert${typeName}(Collection<${typeName}> objectsToInsert)")}
 <#assign statement="st">
 ensureInsert${typeName}Created();
@@ -21,6 +21,9 @@ try(Connection connection = DatabaseAccessManager.getConnection()){
       <#list listAttributes as attr>
         // TODO replace this with Commands
         update${attr.getName()?cap_first}(o.getGemId(), o.get${attr.getName()?cap_first}List());
+      </#list>
+      <#list mapAttributes as attr>
+        insert${attr.getName()?cap_first}(o.getGemId(), o.get${attr.getName()?cap_first}Map());
       </#list>
     }
     ${statement}.executeBatch();

@@ -1,5 +1,5 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("typeName", "cdName", "attributes", "optionalAttributes", "listAttributes", "listAssocs", "gemAssocs", "assocToDAOFactoryDiagramMap", "assocToManagerDiagramMap", "neo4j")}
+${tc.signature("typeName", "cdName", "attributes", "optionalAttributes", "listAttributes", "mapAttributes", "listAssocs", "gemAssocs", "assocToDAOFactoryDiagramMap", "assocToManagerDiagramMap", "neo4j")}
 ${cd4c.method("public Optional<${typeName}> unpack${typeName}(ResultSet res) throws SQLException")}
   int gemId = res.getInt("id");
   ${typeName}Builder builder = ${cdName}Manager.${typeName?uncap_first}BuilderFromId(gemId);
@@ -23,6 +23,9 @@ ${cd4c.method("public Optional<${typeName}> unpack${typeName}(ResultSet res) thr
 <#list listAttributes as attr>
   .${attr.getName()}(this.select${attr.getName()?cap_first}(gemId))<#sep>${'\n'}</#sep><#rt>
 </#list><#lt><#if listAttributes?has_content>;</#if><#rt>
+<#list mapAttributes as attr>
+  builder.${attr.getName()}(this.select${attr.getName()?cap_first}(gemId));
+</#list>
 
 <#lt>
 <#list listAssocs as assocSide, assoc><#assign assocType = assocSide.getSymbol().getType().print()>
