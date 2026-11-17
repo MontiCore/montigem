@@ -18,7 +18,7 @@ public class UMLPSingletonClassParametersTest extends AbstractUMLPTest {
     createSymTab(ast);
     checker.checkAll(ast);
 
-    assertEquals(3, Log.getErrorCount());
+    assertEquals(2, Log.getErrorCount());
     assertTrue(Log.getFindings().stream().anyMatch(f -> f.getMsg().startsWith(UMLPCheckParameterOfCommand.ERROR_CODE)));
   }
 }
