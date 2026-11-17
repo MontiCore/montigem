@@ -10,15 +10,14 @@ public class UMLPMapAttributeValueTypeTest extends AbstractCoCoTest<UMLPMapAttri
     super(new UMLPMapAttributeValueType(), UMLPCoCoChecker::addCoCo);
   }
 
-  /** Map attributes whose values are no domain class objects: a number, an enum, a list */
+  /** Map attributes whose values are neither domain class objects nor simple types: a list, a map */
   @Test
   public void testInvalidValueType() {
     parseInvalid("UMLPMapAttribute");
 
-    assertFindingAtLine(0, 5, "counts", "Integer");
-    assertFindingAtLine(1, 6, "kinds", "E");
-    assertFindingAtLine(2, 7, "lists", "List<B>");
-    assertFindingsCount(3);
+    assertFindingAtLine(0, 5, "lists", "List<B>");
+    assertFindingAtLine(1, 6, "maps", "Map<String,Integer>");
+    assertFindingsCount(2);
   }
 
   @Test

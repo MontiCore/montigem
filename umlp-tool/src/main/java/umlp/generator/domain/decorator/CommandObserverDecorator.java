@@ -34,6 +34,16 @@ public class CommandObserverDecorator extends CommandSendingObserverDecorator {
   }
 
   @Override
+  protected String putMapAttributeTmplt() {
+    return "umlp.commandobserver.mapattrs.NotifyPut";
+  }
+
+  @Override
+  protected String removeMapAttributeTmplt() {
+    return "umlp.commandobserver.mapattrs.NotifyRemove";
+  }
+
+  @Override
   protected String putAttributeTmplt() {
     return "umlp.commandobserver.NotifyPutAttribute";
   }

@@ -51,6 +51,8 @@ public class SetDecorator extends AbstractDeSerDecorator {
           .stream()
           .filter(a -> !a.getModifier().isDerived())
           .filter(a -> !GenService.isList(a))
+          // map attributes: entries are put and removed, see MapAttrPutDecorator
+          .filter(a -> !GenService.isMap(a))
           .forEach(a -> {
             astcdPackage.addCDElement(withOrigin(createClass(origCD,
                 a.getName(),
@@ -88,6 +90,8 @@ public class SetDecorator extends AbstractDeSerDecorator {
           .stream()
           .filter(a -> !a.getModifier().isDerived())
           .filter(a -> !GenService.isList(a))
+          // map attributes: entries are put and removed, see MapAttrPutDecorator
+          .filter(a -> !GenService.isMap(a))
           .forEach(a -> {
             astcdPackage.addCDElement(withOrigin(createClass(origCD, a.getName(), a.getSymbol().getType(), c, getCorrectManager(a), false, astcdPackage.getName())));
             astcdPackage.addCDElement(withOrigin(createDeSer(origCD, a.getName(), a.getSymbol().getType(), c, false)));

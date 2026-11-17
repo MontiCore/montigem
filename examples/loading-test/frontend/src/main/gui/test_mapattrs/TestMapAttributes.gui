@@ -1,0 +1,19 @@
+/* (c) https://github.com/MontiCore/monticore */
+package test_mapattrs;
+
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemButton;
+
+import LoadingTests.Gradebook;
+
+// map attributes with simple values: the buttons run the scenarios in the hwc, which shows what it read in result
+page TestMapAttributes(Gradebook g, String result = "loaded") {
+  resultText@GemText(value = result);
+
+  putGrade@GemButton(label = "Put Grade", leftClick = putGrade(g));
+  replaceGrade@GemButton(label = "Replace Grade", leftClick = replaceGrade(g));
+  removeGrade@GemButton(label = "Remove Grade", leftClick = removeGrade(g));
+  readGrades@GemButton(label = "Read Grades", leftClick = readGrades(g));
+  putState@GemButton(label = "Put State", leftClick = putState(g));
+  readStates@GemButton(label = "Read States", leftClick = readStates(g));
+}

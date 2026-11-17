@@ -130,6 +130,8 @@ public class DomainClassDecorator extends DomainTypeDecorator implements OwnComm
         glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(getInitialGemValue()));
       } else if (GenService.isList(attr)) {
         glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(defaultListValue()));
+      } else if (GenService.isMap(attr)) {
+        glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(" = new LinkedHashMap<>()"));
       } else if (GenService.isBoolean(attr.getMCType())) {
         glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(defaultBooleanValue()));
       }
@@ -309,7 +311,8 @@ public class DomainClassDecorator extends DomainTypeDecorator implements OwnComm
         .stream().filter(GenService::isVisibleNotDerived).collect(Collectors.toList())) {
       getCD4C().addMethod(clazz, "umlp.domain.Check",
           domainClass.getName(), attr.getName(),
-          !GenService.isList(attr) && !GenService.isOptional(attr) && !attr.getModifier().isDerived(),
+          !GenService.isList(attr) && !GenService.isMap(attr) && !GenService.isOptional(attr)
+              && !attr.getModifier().isDerived(),
           false
       );
     }

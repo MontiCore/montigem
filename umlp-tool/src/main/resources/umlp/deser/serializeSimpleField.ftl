@@ -30,6 +30,16 @@
       }
       </#if>
       printer.endArray();
+    <#elseif genService.isMap(attr.getSymbol().getType())>
+      <#assign valueSymType=genService.getMapTypeArgument(attr.getSymbol().getType(), 1).get()>
+      printer.beginArray("${fieldName}");
+      for (Map.Entry<${genService.getMapAttributeType(attr, 0)}, ${genService.getMapAttributeType(attr, 1)}> e : obj.get${fieldName?cap_first}Map().entrySet()) {
+        printer.beginObject();
+        printer.member("key", e.getKey());
+        printer.member("value", e.getValue()<#if genService.isCDEnum(valueSymType)>.name()</#if>);
+        printer.endObject();
+      }
+      printer.endArray();
     <#elseif isOptional>
       if (obj.get${fieldName?cap_first}().isPresent()) {
         <#if useDeSer>

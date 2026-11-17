@@ -42,6 +42,10 @@ public class ObserverDecorator extends AbstractDecorator {
   public static final String MAYBE_NOTIFY_PUT_TEMPLATE = "umlp.observer.MaybeNotifyPut";
   public static final String NOTIFY_REKEY_TEMPLATE = "umlp.observer.NotifyRekey";
   public static final String MAYBE_NOTIFY_REKEY_TEMPLATE = "umlp.observer.MaybeNotifyRekey";
+  public static final String NOTIFY_PUT_ATTR_TEMPLATE = "umlp.observer.mapattrs.NotifyPut";
+  public static final String MAYBE_NOTIFY_PUT_ATTR_TEMPLATE = "umlp.observer.mapattrs.MaybeNotifyPut";
+  public static final String NOTIFY_REMOVE_ATTR_TEMPLATE = "umlp.observer.mapattrs.NotifyRemove";
+  public static final String MAYBE_NOTIFY_REMOVE_ATTR_TEMPLATE = "umlp.observer.mapattrs.MaybeNotifyRemove";
 
   protected Collection<GenerationSummary> generationDetails = List.of();
 
@@ -86,6 +90,10 @@ public class ObserverDecorator extends AbstractDecorator {
         .filter(a -> !a.getModifier().isDerived()).collect(Collectors.toList());
     attributes.forEach(a -> {
           String attributeName = a.getName();
+          if (GenService.isMap(a)) {
+            addMapAttrNotifyMethods(observerInterface, generationSummary, a, className);
+            return;
+          }
           if (GenService.isList(a)) {
             String innerType = GenService.getInnerType(a.getMCType());
             generationSummary.addSignature(cd4C.addMethod(observerInterface,
@@ -214,6 +222,21 @@ public class ObserverDecorator extends AbstractDecorator {
                                                   className, "long"), NOTIFY_REMOVE_TEMPLATE);
     generationSummary.addSignature(cd4C.addMethod(observerInterface, MAYBE_NOTIFY_REMOVE_TEMPLATE, a.getName(),
                                                   className, "long"), MAYBE_NOTIFY_REMOVE_TEMPLATE);
+  }
+
+  /**
+   * a map attribute with simple values: entries are put under a key and removed by key, see methods/mapattrs; there is
+   * no notification of a whole new map (no setter)
+   */
+  protected void addMapAttrNotifyMethods(ASTCDInterface observerInterface, GenerationSummary generationSummary,
+                                         ASTCDAttribute a, String className) {
+    String keyType = GenService.getMapAttributeType(a, 0);
+    String valueType = GenService.getMapAttributeType(a, 1);
+    for (String template : List.of(NOTIFY_PUT_ATTR_TEMPLATE, MAYBE_NOTIFY_PUT_ATTR_TEMPLATE,
+        NOTIFY_REMOVE_ATTR_TEMPLATE, MAYBE_NOTIFY_REMOVE_ATTR_TEMPLATE)) {
+      generationSummary.addSignature(getCD4C().addMethod(observerInterface, template, a.getName(), className, keyType,
+          valueType), template);
+    }
   }
 
   protected void addImportForImportedObservers(ASTCDType domainClass, ASTCDType observerType) {

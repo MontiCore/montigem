@@ -66,6 +66,23 @@ public class DbObserverDecorator extends AbstractDecorator {
         .forEach(e -> {
           ASTCDAttribute a = e.getKey();
           ASTCDType definingType = e.getValue();
+          ASTCDCompilationUnit typeCD = UMLPSymbolTables.getDiagramFor(definingType);
+          getCD4C().addImport(observerClass, getPackageName(typeCD, DEFAULT_PACKAGE) + "." + definingType.getName());
+          if (GenService.isMap(a)) {
+            // map attributes: entries are written and deleted one by one, there is no set of the whole map
+            String keyType = GenService.getMapAttributeType(a, 0);
+            String valueType = GenService.getMapAttributeType(a, 1);
+            String cdOfClass = UMLPSymbolTables.getDiagramFor(domainClass).getCDDefinition().getName();
+            glex.replaceTemplate("cd2java.Annotations",
+                getCD4C().addMethod(observerClass, "umlp.dbobserver.mapattrs.PutNotify",
+                    cdOfClass, a.getName(), definingType.getName(), domainClass.getName(), keyType, valueType),
+                new StringHookPoint("@Override"));
+            glex.replaceTemplate("cd2java.Annotations",
+                getCD4C().addMethod(observerClass, "umlp.dbobserver.mapattrs.RemoveNotify",
+                    cdOfClass, a.getName(), definingType.getName(), domainClass.getName(), keyType, valueType),
+                new StringHookPoint("@Override"));
+            return;
+          }
           if(GenService.isList(a)) {
             String innerType = GenService.getInnerType(a.getMCType());
             getCD4C().addMethod(observerClass, "umlp.dbobserver.listattrs.AddNotify",
@@ -77,9 +94,6 @@ public class DbObserverDecorator extends AbstractDecorator {
           ASTCDMethodSignature set = getCD4C().addMethod(observerClass, "umlp.dbobserver.Notify",
               cdName, className, a.getName(), definingType.getName(), GenService.getType(a.getSymbol().getType()));
           glex.replaceTemplate("cd2java.Annotations", set, new StringHookPoint("@Override"));
-
-          ASTCDCompilationUnit typeCD = UMLPSymbolTables.getDiagramFor(definingType);
-          getCD4C().addImport(observerClass, getPackageName(typeCD, DEFAULT_PACKAGE) + "." + definingType.getName());
         });
 
     for (Map.Entry<ASTCDAssocSide, ASTCDAssociation> e : UMLPSymbolTables.getOppositeSideToAssociationMap(domainClass).entrySet()) {

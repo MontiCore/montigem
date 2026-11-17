@@ -517,10 +517,19 @@ public abstract class AbstractDecorator {
         .filter(a -> !a.getModifier().isDerived() && GenService.isList(a)).collect(Collectors.toList());
   }
 
+  /**
+   * the map attributes with simple values ({@code Map<String, Integer> scores}); maps with domain class values became
+   * associations (UMLAttrToAssocTrafo)
+   */
+  protected List<ASTCDAttribute> getMapAttributes(ASTCDClass domainClass) {
+    return CDSymbolTables.getAttributesInHierarchy(domainClass).stream()
+        .filter(a -> !a.getModifier().isDerived() && GenService.isMap(a)).collect(Collectors.toList());
+  }
+
   protected List<ASTCDAttribute> getNormalAttributes(ASTCDClass domainClass) {
     return CDSymbolTables.getAttributesInHierarchy(domainClass).stream()
         .filter(a -> !a.getModifier().isDerived() &&
-            !GenService.isList(a) && !GenService.isOptional(a)).collect(Collectors.toList());
+            !GenService.isList(a) && !GenService.isOptional(a) && !GenService.isMap(a)).collect(Collectors.toList());
   }
 
   protected String getAssocName(ASTCDType type, ASTCDAssocSide assoc) {

@@ -27,6 +27,22 @@ ${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType
       </#if>
       }
       return result;
+    <#elseif genService.isMap(attr.getSymbol().getType())>
+      <#assign keySymType=genService.getMapTypeArgument(attr.getSymbol().getType(), 0).get()>
+      <#assign valueSymType=genService.getMapTypeArgument(attr.getSymbol().getType(), 1).get()>
+      ${fieldType} result = new LinkedHashMap<>();
+      if(!json.hasMember("${fieldName}")) {
+      return result;
+      }
+      for(de.monticore.symboltable.serialization.json.JsonElement e : json.getArrayMember("${fieldName}")) {
+      JsonObject entry = e.getAsJsonObject();
+      <#if genService.isCDEnum(valueSymType)>
+      result.put(entry.getMember("key").${genService.calculateJSon(keySymType)}, ${valueSymType.print()}.valueOf(entry.getMember("value").${jsonStr}));
+      <#else>
+      result.put(entry.getMember("key").${genService.calculateJSon(keySymType)}, entry.getMember("value").${jsonStr});
+      </#if>
+      }
+      return result;
     <#elseif isOptional>
       if(json.hasMember("${fieldName}")){
       <#if useDeSer>

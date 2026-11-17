@@ -71,6 +71,16 @@ public class CommandDecorator extends AbstractDecorator {
     addedDeSers.addAll(putDecorator.getAddedDeSers());
     Log.debug("After decorator: PutDecorator", CommandDecorator.class.getName());
 
+    MapAttrPutDecorator mapAttrPutDecorator = new MapAttrPutDecorator(glex);
+    mapAttrPutDecorator.transform(cdAST, decoratedAST);
+    addedDeSers.addAll(mapAttrPutDecorator.getAddedDeSers());
+    Log.debug("After decorator: MapAttrPutDecorator", CommandDecorator.class.getName());
+
+    MapAttrRemoveDecorator mapAttrRemoveDecorator = new MapAttrRemoveDecorator(glex);
+    mapAttrRemoveDecorator.transform(cdAST, decoratedAST);
+    addedDeSers.addAll(mapAttrRemoveDecorator.getAddedDeSers());
+    Log.debug("After decorator: MapAttrRemoveDecorator", CommandDecorator.class.getName());
+
     RekeyDecorator rekeyDecorator = new RekeyDecorator(glex, supportedDeSers);
     rekeyDecorator.transform(cdAST, decoratedAST);
     addedDeSers.addAll(rekeyDecorator.getAddedDeSers());

@@ -55,6 +55,10 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
             .forEach(e -> {
               ASTCDAttribute a = e.getKey();
               ASTCDType t = e.getValue();
+              if (GenService.isMap(a)) {
+                addMapAttrNotifyMethods(ast, a, t);
+                return;
+              }
               if (GenService.isList(a)) {
 
                 ASTCDCompilationUnit relevantCompunit = origCD;
@@ -195,6 +199,36 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
 
   protected String addAttributeTmplt() {
     return "umlp.commandsendingobserver.NotifyAddAttribute";
+  }
+
+  /**
+   * a map attribute with simple values: a put or remove of an entry becomes the command
+   * {@code <DefiningType>_put<Attr>} or {@code _remove<Attr>} (the counterparts of _add/_remove of list attributes)
+   */
+  protected void addMapAttrNotifyMethods(ASTCDClass ast, ASTCDAttribute a, ASTCDType definingType) {
+    String keyType = GenService.getMapAttributeType(a, 0);
+    String valueType = GenService.getMapAttributeType(a, 1);
+    setOverrideAnnotation(getCD4C().addMethod(ast, putMapAttributeTmplt(), a.getName(), keyType, valueType,
+        definingType.getName()));
+    setOverrideAnnotation(getCD4C().addMethod(ast, removeMapAttributeTmplt(), a.getName(), keyType, valueType,
+        definingType.getName()));
+    String commandPackage = getPackageName(UMLPSymbolTables.getDiagramFor(definingType), COMMAND_PACKAGE);
+    getCD4C().addImport(ast, commandPackage + "." + definingType.getName() + "_put"
+        + StringTransformations.capitalize(a.getName()));
+    getCD4C().addImport(ast, commandPackage + "." + definingType.getName() + "_remove"
+        + StringTransformations.capitalize(a.getName()));
+    GenService.getMapTypeArgument(a.getSymbol().getType(), 1)
+        .filter(GenService::isCDEnum)
+        .ifPresent(v -> getCD4C().addImport(ast,
+            Joiners.DOT.join(v.getTypeInfo().getPackageName().toLowerCase(), v.print())));
+  }
+
+  protected String putMapAttributeTmplt() {
+    return "umlp.commandsendingobserver.mapattrs.NotifyPut";
+  }
+
+  protected String removeMapAttributeTmplt() {
+    return "umlp.commandsendingobserver.mapattrs.NotifyRemove";
   }
 
   protected String putAttributeTmplt() {

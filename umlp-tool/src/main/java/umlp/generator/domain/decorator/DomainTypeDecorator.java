@@ -23,6 +23,7 @@ import umlp.UMLPMill;
 import umlp.generator.AbstractDecorator;
 import umlp.generator.domain.decorator.methods.AssocAccessorDecorator;
 import umlp.generator.domain.decorator.methods.AssocMutatorDecorator;
+import umlp.generator.domain.decorator.methods.MapAttrMutatorDecorator;
 import umlp.generator.domain.decorator.methods.MethodGenService;
 import umlp.generator.domain.decorator.methods.UMLPAccessorDecorator;
 import umlp.generator.domain.decorator.methods.UMLPListMutatorDecorator;
@@ -90,10 +91,11 @@ public abstract class DomainTypeDecorator extends AbstractDecorator {
                                             List<ASTCDAttribute> attrList, boolean isInterface) {
     CDGenService service = new MethodGenService();
     MethodDecorator methodDecorator = new MethodDecorator(glex,
-        new UMLPAccessorDecorator(glex, service),
+        new UMLPAccessorDecorator(glex, service, cdType),
         new UMLPMutatorDecorator(glex, new UMLPMandatoryMutatorDecorator(glex, service, domainType),
             new OptionalMutatorDecorator(glex, service),
-            new UMLPListMutatorDecorator(glex, service, domainType)), service);
+            new UMLPListMutatorDecorator(glex, service, domainType),
+            new MapAttrMutatorDecorator(glex, service, cdType)), service);
     for (ASTCDAttribute attribute : attrList) {
       if (GenService.isList(attribute)) {
         getCD4C().addImport(cdType, "java.util.function.Predicate");

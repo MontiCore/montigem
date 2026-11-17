@@ -85,6 +85,10 @@ public class DeSerBuilderDecorator extends DomainClassDecorator {
                 GenService.getNativeName(a.getName())
         );
         addOverride(m);
+        if (GenService.isMap(a)) {
+          // a map attribute with simple values
+          getCD4C().addImport(deserBuilderClass, "java.util.Map");
+        }
       }
     }
 

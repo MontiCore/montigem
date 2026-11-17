@@ -11,6 +11,7 @@ import de.monticore.cdbasis._ast.ASTCDClassBuilder;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.generating.templateengine.StringHookPoint;
+import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
 import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.StringTransformations;
@@ -89,7 +90,11 @@ public class DAODecorator extends DAOInterfaceDecorator {
     // Set/Update Queries
     for (ASTCDAttribute attr : CDSymbolTables.getAttributesInHierarchy(domainClass).stream()
         .filter(a -> !a.getModifier().isDerived()).toList()) {
-      if (GenService.isList(attr)) {
+      if (GenService.isMap(attr)) {
+        for (String method : List.of("select", "put", "putNew", "remove", "insert", "write")) {
+          attributesList.add(createQueryAttr(getStatementAttributeName(attr, method)));
+        }
+      } else if (GenService.isList(attr)) {
         ASTCDAttribute removePrepStatement = createQueryAttr(getStatementAttributeName(attr, "remove"));
         attributesList.add(removePrepStatement);
         ASTCDAttribute updatePrepStatement = createQueryAttr(getStatementAttributeName(attr, "update"));
@@ -252,6 +257,34 @@ public class DAODecorator extends DAOInterfaceDecorator {
   }
 
   @Override
+  protected void mapAttrMethods(ASTCDType daoClass, ASTCDClass domainClass) {
+    UMLPSymbolTables.getAttributesInHierarchyWithDefiningType(domainClass).entrySet().stream()
+        .filter(entry -> !entry.getKey().getModifier().isDerived() && GenService.isMap(entry.getKey()))
+        .forEach(entry -> {
+          ASTCDAttribute attr = entry.getKey();
+          // the table of the class declaring the attribute, see SQLSchemaGenerator
+          String tableName = SQLSchemaGenerator.convertMapAttributeTableName(entry.getValue().getName(),
+              attr.getName());
+          String keyType = GenService.getMapAttributeType(attr, 0);
+          String valueType = GenService.getMapAttributeType(attr, 1);
+          SymTypeExpression keySymType = GenService.getMapTypeArgument(attr.getSymbol().getType(), 0).get();
+          SymTypeExpression valueSymType = GenService.getMapTypeArgument(attr.getSymbol().getType(), 1).get();
+          String keyDbType = GenService.getDBType(keySymType);
+          String valueDbType = GenService.getDBType(valueSymType);
+          getCD4C().addMethod(daoClass, "umlp.dao.mapattrs.Select", tableName, attr.getName(), keyType, valueType,
+              keySymType, valueSymType);
+          getCD4C().addMethod(daoClass, "umlp.dao.mapattrs.Put", tableName, attr.getName(), keyType, valueType,
+              keyDbType, valueDbType);
+          getCD4C().addMethod(daoClass, "umlp.dao.mapattrs.Remove", tableName, attr.getName(), keyType, valueType,
+              keyDbType);
+          getCD4C().addMethod(daoClass, "umlp.dao.mapattrs.Insert", tableName, attr.getName(), keyType, valueType,
+              keyDbType, valueDbType);
+          getCD4C().addImport(daoClass, "java.util.Map");
+          getCD4C().addImport(daoClass, "java.util.LinkedHashMap");
+        });
+  }
+
+  @Override
   protected void updateAttrMethod(ASTCDType doaClass, ASTCDClass domainClass) {
     getNormalAttributes(domainClass).forEach(attr ->
         getCD4C().addMethod(doaClass, "umlp.dao.UpdateAttr", SQLSchemaGenerator.convertClassName(domainClass.getName(), SQLSchemaGenerator.AttributeType.ESCAPED_QUOTED),
@@ -275,7 +308,18 @@ public class DAODecorator extends DAOInterfaceDecorator {
   protected void deleteMethod(ASTCDType daoClass, ASTCDClass domainClass, Map<ASTCDAssocSide, ASTCDAssociation> assocSideToAssoc) {
     getCD4C().addMethod(daoClass, "umlp.dao.Delete", cdName, SQLSchemaGenerator.convertClassName(domainClass.getName(), SQLSchemaGenerator.AttributeType.ESCAPED_QUOTED),
         domainClass.getName(), assocSideToAssoc, getAssocToSourceDefinitionCD(assocSideToAssoc.values().stream()),
-        GemMapOwnerRole.typeQualifiedKeyedBy(origCD, domainClass));
+        GemMapOwnerRole.typeQualifiedKeyedBy(origCD, domainClass), getMapAttributeTables(domainClass));
+  }
+
+  /**
+   * @return the tables of the map attributes of the class, named after the classes declaring them (see
+   * SQLSchemaGenerator); their rows go with the object
+   */
+  protected List<String> getMapAttributeTables(ASTCDClass domainClass) {
+    return UMLPSymbolTables.getAttributesInHierarchyWithDefiningType(domainClass).entrySet().stream()
+        .filter(e -> !e.getKey().getModifier().isDerived() && GenService.isMap(e.getKey()))
+        .map(e -> SQLSchemaGenerator.convertMapAttributeTableName(e.getValue().getName(), e.getKey().getName()))
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -347,7 +391,7 @@ public class DAODecorator extends DAOInterfaceDecorator {
     attributes.forEach(e -> attributeMap.put(e,
         SQLSchemaGenerator.convertAttributeName(e.getName(), SQLSchemaGenerator.AttributeType.QUOTED)));
     getCD4C().addMethod(daoClass, "umlp.dao.Unpack", domainClass.getName(), cdName, attributeMap,
-        optMap, listAttributes, listAssociationMap, gemAssociationMap, assocToCorrectManagerMap, assocToCorrectDAOFactoryMap,"");
+        optMap, listAttributes, getMapAttributes(domainClass), listAssociationMap, gemAssociationMap, assocToCorrectManagerMap, assocToCorrectDAOFactoryMap,"");
   }
 
   @Override
@@ -365,9 +409,9 @@ public class DAODecorator extends DAOInterfaceDecorator {
         , domainClass.getName(), attributes.stream().map(a -> SQLSchemaGenerator.convertAttributeName(a.getName(), SQLSchemaGenerator.AttributeType.ESCAPED_QUOTED)).collect(Collectors.toList()),
         optionalAttributes.stream().map(a -> SQLSchemaGenerator.convertAttributeName(a.getName(), SQLSchemaGenerator.AttributeType.ESCAPED_QUOTED)).collect(Collectors.toList()));
     getCD4C().addMethod(daoClass, "umlp.dao.Insert", domainClass.getName(), cdName, attributes,
-        optionalAttributes, listAttributes, listAssociationMap, gemAssociationMap, assocToSourceDefinitionCD, "");
+        optionalAttributes, listAttributes, getMapAttributes(domainClass), listAssociationMap, gemAssociationMap, assocToSourceDefinitionCD, "");
     getCD4C().addMethod(daoClass, "umlp.dao.BulkInsert", domainClass.getName(), cdName, attributes,
-        optionalAttributes , listAttributes, listAssociationMap, gemAssociationMap,"");
+        optionalAttributes , listAttributes, getMapAttributes(domainClass), listAssociationMap, gemAssociationMap,"");
     /*getCD4C().addMethod(daoClass, "umlp.dao.AddManyAssociationsToBatch", domainClass.getName(), cdName, attributes,
         optionalAttributes , listAttributes, listAssociationMap, gemAssociationMap, assocToSourceDefinitionCD);
     getCD4C().addMethod(daoClass, "umlp.dao.ExecuteAssocBatches", domainClass.getName(), cdName, attributes,

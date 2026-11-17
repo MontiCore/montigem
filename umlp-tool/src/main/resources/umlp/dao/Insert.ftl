@@ -1,5 +1,5 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("typeName", "cdName", "attributes", "optionalAttributes", "listAttributes", "listAssocs", "gemAssocs", "assocsToDefinitionDiagramMap", "neo4j")}
+${tc.signature("typeName", "cdName", "attributes", "optionalAttributes", "listAttributes", "mapAttributes", "listAssocs", "gemAssocs", "assocsToDefinitionDiagramMap", "neo4j")}
 ${cd4c.method("public void insert${typeName}(${typeName} o)")}
   <#assign statement="st">
   ensureInsert${typeName}Created();
@@ -19,6 +19,9 @@ ${cd4c.method("public void insert${typeName}(${typeName} o)")}
   }
   <#list listAttributes as attr>
   update${attr.getName()?cap_first}(o.getGemId(), o.get${attr.getName()?cap_first}List());
+  </#list>
+  <#list mapAttributes as attr>
+  insert${attr.getName()?cap_first}(o.getGemId(), o.get${attr.getName()?cap_first}Map());
   </#list>
   List<Long> iDs;
   <#list listAssocs as assocSide, assoc>

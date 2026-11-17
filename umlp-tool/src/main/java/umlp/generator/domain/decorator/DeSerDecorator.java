@@ -137,6 +137,11 @@ public class DeSerDecorator extends DomainClassDecorator {
       jsonStr = GenService.calculateJSon(((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0));
       innerTypeFull = ((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0).printFullName();
       useDeSer = supportedDesers.contains(innerTypeFull);
+    } else if (GenService.isMap(attr)) {
+      // map attributes with simple values, entries as pairs of key and value
+      jsonStr = GenService.calculateJSon(GenService.getMapTypeArgument(attr.getSymbol().getType(), 1).get());
+      getCD4C().addImport(deSer, "java.util.Map");
+      getCD4C().addImport(deSer, "java.util.LinkedHashMap");
     } else if (GenService.isOptional(attr)) {
       isOptional = true;
       jsonStr = GenService.calculateJSon(((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0));
