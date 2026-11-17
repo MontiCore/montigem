@@ -1,27 +1,22 @@
-import {DateDeSer} from "../deser/DateDeser";
-import {Log} from "../logging";
-import {Conversion} from "../util/Conversion";
+/* (c) https://github.com/MontiCore/monticore */
+import {DeSer} from "../command/DeSer";
+import {Temporal} from "../types/Temporal";
 
-export class LocalDateDeSer extends DateDeSer {
+/**
+ * java.time.LocalDate as Temporal.PlainDate, in the ISO format of the backend (e.g. 2026-11-17), as JSON string
+ */
+export class LocalDateDeSer implements DeSer<Temporal.PlainDate> {
 
-  override serialize(date: Date): Promise<string> {
-    return Promise.resolve(Conversion.date2String(date));
+  public isPojoDeSer(): boolean {
+    return false;
   }
 
-  override deserialize(str: string): Promise<Date> {
-    const pattern1 = /^\d{4}-\d{2}-\d{2}$/;
-    const pattern2 = /^\"\d{4}-\d{2}-\d{2}\"$/;
-    if (!pattern1.test(str) && !pattern2.test(str)) {
-      Log.warn("LocalDate must be deserialized from json string");
-      return null;
-    }
-    if (pattern2.test(str)) {
-      str = str.substring(1, str.length - 1)
-    }
+  serialize(obj: Temporal.PlainDate): Promise<string> {
+    return Promise.resolve('"' + obj.toString() + '"');
+  }
 
-    const parts = str.split('-');
-    const [year, month, day] = [+parts[0], +parts[1], +parts[2]];
-
-    return Promise.resolve(new Date(year, month - 1, day));
+  deserialize(str: string): Promise<Temporal.PlainDate> {
+    const iso = str.startsWith('"') ? str.slice(1, str.length - 1) : str;
+    return Promise.resolve(Temporal.PlainDate.from(iso));
   }
 }

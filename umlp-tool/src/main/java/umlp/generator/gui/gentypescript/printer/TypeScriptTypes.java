@@ -29,8 +29,9 @@ public enum TypeScriptTypes {
   ASYNC_MAP("Map", "IUMLPMap", "java.util.Map"),
   HASH_MAP("HashMap", "Map", "java.util.HashMap"),
   ASYNC_HASH_MAP("HashMap", "IUMLPMap", "java.util.HashMap"),
-  LOCAL_DATE("LocalDate", "Date", "java.time.LocalDate"),
-  LOCAL_DATE_TIME("LocalDateTime", "Date", "java.time.LocalDateTime"),
+  LOCAL_DATE("LocalDate", "Temporal.PlainDate", "java.time.LocalDate", "@umlp/commonj2ts"),
+  LOCAL_DATE_TIME("LocalDateTime", "Temporal.PlainDateTime", "java.time.LocalDateTime", "@umlp/commonj2ts"),
+  LOCAL_TIME("LocalTime", "Temporal.PlainTime", "java.time.LocalTime", "@umlp/commonj2ts"),
   ITERATOR("Iterator", "Iterator", "java.util.Iterator"),
   VOID("void", "void" ),
   VOID_BOXED("Void", "void", "java.lang.Void"),
@@ -120,6 +121,18 @@ public enum TypeScriptTypes {
     }
 
     return res;
+  }
+
+  /**
+   * @return whether the name is a TypeScript type in a namespace that a type maps to, e.g. Temporal.PlainDate
+   */
+  public static boolean isNamespacedTSType(String name) {
+    for (TypeScriptTypes type : TypeScriptTypes.values()) {
+      if (type.tsType.contains(".") && type.tsType.equals(name)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static boolean isDefault(String mcType) {

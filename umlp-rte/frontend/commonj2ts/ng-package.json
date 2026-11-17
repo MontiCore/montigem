@@ -1,6 +1,7 @@
 {
   "$schema": "../node_modules/ng-packagr/ng-package.schema.json",
   "dest": "../build/dist/commonj2ts",
+  "allowedNonPeerDependencies": ["@js-temporal/polyfill"],
   "lib": {
     "entryFile": "index.ts"
   }

@@ -43,6 +43,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public final class RealTscCheck {
 
   private static final String TYPESCRIPT_VERSION = "typescript@7.0.2";
+  /** The Temporal polyfill that commonj2ts uses for the java.time types, see types/Temporal.ts. */
+  private static final String TEMPORAL_POLYFILL = "@js-temporal/polyfill@0.5.1";
+  /** Where the npm dependencies of all checks are installed once, linked into each check's node_modules. */
+  private static final Path DEPS_DIR = Paths.get("build/tsc-check/_deps").toAbsolutePath();
 
   private static final Path COMMONJ2TS_SRC = Paths.get("..")
       .resolve("umlp-rte/frontend/commonj2ts/src/main/gui/mc/fenix/commonj2ts")
@@ -223,6 +227,12 @@ public final class RealTscCheck {
 
     Files.writeString(tscCheckDir.resolve("out/run.js"), runJs);
 
+    // The npm dependencies of the lib sources (the Temporal polyfill): tsc finds them via the tsconfig "paths"
+    // mapping, node via node_modules above out/.
+    Files.createDirectories(tscCheckDir.resolve("node_modules"));
+    createDirectoryLink(tscCheckDir.resolve("node_modules/@js-temporal"),
+        installDependencies().resolve("node_modules/@js-temporal"));
+
     Files.copy(
         Paths.get("src/test/resources/tsc-check/tsconfig.json"),
         tscCheckDir.resolve("tsconfig.json"),
@@ -268,6 +278,26 @@ public final class RealTscCheck {
     // Execute the compiled JS directly with node (not through npx).
     ProcessResult nodeResult = runProcess(List.of(nodeExecutable, "out/run.js"), tscCheckDir, nodeDir);
     return new Result(nodeResult.exitCode(), nodeResult.output());
+  }
+
+  /** Installs the npm dependencies of the lib sources once (npm caches the download), returns their directory. */
+  private static synchronized Path installDependencies() throws IOException {
+    if (Files.isDirectory(DEPS_DIR.resolve("node_modules/@js-temporal/polyfill"))) {
+      return DEPS_DIR;
+    }
+    Files.createDirectories(DEPS_DIR);
+    String nodeDir = resolveNodeDir();
+    String npmExecutable = nodeDir + File.separator + (isWindows() ? "npm.cmd" : "npm");
+    List<String> npmCommand = new ArrayList<>();
+    if (isWindows()) {
+      npmCommand.add("cmd");
+      npmCommand.add("/c");
+    }
+    npmCommand.addAll(List.of(npmExecutable, "install", "--no-save", "--no-package-lock", "--prefix",
+        DEPS_DIR.toString(), TEMPORAL_POLYFILL));
+    ProcessResult npmResult = runProcess(npmCommand, DEPS_DIR, nodeDir);
+    assertEquals(0, npmResult.exitCode(), "npm install failed:\n" + npmResult.output());
+    return DEPS_DIR;
   }
 
   /** Same node download the rest of this build uses, resolved via the generated nodeDir.properties (see Util). */

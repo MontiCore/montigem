@@ -33,7 +33,7 @@ public class GemTimelineChartExample extends GemTimelineChartExampleTOP {
     for (int i = 0 ; i< persons.size() && i < colors.length; i++) {
       TimelineBuilder timelineBuilder = new TimelineBuilder();
       TimelineBlockBuilder preBDay = new TimelineBlockBuilder()
-          .start(LocalDateTime.of(2025, 0, 1, 0, 00, 00))
+          .start(LocalDateTime.of(2025, 1, 1, 0, 00, 00))
           .end(persons.get(i).getBirthday().withYear(2025).withDayOfMonth(1).atStartOfDay())
           .lane("Not Birthday Month");
       TimelineBlockBuilder BDay = new TimelineBlockBuilder()
@@ -42,7 +42,7 @@ public class GemTimelineChartExample extends GemTimelineChartExampleTOP {
           .lane("Birthday Month");
       TimelineBlockBuilder postBDay = new TimelineBlockBuilder()
           .start(persons.get(i).getBirthday().withYear(2025).plusMonths(1).withDayOfMonth(1).atStartOfDay())
-          .end(LocalDateTime.of(2026, 0,1,0,0,0))
+          .end(LocalDateTime.of(2026, 1,1,0,0,0))
           .lane("Not Birthday Month");
       List<TimelineBlock> blockList = new ArrayList<>();
       blockList.add(preBDay);
