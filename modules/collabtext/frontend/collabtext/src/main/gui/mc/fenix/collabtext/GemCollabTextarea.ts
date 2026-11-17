@@ -318,8 +318,9 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     input.setSelectionRange(start, end, direction);
     input.scrollTop = scrollTop;
 
-    this.reportedAnchor = direction === 'backward' ? end : start;
-    this.reportedHead = direction === 'backward' ? start : end;
+    // Remote edits move our selection even when the editor is not focused. Publish the
+    // adjusted indices so the other participants draw our cursor at the same text.
+    this.publishSelection(direction === 'backward' ? end : start, direction === 'backward' ? start : end);
     this.cursorChanged();
   }
 
@@ -362,6 +363,10 @@ export class GemCollabTextarea extends GemCollabTextareaComponent implements Aft
     const backward = input.selectionDirection === 'backward';
     const anchor = backward ? input.selectionEnd : input.selectionStart;
     const head = backward ? input.selectionStart : input.selectionEnd;
+    this.publishSelection(anchor, head);
+  }
+
+  private publishSelection(anchor: number, head: number): void {
     if (anchor !== this.reportedAnchor || head !== this.reportedHead) {
       this.reportedAnchor = anchor;
       this.reportedHead = head;
