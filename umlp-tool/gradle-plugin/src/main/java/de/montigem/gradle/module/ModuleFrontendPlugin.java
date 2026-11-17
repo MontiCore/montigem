@@ -12,6 +12,7 @@ import de.montigem.gradle.DependencyPlugin;
 import de.montigem.gradle.MGBasePlugin;
 import de.montigem.gradle.specific.CreateNpmrcTask;
 import de.montigem.gradle.specific.GUIJava2TSTask;
+import de.montigem.gradle.specific.PrepareGeneratorDiffTask;
 import de.montigem.gradle.specific.GUI2JavaTask;
 import de.montigem.gradle.specific.GUI2SymTask;
 import de.montigem.gradle.specific.integrationtesting.LocalNpmAdduserTask;
@@ -527,6 +528,20 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           }
 
           task.onlyIf(t -> guiPresent);
+        });
+
+        // writes where the generated GUI code is, for the scripts in devScripts/generatorcompare
+        PrepareGeneratorDiffTask.register(subproject).configure(task -> {
+          task.dependsOn(guiJava2ts, gui2sym, cd2java, cd2sym);
+          task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getOutputDir));
+          // the symbols of a lib are written by gui2sym, guiJava2ts has no symbol folder here
+          task.addDir(gui2sym.flatMap(GUI2SymTask::getOutputDir));
+          task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getJSweetAdapterDir));
+          task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getCD2JavaJSweetAdapterDir));
+          // only exist if the lib has .cd files
+          task.addDir(cd2java.flatMap(CD2JavaTask::getOutputDir));
+          task.addDir(cd2sym.flatMap(CD2SymTask::getOutput));
+          task.addDir(cd2java.flatMap(CD2JavaTask::getSymbolOutDir));
         });
 
         gui2symJar.configure(task -> {

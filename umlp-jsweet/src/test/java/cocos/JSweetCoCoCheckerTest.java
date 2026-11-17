@@ -58,6 +58,8 @@ public class JSweetCoCoCheckerTest {
     assertTrue(found0xEE008, "Should have found Objects violation (0xEE008). Findings: " + findings);
     assertTrue(found0xEE009, "Should have found Time violation (0xEE009). Findings: " + findings);
     assertTrue(found0xEE004, "Should have found Concurrent violation (0xEE004). Findings: " + findings);
+    assertTrue(findings.stream().anyMatch(s -> s.contains("0xEE012")),
+        "Should have found sorted map warning (0xEE012). Findings: " + findings);
   }
 
   @Test

@@ -16,5 +16,9 @@ ${tc.signature("name", "attributes")}
 ${cd4c.constructor("public ${name}(${params})")}
 
 <#list attributes as attr>
-  this.set${attr.name?remove_beginning("_")?cap_first}${genService.isList(attr)?then("List", "")}(${attr.name});
+  <#if genService.isList(attr)>
+  this.set${attr.name?remove_beginning("_")?cap_first}List(${attr.name});
+  <#else>
+  this.set${attr.name?remove_beginning("_")?cap_first}(${attr.name});
+  </#if>
 </#list>

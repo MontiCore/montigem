@@ -1,0 +1,12 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+package coco;
+
+import packaged.QualifiedDomain.Directory;
+import util.I;
+
+// valid: d.office and office.room are an unqualified association role and an attribute; only attribute qualified
+// roles (GemMaps, e.g. d.byNumber in GuiNoAttributeQualifiedRoleCoCo2) are rejected by GuiNoAttributeQualifiedRoleCoCo
+component GuiNoAttributeQualifiedRoleCoCo1(Directory d) {
+  @I(i = d.office.room);
+}

@@ -50,7 +50,11 @@ public class UMLPCoCos {
     checker.addCoCo(new UMLPCheckDiagramName());
     checker.addCoCo(new UMLPNoCyclicCDImports());
     checker.addCoCo(new UMLPAssociationQualifierByType());
+    checker.addCoCo(new UMLPAssociationQualifierAttributeExists());
     checker.addCoCo(new UMLPAssociationQualifierByAttributeName());
+    checker.addCoCo(new UMLPAssociationQualifierUnidirectional());
+    checker.addCoCo(new UMLPAssociationQualifierKeyCardinality());
+    checker.addCoCo(new UMLPAssociationQualifierTargetCardinality());
     checker.addCoCo(new UMLPAssociationCardinality());
     checker.addCoCo(new UMLPCheckAttributeModifier());
     checker.addCoCo(new UMLPAttributeTypeIsNotJavaUtilSet());
@@ -62,5 +66,7 @@ public class UMLPCoCos {
     checker.addCoCo(new UMLPCheckCDEnumModifier());
     checker.addCoCo(new UMLPCheckAttributeName());
     checker.addCoCo(new UMLPCheckCommandUnique());
+    checker.addCoCo(new UMLPAttributeGenericArgumentInGeneric());
+    checker.addCoCo(new UMLPCheckParameterOfCommand());
   }
 }

@@ -83,16 +83,23 @@
     }
 
     .gem-card-collapse-inner {
-      overflow: hidden;
+      // Expanded, the content may overflow the card, so that overlays like the options of a
+      // GemDropdownInput are not cut off. It is clipped only while collapsing and when collapsed,
+      // and switches back to visible at the end of the expand animation (delayed discrete transition).
+      overflow: visible;
       display: flex;
       flex-direction: column;
       min-height: 0;
-      transition: opacity 0.25s ease, visibility 0.35s ease;
+      min-width: 0;
+      transition: opacity 0.25s ease, visibility 0.35s ease, overflow 0s linear 0.35s;
+      transition-behavior: allow-discrete;
       opacity: 1;
       visibility: visible;
     }
 
     &.gem-card-collapsed .gem-card-collapse-inner {
+      overflow: hidden;
+      transition: opacity 0.25s ease, visibility 0.35s ease;
       opacity: 0;
       visibility: hidden;
     }

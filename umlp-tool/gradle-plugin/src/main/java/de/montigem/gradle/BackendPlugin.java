@@ -2,7 +2,9 @@
 package de.montigem.gradle;
 
 import de.monticore.gradle.common.CommonMCTask;
+import de.montigem.gradle.specific.PrepareGeneratorDiffTask;
 import de.montigem.gradle.specific.UMLP2JavaTask;
+import de.montigem.gradle.specific.UMLP2TestInfrastructureTask;
 import de.montigem.gradle.specific.merge.MergeTask;
 import de.montigem.gradle.specific.ocl.OCL2JavaTask;
 import org.gradle.api.Plugin;
@@ -215,6 +217,19 @@ public abstract class BackendPlugin implements Plugin<Project> {
 
     // apply last, since the test infrastructure tasks import properties from backend tasks
     project.getPluginManager().apply("de.rwth.se.montigem-testing");
+
+    // writes where the generated code is, for the scripts in devScripts/generatorcompare
+    TaskProvider<UMLP2TestInfrastructureTask> testInfrastructure = project.getTasks().named(
+        TestInfrastructurePlugin.UMLP_TEST_INFRASTRUCTURE_TASK_NAME, UMLP2TestInfrastructureTask.class);
+    PrepareGeneratorDiffTask.register(project).configure(task -> {
+      task.dependsOn(umlp2java, ocl2java, testInfrastructure);
+      task.addDir(umlp2java.flatMap(CommonMCTask::getOutputDir));
+      task.addDir(umlp2java.flatMap(UMLP2JavaTask::getSymbolOutDir));
+      // only exists if the app has .ocl files
+      task.addDir(ocl2java.flatMap(CommonMCTask::getOutputDir));
+      task.addDir(testInfrastructure.flatMap(CommonMCTask::getOutputDir));
+      task.addDir(testInfrastructure.flatMap(UMLP2TestInfrastructureTask::getSymbolOutDir));
+    });
   }
 
   private static void configureBootJarLibraryNames(Project project) {
