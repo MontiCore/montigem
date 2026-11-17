@@ -122,7 +122,9 @@ public class MapAttrPutDecorator extends AbstractDeSerDecorator {
     SymTypeExpression keyType = GenService.getMapTypeArgument(type, 0).get();
     SymTypeExpression valueType = GenService.getMapTypeArgument(type, 1).get();
     Optional<SymTypeExpression> valueEnum = getValueEnum(a);
-    // values with a DeSer of the object mapper (date/time types), like the elements of list attributes
+    // keys and values with a DeSer of the object mapper (date/time types), like the elements of list attributes
+    String keyTypeName = keyType.printFullName();
+    boolean keyUseDeSer = supportedDeSers.contains(keyTypeName);
     String valueTypeName = valueType.printFullName();
     boolean useDeSer = supportedDeSers.contains(valueTypeName);
     String objectMapperName = getPackageName(origCD, DEFAULT_PACKAGE) + "." + origCD.getCDDefinition().getName()
@@ -133,10 +135,10 @@ public class MapAttrPutDecorator extends AbstractDeSerDecorator {
         .setName(cmdName + DE_SER)
         .build();
     getCD4C().addMethod(ast, "umlp.commands.deser.MapAttrCommand_FromJsonObject", cmdName,
-        GenService.calculateJSon(keyType), hasValue(), GenService.calculateJSon(valueType),
+        GenService.calculateJSon(keyType), keyUseDeSer, keyTypeName, hasValue(), GenService.calculateJSon(valueType),
         valueEnum.map(SymTypeExpression::print).orElse(""), useDeSer, valueTypeName, objectMapperName);
-    getCD4C().addMethod(ast, "umlp.commands.deser.MapAttrCommand_BuildJson", cmdName, hasValue(),
-        GenService.getGetterName("value", valueType), valueEnum.isPresent(), useDeSer, valueTypeName,
+    getCD4C().addMethod(ast, "umlp.commands.deser.MapAttrCommand_BuildJson", cmdName, keyUseDeSer, keyTypeName,
+        hasValue(), GenService.getGetterName("value", valueType), valueEnum.isPresent(), useDeSer, valueTypeName,
         objectMapperName);
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.JsonPrinter");
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.json.JsonObject");

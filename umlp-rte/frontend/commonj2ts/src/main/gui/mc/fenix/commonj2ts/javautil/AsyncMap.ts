@@ -3,10 +3,11 @@ import {AbstractAsyncMap} from "./AbstractAsyncMap";
 import {AsyncSet} from "./AsyncSet";
 import {AsyncMapEntrySet} from "./AsyncMapEntrySet";
 import {Collection} from "./Collection";
+import {Temporal} from "../types/Temporal";
 
 /**
  * java.util.HashMap, LinkedHashMap, TreeMap, ... in transpiled code: wraps a native Map, i.e. keeps the
- * insertion order and compares keys like ===.
+ * insertion order and compares keys like ===; Temporal keys (java.time) by value, like in Java.
  */
 export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
   /*private readonly*/
@@ -56,20 +57,23 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
   }
 
   async containsKey(key: any): Promise<boolean> {
-    return this._data.has(key);
+    return this._data.has(this.storedKey(key));
   }
 
   async get(key: any): Promise<V> {
+    key = this.storedKey(key);
     return this._data.has(key) ? this._data.get(key) : null;
   }
 
   async put(key: K, value: V): Promise<V> {
+    key = this.storedKey(key);
     const oldValue = this._data.has(key) ? this._data.get(key) : null;
     this._data.set(key, value);
     return oldValue;
   }
 
   protected async removeKey(key: any): Promise<V> {
+    key = this.storedKey(key);
     if (!this._data.has(key)) {
       return null;
     }
@@ -95,6 +99,24 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
   /** live view, see AsyncMapEntrySet (created per call: no field, so the map holds no cyclic reference) */
   async entrySet(): Promise<AsyncSet<[K, V]>> {
     return AsyncSet.__viewOf(new AsyncMapEntrySet<K, V>(this));
+  }
+
+  /** the stored key with the same value as a Temporal key (linear search), otherwise the key itself */
+  private storedKey(key: any): any {
+    if (AsyncMap.isTemporal(key) && !this._data.has(key)) {
+      const value = key.toString();
+      for (const k of this._data.keys()) {
+        if (AsyncMap.isTemporal(k) && k.toString() === value) {
+          return k;
+        }
+      }
+    }
+    return key;
+  }
+
+  private static isTemporal(key: any): boolean {
+    return key instanceof Temporal.PlainDate || key instanceof Temporal.PlainDateTime
+      || key instanceof Temporal.PlainTime;
   }
 
   __internalMap(): Map<K, V> {

@@ -339,6 +339,48 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
   }
 
   @Test
+  default void testMapsWithDateKeysAreWrittenToDb() {
+    Map<LocalDate, Integer> countsByDay = new LinkedHashMap<>();
+    countsByDay.put(LocalDate.of(2026, 11, 17), 3);
+    countsByDay.put(LocalDate.of(2026, 11, 16), 1);
+    Map<LocalDateTime, String> notesByTime = new LinkedHashMap<>();
+    notesByTime.put(LocalDateTime.of(2026, 11, 17, 10, 30, 15, 123_000_000), "start");
+    Map<LocalTime, String> slots = new LinkedHashMap<>();
+    slots.put(LocalTime.of(12, 15), "lunch");
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().countsByDay(countsByDay).notesByTime(notesByTime)
+        .slots(slots).build().get();
+
+    var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
+
+    var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(countsByDay, clone.getCountsByDayMap());
+    assertEquals(List.of(LocalDate.of(2026, 11, 17), LocalDate.of(2026, 11, 16)),
+        List.copyOf(clone.getCountsByDayMap().keySet()));
+    assertEquals(notesByTime, clone.getNotesByTimeMap());
+    assertEquals(slots, clone.getSlotsMap());
+  }
+
+  @Test
+  default void testPutAndRemoveWithDateKeyInDb() {
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().countsByDayPut(LocalDate.of(2026, 11, 17), 1)
+        .countsByDayPut(LocalDate.of(2026, 11, 18), 1).build().get();
+    var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
+
+    // put an existing key: the value is replaced in its position
+    sut.putCountsByDay(LocalDate.of(2026, 11, 17), 2);
+    var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(2, clone.sizeCountsByDays());
+    assertEquals(List.of(LocalDate.of(2026, 11, 17), LocalDate.of(2026, 11, 18)),
+        List.copyOf(clone.getCountsByDayMap().keySet()));
+    assertEquals(2, clone.getCountsByDay(LocalDate.of(2026, 11, 17)));
+
+    // remove a key
+    sut.removeCountsByDay(LocalDate.of(2026, 11, 17));
+    clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
+    assertEquals(Map.of(LocalDate.of(2026, 11, 18), 1), clone.getCountsByDayMap());
+  }
+
+  @Test
   default void testDeleteRemovesTheEntries() {
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().scoresPut("math", 3).weightsPut(1L, 2.0).build().get();
     long gemId = sut.gemId;

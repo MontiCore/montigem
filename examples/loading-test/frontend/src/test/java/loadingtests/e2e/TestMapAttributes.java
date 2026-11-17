@@ -98,8 +98,20 @@ public class TestMapAttributes extends AbstractLoadingTestsE2ETest {
   public void testDateValue(Page page) {
     gradebook.putDueDates("math", LocalDate.of(2026, 11, 17));
     open(page);
-    click(page, "Copy Due Date");
-    waitUntil(() -> gradebook.containsKeyDueDates("copy"), "backend: copied due date");
-    assertEquals(LocalDate.of(2026, 11, 17), gradebook.getDueDates("copy"));
+    clickUntil(page, "Read Due Date", "due=2026-11-17");
+    click(page, "Put Due Date");
+    waitUntil(() -> gradebook.containsKeyDueDates("exam"), "backend: due date of exam");
+    assertEquals(LocalDate.of(2027, 2, 10), gradebook.getDueDates("exam"));
+  }
+
+  @Test
+  public void testDateKey(Page page) {
+    gradebook.putVisitsByDay(LocalDate.of(2026, 11, 17), 1);
+    open(page);
+    clickUntil(page, "Read Visits", "size=1;visits=1");
+    click(page, "Count Visit");
+    waitUntil(() -> gradebook.getVisitsByDay(LocalDate.of(2026, 11, 17)) == 2, "backend: 2 visits");
+    assertEquals(1, gradebook.sizeVisitsByDays());
+    clickUntil(page, "Read Visits", "size=1;visits=2");
   }
 }

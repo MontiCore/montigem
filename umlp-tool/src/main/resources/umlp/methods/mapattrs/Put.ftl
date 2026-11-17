@@ -16,7 +16,7 @@ if (key > GemValueMap.MAX_SAFE_KEY || key < -GemValueMap.MAX_SAFE_KEY) {
 }
 </#if>
 ${valueType} oldValue = this._${name}.put(key, value);
-if (oldValue != null && Objects.equals(value, oldValue)) {
+if (Objects.equals(value, oldValue)) {
   return oldValue;
 }
 set${name?cap_first}Present(true);

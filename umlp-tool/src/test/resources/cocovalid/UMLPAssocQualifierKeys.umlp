@@ -40,6 +40,9 @@ umlp UMLPAssocQualifierKeys {
     java.util.Map<byte, String> labels;
     java.util.Map<short, boolean> flags;
     java.util.Map<String, java.time.LocalDate> dates;
+    java.util.Map<java.time.LocalDate, Integer> countByDay;
+    java.util.Map<java.time.LocalDateTime, String> notes;
+    java.util.Map<java.time.LocalTime, java.time.LocalDate> nextByTime;
   }
 
   enum F;

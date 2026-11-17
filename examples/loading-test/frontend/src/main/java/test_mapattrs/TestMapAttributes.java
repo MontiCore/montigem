@@ -4,6 +4,7 @@ package test_mapattrs;
 import loadingtests.Gradebook;
 import loadingtests.MyEnum;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -54,12 +55,26 @@ public class TestMapAttributes extends TestMapAttributesTOP {
     return $ -> setResult("size=" + g.sizeStatess() + ";max=" + g.getStates(9007199254740991L).name());
   }
 
+  @Override
+  public Consumer<Void> readDueDate(Gradebook g) {
+    return $ -> setResult("due=" + g.getDueDates("math"));
+  }
+
+  @Override
+  public Consumer<Void> putDueDate(Gradebook g) {
+    return $ -> g.putDueDates("exam", LocalDate.of(2027, 2, 10));
+  }
+
   /**
-   * puts the loaded due date of math unchanged under copy: the date is not read by its getters, which disagree with
-   * the frontend LocalDateDeSer on the time zone (known bug)
+   * increments the visits of a loaded day, with a key created here: equal dates are the same key
    */
   @Override
-  public Consumer<Void> copyDueDate(Gradebook g) {
-    return $ -> g.putDueDates("copy", g.getDueDates("math"));
+  public Consumer<Void> countVisit(Gradebook g) {
+    return $ -> g.putVisitsByDay(LocalDate.of(2026, 11, 17), g.getVisitsByDay(LocalDate.of(2026, 11, 17)) + 1);
+  }
+
+  @Override
+  public Consumer<Void> readVisits(Gradebook g) {
+    return $ -> setResult("size=" + g.sizeVisitsByDays() + ";visits=" + g.getVisitsByDay(LocalDate.of(2026, 11, 17)));
   }
 }

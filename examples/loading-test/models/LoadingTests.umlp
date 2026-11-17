@@ -167,6 +167,7 @@ classdiagram LoadingTests {
     Map<String, int> grades;
     Map<long, MyEnum> states;
     Map<String, java.time.LocalDate> dueDates;
+    Map<java.time.LocalDate, int> visitsByDay;
   }
 
   class Staff {

@@ -30,6 +30,11 @@ ${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType
     <#elseif genService.isMap(attr.getSymbol().getType())>
       <#assign keySymType=genService.getMapTypeArgument(attr.getSymbol().getType(), 0).get()>
       <#assign valueSymType=genService.getMapTypeArgument(attr.getSymbol().getType(), 1).get()>
+      <#if genService.isTimeType(keySymType)>
+      <#assign key="${objectMapperName}.<${keySymType.printFullName()}>deserialize('\"' + entry.getMember(\"key\").getAsJsonString().getValue() + '\"', \"${keySymType.printFullName()}\").orElse(null)">
+      <#else>
+      <#assign key="entry.getMember(\"key\").${genService.calculateJSon(keySymType)}">
+      </#if>
       ${fieldType} result = new LinkedHashMap<>();
       if(!json.hasMember("${fieldName}")) {
       return result;
@@ -38,11 +43,11 @@ ${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType
       JsonObject entry = e.getAsJsonObject();
       <#if useDeSer>
       de.monticore.symboltable.serialization.json.JsonElement value = entry.getMember("value");
-      result.put(entry.getMember("key").${genService.calculateJSon(keySymType)}, ${objectMapperName}.<${innerType}>deserialize(value.isJsonString() ? '"' + value.getAsJsonString().getValue() + '"' : value.toString(), "${innerType}").orElse(null));
+      result.put(${key}, ${objectMapperName}.<${innerType}>deserialize(value.isJsonString() ? '"' + value.getAsJsonString().getValue() + '"' : value.toString(), "${innerType}").orElse(null));
       <#elseif genService.isCDEnum(valueSymType)>
-      result.put(entry.getMember("key").${genService.calculateJSon(keySymType)}, ${valueSymType.print()}.valueOf(entry.getMember("value").${jsonStr}));
+      result.put(${key}, ${valueSymType.print()}.valueOf(entry.getMember("value").${jsonStr}));
       <#else>
-      result.put(entry.getMember("key").${genService.calculateJSon(keySymType)}, entry.getMember("value").${jsonStr});
+      result.put(${key}, entry.getMember("value").${jsonStr});
       </#if>
       }
       return result;

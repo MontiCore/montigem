@@ -11,8 +11,8 @@ public class UMLPMapAttributeKeyTypeTest extends AbstractCoCoTest<UMLPMapAttribu
   }
 
   /**
-   * Map attributes with keys a type qualified association does not support (floating point, boolean, enum), and a
-   * domain class key with simple values
+   * Map attributes with keys a type qualified association does not support (floating point, boolean, enum), a
+   * domain class key with simple values and a date key with domain class values
    */
   @Test
   public void testInvalidKeyType() {
@@ -25,7 +25,8 @@ public class UMLPMapAttributeKeyTypeTest extends AbstractCoCoTest<UMLPMapAttribu
     assertFindingAtLine(4, 13, "C", "countByC");
     assertFindingAtLine(5, 14, "Boolean", "countByFlag");
     assertFindingAtLine(6, 15, "E", "countByKind");
-    assertFindingsCount(7);
+    assertFindingAtLine(7, 16, "LocalDate", "byDay");
+    assertFindingsCount(8);
   }
 
   @Test
