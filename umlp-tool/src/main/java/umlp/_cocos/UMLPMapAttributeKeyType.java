@@ -12,9 +12,9 @@ import java.util.Optional;
  * The key type K of a {@code java.util.Map<K, V>} attribute follows the rules of type qualifiers
  * ({@link UMLPAssociationQualifierByType#isTypeKey}): byte, short, int, long or String, and a domain class if the
  * values are domain classes (the attribute becomes the type qualified association {@code Owner [K] -> (attr) V [1]},
- * UMLAttrToAssocTrafo). A map attribute with simple values has no domain class keys. The check runs on the attribute,
- * before the transformation, so the error points to the attribute. The value type is checked by
- * {@link UMLPMapAttributeValueType}.
+ * UMLAttrToAssocTrafo). A map attribute with simple values has no domain class keys, but may have date/time keys
+ * ({@link GenService#isTimeType}). The check runs on the attribute, before the transformation, so the error points to
+ * the attribute. The value type is checked by {@link UMLPMapAttributeValueType}.
  */
 public class UMLPMapAttributeKeyType implements CDBasisASTCDAttributeCoCo, CoCoTestable {
 
@@ -22,7 +22,8 @@ public class UMLPMapAttributeKeyType implements CDBasisASTCDAttributeCoCo, CoCoT
 
   public static final String ERROR_MSG_FORMAT = " The key type %s of the Map attribute %s is invalid: a Map attribute "
       + "has the keys of a type qualified association: byte, short, int, long (not float, double or char: Java and the "
-      + "browser would disagree on their keys), String, and a domain class if the values are domain classes.";
+      + "browser would disagree on their keys), String, a domain class if the values are domain classes, and LocalDate, "
+      + "LocalDateTime or LocalTime if they are not.";
 
   @Override
   public void check(ASTCDAttribute attr) {
@@ -37,7 +38,8 @@ public class UMLPMapAttributeKeyType implements CDBasisASTCDAttributeCoCo, CoCoT
     Optional<SymTypeExpression> value = GenService.getMapTypeArgument(type, 1);
     boolean domainValues = value.isPresent() && GenService.isAssociationTarget(value.get());
     if (key.isPresent() && !(UMLPAssociationQualifierByType.isTypeKey(key.get())
-        && (domainValues || !UMLPAssociationQualifierByAttributeName.isDomainKey(key.get())))) {
+        && (domainValues || !UMLPAssociationQualifierByAttributeName.isDomainKey(key.get()))
+        || !domainValues && GenService.isTimeType(key.get()))) {
       logError(attr, key.get().print(), attr.getName());
     }
   }

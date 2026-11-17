@@ -31,11 +31,16 @@
       </#if>
       printer.endArray();
     <#elseif genService.isMap(attr.getSymbol().getType())>
+      <#assign keySymType=genService.getMapTypeArgument(attr.getSymbol().getType(), 0).get()>
       <#assign valueSymType=genService.getMapTypeArgument(attr.getSymbol().getType(), 1).get()>
       printer.beginArray("${fieldName}");
       for (Map.Entry<${genService.getMapAttributeType(attr, 0)}, ${genService.getMapAttributeType(attr, 1)}> e : obj.get${fieldName?cap_first}Map().entrySet()) {
         printer.beginObject();
+        <#if genService.isTimeType(keySymType)>
+        printer.memberJson("key", ${objectMapperName}.serialize(e.getKey(), "${keySymType.printFullName()}").orElse(""));
+        <#else>
         printer.member("key", e.getKey());
+        </#if>
         <#if useDeSer>
         printer.memberJson("value", ${objectMapperName}.serialize(e.getValue(), "${innerType}").orElse(""));
         <#else>

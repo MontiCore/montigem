@@ -383,6 +383,57 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
   }
 
   @Test
+  public void testMapsWithDateKeysAreWritten() {
+    // client
+    getClients(0).activate();
+    Map<LocalDate, Integer> countsByDay = new LinkedHashMap<>();
+    countsByDay.put(LocalDate.of(2026, 11, 17), 3);
+    countsByDay.put(LocalDate.of(2026, 11, 16), 1);
+    Map<LocalDateTime, String> notesByTime = new LinkedHashMap<>();
+    notesByTime.put(LocalDateTime.of(2026, 11, 17, 10, 30, 15, 123_000_000), "start");
+    Map<LocalTime, String> slots = new LinkedHashMap<>();
+    slots.put(LocalTime.of(12, 15), "lunch");
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().countsByDay(countsByDay).notesByTime(notesByTime)
+        .slots(slots).build().get();
+
+    // check in backend
+    getBackend().activate();
+    var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
+    assertNotSame(sut, sutServer);
+    assertEquals(countsByDay, sutServer.getCountsByDayMap());
+    assertEquals(List.of(LocalDate.of(2026, 11, 17), LocalDate.of(2026, 11, 16)),
+        List.copyOf(sutServer.getCountsByDayMap().keySet()));
+    assertEquals(notesByTime, sutServer.getNotesByTimeMap());
+    assertEquals(slots, sutServer.getSlotsMap());
+  }
+
+  @Test
+  public void testPutAndRemoveWithDateKey() {
+    // client
+    getClients(0).activate();
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder().countsByDayPut(LocalDate.of(2026, 11, 17), 1)
+        .countsByDayPut(LocalDate.of(2026, 11, 18), 1).build().get();
+
+    // backend
+    getBackend().activate();
+    var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
+    assertNotSame(sut, sutServer);
+    assertEquals(2, sutServer.sizeCountsByDays());
+
+    // client: put an existing key, the value is replaced in its position
+    getClients(0).activate();
+    sut.putCountsByDay(LocalDate.of(2026, 11, 17), 2);
+    assertEquals(2, sutServer.sizeCountsByDays());
+    assertEquals(List.of(LocalDate.of(2026, 11, 17), LocalDate.of(2026, 11, 18)),
+        List.copyOf(sutServer.getCountsByDayMap().keySet()));
+    assertEquals(2, sutServer.getCountsByDay(LocalDate.of(2026, 11, 17)));
+
+    // remove a key
+    sut.removeCountsByDay(LocalDate.of(2026, 11, 17));
+    assertEquals(Map.of(LocalDate.of(2026, 11, 18), 1), sutServer.getCountsByDayMap());
+  }
+
+  @Test
   public void testServerChangesReachClients() {
     // client
     getClients(0).activate();

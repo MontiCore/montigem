@@ -131,8 +131,8 @@ umlp Attributes {
     List<boolean> bVals;
   }
 
-  /* map attributes with simple values: the keys of type qualifiers (byte, short, int, long, String), the values of
-     list attributes (primitive and boxed types, String, enums) */
+  /* map attributes with simple values: the keys of type qualifiers (byte, short, int, long, String) and date/time
+     keys, the values of list attributes (primitive and boxed types, String, enums, date/time types) */
   class MapsOfSimpleTypes{
     Map<String, int> scores;
     Map<long, Double> weights;
@@ -142,6 +142,9 @@ umlp Attributes {
     Map<String, LocalDate> dates;
     Map<int, java.time.LocalDateTime> timestamps;
     Map<String, LocalTime> times;
+    Map<LocalDate, int> countsByDay;
+    Map<LocalDateTime, String> notesByTime;
+    Map<LocalTime, String> slots;
   }
 
   class ClassWithDefaults{
