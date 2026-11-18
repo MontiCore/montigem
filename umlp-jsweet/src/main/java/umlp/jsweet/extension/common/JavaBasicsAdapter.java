@@ -323,7 +323,7 @@ public class JavaBasicsAdapter extends AbstractAdapter {
       return false;
     }
     if (!printsAwait(ExtendedElementFactory.toTree(invocation.getArgument(0)))
-        || JavaTimeAdapter.isTemporal(invocation.getArgument(0))) {
+        || JavaTimeAdapter.hasJavaString(invocation.getArgument(0))) {
       // java.time values: JavaTimeAdapter
       return false;
     }

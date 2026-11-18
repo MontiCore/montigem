@@ -67,6 +67,10 @@ For MontiGem users:
   `ofInstant`, `now(zone)`, `toInstant`, `withZoneSameInstant`), getters, arithmetic across DST changes and
   `toString` like java.time. `toEpochSecond(offset)` and `ofEpochSecond(..., offset)` use the given offset (before,
   every offset was taken as UTC); `parse(text, formatter)` is no longer translated (the formatter was ignored).
+* More java.time methods in transpiled code: `until(end, unit)`, `truncatedTo(unit)`, `withNano(n)`,
+  `Duration.toDaysPart()` ... `toNanosPart()` and `isPositive()`, `LocalTime.atDate(date)`, second and nano of day,
+  epoch day, `ChronoUnit.getDuration()`, `valueOf(name)`, `name()`. `ChronoUnit.toString()` and string concatenation
+  give the display name like Java (`"Days"`, before `"DAYS"`).
 
 ## 2026-11-05: 7.10.0-SNAPSHOT
 * New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`

@@ -17,6 +17,8 @@ export class LocalDateTimeHelper {
 
   static readonly DAYS_OF_WEEK = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 
+  private static readonly EPOCH = new Temporal.PlainDate(1970, 1, 1);
+
   static readonly MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER",
     "OCTOBER", "NOVEMBER", "DECEMBER"];
 
@@ -71,6 +73,54 @@ export class LocalDateTimeHelper {
   /** getMonth(), the name of the Month */
   static getMonth(date: WithDate): string {
     return LocalDateTimeHelper.MONTHS[date.month - 1];
+  }
+
+  /** withNano(nanoOfSecond) of a LocalDateTime, LocalTime or ZonedDateTime; a value out of range is rejected */
+  static withNano<T extends WithTime>(time: T, nanoOfSecond: number): T {
+    if (nanoOfSecond < 0 || nanoOfSecond > 999999999) {
+      throw new RangeError("Invalid value for NanoOfSecond: " + nanoOfSecond);
+    }
+    const [millisecond, microsecond, nanosecond] = LocalDateTimeHelper.split(nanoOfSecond);
+    return (time as any).with({millisecond, microsecond, nanosecond});
+  }
+
+  /** LocalTime.toSecondOfDay() */
+  static toSecondOfDay(time: Temporal.PlainTime): number {
+    return time.hour * 3600 + time.minute * 60 + time.second;
+  }
+
+  /** LocalTime.ofSecondOfDay(secondOfDay) */
+  static ofSecondOfDay(secondOfDay: number): Temporal.PlainTime {
+    if (secondOfDay < 0 || secondOfDay >= 86400) {
+      throw new RangeError("Invalid value for SecondOfDay: " + secondOfDay);
+    }
+    return new Temporal.PlainTime(Math.floor(secondOfDay / 3600), Math.floor(secondOfDay / 60) % 60, secondOfDay % 60);
+  }
+
+  /** LocalTime.toNanoOfDay() */
+  static toNanoOfDay(time: Temporal.PlainTime): number {
+    return LocalDateTimeHelper.toSecondOfDay(time) * 1000000000 + LocalDateTimeHelper.getNano(time);
+  }
+
+  /** LocalTime.ofNanoOfDay(nanoOfDay) */
+  static ofNanoOfDay(nanoOfDay: number): Temporal.PlainTime {
+    const nanos = BigInt(nanoOfDay);
+    if (nanos < 0n || nanos >= 86400n * 1000000000n) {
+      throw new RangeError("Invalid value for NanoOfDay: " + nanoOfDay);
+    }
+    const second = Number(nanos / 1000000000n);
+    return LocalDateTimeHelper.ofTime(Math.floor(second / 3600), Math.floor(second / 60) % 60, second % 60,
+      Number(nanos % 1000000000n));
+  }
+
+  /** LocalDate.toEpochDay(): the days since 1970-01-01 */
+  static toEpochDay(date: Temporal.PlainDate): number {
+    return LocalDateTimeHelper.EPOCH.until(date).days;
+  }
+
+  /** LocalDate.ofEpochDay(epochDay) */
+  static ofEpochDay(epochDay: number): Temporal.PlainDate {
+    return LocalDateTimeHelper.EPOCH.add({days: epochDay});
   }
 
   /** withDayOfYear(dayOfYear); a day beyond the year is rejected like in java.time */

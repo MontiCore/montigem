@@ -104,4 +104,28 @@ public class DurationRuntimeCheck {
         + ChronoUnit.MINUTES.between(a, b) + " " + ChronoUnit.MILLIS.between(a, b) + " "
         + ChronoUnit.SECONDS.between(LocalTime.of(10, 0), LocalTime.of(9, 59, 30));
   }
+
+  /** toDaysPart() to toNanosPart(), isPositive(), truncatedTo(unit) */
+  @JSweetTest
+  public static String checkPartsAndTruncation() {
+    Duration d = Duration.parse("P2DT3H4M5.006007008S");
+    Duration negative = Duration.ofMillis(-1_500);
+    return d.toDaysPart() + " " + d.toHoursPart() + " " + d.toMinutesPart() + " " + d.toSecondsPart() + " "
+        + d.toMillisPart() + " " + d.toNanosPart() + " " + negative.toSecondsPart() + " " + negative.toMillisPart()
+        + " " + d.isPositive() + " " + negative.isPositive() + " " + Duration.ZERO.isPositive() + " "
+        + d.truncatedTo(ChronoUnit.SECONDS) + " " + d.truncatedTo(ChronoUnit.HOURS) + " "
+        + d.truncatedTo(ChronoUnit.DAYS) + " " + negative.truncatedTo(ChronoUnit.SECONDS) + " "
+        + Duration.ofMinutes(-90).truncatedTo(ChronoUnit.HOURS);
+  }
+
+  /** the ChronoUnit methods: getDuration, valueOf, name, toString (the display name), string concatenation */
+  @JSweetTest
+  public static String checkChronoUnitMethods() {
+    ChronoUnit unit = ChronoUnit.valueOf("HALF_DAYS");
+    StringBuilder sb = new StringBuilder();
+    sb.append(ChronoUnit.MILLENNIA);
+    return unit.name() + " " + unit + " " + unit.toString() + " " + ChronoUnit.DAYS.getDuration() + " "
+        + ChronoUnit.MONTHS.getDuration() + " " + ChronoUnit.NANOS.getDuration() + " " + sb + " "
+        + String.valueOf(ChronoUnit.WEEKS);
+  }
 }
