@@ -108,6 +108,9 @@ umlp Attributes {
       Instant bar_instant;
       List<Instant> bar_list_instant;
       Optional<Instant> bar_opt_instant;
+      Duration bar_duration;
+      List<Duration> bar_list_duration;
+      Optional<Duration> bar_opt_duration;
   }
 
   class ListOfPrimitives{

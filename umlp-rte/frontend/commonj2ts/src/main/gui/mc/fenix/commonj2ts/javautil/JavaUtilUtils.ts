@@ -82,15 +82,21 @@ export class JavaUtilUtils {
     return a === b;
   }
 
-  /** a java.time value (LocalDate, LocalDateTime, LocalTime, Instant) */
+  /** a java.time value (LocalDate, LocalDateTime, LocalTime, Instant, Duration) */
   public static isTemporal(value: any): boolean {
     return value instanceof Temporal.PlainDate || value instanceof Temporal.PlainDateTime
-      || value instanceof Temporal.PlainTime || value instanceof Temporal.Instant;
+      || value instanceof Temporal.PlainTime || value instanceof Temporal.Instant || value instanceof Temporal.Duration;
   }
 
-  /** equal only to a value of the same type, like java.time: Temporal's equals converts its argument */
+  /**
+   * equal only to a value of the same type, like java.time: Temporal's equals converts its argument; a Duration has no
+   * equals, it is compared by its length
+   */
   private static temporalEquals(a: any, b: any): boolean {
-    return Object.getPrototypeOf(a) === Object.getPrototypeOf(b) && a.equals(b);
+    if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) {
+      return false;
+    }
+    return a instanceof Temporal.Duration ? Temporal.Duration.compare(a, b) === 0 : a.equals(b);
   }
 
   private static isListLike(value: any): boolean {

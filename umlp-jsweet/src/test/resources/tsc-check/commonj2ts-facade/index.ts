@@ -25,6 +25,7 @@ export { GemListUtil } from "../commonj2ts-src/util/GemListUtil";
 export { GemList } from "../commonj2ts-src/common/GemList";
 export { IUMLPList } from "../commonj2ts-src/common/IUMLPList";
 export { LocalDateTimeHelper } from "../commonj2ts-src/types/LocalDateTimeHelper";
+export { DurationHelper } from "../commonj2ts-src/types/DurationHelper";
 export { Temporal } from "../commonj2ts-src/types/Temporal";
 export { Collection } from "../commonj2ts-src/javautil/Collection";
 export { JavaUtilUtils } from "../commonj2ts-src/javautil/JavaUtilUtils";

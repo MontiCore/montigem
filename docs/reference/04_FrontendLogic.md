@@ -58,8 +58,8 @@ MontiGem uses JSweet to transpile Java to TypeScript. For a detailed guide on su
     *   `java.util.List`, `ArrayList`, `LinkedList` -> JS `Array`
     *   `java.util.Map`, `HashMap` -> JS `Map`
     *   `java.util.Optional` -> Unwrapped value (nullable)
-    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant` -> `Temporal.PlainDateTime`, `PlainDate`,
-        `PlainTime`, `Instant`
+    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration` -> `Temporal.PlainDateTime`,
+        `PlainDate`, `PlainTime`, `Instant`, `Duration`
     *   `java.lang.String`, `Math`, `System.out.println`
 *   **Unsupported:**
     *   `java.util.stream` (Streams): **Do not use.** Use loops instead.

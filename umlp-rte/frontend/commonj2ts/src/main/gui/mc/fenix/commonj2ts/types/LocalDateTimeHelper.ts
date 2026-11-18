@@ -1,5 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 import {Temporal} from "./Temporal";
+import {DurationHelper} from "./DurationHelper";
 
 type DateOrDateTime = Temporal.PlainDate | Temporal.PlainDateTime;
 type TimeOrDateTime = Temporal.PlainTime | Temporal.PlainDateTime;
@@ -77,9 +78,12 @@ export class LocalDateTimeHelper {
    * toString() like java.time: seconds only if not 0 (always for Instant, in UTC with Z), the fraction in groups of 3
    * digits; null for null, which string concatenation prints as "null" like Java
    */
-  static toString(value: Temporal.PlainDate | TimeOrDateTime | Temporal.Instant): string {
+  static toString(value: Temporal.PlainDate | TimeOrDateTime | Temporal.Instant | Temporal.Duration): string {
     if (value == null) {
       return null;
+    }
+    if (value instanceof Temporal.Duration) {
+      return DurationHelper.toString(value);
     }
     if (value instanceof Temporal.PlainDate) {
       return value.toString();

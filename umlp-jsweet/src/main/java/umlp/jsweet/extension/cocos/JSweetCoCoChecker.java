@@ -275,10 +275,13 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
         && !ownerFqn.equals("java.time.LocalDateTime")
         && !ownerFqn.equals("java.time.LocalDate")
         && !ownerFqn.equals("java.time.LocalTime")
-        && !ownerFqn.equals("java.time.Instant")) {
+        && !ownerFqn.equals("java.time.Instant")
+        && !ownerFqn.equals("java.time.Duration")
+        && !ownerFqn.equals("java.time.temporal.ChronoUnit")) {
       Log.warn("0xEE009: Calls to " + ownerFqn + "." + methodName + "(...) are not explicitly supported. "
-              + "Only java.time.LocalDateTime, java.time.LocalDate, java.time.LocalTime and java.time.Instant "
-              + "with their standard methods are supported in transpiled code.",
+              + "Only java.time.LocalDateTime, java.time.LocalDate, java.time.LocalTime, java.time.Instant, "
+              + "java.time.Duration and java.time.temporal.ChronoUnit with their standard methods are supported in "
+              + "transpiled code.",
           getStartSourcePosition(getContext(),getCurrentPath().getCompilationUnit(),tree));
       return;
     }

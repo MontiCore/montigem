@@ -14,18 +14,20 @@ import umlp.jsweet.extension.AbstractAdapter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
 /**
- * This adapter is responsible to enable the usage of java.time classes: LocalDate, LocalDateTime, LocalTime and
- * Instant become the Temporal types of @umlp/commonj2ts (see TEMPORAL_TYPES). java.util.Date is not supported
- * (JSweetCoCoChecker, 0xEE013).
+ * This adapter is responsible to enable the usage of java.time classes: LocalDate, LocalDateTime, LocalTime, Instant
+ * and Duration become the Temporal types of @umlp/commonj2ts (see TEMPORAL_TYPES), the constants of DayOfWeek and
+ * ChronoUnit strings. java.util.Date is not supported (JSweetCoCoChecker, 0xEE013).
  */
 public class JavaTimeAdapter extends AbstractAdapter {
 
@@ -35,7 +37,21 @@ public class JavaTimeAdapter extends AbstractAdapter {
       "java.time.LocalDate", "Temporal.PlainDate",
       "java.time.LocalDateTime", "Temporal.PlainDateTime",
       "java.time.LocalTime", "Temporal.PlainTime",
-      "java.time.Instant", "Temporal.Instant");
+      "java.time.Instant", "Temporal.Instant",
+      "java.time.Duration", "Temporal.Duration");
+
+  public static final String CHRONO_UNIT = "java.time.temporal.ChronoUnit";
+
+  /** the static methods of Duration, see DurationHelper */
+  private static final List<String> DURATION_FACTORIES = List.of(
+      "ofDays", "ofHours", "ofMinutes", "ofSeconds", "ofMillis", "ofNanos", "of", "between", "parse");
+
+  /** the methods of a Duration, see DurationHelper; plus and minus of an amount in a unit are plusUnits/minusUnits */
+  private static final List<String> DURATION_METHODS = List.of(
+      "plus", "minus", "plusDays", "plusHours", "plusMinutes", "plusSeconds", "plusMillis", "plusNanos", "minusDays",
+      "minusHours", "minusMinutes", "minusSeconds", "minusMillis", "minusNanos", "multipliedBy", "dividedBy",
+      "negated", "abs", "isZero", "isNegative", "getSeconds", "getNano", "toDays", "toHours", "toMinutes", "toSeconds",
+      "toMillis", "toNanos", "compareTo", "equals", "toString");
 
   /** the Temporal duration units of the plus and minus methods of Instant, e.g. plusMillis */
   private static final Map<String, String> INSTANT_UNITS = Map.of(
@@ -78,6 +94,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
     getTypeMirrorMappings().add(0, computeDateTypeMapping());
     TEMPORAL_TYPES.forEach(this::addTypeMapping);
     addTypeMapping("java.time.DayOfWeek", "string");
+    addTypeMapping(CHRONO_UNIT, "string");
   }
 
   public Function<TypeMirror, String> computeDateTypeMapping() {
@@ -108,6 +125,15 @@ public class JavaTimeAdapter extends AbstractAdapter {
     getPrinter().useModule(new ModuleImportDescriptor("LocalDateTimeHelper", getLibraryLocation()));
   }
 
+  private void useDurationHelper() {
+    getPrinter().useModule(new ModuleImportDescriptor("DurationHelper", getLibraryLocation()));
+  }
+
+  private void printDurationHelper(String method, List<ExtendedElement> args) {
+    useDurationHelper();
+    print("DurationHelper." + method + "(").printArgList(args).print(")");
+  }
+
   @Override
   public boolean substituteMethodInvocation(MethodInvocationElement invocation) {
     if (invocation.getTargetType() == null) {
@@ -131,7 +157,22 @@ public class JavaTimeAdapter extends AbstractAdapter {
     if (substituteStringBuilding(invocation, targetType)) {
       return true;
     }
-    if ("java.time.Instant".equals(targetType)) {
+    if (CHRONO_UNIT.equals(targetType) && "between".equals(invocation.getMethodName())) {
+      // unit.between(start, end)
+      printMacroName("between");
+      List<ExtendedElement> args = new ArrayList<>();
+      args.add(invocation.getTargetExpression());
+      args.addAll(invocation.getArguments());
+      printDurationHelper("unitsBetween", args);
+      return true;
+    }
+    if ("java.time.Duration".equals(targetType)) {
+      if (substituteMethodInvocation_Duration(invocation)) {
+        return true;
+      }
+    } else if (TEMPORAL_TYPES.containsKey(targetType) && substituteDurationArithmetic(invocation, targetType)) {
+      return true;
+    } else if ("java.time.Instant".equals(targetType)) {
       if (substituteMethodInvocation_Instant(invocation)) {
         return true;
       }
@@ -346,6 +387,60 @@ public class JavaTimeAdapter extends AbstractAdapter {
     return false;
   }
 
+  /**
+   * plus(Duration) and minus(Duration) of a LocalDateTime, LocalTime or Instant (a LocalDate has no time, Java rejects
+   * a Duration); plus(amount, unit) and minus(amount, unit) of all of them
+   */
+  private boolean substituteDurationArithmetic(MethodInvocationElement invocation, String targetType) {
+    String methodName = invocation.getMethodName();
+    List<ExtendedElement> args = invocation.getArguments();
+    ExtendedElement target = invocation.getTargetExpression();
+    if (target == null || !("plus".equals(methodName) || "minus".equals(methodName))) {
+      return false;
+    }
+    if (args.size() == 1 && args.get(0).getType() != null
+        && "java.time.Duration".equals(args.get(0).getType().toString())
+        && !"java.time.LocalDate".equals(targetType)) {
+      printMacroName(methodName);
+      useTemporal();
+      printTarget(target).print("plus".equals(methodName) ? ".add(" : ".subtract(").print(args.get(0)).print(")");
+      return true;
+    }
+    if (args.size() == 2) {
+      printMacroName(methodName);
+      printDurationHelper(methodName + "Units", List.of(target, args.get(0), args.get(1)));
+      return true;
+    }
+    return false;
+  }
+
+  /** the methods of Duration on Temporal.Duration, all through DurationHelper (exact, java.time formats) */
+  private boolean substituteMethodInvocation_Duration(MethodInvocationElement invocation) {
+    String methodName = invocation.getMethodName();
+    List<ExtendedElement> args = invocation.getArguments();
+    ExtendedElement target = invocation.getTargetExpression();
+    useTemporal();
+    if (DURATION_FACTORIES.contains(methodName) && (target == null || isStaticCall(invocation))) {
+      printMacroName(methodName);
+      printDurationHelper(methodName, args);
+      return true;
+    }
+    if (target == null || !DURATION_METHODS.contains(methodName)) {
+      return false;
+    }
+    printMacroName(methodName);
+    List<ExtendedElement> targetAndArgs = new ArrayList<>();
+    targetAndArgs.add(target);
+    targetAndArgs.addAll(args);
+    boolean amountInUnit = ("plus".equals(methodName) || "minus".equals(methodName)) && args.size() == 2;
+    printDurationHelper(amountInUnit ? methodName + "Units" : methodName, targetAndArgs);
+    return true;
+  }
+
+  private boolean isStaticCall(MethodInvocationElement invocation) {
+    return invocation.getMethod() != null && invocation.getMethod().getModifiers().contains(Modifier.STATIC);
+  }
+
   private PrinterAdapter printTarget(ExtendedElement target) {
     return print("(").print(target).print(")");
   }
@@ -433,9 +528,15 @@ public class JavaTimeAdapter extends AbstractAdapter {
   public boolean substituteVariableAccess(VariableAccessElement variableAccess) {
     VariableElement variable = variableAccess.getVariable();
     Element owner = variable == null ? null : variable.getEnclosingElement();
-    if (owner != null && "java.time.DayOfWeek".equals(owner.toString())
+    if (owner != null && ("java.time.DayOfWeek".equals(owner.toString()) || CHRONO_UNIT.equals(owner.toString()))
         && variable.getKind() == ElementKind.ENUM_CONSTANT) {
       print("\"").print(variable.getSimpleName().toString()).print("\"");
+      return true;
+    }
+    if (owner != null && "java.time.Duration".equals(owner.toString())
+        && "ZERO".equals(variable.getSimpleName().toString())) {
+      useDurationHelper();
+      print("DurationHelper.ZERO");
       return true;
     }
     return super.substituteVariableAccess(variableAccess);
