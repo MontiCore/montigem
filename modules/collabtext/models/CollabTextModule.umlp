@@ -1,0 +1,30 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import java.util.List;
+
+umlp CollabTextModule {
+
+  // A plain text that several users edit at the same time.
+  class CollabText {
+    // The text is the content of the chunks in this order. An edit only changes the chunks it
+    // touches, so the text is neither stored nor sent as a whole when a user types.
+    List<CollabTextChunk> chunks;
+    List<CollabTextCursor> cursors;
+  }
+
+  class CollabTextChunk {
+    String content;
+  }
+
+  // Cursor or selection of one user who has the text open.
+  class CollabTextCursor {
+    String userName;
+    String color;
+    // Indices into the text. The selection starts at the anchor and ends at the head, where the cursor is.
+    int anchor = 0;
+    int head = 0;
+    // Websocket participant of the user.
+    long participant;
+  }
+
+}

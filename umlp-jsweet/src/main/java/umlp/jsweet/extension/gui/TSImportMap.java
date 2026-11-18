@@ -20,7 +20,8 @@ public enum TSImportMap {
   LOGIN("loginmodule", "@montigem/login"),
   COMMENT("commentmodule", "@montigem/comment"),
   DASHBOARD("dashboardmodule", "@montigem/dashboard"),
-  CHAT("chatmodule", "@montigem/chat")
+  CHAT("chatmodule", "@montigem/chat"),
+  COLLABTEXT("collabtextmodule", "@montigem/collabtext")
   ;
 
   private final String tsPackage;
