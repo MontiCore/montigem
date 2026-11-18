@@ -1,0 +1,27 @@
+package gui.test;
+
+import mc.fenix.input.GemTextInput;
+import mc.fenix.basic.GemButton;
+
+// java.util.Map in the browser: the buttons run the scenarios in the hwc on maps transpiled to AsyncMap
+page MapAdapterTest() {
+  inputTestField@GemTextInput(
+    id = "mapInputTestFieldId",
+    labelText = "Test Input Field (key=value, ...)"
+  );
+  putGet@GemButton(label = "Test put()/get()", leftClick = testPutAndGet());
+  order@GemButton(label = "Test insertion order", leftClick = testInsertionOrder());
+  containsRemove@GemButton(label = "Test containsKey()/remove()", leftClick = testContainsAndRemove());
+  iterate@GemButton(label = "Test entrySet()/keySet()/values()", leftClick = testIterate());
+  defaults@GemButton(label = "Test default methods", leftClick = testDefaultMethods());
+  views@GemButton(label = "Test live views", leftClick = testLiveViews());
+  equality@GemButton(label = "Test equals()/copy", leftClick = testEqualityAndCopy());
+  field@GemButton(label = "Test map field", leftClick = testMapField());
+  timeKeys@GemButton(label = "Test date keys", leftClick = testTimeKeys());
+  isEmptyClear@GemButton(label = "Test isEmpty()/clear()", leftClick = testIsEmptyAndClear());
+
+  resultField@GemTextInput(
+    id = "mapResultId",
+    labelText = "Test Result"
+  );
+}
