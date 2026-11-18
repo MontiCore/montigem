@@ -266,11 +266,14 @@ export class DurationHelper {
   /** unit.between(start, end): the whole units from start to end, truncated like Java */
   static unitsBetween(unit: string, start: any, end: any): number {
     const nanos = UNIT_NANOS[unit];
-    if (nanos !== undefined && !(start instanceof Temporal.PlainDate)) {
+    // a ZonedDateTime counts days in its local date-time (a day across a DST change is a day), like Java
+    const zoned = start instanceof Temporal.ZonedDateTime;
+    if (nanos !== undefined && !(start instanceof Temporal.PlainDate) && !(zoned && unit === "DAYS")) {
       return Number(DurationHelper.nanosBetween(start, end) / nanos);
     }
     const [field, factor] = DurationHelper.calendarUnit(unit);
-    const difference = start.until(end, {largestUnit: field, smallestUnit: field, roundingMode: "trunc"});
+    const to = zoned ? end.withTimeZone(start.timeZoneId) : end;
+    const difference = start.until(to, {largestUnit: field, smallestUnit: field, roundingMode: "trunc"});
     return Math.trunc(difference[field] / factor);
   }
 

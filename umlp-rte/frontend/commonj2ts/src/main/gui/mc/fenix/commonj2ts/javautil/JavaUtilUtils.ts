@@ -82,10 +82,11 @@ export class JavaUtilUtils {
     return a === b;
   }
 
-  /** a java.time value (LocalDate, LocalDateTime, LocalTime, Instant, Duration) */
+  /** a java.time value (LocalDate, LocalDateTime, LocalTime, Instant, Duration, ZonedDateTime) */
   public static isTemporal(value: any): boolean {
     return value instanceof Temporal.PlainDate || value instanceof Temporal.PlainDateTime
-      || value instanceof Temporal.PlainTime || value instanceof Temporal.Instant || value instanceof Temporal.Duration;
+      || value instanceof Temporal.PlainTime || value instanceof Temporal.Instant || value instanceof Temporal.Duration
+      || value instanceof Temporal.ZonedDateTime;
   }
 
   /**

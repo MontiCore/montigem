@@ -16,9 +16,10 @@ This section complements the User Guide with technical details on the mapping of
 
 ### 10.2 Date/Time
 
-* `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`, `java.time.Instant`, `java.time.Duration`
-  * are mapped to `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`, `Instant`, `Duration` (type mappings in
-    `JavaTimeAdapter`,
+* `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`, `java.time.Instant`, `java.time.Duration`,
+  `java.time.ZonedDateTime`
+  * are mapped to `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`, `Instant`, `Duration`, `ZonedDateTime` (type
+    mappings in `JavaTimeAdapter`; `ZoneId` and `ZoneOffset` are strings,
     `Temporal` from `@umlp/commonj2ts`); `java.util.Date` is not supported (error `0xEE013`).
   * `now`, `parse`, comparison and getter methods as well as `toEpochSecond`/`ofEpochSecond` are explicitly translated into TS expressions.
   * Calculation operations (`plus*/minus*`, `atStartOfDay`) are delegated via `LocalDateTimeHelper` (`@umlp/commonj2ts`).
