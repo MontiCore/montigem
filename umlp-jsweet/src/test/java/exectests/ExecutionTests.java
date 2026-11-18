@@ -2,6 +2,8 @@ package exectests;
 
 import org.junit.jupiter.api.Test;
 import resources.exectests.AnonymousInnerClassRuntimeCheck;
+import resources.exectests.AwaitedResultEntry;
+import resources.exectests.AwaitedResultRuntimeCheck;
 import resources.exectests.ArrayStreamAdapterRuntimeCheck;
 import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
@@ -80,6 +82,12 @@ public class ExecutionTests {
   public void testNestedFlatMap() {
     ExecTestRunner.runExecutionTest(NestedFlatMapRuntimeCheck.class,
         NestedFlatMapElement.class, NestedFlatMapElementSource.class);
+  }
+
+  /** field and array accesses on the result of an awaited call */
+  @Test
+  public void testAwaitedResult() {
+    ExecTestRunner.runExecutionTest(AwaitedResultRuntimeCheck.class, AwaitedResultEntry.class);
   }
 
   @Test
