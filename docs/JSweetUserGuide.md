@@ -35,34 +35,40 @@ This functionality is available in both profiles.
 | `String.format(...)` | `StringHelper.format(...)` | `StringHelper` comes from the RTE library (`@umlp/commonj2ts` or `@umlp/common`). |
 | `String.isBlank()` | `str.trim().length === 0` | |
 | `java.util.Objects.requireNonNull(x[, msg])` | Lambda with null check and thrown Error instance | Prevents `null`/`undefined`. |
-| `Objects.equals(a, b)` | For Dates: time comparison; otherwise `===` | |
+| `Objects.equals(a, b)` | `JavaUtilUtils.equals` (`equals` of the object, null-safe); `java.util.Date`: time comparison | |
 
 #### Date & Time (`java.time` / `java.util.Date`)
 
-All following types are mapped to the native JavaScript **`Date`** object:
+The `java.time` types are mapped to the **Temporal API**, imported from `@umlp/commonj2ts` (which takes it from the
+polyfill `@js-temporal/polyfill`, as not every browser has Temporal yet). Like in Java, the values have no time zone
+and are exact to the nanosecond:
 
-* `java.time.LocalDateTime`
-* `java.time.LocalDate`
-* `java.util.Date`
+| Java | TypeScript |
+| :--- | :--------- |
+| `java.time.LocalDate` | `Temporal.PlainDate` |
+| `java.time.LocalDateTime` | `Temporal.PlainDateTime` |
+| `java.time.LocalTime` | `Temporal.PlainTime` |
+| `java.util.Date` | `Date` |
 
 Important methods:
 
 | Java | TypeScript Mapping |
 | :--- | :----------------- |
-| `now()` | `new Date()` |
-| `parse(String)` | `Conversion.string2Date(str)` (`Conversion` from `@umlp/common`) |
-| `isEqual(other)` | `this >= other && this <= other` |
-| `isAfter(other)` | `this > other` |
-| `isBefore(other)` | `this < other` |
-| `compareTo(other)` | `this.getTime() - other.getTime()` |
-| `getYear()` | `.getFullYear()` |
-| `getMonthValue()` | `.getMonth()` |
-| `getDayOfMonth()` | `.getDate()` |
-| `toEpochSecond()` | `.getTime() / 1000` |
-| `ofEpochSecond(sec)` | `new Date(sec * 1000)` |
-| `toString()` (`LocalDateTime`) | `.toISOString().slice(0, 19).replace('T', ' ')` |
-| `toString()` (`LocalDate`/`Date`) | `.toISOString().slice(0, 10)` |
-| `plus*/minus*` / `atStartOfDay()` | Call to `LocalDateTimeHelper.*(...)` from `@umlp/commonj2ts` |
+| `now()` | `Temporal.Now.plainDateISO()` (`plainDateTimeISO()`, `plainTimeISO()`) |
+| `of(...)` | `new Temporal.PlainDate(y, m, d)`; `LocalDateTimeHelper.ofDateTime/ofTime(...)` |
+| `parse(String)` | `Temporal.PlainDate.from(str)` (`PlainDateTime`, `PlainTime`) |
+| `isEqual/isAfter/isBefore(other)`, `compareTo(other)` | `Temporal.PlainDate.compare(this, other)` |
+| `equals(other)` | `other instanceof Temporal.PlainDate && this.equals(other)` |
+| `getYear()`, `getMonthValue()`, `getDayOfMonth()`, `getDayOfYear()`, `getHour()`, `getMinute()`, `getSecond()` | `.year`, `.month`, `.day`, `.dayOfYear`, `.hour`, `.minute`, `.second` |
+| `plusDays(n)`, `minusHours(n)`, ... (also `Nanos`) | `.add({days: n})`, `.subtract({hours: n})` |
+| `withYear(n)`, `withMonth(n)`, `withDayOfMonth(n)`, `withHour(n)`, ... | `.with({year: n})`, ... |
+| `toLocalDate()`, `toLocalTime()`, `atStartOfDay()`, `atTime(...)`, `LocalDateTime.of(date, time)` | `.toPlainDate()`, `.toPlainTime()`, `.toPlainDateTime(...)` |
+| `toString()`, string concatenation (`"" + date`) | `LocalDateTimeHelper.toString(...)`, the format of java.time |
+| `getNano()`, `getDayOfWeek()`, `getMonth()`, `withDayOfYear(n)` | `LocalDateTimeHelper.*(...)` |
+| `toEpochSecond(offset)`, `ofEpochSecond(sec, nanos, offset)` | `LocalDateTimeHelper.*(...)`, the offset is taken as UTC |
+
+For libraries that work with `Date` (date pickers, charts), `LocalDateTimeHelper.toDate(value)` gives a `Date` whose
+local fields show the wall time, `LocalDateTimeHelper.fromDate(date)` the way back.
 
 ---
 
@@ -529,7 +535,7 @@ The latter might work technically but are not specifically secured by our transp
 
 ---
 
-#### `java.time.LocalDateTime`, `java.time.LocalDate`, `java.util.Date` – ✅ recommended
+#### `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`, `java.util.Date` – ✅ recommended
 
 **Recommended and secured by adapters:**
 
@@ -539,18 +545,22 @@ The latter might work technically but are not specifically secured by our transp
 * Parsing:
   * `parse(String)`
 * Comparisons:
-  * `isAfter(...)`, `isBefore(...)`, `isEqual(...)`, `compareTo(...)`
+  * `isAfter(...)`, `isBefore(...)`, `isEqual(...)`, `compareTo(...)`, `equals(...)`
 * Getters:
-  * `getYear()`, `getMonthValue()`, `getDayOfMonth()`
+  * `getYear()`, `getMonthValue()`, `getDayOfMonth()`, `getDayOfYear()`, `getDayOfWeek()`, `getMonth()`
+  * `getHour()`, `getMinute()`, `getSecond()`, `getNano()`
+  * `lengthOfMonth()`, `lengthOfYear()`, `isLeapYear()`
 * Epoch functions:
-  * `toEpochSecond()`
-  * `ofEpochSecond(...)`
+  * `toEpochSecond(ZoneOffset.UTC)`
+  * `ofEpochSecond(..., ZoneOffset.UTC)`
 * String representation:
-  * `toString()` on `LocalDateTime`, `LocalDate`, `Date`
+  * `toString()`, also in string concatenation
 * Calculation operations:
-  * `plusYears/Months/Weeks/Days/Hours/Minutes/Seconds`
-  * `minusYears/Months/Weeks/Days/Hours/Minutes/Seconds`
-  * `atStartOfDay()`
+  * `plusYears/Months/Weeks/Days/Hours/Minutes/Seconds/Nanos`
+  * `minusYears/Months/Weeks/Days/Hours/Minutes/Seconds/Nanos`
+  * `withYear/Month/DayOfMonth/DayOfYear/Hour/Minute/Second`
+* Conversions:
+  * `toLocalDate()`, `toLocalTime()`, `atStartOfDay()`, `atTime(...)`, `LocalDateTime.of(date, time)`
 
 **Not recommended / not supported:**
 
@@ -677,7 +687,7 @@ Other `Collections` helper functions not specifically supported by us (e.g., `Co
 | `java.util.Optional` | ⚠️ | Basic API usable, but no streams; test complex patterns. |
 | `java.util.Objects` | ⚠️ | `requireNonNull`/`equals` ok; avoid other methods if possible. |
 | `java.lang.String` | ✅ | Well usable (incl. `format`, `isBlank`). |
-| `java.time.LocalDateTime`, `LocalDate`, `java.util.Date` | ✅ | Recommended for date/time, avoid other `java.time` types. |
+| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `java.util.Date` | ✅ | Recommended for date/time, avoid other `java.time` types. |
 | `java.util.List` & Implementations | ✅ | Use standard List API + targeted factories, no streams/`List.of`. |
 | `java.util.Map` & Implementations | ✅ | Standard Map API, avoid `Map.of`/`unmodifiableMap`. |
 | `java.util.Set` & Guava Sets | ⚠️ | Basic usage ok, avoid complex set logic. |

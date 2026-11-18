@@ -6,6 +6,7 @@ import { TimeSeriesData } from '../../../../../../build/gui2java2ts/mc/fenix/cha
 import { TimeSeries } from '../../../../../../build/gui2java2ts/mc/fenix/charts/gemtimeseriescharttypes/TimeSeries';
 import { setupResizeObserver } from './ResizeObserverUtil';
 import { GemChartOptions } from './GemChartOptions';
+import { LocalDateTimeHelper, Temporal } from '@umlp/commonj2ts';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -223,8 +224,7 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
       for (const dp of dpList) {
           const timestamp = dp.getTimestamp();
           if (timestamp) {
-            const time = (typeof timestamp.getTime === 'function') ? timestamp.getTime() : new Date(timestamp).getTime();
-            seriesData.push([time, dp.getValue()]);
+            seriesData.push([this.toTime(timestamp), dp.getValue()]);
           }
       }
 
@@ -260,9 +260,8 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
     for (const event of eventsList) {
       if (event.isShow()) {
         const timestamp = event.getTimestamp();
-        const time = (typeof timestamp.getTime === 'function') ? timestamp.getTime() : new Date(timestamp).getTime();
         annotationsX.push({
-          x: time,
+          x: this.toTime(timestamp),
           borderColor: event.getBackgroundColor() || '#FEB019',
           label: {
             borderColor: event.getBackgroundColor() || '#FEB019',
@@ -477,19 +476,25 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
   }
 
   @Input()
-  public set showAfter(val: Date) {
+  public set showAfter(val: Temporal.PlainDateTime) {
       if (this.chart) {
-          const time = (val && typeof (val as any).getTime === 'function') ? (val as any).getTime() : val;
-          this.chart.updateOptions({ xaxis: { min: time } }, false, false);
+          this.chart.updateOptions({ xaxis: { min: val ? this.toTime(val) : undefined } }, false, false);
       }
   }
 
   @Input()
-  public set showUntil(val: Date) {
+  public set showUntil(val: Temporal.PlainDateTime) {
       if (this.chart) {
-          const time = (val && typeof (val as any).getTime === 'function') ? (val as any).getTime() : val;
-          this.chart.updateOptions({ xaxis: { max: time } }, false, false);
+          this.chart.updateOptions({ xaxis: { max: val ? this.toTime(val) : undefined } }, false, false);
       }
+  }
+
+  /** the milliseconds of a time stamp (a LocalDateTime, a Date or a string) in local time, as the chart shows it */
+  private toTime(timestamp: any): number {
+    if (timestamp instanceof Temporal.PlainDateTime || timestamp instanceof Temporal.PlainDate) {
+      return LocalDateTimeHelper.toDate(timestamp).getTime();
+    }
+    return (typeof timestamp.getTime === 'function') ? timestamp.getTime() : new Date(timestamp).getTime();
   }
 }
 

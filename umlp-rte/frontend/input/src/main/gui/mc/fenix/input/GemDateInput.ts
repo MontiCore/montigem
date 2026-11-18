@@ -13,6 +13,7 @@ import {
 import { config, GemDateInputComponent } from '../../../../../../build/gui2java2ts/mc/fenix/input/GemDateInputComponent';
 
 import flatpickr from 'flatpickr';
+import {LocalDateTimeHelper, Temporal} from '@umlp/commonj2ts';
 import {MatIconModule} from "@angular/material/icon";
 import {MatTooltipModule} from "@angular/material/tooltip";
 
@@ -33,6 +34,7 @@ export class GemDateInput extends GemDateInputComponent implements AfterViewInit
   private static readonly TIME_FORMAT = "H:i";
 
   private picker: flatpickr.Instance | null = null;
+  // the entry as Date for flatpickr
   private _pickerEntry: Date;
 
   dateTimeEnabled: boolean = false;
@@ -63,10 +65,10 @@ export class GemDateInput extends GemDateInputComponent implements AfterViewInit
   }
 
   @Input()
-  override set entry(date: Date) {
-    this._pickerEntry = date;
+  override set entry(dateTime: Temporal.PlainDateTime) {
+    this._pickerEntry = dateTime ? LocalDateTimeHelper.toDate(dateTime) : null;
     if (this.picker) {
-      this.picker.setDate(date);
+      this.picker.setDate(this._pickerEntry);
     }
   }
 
@@ -130,7 +132,7 @@ export class GemDateInput extends GemDateInputComponent implements AfterViewInit
       this.onDateChange(date);
     }
     else {
-      this.entryChange.emit(date ?? null);
+      this.entryChange.emit(date ? LocalDateTimeHelper.fromDate(date) : null);
     }
   }
 
@@ -144,7 +146,7 @@ export class GemDateInput extends GemDateInputComponent implements AfterViewInit
         current.getMinutes(),
         current.getSeconds()
     );
-    this.entryChange.emit(newDate ?? null);
+    this.entryChange.emit(LocalDateTimeHelper.fromDate(newDate));
   }
 
   private onTimeChange(time: Date) {
@@ -157,7 +159,7 @@ export class GemDateInput extends GemDateInputComponent implements AfterViewInit
         time.getMinutes(),
         time.getSeconds()
     );
-    this.entryChange.emit(newTime ?? null);
+    this.entryChange.emit(LocalDateTimeHelper.fromDate(newTime));
   }
 
   private getFormat(): string {

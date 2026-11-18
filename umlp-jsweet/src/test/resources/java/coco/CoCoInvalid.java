@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.TreeMap;
-import java.time.LocalTime;
+import java.time.Duration;
 import java.util.concurrent.Executors;
 
 public class CoCoInvalid {
@@ -26,7 +26,7 @@ public class CoCoInvalid {
     }
 
     public void testTime() {
-        LocalTime t = LocalTime.now();
+        Duration t = Duration.ofSeconds(1);
     }
 
     public void testConcurrent() {

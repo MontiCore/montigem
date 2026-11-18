@@ -37,6 +37,17 @@ For MontiGem users:
   
 -->
 ## 2026-11-17: 7.10.0-SNAPSHOT
+* **Breaking:** in the frontend, `java.time.LocalDate`, `LocalDateTime` and `LocalTime` are values of the
+  Temporal API instead of JS `Date`: `Temporal.PlainDate`, `Temporal.PlainDateTime`, `Temporal.PlainTime`,
+  imported from `@umlp/commonj2ts` (which takes them from the polyfill `@js-temporal/polyfill`). Like in Java,
+  they have no time zone and are exact to the nanosecond, so dates no longer shift with the browser's time zone
+  and `LocalDateTime` keeps its milliseconds and nanoseconds on the way to the backend and back. Transpiled Java
+  code is unaffected (the java.time methods are translated as before, now also `LocalTime`, `plusNanos`,
+  `with*`, `atTime`, `toLocalTime`, `toString` in string concatenation); handwritten TypeScript that treats
+  these values as `Date` has to use the Temporal API (e.g. `Temporal.Now.plainDateTimeISO()` instead of
+  `new Date()`). `LocalDateTimeHelper.toDate`/`fromDate` convert for libraries that need a `Date`.
+  `GemDateInput`, `GemTimeSeriesChart` and `GemTimelineChart` take Temporal values.
+* `Objects.equals` with dates in transpiled code is null-safe.
 * `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums,
   `LocalDate`, `LocalDateTime`, `LocalTime`), like list attributes:
   ```

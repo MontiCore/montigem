@@ -7,5 +7,5 @@
   "name": "@umlp/commonj2ts",
   "version": "9.1.0",
   "sideEffects": false,
-  "dependencies": {"tslib": "^2.3.0"}
+  "dependencies": {"tslib": "^2.3.0", "@js-temporal/polyfill": "^0.5.1"}
 }
