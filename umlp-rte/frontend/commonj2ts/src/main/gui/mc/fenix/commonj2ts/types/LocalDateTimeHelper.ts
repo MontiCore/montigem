@@ -1,9 +1,13 @@
 /* (c) https://github.com/MontiCore/monticore */
 import {Temporal} from "./Temporal";
 import {DurationHelper} from "./DurationHelper";
+import {ZonedDateTimeHelper} from "./ZonedDateTimeHelper";
 
 type DateOrDateTime = Temporal.PlainDate | Temporal.PlainDateTime;
 type TimeOrDateTime = Temporal.PlainTime | Temporal.PlainDateTime;
+// also a ZonedDateTime, for the getters
+type WithDate = DateOrDateTime | Temporal.ZonedDateTime;
+type WithTime = TimeOrDateTime | Temporal.ZonedDateTime;
 
 /**
  * java.time methods of LocalDate, LocalDateTime, LocalTime and Instant that have no direct counterpart in the Temporal
@@ -27,10 +31,11 @@ export class LocalDateTimeHelper {
     return new Temporal.PlainTime(hour, minute, second, ...LocalDateTimeHelper.split(nanoOfSecond));
   }
 
-  /** LocalDateTime.ofEpochSecond(epochSecond, nanoOfSecond, offset), for the offset UTC */
-  static ofEpochSecond(epochSecond: number, nanoOfSecond = 0): Temporal.PlainDateTime {
+  /** LocalDateTime.ofEpochSecond(epochSecond, nanoOfSecond, offset) */
+  static ofEpochSecond(epochSecond: number, nanoOfSecond = 0, offset = "Z"): Temporal.PlainDateTime {
     const nanos = BigInt(epochSecond) * 1000000000n + BigInt(nanoOfSecond);
-    return Temporal.Instant.fromEpochNanoseconds(nanos).toZonedDateTimeISO("UTC").toPlainDateTime();
+    return Temporal.Instant.fromEpochNanoseconds(nanos).toZonedDateTimeISO(ZonedDateTimeHelper.tz(offset))
+      .toPlainDateTime();
   }
 
   /** Instant.ofEpochSecond(epochSecond[, nanoAdjustment]) */
@@ -43,13 +48,15 @@ export class LocalDateTimeHelper {
     return Math.floor(instant.epochMilliseconds / 1000);
   }
 
-  /** LocalDateTime.toEpochSecond(offset), for the offset UTC */
-  static toEpochSecond(dateTime: Temporal.PlainDateTime): number {
-    return Math.floor(dateTime.toZonedDateTime("UTC").epochMilliseconds / 1000);
+  /** LocalDateTime.toEpochSecond(offset), ZonedDateTime.toEpochSecond() */
+  static toEpochSecond(dateTime: Temporal.PlainDateTime | Temporal.ZonedDateTime, offset = "Z"): number {
+    const zoned = dateTime instanceof Temporal.ZonedDateTime ? dateTime
+      : dateTime.toZonedDateTime(ZonedDateTimeHelper.tz(offset));
+    return Math.floor(zoned.epochMilliseconds / 1000);
   }
 
   /** getNano() */
-  static getNano(time: TimeOrDateTime | Temporal.Instant): number {
+  static getNano(time: WithTime | Temporal.Instant): number {
     if (time instanceof Temporal.Instant) {
       return Number(((time.epochNanoseconds % 1000000000n) + 1000000000n) % 1000000000n);
     }
@@ -57,17 +64,17 @@ export class LocalDateTimeHelper {
   }
 
   /** getDayOfWeek(), the name of the DayOfWeek */
-  static getDayOfWeek(date: DateOrDateTime): string {
+  static getDayOfWeek(date: WithDate): string {
     return LocalDateTimeHelper.DAYS_OF_WEEK[date.dayOfWeek % 7];
   }
 
   /** getMonth(), the name of the Month */
-  static getMonth(date: DateOrDateTime): string {
+  static getMonth(date: WithDate): string {
     return LocalDateTimeHelper.MONTHS[date.month - 1];
   }
 
   /** withDayOfYear(dayOfYear); a day beyond the year is rejected like in java.time */
-  static withDayOfYear<T extends DateOrDateTime>(date: T, dayOfYear: number): T {
+  static withDayOfYear<T extends WithDate>(date: T, dayOfYear: number): T {
     if (dayOfYear < 1 || dayOfYear > date.daysInYear) {
       throw new RangeError("Invalid day of year " + dayOfYear + " for the year " + date.year);
     }
@@ -78,9 +85,15 @@ export class LocalDateTimeHelper {
    * toString() like java.time: seconds only if not 0 (always for Instant, in UTC with Z), the fraction in groups of 3
    * digits; null for null, which string concatenation prints as "null" like Java
    */
-  static toString(value: Temporal.PlainDate | TimeOrDateTime | Temporal.Instant | Temporal.Duration): string {
+  static toString(value: Temporal.PlainDate | WithTime | Temporal.Instant | Temporal.Duration): string {
     if (value == null) {
       return null;
+    }
+    if (value instanceof Temporal.ZonedDateTime) {
+      // the local date-time, the offset and, if it is no offset, the zone, e.g. 2026-11-17T09:00+01:00[Europe/Berlin]
+      const offset = ZonedDateTimeHelper.getOffset(value);
+      const zone = ZonedDateTimeHelper.getZone(value);
+      return LocalDateTimeHelper.toString(value.toPlainDateTime()) + offset + (zone !== offset ? "[" + zone + "]" : "");
     }
     if (value instanceof Temporal.Duration) {
       return DurationHelper.toString(value);

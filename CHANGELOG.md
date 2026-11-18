@@ -80,6 +80,11 @@ For MontiGem users:
   arithmetic, `toString` like java.time), with `plus(duration)`/`minus(duration)` of the other java.time values and
   the `ChronoUnit` methods `plus(n, unit)`, `minus(n, unit)`, `unit.between(start, end)`. Projects that registered
   `Duration` themselves (generator extension, own DeSer) can drop that.
+* `java.time.ZonedDateTime`, `ZoneId` and `ZoneOffset` in transpiled code (not as attribute types): zones as their ids
+  (`"Europe/Berlin"`, `"+02:00"`, `"Z"`), `ZonedDateTime` as `Temporal.ZonedDateTime` with conversions (`atZone`,
+  `ofInstant`, `now(zone)`, `toInstant`, `withZoneSameInstant`), getters, arithmetic across DST changes and
+  `toString` like java.time. `toEpochSecond(offset)` and `ofEpochSecond(..., offset)` use the given offset (before,
+  every offset was taken as UTC); `parse(text, formatter)` is no longer translated (the formatter was ignored).
 
 ## 2026-11-05: 7.10.0-SNAPSHOT
 * New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`
