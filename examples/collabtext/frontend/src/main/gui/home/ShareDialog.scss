@@ -1,0 +1,36 @@
+::ng-deep .cdk-overlay-container .collabSharePanel {
+  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--text-main);
+
+  .shareQr {
+    align-self: center;
+    max-width: 100%;
+    --image-margin: 0;
+
+    img {
+      display: block;
+      height: auto !important;
+      image-rendering: pixelated;
+    }
+  }
+
+  .shareLink {
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+    user-select: all;
+  }
+
+  .copyLinkStatus {
+    min-height: 2em;
+    text-align: right;
+  }
+}

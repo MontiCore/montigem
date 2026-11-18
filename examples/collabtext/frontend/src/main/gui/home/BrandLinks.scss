@@ -1,24 +1,29 @@
-.brand-links {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 16px;
-}
+:host ::ng-deep .brandLogos {
+  .gem-button {
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+    min-height: 40px;
+    margin: 0;
+    padding: 4px 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none;
 
-a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 40px;
-  border-radius: 4px;
-}
+    &:focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 3px;
+    }
+  }
 
-a:focus-visible {
-  outline: 2px solid var(--color-primary, #00549f);
-  outline-offset: 3px;
-}
+  gem-image {
+    --image-margin: 0;
 
-img {
-  display: block;
-  height: 32px;
-  width: auto;
+    img {
+      display: block;
+      width: auto !important;
+      border: 0;
+    }
+  }
 }
