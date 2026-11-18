@@ -66,6 +66,16 @@ public class CommandDecorator extends AbstractDecorator {
     addedDeSers.addAll(addDecorator.getAddedDeSers());
     Log.debug("After decorator: AddDecorator", CommandDecorator.class.getName());
 
+    PutDecorator putDecorator = new PutDecorator(glex, supportedDeSers);
+    putDecorator.transform(cdAST, decoratedAST);
+    addedDeSers.addAll(putDecorator.getAddedDeSers());
+    Log.debug("After decorator: PutDecorator", CommandDecorator.class.getName());
+
+    RekeyDecorator rekeyDecorator = new RekeyDecorator(glex, supportedDeSers);
+    rekeyDecorator.transform(cdAST, decoratedAST);
+    addedDeSers.addAll(rekeyDecorator.getAddedDeSers());
+    Log.debug("After decorator: RekeyDecorator", CommandDecorator.class.getName());
+
     RemoveDecorator removeDecorator = new RemoveDecorator(glex, supportedDeSers);
     removeDecorator.transform(cdAST, decoratedAST);
     addedDeSers.addAll(removeDecorator.getAddedDeSers());

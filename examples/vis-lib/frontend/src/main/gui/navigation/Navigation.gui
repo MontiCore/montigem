@@ -13,7 +13,7 @@ import example_arrange.ArrangeOverview;
 import example_basic.BasicOverview;
 import example_charts.ChartsOverview;
 import example_input.InputOverview;
-import manual.ChartsTestOverview;
+import manual.ComponentTestOverview;
 
 // activeCategory follows the current route, see NavigationRouteSync.ts
 component Navigation(String activeCategory = "Basic") {
@@ -26,7 +26,7 @@ component Navigation(String activeCategory = "Basic") {
       @GemButton(label = "Input", active = activeCategory == "Input", leftClick = navigate(@InputOverview())),
       @GemButton(label = "Arrange", active = activeCategory == "Arrange", leftClick = navigate(@ArrangeOverview())),
       @GemButton(label = "Charts", active = activeCategory == "Charts", leftClick = navigate(@ChartsOverview())),
-      @GemButton(label = "Test", active = activeCategory == "Test", leftClick = navigate(@ChartsTestOverview())),
+      @GemButton(label = "Test", active = activeCategory == "Test", leftClick = navigate(@ComponentTestOverview())),
       @GemButton(label = "Other", active = activeCategory == "Other", leftClick = navigate(@OtherOverview())),
       @GemDarkModeSwitch()
     ]),
@@ -90,13 +90,12 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "RadarChart", target = "/example_charts/GemRadarChartExample");
         @GemNavItem(title = "SunburstChart", target = "/example_charts/GemSunburstChartExample");
         @GemNavItem(title = "VennDiagram", target = "/example_charts/GemVennDiagramExample");
-        @GemNavItem(title = "NetworkGraph", target = "/example_charts/GemNetworkGraphExample");
-        @GemNavItem(title = "NewNetworkChart", target = "/example_network/NetworkChartExample");
+        @GemNavItem(title = "GemGraph", target = "/example_network/GemGraphExample");
         @GemNavItem(title = "GemScatterPlot", target = "/example_charts/GemScatterPlotExample");
       },
 
       @guard(activeCategory == "Test") {
-        @GemNavItem(title = "ChartsTestOverview", target = "/manual/ChartsTestOverview");
+        @GemNavItem(title = "ComponentTestOverview", target = "/manual/ComponentTestOverview");
         @GemNavItem(title = "GemBarChartTest", target = "/manual/GemBarChartTest");
         @GemNavItem(title = "GemPieChartTest", target = "/manual/GemPieChartTest");
         @GemNavItem(title = "GemBulletChartTest", target = "/manual/GemBulletChartTest");
@@ -111,7 +110,8 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "GemCandlestickChartTest", target = "/manual/GemCandlestickChartTest");
         @GemNavItem(title = "GemScatterPlotTest", target = "/manual/GemScatterPlotTest");
         @GemNavItem(title = "GemVennDiagramTest", target = "/manual/GemVennDiagramTest");
-        @GemNavItem(title = "GemNetworkGraphTest", target = "/manual/GemNetworkGraphTest");
+        @GemNavItem(title = "GemGraphTest", target = "/manual/GemGraphTest");
+        @GemNavItem(title = "GemCardTest", target = "/manual/GemCardTest");
       },
 
       @guard(activeCategory == "Other") {
@@ -124,7 +124,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "Markdown", target = "/example_advanced/GemMarkdownExample");
         @GemNavItem(title = "Toggle", target = "/example_advanced/GemToggleExample");
         @GemNavItem(title = "NavList", target = "/common/NavListExample");
-        //@GemNavItem(title = "Chart Tests", target = "/manual/ChartsTestOverview");
+        //@GemNavItem(title = "Component Tests", target = "/manual/ComponentTestOverview");
       }
     ])
   ]);

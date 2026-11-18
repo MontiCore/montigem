@@ -1,0 +1,38 @@
+package chatcomponents;
+
+import mc.fenix.chat.GemChat;
+import mc.fenix.chat.GemChatMessage;
+import mc.fenix.chat.GemChatSource;
+
+import ChatModule.MessageHistory;
+import ChatModule.Message;
+import ChatModule.Source;
+
+component Conversation(MessageHistory msgHistory, long contextGemId = 0L, String content = "", boolean waitingForResponse,
+    String placeholder = "Nachricht eingeben", String sendLabel = "Senden",
+    String waitingLabel = "Denke nach...", String sourcesLabel = "Quellen") {
+
+    @GemChat(
+      entry = content,
+      placeholder = placeholder,
+      sendLabel = sendLabel,
+      waitingForResponse = waitingForResponse,
+      waitingLabel = waitingLabel,
+      send = sendMessage(),
+      messages = [
+        @iterate(Message msg: msgHistory.messages){
+          @GemChatMessage(
+            content = msg.content,
+            timestamp = msg.timestamp,
+            user = msg.user,
+            sourcesLabel = sourcesLabel,
+            sources = [
+              @iterate(Source src: msg.sources){
+                @GemChatSource(title = src.title, url = src.url);
+              }
+            ]
+          );
+        }
+      ]
+    );
+}

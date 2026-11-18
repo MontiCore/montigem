@@ -143,7 +143,10 @@ public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
       Element e = Util.getElement(((JCTree.JCNewClass) invocation).getTree());
       if (e instanceof ExecutableElement) {
         TypeElement type = (TypeElement) e.getEnclosingElement();
-        if (isList(type) || !UMLPAdapterUtils.isJdkType(type)) {
+        // the JDK collections that become async RTE collections are created with an awaited constructor
+        // (CollectionsAdapter#substituteNewClass), so the enclosing method must be async as well
+        if (isList(type) || CollectionsAdapter.isAsyncCollectionClass(type.getQualifiedName().toString())
+            || !UMLPAdapterUtils.isJdkType(type)) {
           addAsyncKeywordToMethod();
           addAsyncKeywordToLambda();
         }

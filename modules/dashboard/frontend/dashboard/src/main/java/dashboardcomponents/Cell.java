@@ -48,6 +48,18 @@ public class Cell extends CellTOP{
     return false;
   }
 
+  @Override
+  public String getInfoText() {
+    String info = this.getCell() == null ? null : this.getCell().getInfo();
+    String text = info == null || info.isEmpty() ? "No info available for this cell." : info;
+    String retrievedAt = this.getRetrievedAt();
+    return retrievedAt == null || retrievedAt.isEmpty() ? text : text + " (Data retrieved: " + retrievedAt + ")";
+  }
+
+  @Override
+  public Consumer<String> dataRetrieved() {
+    return retrievedAt -> this.setRetrievedAt(retrievedAt);
+  }
 
   @Override
   public Consumer<Void> openDeleteDialog() {

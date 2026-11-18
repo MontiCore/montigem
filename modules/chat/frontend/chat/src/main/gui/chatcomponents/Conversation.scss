@@ -1,0 +1,8 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  background: var(--color-surface);
+  color: var(--text-main);
+  border-left: 1px solid var(--color-border);
+}

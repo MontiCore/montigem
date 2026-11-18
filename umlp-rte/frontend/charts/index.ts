@@ -60,18 +60,6 @@ export * from "./build/gui2java2ts/mc/fenix/charts/gemlinecharttypes/GemLineChar
 export * from "./build/gui2java2ts/mc/fenix/charts/gemlinecharttypes/GemLineChartEntryDeSer";
 export * from "./build/gui2java2ts/mc/fenix/charts/gemlinecharttypes/GemLineChartTypesDeSer";
 
-export * from "./src/main/gui/mc/fenix/charts/GemNetworkGraph";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkData";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkDataBuilder";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkDataDeSer";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkNode";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkNodeBuilder";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkNodeDeSer";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkEdge";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkEdgeBuilder";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkEdgeDeSer";
-export * from "./build/gui2java2ts/mc/fenix/charts/gemnetworkgraphtypes/GemNetworkGraphTypesDeSer";
-
 export * from "./src/main/gui/mc/fenix/charts/GemPieChart";
 export * from "./build/gui2java2ts/mc/fenix/charts/gempiecharttypes/GemPieChartData";
 export * from "./build/gui2java2ts/mc/fenix/charts/gempiecharttypes/GemPieChartDataBuilder";

@@ -86,19 +86,23 @@ classDiagram
 
 
 
-We also have modeled, that the domain classdiagram extends the login module's classdiagram, 
- which we can accomplish by means of the `<<extends>>` stereotype and a corresponding import:
+We also have modeled, that the domain classdiagram extends the login module's classdiagram,
+ which we accomplish by importing from it:
 
 ```cd
 // model-components/CustomerService.umlp
 import LoginModule.*;
-<<extends="LoginModule">>
 umlp CustomerService {
 ```
 
-The [LoginModule.umlp](https://git.rwth-aachen.de/monticore/umlp/-/blob/dev/modules/login/models/LoginModule.umlp?ref_type=heads#L14)  classdiagram is now loaded from the `montigemModuleUMLPModels` configuration.
+A classdiagram extends every other UMLP classdiagram it imports from,
+ either with a star import of the whole diagram (`import LoginModule.*;`)
+ or with an import of a single type (`import LoginModule.LoginModuleUser;`).
+Imports of Java types or of GUI component types (e.g., `mc.fenix...`) do not extend a classdiagram.
+The imports must not form a cycle (error `0x70881`),
+ as the generated managers statically delegate to the managers of the extended diagrams.
 
-The import is important, try what happens if you forget it :)
+The [LoginModule.umlp](https://git.rwth-aachen.de/monticore/umlp/-/blob/dev/modules/login/models/LoginModule.umlp?ref_type=heads#L14)  classdiagram is now loaded from the `montigemModuleUMLPModels` configuration.
 
 ### Class Diagram Extension Mechanism (Simple)
 The Login Module defines a class `LoginModuleUser`,

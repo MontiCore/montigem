@@ -2,7 +2,9 @@
 package de.montigem.gradle;
 
 import de.monticore.gradle.common.CommonMCTask;
+import de.montigem.gradle.specific.PrepareGeneratorDiffTask;
 import de.montigem.gradle.specific.UMLP2JavaTask;
+import de.montigem.gradle.specific.UMLP2TestInfrastructureTask;
 import de.montigem.gradle.specific.merge.MergeTask;
 import de.montigem.gradle.specific.ocl.OCL2JavaTask;
 import org.gradle.api.Plugin;
@@ -22,6 +24,9 @@ import org.gradle.jvm.tasks.Jar;
 import org.gradle.language.jvm.tasks.ProcessResources;
 
 import java.util.Optional;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import static de.montigem.gradle.FrontendBasePlugin.UMLP_GROUP_NAME;
 import static de.montigem.gradle.FrontendBasePlugin.getModels;
@@ -47,12 +52,14 @@ public abstract class BackendPlugin implements Plugin<Project> {
   public final static String MERGE_UMLP_TASK = "mergeUMLP";
 
   public static final String MERGE_UMLP_DIR = "mergeUMLP/Domain.umlp";
+  public static final String BOOT_JAR_INCLUDE_GROUP_PROPERTY = "bootJarIncludeGroup";
 
   @Override
   public void apply(Project project) {
     project.getPluginManager().apply(MGBasePlugin.class);
     project.getPluginManager().apply("java-library");
     project.getPluginManager().apply("application");
+    configureBootJarLibraryNames(project);
 
     var mainSourceSet = project.getExtensions().getByType(JavaPluginExtension.class)
         .getSourceSets().named(SourceSet.MAIN_SOURCE_SET_NAME);
@@ -210,6 +217,45 @@ public abstract class BackendPlugin implements Plugin<Project> {
 
     // apply last, since the test infrastructure tasks import properties from backend tasks
     project.getPluginManager().apply("de.rwth.se.montigem-testing");
+
+    // writes where the generated code is, for the scripts in devScripts/generatorcompare
+    TaskProvider<UMLP2TestInfrastructureTask> testInfrastructure = project.getTasks().named(
+        TestInfrastructurePlugin.UMLP_TEST_INFRASTRUCTURE_TASK_NAME, UMLP2TestInfrastructureTask.class);
+    PrepareGeneratorDiffTask.register(project).configure(task -> {
+      task.dependsOn(umlp2java, ocl2java, testInfrastructure);
+      task.addDir(umlp2java.flatMap(CommonMCTask::getOutputDir));
+      task.addDir(umlp2java.flatMap(UMLP2JavaTask::getSymbolOutDir));
+      // only exists if the app has .ocl files
+      task.addDir(ocl2java.flatMap(CommonMCTask::getOutputDir));
+      task.addDir(testInfrastructure.flatMap(CommonMCTask::getOutputDir));
+      task.addDir(testInfrastructure.flatMap(UMLP2TestInfrastructureTask::getSymbolOutDir));
+    });
+  }
+
+  private static void configureBootJarLibraryNames(Project project) {
+    project.getPluginManager().withPlugin("org.springframework.boot", plugin -> {
+      var includeGroup = project.getProviders().gradleProperty(BOOT_JAR_INCLUDE_GROUP_PROPERTY)
+          .map(Boolean::parseBoolean).orElse(true);
+      var libraryGroups = project.provider(() -> {
+        Map<File, String> groups = new HashMap<>();
+        project.getConfigurations().getByName("runtimeClasspath").getResolvedConfiguration()
+            .getResolvedArtifacts().forEach(artifact ->
+                groups.put(artifact.getFile(), artifact.getModuleVersion().getId().getGroup()));
+        return groups;
+      });
+      project.getTasks().named("bootJar", Jar.class).configure(task -> {
+        task.getInputs().property(BOOT_JAR_INCLUDE_GROUP_PROPERTY, includeGroup);
+        // Distinct libraries can have identical artifact names and versions across groups.
+        task.eachFile(entry -> {
+          if (includeGroup.get() && entry.getPath().startsWith("BOOT-INF/lib/")) {
+            String group = libraryGroups.get().get(entry.getFile());
+            if (group != null && !group.isEmpty()) {
+              entry.setName(group + "-" + entry.getName());
+            }
+          }
+        });
+      });
+    });
   }
 
   public static void addRTEDependency(Project project) {

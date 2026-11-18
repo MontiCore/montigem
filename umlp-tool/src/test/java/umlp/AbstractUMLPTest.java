@@ -7,6 +7,7 @@ import de.monticore.cd._symboltable.BuiltInTypes;
 import de.monticore.cd4code.CD4CodeMill;
 import de.monticore.cd4code._symboltable.CD4CodeSymbolTableCompleter;
 import de.monticore.cd4code.trafo.CD4CodeAfterParseTrafo;
+import de.monticore.cd4code.types3.CD4CodeTypeCheck3;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdmerge.util.CDMergeAfterParseTrafo;
 import de.monticore.generating.GeneratorSetup;
@@ -100,6 +101,7 @@ public abstract class AbstractUMLPTest {
 
   public IUMLPArtifactScope createSymTab(ASTCDCompilationUnit ast) {
     IUMLPArtifactScope as = UMLPMill.scopesGenitorDelegator().createFromAST(ast);
+    CD4CodeTypeCheck3.init();
     CD4CodeSymbolTableCompleter c = new CD4CodeSymbolTableCompleter(ast);
     ast.accept(c.getTraverser());
     return as;
@@ -179,6 +181,7 @@ public abstract class AbstractUMLPTest {
     // rebuild symbol table
     CD4CodeMill.globalScope().removeSubScope(node.getEnclosingScope());
     IUMLPArtifactScope as = UMLPMill.scopesGenitorDelegator().createFromAST(node);
+    CD4CodeTypeCheck3.init();
     node.accept(new CD4CodeSymbolTableCompleter(node).getTraverser());
     return as;
   }

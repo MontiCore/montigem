@@ -5,8 +5,10 @@ pluginManagement {
       mavenLocal()
     }
     maven {
-      credentials.username mavenUser
-      credentials.password mavenPassword
+      if (settings.providers.gradleProperty('mavenUser').present && settings.providers.gradleProperty('mavenPassword').present) {
+        credentials.username mavenUser
+        credentials.password mavenPassword
+      }
       url repo
     }
     gradlePluginPortal()
@@ -85,6 +87,12 @@ include ':examples:loading-test:frontend'
 include ':examples:dashboard:backend'
 include ':examples:dashboard:frontend'
 
+include ':examples:montiarc2function4display-test:backend'
+include ':examples:montiarc2function4display-test:frontend'
+
+include ':products:ma2fustrumo-tool'
+include ':products:simple-function-structure'
+
 include ':modules'
 include ':modules:login'
 include ':modules:login:backend'
@@ -102,3 +110,7 @@ include ':modules:dashboard:frontend'
 include ':modules:dashboard:frontend:dashboard'
 include ':modules:dashboard:lang'
 
+include ':modules:chat'
+include ':modules:chat:backend'
+include ':modules:chat:frontend'
+include ':modules:chat:frontend:chat'

@@ -3,6 +3,7 @@ package dashboardmodule.commands;
 import dashboardmodule.DashboardModuleManager;
 import de.monticore.symboltable.ImportStatement;
 import de.monticore.values.MCValue;
+import de.monticore.values.MCValueFactory;
 import de.se_rwth.commons.logging.Finding;
 import de.se_rwth.commons.logging.Log;
 import mgscript.MGScriptInterpreter;
@@ -39,34 +40,63 @@ public class InterpreterWithErrorHandling {
 
   public static ValueOrError interpretString(String interpreterModel) {
     Log.info("Starting interpretation of model: "+interpreterModel, InterpreterWithErrorHandling.class.getName());
+    // The interpreter sets up global state (the global scope of the MGScriptMill, the findings of the Log),
+    // so concurrent interpretations (e.g., of several cells or the chat) break each other's symbol resolution
+    synchronized (MGScriptInterpreter.class) {
+      MGScriptInterpreter interpreter = new MGScriptInterpreter();
+      interpreter.setup();
+      interpreter.addDefaultImportStatement(new ImportStatement("dashboardmodule", true));
+      interpreter.addDefaultImportStatement(new ImportStatement("umlp.backendrte.common.GemList", false));
+      interpreter.addClassPathEntry(DashboardModuleManager.class);
+      interpreter.addClassPathEntry(GemList.class);
+      additionalDomainPackages.forEach(p -> interpreter.addDefaultImportStatement(new ImportStatement(p, true)));
+      additionalClassPathEntries.forEach(interpreter::addClassPathEntry);
+      Collection<Finding> oldFindings = new ArrayList<>(Log.getFindings());
+      boolean previousFailQuickSetting = Log.isFailQuickEnabled();
+      Log.enableFailQuick(false);
+      Optional<MCValue> val = Optional.empty();
+      try {
+        val = Optional.of(interpreter.interpret(interpreterModel));
+      }catch (InterpretationFailedException e) {
+        Log.info("Interpretation failed with exception. "+e.getMessage(), InterpreterWithErrorHandling.class.getName());
+        e.printStackTrace();
+      } finally {
+        Log.enableFailQuick(previousFailQuickSetting);
+      }
 
-    MGScriptInterpreter interpreter = new MGScriptInterpreter();
-    interpreter.setup();
-    interpreter.addDefaultImportStatement(new ImportStatement("dashboardmodule", true));
-    interpreter.addDefaultImportStatement(new ImportStatement("umlp.backendrte.common.GemList", false));
-    interpreter.addClassPathEntry(DashboardModuleManager.class);
-    interpreter.addClassPathEntry(GemList.class);
-    additionalDomainPackages.forEach(p -> interpreter.addDefaultImportStatement(new ImportStatement(p, true)));
-    additionalClassPathEntries.forEach(interpreter::addClassPathEntry);
-    Collection<Finding> oldFindings = new ArrayList<>(Log.getFindings());
-    boolean previousFailQuickSetting = Log.isFailQuickEnabled();
-    Log.enableFailQuick(false);
-    Optional<MCValue> val = Optional.empty();
-    try {
-      val = Optional.of(interpreter.interpret(interpreterModel));
-    }catch (InterpretationFailedException e) {
-      Log.info("Interpretation failed with exception. "+e.getMessage(), InterpreterWithErrorHandling.class.getName());
-      e.printStackTrace();
+      return toValueOrError(oldFindings, val, "Interpretation failed but cannot retrieve the reason why.");
     }
-    Log.enableFailQuick(previousFailQuickSetting);
+  }
 
+  /**
+   * Applies a function returned by a script, e.g., {@code return (Double v) -> v > 3.0;}, to a value.
+   * Apply it before interpreting another script, which resets the global state of the interpreter.
+   */
+  public static ValueOrError applyFunction(MCValue function, Object argument) {
+    synchronized (MGScriptInterpreter.class) {
+      Collection<Finding> oldFindings = new ArrayList<>(Log.getFindings());
+      boolean previousFailQuickSetting = Log.isFailQuickEnabled();
+      Log.enableFailQuick(false);
+      Optional<MCValue> val = Optional.empty();
+      try {
+        val = Optional.of(function.asFunction().execute(new MCValue[]{MCValueFactory.createMIValueOfNativeObject(argument)}));
+      } catch (RuntimeException e) {
+        Log.info("Applying a function failed with exception. " + e.getMessage(), InterpreterWithErrorHandling.class.getName());
+      } finally {
+        Log.enableFailQuick(previousFailQuickSetting);
+      }
+      return toValueOrError(oldFindings, val, "Applying the function to " + argument + " failed but cannot retrieve the reason why.");
+    }
+  }
+
+  protected static ValueOrError toValueOrError(Collection<Finding> oldFindings, Optional<MCValue> val, String unknownError) {
     Collection<Finding> newFindings = new ArrayList<>(Log.getFindings());
     newFindings.removeAll(oldFindings);
 
     if(!newFindings.isEmpty()) {
       return new ValueOrError(newFindings.stream().map(Object::toString).collect(Collectors.joining("\n")));
     } else if(val.isEmpty()) {
-      return new ValueOrError("Interpretation failed but cannot retrieve the reason why.");
+      return new ValueOrError(unknownError);
     } else if(val.get().isError()) {
       return new ValueOrError(val.get().asError());
     } else {

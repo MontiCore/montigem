@@ -2,10 +2,10 @@
 
 // The dashboard itself (configs, cells, views, ...) is provided by the dashboard module
 import DashboardModule.*;
+import ChatModule.*;
 
 import java.util.List;
 
-<<extends="DashboardModule">>
 umlp Dashboard {
 
   // EXAMPLE DATA DOMAIN

@@ -5,6 +5,10 @@ import { DeSer } from "../command/DeSer";
 // TODO AGe: moment
 export class LocalDateTimeDeSer implements DeSer<Date> {
 
+  public isPojoDeSer(): boolean {
+    return false;
+  }
+
   public async serialize(date: Date): Promise<string> {
     const year = String(date.getFullYear()).padStart(4, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
