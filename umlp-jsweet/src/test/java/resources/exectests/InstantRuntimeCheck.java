@@ -4,6 +4,7 @@ package resources.exectests;
 import util.JSweetTest;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 /**
@@ -51,5 +52,17 @@ public class InstantRuntimeCheck {
     Instant none = null;
     return Objects.equals(instant, Instant.ofEpochMilli(100_000)) && !Objects.equals(instant, none)
         && !Objects.equals(none, instant) && Objects.equals(none, none);
+  }
+
+  /** truncatedTo(unit) (towards the past, also before 1970) and until(end, unit) */
+  @JSweetTest
+  public static String checkTruncatedToAndUntil() {
+    Instant instant = Instant.parse("2026-11-17T09:47:31.123456789Z");
+    Instant before1970 = Instant.parse("1969-12-31T23:59:59.5Z");
+    return instant.truncatedTo(ChronoUnit.SECONDS) + " " + instant.truncatedTo(ChronoUnit.MINUTES) + " "
+        + instant.truncatedTo(ChronoUnit.HALF_DAYS) + " " + instant.truncatedTo(ChronoUnit.DAYS) + " "
+        + before1970.truncatedTo(ChronoUnit.SECONDS) + " " + before1970.truncatedTo(ChronoUnit.DAYS) + " "
+        + instant.until(instant.plusSeconds(3_600 * 26), ChronoUnit.DAYS) + " "
+        + instant.until(before1970, ChronoUnit.MILLIS);
   }
 }
