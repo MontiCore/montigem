@@ -22,6 +22,13 @@ ${cd4c.method("public void insert${typeName}(${typeName} o)")}
   </#list>
   List<Long> iDs;
   <#list listAssocs as assocSide, assoc>
+  <#-- the other side of a GemMap has no rows of its own: the map stores the pairs -->
+  <#if genService.isOtherSideOfMap(assocSide)><#continue></#if>
+  <#if genService.isMap(assocSide) && !genService.isKeyDerived(assocSide)>
+  <#-- type qualified: the values with their keys -->
+  ${assocsToDefinitionDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().putMany${assoc.getName()?cap_first}(o.getGemId(), o._internal_get${assocSide.getName()?cap_first}GemMap().getIDMap());
+  <#continue>
+  </#if>
   <#if genService.isMap(assocSide)>
   iDs = new ArrayList<>(o._internal_get${assocSide.getName()?cap_first}GemMap().getValueIDs());
   <#else>
@@ -36,6 +43,8 @@ ${cd4c.method("public void insert${typeName}(${typeName} o)")}
   ${assocsToDefinitionDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().addMany${assoc.getName()?cap_first}(${assocSide.getName()?uncap_first}Map);
   </#list>
   <#list gemAssocs as assocSide, assoc>
+  <#-- the other side of a GemMap has no rows of its own: the map stores the pairs -->
+  <#if genService.isOtherSideOfMap(assocSide)><#continue></#if>
     if(o.get${assocSide.getName()?cap_first}Gem().getGemId() != -1){
     <#if assocSide.isLeft()>
     ${assocsToDefinitionDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().add${assoc.getName()?cap_first}(o.get${assocSide.getName()?cap_first}Gem().getGemId(), o.getGemId(),0);

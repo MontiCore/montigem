@@ -1,0 +1,23 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPMapAttribute {
+  class A {
+    // invalid value types (0xCDC6E): a Map attribute becomes an association, its values are domain class objects
+    java.util.Map<String, Integer> counts;
+    java.util.Map<String, E> kinds;
+    java.util.Map<String, java.util.List<B>> lists;
+    // invalid key types (0xCDC6F): the keys of type qualified associations
+    java.util.Map<Double, B> byWeight;
+    java.util.Map<Boolean, B> byFlag;
+    java.util.Map<E, B> byKind;
+    // valid: String, integral and domain class keys with domain class values
+    java.util.Map<String, B> byName;
+    java.util.Map<Long, B> byPhone;
+    java.util.Map<C, B> byC;
+  }
+
+  class B;
+
+  class C;
+
+  enum E;
+}

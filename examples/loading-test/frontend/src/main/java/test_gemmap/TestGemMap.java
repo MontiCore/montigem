@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 /**
  * Runs GemMap scenarios in the browser, i.e. against the TypeScript RTE GemMaps;
- * see loadingtests.e2e.TestGemMapE2E
+ * see loadingtests.e2e.TestGemMap
  */
 public class TestGemMap extends TestGemMapTOP {
 
@@ -121,5 +121,91 @@ public class TestGemMap extends TestGemMapTOP {
   @Override
   public Consumer<Void> clear(Course c) {
     return $ -> c.getParticipantByMatNrMap().clear();
+  }
+
+  /**
+   * type qualified association: the key is chosen on put
+   */
+  @Override
+  public Consumer<Void> putSeat(Course c, Student s) {
+    return $ -> {
+      c.putStudentBySeat("A1", s);
+      setResult("seat=" + c.containsKeyStudentBySeat("A1"));
+    };
+  }
+
+  /**
+   * a value is stored under one key only: put under another key, its entry moves
+   */
+  @Override
+  public Consumer<Void> moveSeat(Course c, Student s) {
+    return $ -> {
+      c.putStudentBySeat("B2", s);
+      setResult("A1=" + c.containsKeyStudentBySeat("A1") + ";B2=" + c.containsKeyStudentBySeat("B2")
+          + ";size=" + c.sizeStudentBySeats());
+    };
+  }
+
+  /**
+   * reads the map loaded from the server: the keys travel with the value ids; "-" for a seat without a student
+   */
+  @Override
+  public Consumer<Void> readSeats(Course c) {
+    return $ -> {
+      Map<String, Student> seats = c.getStudentBySeatMap();
+      setResult("size=" + seats.size() + ";A1=" + (seats.containsKey("A1") ? seats.get("A1").getName() : "-")
+          + ";B2=" + (seats.containsKey("B2") ? seats.get("B2").getName() : "-"));
+    };
+  }
+
+  @Override
+  public Consumer<Void> removeSeat(Course c) {
+    return $ -> c.removeStudentBySeat("A1");
+  }
+
+  @Override
+  public Consumer<Void> removeSeatByMap(Course c) {
+    return $ -> c.getStudentBySeatMap().remove("A1");
+  }
+
+  /**
+   * GemEntryMap: the number of entries, e.g. after a key object was deleted in the backend
+   */
+  @Override
+  public Consumer<Void> readMentees(Course c) {
+    return $ -> setResult("mentees=" + c.sizeMenteeByTutors());
+  }
+
+  /**
+   * the largest long key the browser represents exactly (2^53-1)
+   */
+  @Override
+  public Consumer<Void> putMaxPhone(Course c, Student s) {
+    return $ -> {
+      c.putStudentByPhone(9007199254740991L, s);
+      setResult("max=" + c.containsKeyStudentByPhone(9007199254740991L));
+    };
+  }
+
+  /**
+   * a long key beyond 2^53-1: the browser cannot represent it exactly (2^53+1 becomes 2^53), the put is refused
+   */
+  @Override
+  public Consumer<Void> putUnsafePhone(Course c, Student s) {
+    return $ -> {
+      c.putStudentByPhone(9007199254740993L, s);
+      setResult("unsafe=" + c.containsKeyStudentByPhone(9007199254740993L) + ";size=" + c.sizeStudentByPhones());
+    };
+  }
+
+  /**
+   * type qualified GemEntryMap: the key is the Tutor chosen on put
+   */
+  @Override
+  public Consumer<Void> putMentee(Course c, Tutor t, Student s) {
+    return $ -> {
+      c.putMenteeByTutor(t, s);
+      setResult("mentee=" + c.getMenteeByTutor(t).getName());
+    };
   }
 }

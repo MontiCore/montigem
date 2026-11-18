@@ -14,6 +14,8 @@ import de.monticore.cdbasis._visitor.CDBasisVisitor2;
 import de.monticore.cdinterfaceandenum._ast.ASTCDInterface;
 import de.monticore.cdinterfaceandenum._visitor.CDInterfaceAndEnumVisitor2;
 import de.monticore.types.MCTypeFacade;
+import de.monticore.types.mcbasictypes._ast.ASTMCType;
+import de.monticore.types.mccollectiontypes._ast.ASTMCGenericType;
 import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.SymTypeOfGenerics;
 import umlp.generator.domain.decorator.GenService;
@@ -25,7 +27,8 @@ import java.util.Optional;
 import static de.monticore.cd.facade.CDModifier.PUBLIC;
 
 /*
- * This transformation converts attributes with "CDType" (except enums) into a suitable association.
+ * This transformation converts attributes with "CDType" (except enums) into a suitable association:
+ * T -> [1], Optional<T> -> [0..1], List<T> -> [*], and Map<K, T> -> the type qualified association [K] -> T [1].
  * It is assumed that the symbol table is constructed
  *
  **/
@@ -76,6 +79,23 @@ public class UMLAttrToAssocTrafo implements CDBasisVisitor2, CDInterfaceAndEnumV
                       CD4CodeMill.cDCardOneBuilder().build(),
                       attrType.print()));
       attrMap.put(astcdType, attr);
+    } else if (GenService.isMap(attrType)) {
+      // Map<K, T>: the type qualified association Owner [K] -> (attr) T [1]; other maps are rejected by the CoCos
+      // UMLPMapAttributeValueType and UMLPMapAttributeKeyType
+      Optional<SymTypeExpression> valueType = GenService.getMapTypeArgument(attrType, 1);
+      Optional<ASTMCType> keyType = getMapKeyType(attr);
+      if (valueType.isPresent() && GenService.isAssociationTarget(valueType.get()) && keyType.isPresent()) {
+        ASTCDAssociation assoc = createAssoc(attr.getName(), astcdType.getSymbol().getName(),
+            CD4CodeMill.cDCardOneBuilder().build(), valueType.get().print());
+        assoc.getLeft().setCDQualifier(CD4CodeMill.cDQualifierBuilder().setByType(keyType.get()).build());
+        // later findings (e.g. of the CD4A CoCos after the transformation) point to the attribute
+        assoc.set_SourcePositionStart(attr.get_SourcePositionStart());
+        assoc.set_SourcePositionEnd(attr.get_SourcePositionEnd());
+        assoc.getLeft().getCDQualifier().set_SourcePositionStart(attr.get_SourcePositionStart());
+        assoc.getLeft().getCDQualifier().set_SourcePositionEnd(attr.get_SourcePositionEnd());
+        assocMap.put(astcdPackage, assoc);
+        attrMap.put(astcdType, attr);
+      }
     } else if (attrType.isGenericType()) {
       SymTypeExpression argType = ((SymTypeOfGenerics) attrType).getArgument(0);
       if (GenService.isDomainType(argType) && !GenService.isCDEnum(argType)) {
@@ -105,6 +125,19 @@ public class UMLAttrToAssocTrafo implements CDBasisVisitor2, CDInterfaceAndEnumV
         node.addCDElement(e.getValue());
       }
     });
+  }
+
+  /**
+   * the key type K of a {@code Map<K, V>} attribute, as written in the model
+   */
+  protected Optional<ASTMCType> getMapKeyType(ASTCDAttribute attr) {
+    if (attr.getMCType() instanceof ASTMCGenericType) {
+      ASTMCGenericType mapType = (ASTMCGenericType) attr.getMCType();
+      if (mapType.getMCTypeArgumentList().size() == 2 && mapType.getMCTypeArgument(0).getMCTypeOpt().isPresent()) {
+        return Optional.of(mapType.getMCTypeArgument(0).getMCTypeOpt().get().deepClone());
+      }
+    }
+    return Optional.empty();
   }
 
   protected ASTCDAssociation createAssoc(String attrName, String sourceName, ASTCDCardinality card, String targetName) {

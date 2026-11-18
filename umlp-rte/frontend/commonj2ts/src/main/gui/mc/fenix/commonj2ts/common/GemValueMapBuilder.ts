@@ -101,20 +101,6 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     }
   }
 
-  override async put(key: K, value: V): Promise<V> {
-    if (this.buildFinished || this.isKeyDerived()) {
-      return super.put(key, value);
-    } else {
-      // Map might contain builders, which a normal GemMap will not
-      // Thus, the elements themselves are stored, not only their ids
-      await this.ensureKeyed();
-      const old: IDOrBuilder<V> = this.storageGet(key);
-      this.builderElemStorage.set(key, new IDOrBuilder<V>(value));
-      await this.valueLeft(old, value.getGemId());
-      return old == null ? null : this.resolveValue(old);
-    }
-  }
-
   override async get(key: any): Promise<V> {
     if (this.buildFinished) {
       return super.get(key);
@@ -171,6 +157,9 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
     } else {
       // keep the element itself, it may be an unbuilt builder
       const key: K = await this.deriveKey(value);
+      if (this.refusesKey(key, value.getGemId())) {
+        return;
+      }
       // stored under one key only, see _internal_putValueID
       for (const [otherKey, other] of Array.from(this.builderElemStorage.entries())) {
         if (otherKey !== key && other.getGemId() === value.getGemId()) {
@@ -182,6 +171,28 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
       await this.valueLeft(old, value.getGemId());
       this.valuesPutBeforeBuild.set(value.getGemId(), value);
       await this.onValueKeyed(value);
+    }
+  }
+
+  public override async _internal_putKeyValue(key: K, value: V): Promise<void> {
+    if (this.buildFinished) {
+      await super._internal_putKeyValue(key, value);
+    } else {
+      if (this.refusesKey(key, value.getGemId())) {
+        return;
+      }
+      await this.ensureKeyed();
+      // stored under one key only, see _internal_putValueID
+      for (const [otherKey, other] of Array.from(this.builderElemStorage.entries())) {
+        if (otherKey !== key && other.getGemId() === value.getGemId()) {
+          this.builderElemStorage.delete(otherKey);
+        }
+      }
+      // Map might contain builders, which a normal GemMap will not
+      // Thus, the elements themselves are stored, not only their ids
+      const old: IDOrBuilder<V> = this.storageGet(key);
+      this.builderElemStorage.set(key, new IDOrBuilder<V>(value));
+      await this.valueLeft(old, value.getGemId());
     }
   }
 

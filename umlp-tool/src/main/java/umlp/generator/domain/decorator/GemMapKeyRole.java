@@ -107,6 +107,8 @@ public class GemMapKeyRole {
         .forEach(declaring -> CDSymbolTables.getAssociations(declaring).stream()
             .filter(Predicate.not(GenService::isSymbolDerived))
             .filter(GenService::isMap)
+            // type qualified maps take their keys on put, they are never rekeyed
+            .filter(GenService::isKeyDerived)
             .forEach(side -> result.add(of(cd, declaring, side))));
     return result;
   }

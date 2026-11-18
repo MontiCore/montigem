@@ -10,16 +10,23 @@ public class UMLPAssociationQualifierByAttributeNameTest extends AbstractCoCoTes
     super(new UMLPAssociationQualifierByAttributeName(), UMLPCoCoChecker::addCoCo);
   }
 
-  /** List, Optional and Set attributes (no key or several keys per value object) and an enum attribute */
+  /**
+   * List, Optional and Set attributes (no key or several keys per value object), an enum attribute and float, double
+   * and char attributes
+   */
   @Test
   public void testInvalidQAttrType() {
     parseInvalid("UMLPAssocQualifierComplexAttrType");
 
-    assertFindingAtLine(0, 15, "names");
-    assertFindingAtLine(1, 16, "optName");
-    assertFindingAtLine(2, 17, "ids");
-    assertFindingAtLine(3, 18, "e");
-    assertFindingsCount(4);
+    assertFindingAtLine(0, 18, "names");
+    assertFindingAtLine(1, 19, "optName");
+    assertFindingAtLine(2, 20, "ids");
+    assertFindingAtLine(3, 21, "e");
+    // Java and the browser would disagree on floating point and char keys
+    assertFindingAtLine(4, 22, "weight");
+    assertFindingAtLine(5, 23, "ratio");
+    assertFindingAtLine(6, 24, "initial");
+    assertFindingsCount(7);
   }
 
   @Test

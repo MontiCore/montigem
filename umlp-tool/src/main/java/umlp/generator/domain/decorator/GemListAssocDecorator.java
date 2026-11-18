@@ -89,9 +89,23 @@ public class GemListAssocDecorator extends AbstractDecorator {
     // methods
     getCD4C().addMethod(ast, getLoadObjectsTemplate(), targetName, getCorrectManager(targetSymbol.getAstNode()));
     getCD4C().addMethod(ast, getGetOwnerTemplate(), sourceName, managerName);
-    getCD4C().addMethod(ast, getInternalAddTemplate(), assocName);
-    getCD4C().addMethod(ast, getInternalSetTemplate(), assocName);
-    getCD4C().addMethod(ast, getInternalRemoveTemplate(), assocName);
+    if (GenService.isOtherSideOfMap(assoc) && !GenService.isKeyDerived(assoc.getSymbol().getOtherSide().getAssocSide())) {
+      // the other side of a type qualified GemMap is read-only: there is no key to put the value under, the owners'
+      // maps change it (an attribute qualified one changes through the owner's internal methods, which put into or
+      // remove from the owners' maps)
+      getCD4C().addMethod(ast, "umlp.gemlist.assocs.ReadOnly",
+          "protected void _internal_addAndSync(int idx, List<Long> gemIDs)", assocName, targetName);
+      getCD4C().addMethod(ast, "umlp.gemlist.assocs.ReadOnly",
+          "protected void _internal_setAndSync(int idx, long gemID)", assocName, targetName);
+      getCD4C().addMethod(ast, "umlp.gemlist.assocs.ReadOnly",
+          "protected void _internal_removeAndSync(Set<Integer> idxs)", assocName, targetName);
+      getCD4C().addImport(ast, "de.se_rwth.commons.logging.Log");
+    }
+    else {
+      getCD4C().addMethod(ast, getInternalAddTemplate(), assocName);
+      getCD4C().addMethod(ast, getInternalSetTemplate(), assocName);
+      getCD4C().addMethod(ast, getInternalRemoveTemplate(), assocName);
+    }
     ASTCDMethodSignature m = getCD4C().addMethod(ast, getDeepEqualsTemplate(), targetName);
     markDeepEqualsBackendOnly(ast, m);
 

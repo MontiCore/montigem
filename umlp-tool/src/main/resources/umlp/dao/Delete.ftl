@@ -1,5 +1,6 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("cdName","tableName", "typeName", "associations", "assocsToDefinitionDiagramMap")}
+<#-- keyAssocs: the type qualified associations whose keys may be the deleted object (their pairs are deleted) -->
+${tc.signature("cdName","tableName", "typeName", "associations", "assocsToDefinitionDiagramMap", "keyAssocs")}
 ${cd4c.method("public void delete${typeName}(long gemId)")}
 
 delete${typeName} = "DELETE FROM ${tableName} WHERE id = ?";
@@ -12,6 +13,9 @@ try(Connection connection = DatabaseAccessManager.getConnection(); PreparedState
           <#assign otherSide=assoc.getLeft().getName()>
       </#if>
   ${assocsToDefinitionDiagramMap[assoc.getName()]}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().removeAllEntriesRelatedTo${otherSide?cap_first}(gemId);
+  </#list>
+  <#list keyAssocs as assoc>
+  ${cdName}DAOFactory.getAssoc${assoc.getName()?cap_first}DAO().removeAllWithKey${assoc.getName()?cap_first}(gemId);
   </#list>
   synchronized(st){
     st.clearParameters();

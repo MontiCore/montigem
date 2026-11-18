@@ -9,9 +9,13 @@ public enum GemMapOperation {
   PUT_BY_MAP,
   GET,
   REKEY,
+  MOVE,
   REMOVE,
   REMOVE_BY_KEY_SET,
   REPLACE,
   DELETE_OBJECT,
-  DELETE_OWNER
+  DELETE_OWNER,
+  DELETE_KEY,
+  MOVE_OWNER,
+  SET_OWNER
 }

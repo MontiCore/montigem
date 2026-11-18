@@ -27,10 +27,10 @@ import static de.monticore.cd.facade.CDModifier.PUBLIC;
 import static umlp.generator.domain.decorator.commands.CommandDecorator.DE_SER;
 
 /**
- * Generates the command {@code <Owner>_put<Role>} of the GemMap of an attribute qualified association (instead of
- * {@code _add}, maps have no positions): puts a value under its key. The server derives the key from the value (a
- * key that does not match is replaced, warning 0xA7306/0xA7316), clients store the key the server sent without
- * loading the value.
+ * Generates the command {@code <Owner>_put<Role>} of the GemMap of a qualified association (instead of {@code _add},
+ * maps have no positions): puts a value under its key. Attribute qualified: the server derives the key from the value
+ * (a key that does not match is replaced, warning 0xA7306/0xA7316). Type qualified: the server takes the key sent.
+ * Clients store the key the server sent without loading the value.
  */
 public class PutDecorator extends AddDecorator {
 
@@ -51,7 +51,7 @@ public class PutDecorator extends AddDecorator {
   protected void decorateMapRoles(ASTCDCompilationUnit origCD, ASTCDPackage astcdPackage, ASTCDType domainType) {
     CDSymbolTables.getAssociations(domainType).stream()
         .filter(Predicate.not(GenService::isSymbolDerived))
-        .filter(GenService::isMap)
+        .filter(this::hasCommand)
         .forEach(a -> {
           ASTCDClass clazz = createCommand(origCD, a, domainType);
           astcdPackage.addCDElement(withOrigin(clazz));
@@ -62,6 +62,13 @@ public class PutDecorator extends AddDecorator {
 
   protected String getSuffix() {
     return PUT_SUFFIX;
+  }
+
+  /**
+   * @return whether the role gets the command: every GemMap role
+   */
+  protected boolean hasCommand(ASTCDAssocSide a) {
+    return GenService.isMap(a);
   }
 
   /**
@@ -93,16 +100,20 @@ public class PutDecorator extends AddDecorator {
     for (String keyField : getKeyFields()) {
       fields.add(getCD4C().addAttribute(ast, "protected " + key.getStoredKeyType() + " " + keyField));
     }
+    if (hasOldValue(a)) {
+      fields.add(getCD4C().addAttribute(ast, "protected long oldValueGemId"));
+    }
+    if (hasOldOwner(a)) {
+      fields.add(getCD4C().addAttribute(ast, "protected long oldOwnerGemId"));
+    }
     fields.forEach(f -> ast.addAllCDMembers(accessor.decorate(f)));
 
     getCD4C().addConstructor(ast, "umlp.commands.put.Constructor", classname,
-        getPackageName(origCD, COMMAND_PACKAGE), valueIdName, key.getStoredKeyType(), getKeyFields());
+        getPackageName(origCD, COMMAND_PACKAGE), valueIdName, key.getStoredKeyType(), getKeyFields(), hasOldValue(a), hasOldOwner(a));
     addDoAction(ast, origCD, a, domainType, key);
-    addCheckAccessPolicy(ast, domainType);
-    // the owner only: maps are unidirectional, only the participants that loaded the owner have the map. The value
-    // must not be included: sending the command subscribes the receivers to the effected objects, so they would
-    // receive (and load) the value with its next setter command.
-    getCD4C().addMethod(ast, getGetEffectedGemIdsTemplate(), Lists.newArrayList("gemId"));
+    addCheckAccessPolicy(ast, domainType, a);
+    getCD4C().addMethod(ast, "umlp.commands.put.GetEffectedGemIds", getEffectedGemIds(a),
+        getOptionalEffectedGemIds(a));
 
     addImports(origCD, domainType, ast);
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandManager"));
@@ -113,15 +124,101 @@ public class PutDecorator extends AddDecorator {
     return ast;
   }
 
+  /**
+   * @return whether the command names the value the put replaced: a put of a bidirectional association changes the
+   * replaced value's other side
+   */
+  protected boolean hasOldValue(ASTCDAssocSide a) {
+    return GenService.getOtherSideOfMap(a).isPresent();
+  }
+
+  /**
+   * @return whether the command names the owner the value left: a put of a bidirectional association with a single
+   * owner moves the value (see GenService#hasSingleOwner)
+   */
+  protected boolean hasOldOwner(ASTCDAssocSide a) {
+    return GenService.hasSingleOwner(a);
+  }
+
+  /**
+   * @return the effected objects. Unidirectional: the owner only, only the participants that loaded the owner have
+   * the map. The value must not be included: sending the command subscribes the receivers to the effected objects, so
+   * they would receive (and load) the value with its next setter command. Bidirectional: the value as well, its other
+   * side changes (like a bidirectional association, whose commands name both sides); see also
+   * {@link #getOptionalEffectedGemIds}
+   */
+  protected List<String> getEffectedGemIds(ASTCDAssocSide a) {
+    if (GenService.getOtherSideOfMap(a).isEmpty()) {
+      return Lists.newArrayList("gemId");
+    }
+    return Lists.newArrayList("gemId", a.getName() + "GemId");
+  }
+
+  /**
+   * @return the effected objects that may be absent (-1), included only if present (put/GetEffectedGemIds): the
+   * replaced value, whose other side changes, and the old owner of a single owner, whose map loses the value
+   */
+  protected List<String> getOptionalEffectedGemIds(ASTCDAssocSide a) {
+    List<String> ids = Lists.newArrayList();
+    if (hasOldValue(a)) {
+      ids.add("oldValueGemId");
+    }
+    if (hasOldOwner(a)) {
+      ids.add("oldOwnerGemId");
+    }
+    return ids;
+  }
+
   protected void addDoAction(ASTCDClass ast, ASTCDCompilationUnit origCD, ASTCDAssocSide a, ASTCDType domainType,
                              QualifierKey key) {
     String targetType = a.getSymbol().getType().print();
-    getCD4C().addMethod(ast, "umlp.commands.put.DoRun", domainType.getName(), getCorrectManager(domainType),
-        a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getStoredKeyType(),
-        key.isEntryKey() ? "0xA7316" : "0xA7306");
+    // bidirectional: the other side, see put/OtherSideDoRun
+    String otherSide = GenService.getOtherSideOfMap(a).map(ASTCDAssocSide::getName).orElse("");
+    boolean otherSideIsList = GenService.getOtherSideOfMap(a).map(GenService::isList).orElse(false);
+    if (!otherSide.isEmpty()) {
+      getCD4C().addImport(ast, "java.util.Collections");
+    }
+    if (key.isDerived()) {
+      getCD4C().addMethod(ast, "umlp.commands.put.DoRun", domainType.getName(), getCorrectManager(domainType),
+          a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getStoredKeyType(),
+          key.isEntryKey() ? "0xA7316" : "0xA7306", otherSide, otherSideIsList);
+      // preconditions: the value exists, a long key is within what a browser represents (neither executed nor sent
+      // on otherwise)
+      getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", false, key.isLongKey(), a.getName(), targetType,
+          getCorrectManagerOfTargetType(a), "", "");
+      return;
+    }
+    String keyTypeManager = "";
+    if (key.isEntryKey()) {
+      // the server checks that the key object exists
+      ASTCDType keyType = (ASTCDType) key.getKeySymbol().getAstNode();
+      ASTCDCompilationUnit keyCD = UMLPSymbolTables.getDiagramFor(keyType);
+      keyTypeManager = getCorrectManager(keyType);
+      getCD4C().addImport(ast, getPackageName(keyCD, DEFAULT_PACKAGE) + "." + keyType.getName());
+      getCD4C().addImport(ast, getPackageName(keyCD, DEFAULT_PACKAGE) + "." + keyTypeManager);
+    }
+    getCD4C().addMethod(ast, "umlp.commands.put.DoRunKey", domainType.getName(), getCorrectManager(domainType),
+        a.getName(), targetType, getCorrectManagerOfTargetType(a), key.isEntryKey(), key.getKeyType(),
+        keyTypeManager, otherSide, otherSideIsList);
+    // preconditions: the chosen key is present (and a long key within what a browser represents), the value and the
+    // key object exist; a put that fails them is neither executed nor sent on
+    getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", true, key.isLongKey(), a.getName(), targetType,
+        getCorrectManagerOfTargetType(a), key.getKeyType(), keyTypeManager);
   }
 
-  protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType) {
+  /**
+   * the owner type's Create permission; bidirectional: the value type's as well, whose other side changes (like the
+   * add command of a bidirectional association)
+   */
+  protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType, ASTCDAssocSide a) {
+    if (GenService.getOtherSideOfMap(a).isPresent()) {
+      ASTCDType valueType = (ASTCDType) a.getSymbol().getType().getTypeInfo().getAstNode();
+      getCD4C().addMethod(ast, "umlp.commands.assocs.AssocsCheckAccessPolicy", domainType.getName(),
+          valueType.getName(), "Create");
+      getCD4C().addImport(ast, getPackageName(UMLPSymbolTables.getDiagramFor(valueType), DEFAULT_PACKAGE) + "."
+          + valueType.getName() + "AccessPolicy");
+      return;
+    }
     getCD4C().addMethod(ast, getGeneralCheckAccessPolicyTemplate(), domainType.getName(), "Create");
   }
 
@@ -134,8 +231,9 @@ public class PutDecorator extends AddDecorator {
         .setName(cmdName + DE_SER)
         .build();
     getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_FromJsonObject", cmdName, valueIdName,
-        getKeyFields(), QualifierKey.of(a).getStoredKeyJson());
-    getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_BuildJson", cmdName, valueIdName, getKeyFields());
+        getKeyFields(), QualifierKey.of(a).getStoredKeyJson(), hasOldValue(a), hasOldOwner(a));
+    getCD4C().addMethod(ast, "umlp.commands.deser.GemMapCommand_BuildJson", cmdName, valueIdName, getKeyFields(),
+        hasOldValue(a), hasOldOwner(a));
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.JsonPrinter");
     getCD4C().addImport(ast, "de.monticore.symboltable.serialization.json.JsonObject");
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandDeSer"));

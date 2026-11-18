@@ -5,7 +5,6 @@ import com.microsoft.playwright.options.LoadState;
 import loadingtests.Food;
 import loadingtests.LoadingTestsManager;
 import loadingtests.test_infrastructure.AbstractLoadingTestsE2ETest;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -174,17 +173,9 @@ public class TestAtomicUpdate extends AbstractLoadingTestsE2ETest {
     // (if the order is incorrect, this line leads to a general sync bug/inconsistent state warning)
   }
 
-  // Retry for about 20 seconds
-  void assertEqualsRetry(Object expected, Supplier<Object> evaluate, String message) throws InterruptedException {
-    int retries = 20;
-    Object o = evaluate.get();
-    while (!Objects.equals(expected, o)) {
-      if (retries++ < 20) {
-        Thread.sleep(1000);
-        continue;
-      }
-      Assertions.assertEquals(expected, o, message);
-    }
+  /** evaluates again until the result is the expected one, see {@link #waitUntil} */
+  void assertEqualsRetry(Object expected, Supplier<Object> evaluate, String message) {
+    waitUntil(() -> Objects.equals(expected, evaluate.get()), message);
   }
 
 }

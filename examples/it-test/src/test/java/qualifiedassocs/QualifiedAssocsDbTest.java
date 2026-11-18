@@ -4,9 +4,11 @@ package qualifiedassocs;
 import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import qualifiedassocs.commands.Directory_putByLogin;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsNeo4JDBTestSetup;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsSQLDBTestSetup;
 import qualifiedassocs.test_infrastructure.QualifiedAssocsTestSetup;
+import umlp.backendrte.command.CommandManager;
 
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +51,28 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     } finally {
       Log.enableFailQuick(failQuick);
     }
+  }
+
+  /**
+   * a put command for a value that does not exist: the server rejects it (contract), so a participant that loaded the
+   * owner (and puts by id, without loading) stores nothing either
+   */
+  @Test
+  default void testPutOfMissingObjectIsRejected() {
+    getBackend().activate();
+    var directory = QualifiedAssocsManager.directoryBuilder().build().get();
+    getClients(0).activate();
+    var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
+    assertEquals(0, clientDirectory.sizeByLogins());
+
+    getBackend().activate();
+    assertFalse(CommandManager.executeCommand(new Directory_putByLogin(directory.getGemId(), 999_999_999L, "ghost"))
+        .isSuccessful());
+    assertEquals(0, directory.sizeByLogins());
+    assertEquals(0, QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get()
+        .sizeByLogins());
+    getClients(0).activate();
+    assertEquals(0, clientDirectory.sizeByLogins());
   }
 
   @Test

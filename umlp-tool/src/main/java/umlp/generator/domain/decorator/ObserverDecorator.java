@@ -195,15 +195,18 @@ public class ObserverDecorator extends AbstractDecorator {
   }
 
   /**
-   * the GemMap of an attribute qualified association: values are put under a key and rekeyed when their
-   * qualifying attribute changes; removed like list elements (by gemId); there are no positions
+   * the GemMap of a qualified association: values are put under a key, and rekeyed when their qualifying attribute
+   * changes (attribute qualified associations only, see GenService#isKeyDerived); removed like list elements (by
+   * gemId); there are no positions
    */
   protected void addMapNotifyMethods(ASTCDInterface observerInterface, GenerationSummary generationSummary,
                                      ASTCDAssocSide a, String className) {
     CD4C cd4C = getCD4C();
     String keyType = QualifierKey.of(a).getStoredKeyType();
-    for (String template : List.of(NOTIFY_PUT_TEMPLATE, MAYBE_NOTIFY_PUT_TEMPLATE,
-                                   NOTIFY_REKEY_TEMPLATE, MAYBE_NOTIFY_REKEY_TEMPLATE)) {
+    List<String> templates = GenService.isKeyDerived(a)
+        ? List.of(NOTIFY_PUT_TEMPLATE, MAYBE_NOTIFY_PUT_TEMPLATE, NOTIFY_REKEY_TEMPLATE, MAYBE_NOTIFY_REKEY_TEMPLATE)
+        : List.of(NOTIFY_PUT_TEMPLATE, MAYBE_NOTIFY_PUT_TEMPLATE);
+    for (String template : templates) {
       generationSummary.addSignature(cd4C.addMethod(observerInterface, template, a.getName(), className, keyType),
                                      template);
     }

@@ -34,4 +34,45 @@ umlp QualifiedAssocs {
   /* GemValueMap with the qualifier on the right side: navigable from right to left, so the owner Directory is the
      right side of the association (and of its table) */
   association [1] Person (byLoginFromRight) <- (rightDirectory) [[login]] Directory;
+
+  /* type qualified: the key is chosen on put and stored in the association table */
+  association Directory [String] (codeDirectory) -> (byCode) Person [1];
+  association Directory [int] (seatDirectory) -> (bySeat) Person [1];
+  association Directory [Department] (headDirectory) -> (headByDepartment) Person [1];
+  association [1] Person (byAliasFromRight) <- (aliasDirectory) [String] Directory;
+
+  /* long keys: a browser represents only the integers within -(2^53-1) and 2^53-1 exactly, larger keys are refused */
+  class Badge {
+    long code;
+  }
+  association Directory [[code]] (badgeDirectory) -> (byBadgeCode) Badge [1];
+  association Directory [long] (phoneDirectory) -> (byPhone) Person [1];
+
+  /* a singleton owner of type qualified maps: deleting a value or a key object removes its entries there as well */
+  <<singleton>>
+  class Registry;
+  association Registry [String] (codeRegistry) -> (byCode) Person [1];
+  association Registry [Department] (headRegistry) -> (headByDepartment) Person [1];
+
+  /* bidirectional: the values navigate to their owner (a single reference for [0..1]/[1], a list for [*]) */
+  class Club;
+  association [0..1] Club [String] (club) <-> (memberByCode) Person [1];
+  association [1] Club [Department] (ledClub) <-> (leaderByDepartment) Person [1];
+  association [*] Club [[login]] (clubs) <-> (memberByLogin) Person [1];
+  association [0..1] Club [[number]] (numberClub) <-> (memberByNumber) Person [1];
+  association [*] Club [Department] (sponsoredClubs) <-> (sponsorByDepartment) Person [1];
+
+  /* bidirectional with inheritance: Team is a Club (the owner), Admin a Person (the value) */
+  class Team extends Club;
+
+  /* bidirectional, the key type is the value type: deleting a person removes its entries as a key and as a value */
+  association [0..1] Club [Person] (mentorClub) <-> (menteeByMentor) Person [1];
+
+  /* Map attributes become type qualified associations (UMLAttrToAssocTrafo), like Directory's byCode and
+     headByDepartment: Roster [String] (byNickRoster) -> (byNick) Person [1] and Roster [Department]
+     (deputyByDepartmentRoster) -> (deputyByDepartment) Person [1]; both spellings of the map type */
+  class Roster {
+    Map<String, Person> byNick;
+    java.util.Map<Department, Person> deputyByDepartment;
+  }
 }

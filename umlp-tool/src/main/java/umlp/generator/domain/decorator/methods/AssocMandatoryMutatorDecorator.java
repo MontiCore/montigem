@@ -49,32 +49,40 @@ public class AssocMandatoryMutatorDecorator extends UMLPMandatoryMutatorDecorato
       getter = (isList ? "add" : "set") + StringTransformations.capitalize(otherSide);
     }
 
-    // Generate setX-Methods
-    ASTCDMethod method = createSetter(ast);
-    method.getCDParameter(0).setMCType(simpleType);
-    methodList.add(method);
+    // the other side of a GemMap (bidirectional qualified association): the internal setters below put into / remove
+    // from the owner's map (attribute qualified, map is its role); a type qualified one is read-only, no public setters
+    String map = GenService.getMapOfSettableOtherSide(ast);
+    if (!GenService.isOtherSideOfMapAttribute(ast) || !map.isEmpty()) {
+      // Generate setX-Methods
+      ASTCDMethod method = createSetter(ast);
+      method.getCDParameter(0).setMCType(simpleType);
+      methodList.add(method);
 
-    ASTCDMethod method2 = createNotificationSetter(ast, false);
-    method2.getCDParameter(0).setMCType(simpleType);
-    glex.replaceTemplate(EMPTY_BODY, method2, new TemplateHookPoint(getGemNotificationSetterTemplate(),
-            this.ast.getName(), GenService.getNativeName(ast.getName()), new CdUtilsPrinter().printType(ast.getMCType())));
-    methodList.add(method2);
+      ASTCDMethod method2 = createNotificationSetter(ast, false);
+      method2.getCDParameter(0).setMCType(simpleType);
+      glex.replaceTemplate(EMPTY_BODY, method2, new TemplateHookPoint(getGemNotificationSetterTemplate(),
+          this.ast.getName(), GenService.getNativeName(ast.getName()), new CdUtilsPrinter().printType(ast.getMCType())));
+      methodList.add(method2);
 
-    // Generate setXGem-Methods
-    ASTCDMethod method3 = createGemSetter(ast);
-    methodList.add(method3);
+      // Generate setXGem-Methods
+      ASTCDMethod method3 = createGemSetter(ast);
+      methodList.add(method3);
 
-    ASTCDMethod method4 = createNotificationSetter(ast, true);
-    method4.setName(method4.getName()+"Gem");
-    methodList.add(method4);
+      ASTCDMethod method4 = createNotificationSetter(ast, true);
+      method4.setName(method4.getName()+"Gem");
+      methodList.add(method4);
+    }
 
     ASTCDMethod method5 = (ASTCDMethod) cd4c.createMethod(this.ast, getInternalSetOneTemplate(),
-            service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName).get();
+            service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName, map).get();
     methodList.add(method5);
 
     ASTCDMethod method6 = (ASTCDMethod) cd4c.createMethod(this.ast, getInternalSetOneTemplateGemId(),
-        service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName).get();
+        service.getNativeAttributeName(ast.getName()), getter, CD4CodeMill.prettyPrint(simpleType, false), this.ast.getName(), managerName, map).get();
     methodList.add(method6);
+    if (!map.isEmpty()) {
+      cd4c.addImport(this.ast, "java.util.Optional");
+    }
 
     return methodList;
   }
