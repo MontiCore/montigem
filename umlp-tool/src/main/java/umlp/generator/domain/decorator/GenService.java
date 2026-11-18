@@ -691,11 +691,12 @@ public class GenService {
 
   /**
    * whether the type can be the value of a map attribute with simple values ({@code Map<String, Integer> scores}):
-   * a primitive or boxed type, String, an enum or a date/time type, like the elements of list attributes
+   * a primitive or boxed type, String, an enum, a date/time type or a Duration, like the elements of list attributes
    */
   public static boolean isSimpleMapValue(SymTypeExpression type) {
     return type.isPrimitive() || SymTypeRelations.isNumericType(type) || SymTypeRelations.isBoolean(type)
-        || SymTypeRelations.isString(type) || (type.hasTypeInfo() && isCDEnum(type)) || isTimeType(type);
+        || SymTypeRelations.isString(type) || (type.hasTypeInfo() && isCDEnum(type)) || isTimeType(type)
+        || "java.time.Duration".equals(type.printFullName());
   }
 
   /**
@@ -726,13 +727,13 @@ public class GenService {
 
   /**
    * @param attr a map attribute, see {@link #isMap(ASTCDAttribute)}
-   * @return its key type (index 0) or value type (index 1), boxed, e.g. Integer for {@code Map<String, int>}; date/time
+   * @return its key type (index 0) or value type (index 1), boxed, e.g. Integer for {@code Map<String, int>}; java.time
    * types fully qualified (the generated classes do not import them)
    */
   public static String getMapAttributeType(ASTCDAttribute attr, int index) {
     if (attr.isPresentSymbol()) {
       Optional<SymTypeExpression> type = getMapTypeArgument(attr.getSymbol().getType(), index);
-      if (type.isPresent() && isTimeType(type.get())) {
+      if (type.isPresent() && type.get().printFullName().startsWith("java.time.")) {
         return type.get().printFullName();
       }
     }

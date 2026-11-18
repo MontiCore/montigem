@@ -63,7 +63,7 @@ For MontiGem users:
   the `ChronoUnit` methods `plus(n, unit)`, `minus(n, unit)`, `unit.between(start, end)`. Projects that registered
   `Duration` themselves (generator extension, own DeSer) can drop that.
 * `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums,
-  `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant`), like list attributes:
+  `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant`, `Duration`), like list attributes:
   ```
   class Person { Map<String, Integer> scores; }
   ```

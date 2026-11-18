@@ -7,6 +7,7 @@ import attributes.test_infrastructure.AttributesTestSetup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -283,8 +284,11 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
     timestamps.put(1, LocalDateTime.of(2026, 11, 17, 10, 30, 15));
     Map<String, LocalTime> times = new LinkedHashMap<>();
     times.put("lunch", LocalTime.of(12, 15));
+    Map<String, Duration> breaks = new LinkedHashMap<>();
+    breaks.put("lunch", Duration.parse("PT45M0.000000001S"));
+    breaks.put("none", Duration.ZERO);
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().dates(dates).timestamps(timestamps).times(times)
-        .build().get();
+        .breaks(breaks).build().get();
 
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
 
@@ -293,6 +297,7 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
     assertEquals(List.of("start", "end"), List.copyOf(clone.getDatesMap().keySet()));
     assertEquals(timestamps, clone.getTimestampsMap());
     assertEquals(times, clone.getTimesMap());
+    assertEquals(breaks, clone.getBreaksMap());
   }
 
   @Test
