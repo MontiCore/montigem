@@ -50,6 +50,8 @@ and are exact to the nanosecond:
 | `java.time.LocalTime` | `Temporal.PlainTime` |
 | `java.time.Instant` | `Temporal.Instant` |
 | `java.time.Duration` | `Temporal.Duration` |
+| `java.time.ZonedDateTime` | `Temporal.ZonedDateTime` |
+| `java.time.ZoneId`, `ZoneOffset` | `string`, the id like in Java (`"Europe/Berlin"`, `"UTC"`, `"+02:00"`, `"Z"`) |
 | `java.time.temporal.ChronoUnit` | `string` (the name of the constant) |
 
 `java.util.Date` is not supported in transpiled code (error `0xEE013`): use `Instant` for points in time,
@@ -70,7 +72,7 @@ Important methods:
 | `toLocalDate()`, `toLocalTime()`, `atStartOfDay()`, `atTime(...)`, `LocalDateTime.of(date, time)` | `.toPlainDate()`, `.toPlainTime()`, `.toPlainDateTime(...)` |
 | `toString()`, string concatenation (`"" + date`, `s += date`, `sb.append(date)`, `String.valueOf(date)`) | `LocalDateTimeHelper.toString(...)`, the format of java.time |
 | `getNano()`, `getDayOfWeek()`, `getMonth()`, `withDayOfYear(n)` | `LocalDateTimeHelper.*(...)` |
-| `toEpochSecond(offset)`, `ofEpochSecond(sec, nanos, offset)` | `LocalDateTimeHelper.*(...)`, the offset is taken as UTC |
+| `toEpochSecond(offset)`, `ofEpochSecond(sec, nanos, offset)` | `LocalDateTimeHelper.*(...)` |
 
 `Instant` (a point in time, exact to the nanosecond):
 
@@ -94,6 +96,18 @@ to nanoseconds and computes exactly in nanoseconds) and `ChronoUnit`:
 | `dateTime.plus(d)`, `minus(d)` (`LocalDateTime`, `LocalTime`, `Instant`) | `.add(d)`, `.subtract(d)` |
 | `value.plus(n, unit)`, `minus(n, unit)` (also `LocalDate`, `Duration`) | `DurationHelper.plusUnits/minusUnits(value, n, unit)` |
 | `unit.between(start, end)` | `DurationHelper.unitsBetween(unit, start, end)`, whole units like Java |
+
+`ZonedDateTime`, `ZoneId`, `ZoneOffset` (time zones in code, e.g. to show an `Instant` in a chosen zone; no attribute
+type: store an `Instant` and, if an object has a zone of its own, its id as a `String` attribute):
+
+| Java | TypeScript Mapping |
+| :--- | :----------------- |
+| `ZoneId.of(id)`, `ZoneId.systemDefault()`, `ZoneOffset.UTC`, `ZoneOffset.ofHours(h)`, ... | the id, `ZonedDateTimeHelper.*(...)`; `systemDefault()` is the zone of the browser |
+| `localDateTime.atZone(zone)`, `instant.atZone(zone)`, `date.atStartOfDay(zone)` | `.toZonedDateTime(...)`, `.toZonedDateTimeISO(...)`; gaps and overlaps of DST changes like Java |
+| `ZonedDateTime.of(...)`, `ofInstant(instant, zone)`, `now(zone)`, `parse(text)`; `LocalDateTime/LocalDate/LocalTime.ofInstant(instant, zone)`, `now(zone)` | `Temporal.ZonedDateTime`, `ZonedDateTimeHelper.parse` (also without a zone in brackets) |
+| `toInstant()`, `toLocalDateTime()`, `toLocalDate()`, `toLocalTime()`, `toEpochSecond()`, `withZoneSameInstant(zone)`, `withZoneSameLocal(zone)`, `getZone()`, `getOffset()` | Temporal, `ZonedDateTimeHelper.*(...)` |
+| getters, `plus/minus*`, `with*`, `plus(duration)`, `plus(n, unit)`, `isBefore/isAfter/isEqual`, `compareTo`, `equals`, `toString()` | like `LocalDateTime`; days and longer units in local time (across a DST change, `plusDays(1)` keeps the wall time), hours and shorter exactly |
+| `toEpochSecond(offset)`, `ofEpochSecond(seconds, nanos, offset)` | with the given offset |
 
 For libraries that work with `Date` (date pickers, charts), `LocalDateTimeHelper.toDate(value)` gives a `Date` whose
 local fields show the wall time, `LocalDateTimeHelper.fromDate(date)` the way back; an `Instant` gives its
@@ -571,6 +585,7 @@ The latter might work technically but are not specifically secured by our transp
     `getNano()`
   * `plusSeconds/Millis/Nanos`, `minusSeconds/Millis/Nanos`, `isAfter(...)`, `isBefore(...)`, `compareTo(...)`,
     `equals(...)`, `toString()`
+* `ZonedDateTime`, `ZoneId`, `ZoneOffset`: the conversions, factories, getters and arithmetic (see the table above)
 * `Duration` and `ChronoUnit`:
   * the factories, `between(...)`, `parse(...)`, `ZERO`, the arithmetic, getters and conversions (see the table above)
   * `plus(duration)`, `minus(duration)` of `LocalDateTime`, `LocalTime`, `Instant`; `plus(n, unit)`, `minus(n, unit)`
@@ -579,8 +594,8 @@ The latter might work technically but are not specifically secured by our transp
 **Not recommended / not supported:**
 
 * `java.util.Date`: not supported (error `0xEE013`), use `Instant`.
-* Other `java.time` types like `ZonedDateTime`, `OffsetDateTime`, `Period`, etc.; conversions between `Instant` and
-  the local types (they need a time zone).
+* Other `java.time` types like `OffsetDateTime`, `OffsetTime`, `Period`, `Clock`; `DateTimeFormatter`
+  (`format`, `parse(text, formatter)`).
 * Methods working with `TemporalAmount`/`TemporalAdjuster` (`plus(TemporalAmount)`, `with(TemporalAdjuster)`, etc.).
 
 ---
@@ -703,7 +718,7 @@ Other `Collections` helper functions not specifically supported by us (e.g., `Co
 | `java.util.Optional` | ⚠️ | Basic API usable, but no streams; test complex patterns. |
 | `java.util.Objects` | ⚠️ | `requireNonNull`/`equals` ok; avoid other methods if possible. |
 | `java.lang.String` | ✅ | Well usable (incl. `format`, `isBlank`). |
-| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration` | ✅ | Recommended for date/time, avoid other `java.time` types; `java.util.Date` is not supported. |
+| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration`, `ZonedDateTime` | ✅ | Recommended for date/time, avoid other `java.time` types; `java.util.Date` is not supported. |
 | `java.util.List` & Implementations | ✅ | Use standard List API + targeted factories, no streams/`List.of`. |
 | `java.util.Map` & Implementations | ✅ | Standard Map API, avoid `Map.of`/`unmodifiableMap`. |
 | `java.util.Set` & Guava Sets | ⚠️ | Basic usage ok, avoid complex set logic. |

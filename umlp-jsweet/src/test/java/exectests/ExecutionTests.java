@@ -9,6 +9,7 @@ import resources.exectests.FunctionDisplayGraphRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
 import resources.exectests.DurationRuntimeCheck;
+import resources.exectests.ZonedDateTimeRuntimeCheck;
 import resources.exectests.InstantRuntimeCheck;
 import resources.exectests.LocalTimeRuntimeCheck;
 import resources.exectests.MapRuntimeCheck;
@@ -76,6 +77,11 @@ public class ExecutionTests {
   @Test
   public void testDuration() {
     ExecTestRunner.runExecutionTest(DurationRuntimeCheck.class);
+  }
+
+  @Test
+  public void testZonedDateTime() {
+    ExecTestRunner.runExecutionTest(ZonedDateTimeRuntimeCheck.class);
   }
 
   @Test
