@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.time.Duration;
+import java.time.Period;
 import java.util.concurrent.Executors;
 
 @Erased
@@ -28,7 +28,7 @@ public class CoCoInvalid {
   }
 
   public void testTime() {
-    Duration t = Duration.ofSeconds(1);
+    Period t = Period.ofDays(1);
   }
 
   public void testConcurrent() {
