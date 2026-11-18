@@ -33,6 +33,7 @@ public enum TypeScriptTypes {
   LOCAL_DATE_TIME("LocalDateTime", "Temporal.PlainDateTime", "java.time.LocalDateTime", "@umlp/commonj2ts"),
   LOCAL_TIME("LocalTime", "Temporal.PlainTime", "java.time.LocalTime", "@umlp/commonj2ts"),
   INSTANT("Instant", "Temporal.Instant", "java.time.Instant", "@umlp/commonj2ts"),
+  DURATION("Duration", "Temporal.Duration", "java.time.Duration", "@umlp/commonj2ts"),
   ITERATOR("Iterator", "Iterator", "java.util.Iterator"),
   VOID("void", "void" ),
   VOID_BOXED("Void", "void", "java.lang.Void"),

@@ -13,6 +13,7 @@ import {LocalDateDeSer} from "../deser";
 import {LocalDateTimeDeSer} from "../deser/LocalDateTimeDeSer";
 import {LocalTimeDeSer} from "../deser/LocalTimeDeSer";
 import {InstantDeSer} from "../deser/InstantDeSer";
+import {DurationDeSer} from "../deser/DurationDeSer";
 import {DeSer, JsonDeSer} from "../command";
 import {IUMLPMap} from "./IUMLPMap";
 import {AsyncMap} from "../javautil/AsyncMap";
@@ -44,6 +45,7 @@ export class BaseClassObjectMapper {
     this.baseDeSers.set("java.time.LocalDateTime", new LocalDateTimeDeSer());
     this.baseDeSers.set("java.time.LocalTime", new LocalTimeDeSer());
     this.baseDeSers.set("java.time.Instant", new InstantDeSer());
+    this.baseDeSers.set("java.time.Duration", new DurationDeSer());
   }
 
   public async __BaseClassObjectMapperConstructor(): Promise<BaseClassObjectMapper> {

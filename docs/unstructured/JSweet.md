@@ -49,6 +49,8 @@ and are exact to the nanosecond:
 | `java.time.LocalDateTime` | `Temporal.PlainDateTime` |
 | `java.time.LocalTime` | `Temporal.PlainTime` |
 | `java.time.Instant` | `Temporal.Instant` |
+| `java.time.Duration` | `Temporal.Duration` |
+| `java.time.temporal.ChronoUnit` | `string` (the name of the constant) |
 
 `java.util.Date` is not supported in transpiled code (error `0xEE013`): use `Instant` for points in time,
 `LocalDate`, `LocalDateTime` or `LocalTime` for dates and wall times.
@@ -79,6 +81,19 @@ Important methods:
 | `plusSeconds/Millis/Nanos(n)`, `minus...` | `.add({seconds: n})`, `.subtract({milliseconds: n})`, ... |
 | `isAfter/isBefore(other)`, `compareTo(other)`, `equals(other)` | `Temporal.Instant.compare(this, other)`, `.equals` |
 | `ofEpochSecond(sec[, nanos])`, `getEpochSecond()`, `getNano()`, `toString()` | `LocalDateTimeHelper.*(...)`, `toString` in the format of java.time (UTC, `Z`) |
+
+`Duration` (an exact length of time; all methods through `DurationHelper`, which keeps a duration balanced from hours
+to nanoseconds and computes exactly in nanoseconds) and `ChronoUnit`:
+
+| Java | TypeScript Mapping |
+| :--- | :----------------- |
+| `Duration.ofDays/ofHours/ofMinutes/ofSeconds/ofMillis/ofNanos(n)`, `Duration.of(n, unit)`, `Duration.ZERO` | `DurationHelper.*(...)` |
+| `Duration.between(start, end)` (`LocalDateTime`, `LocalTime`, `Instant`), `Duration.parse(str)` | `DurationHelper.*(...)`, the formats of java.time (`PT1H30M`, `PT-1M-30S`, `P2DT3H`) |
+| `plus/minus(d)`, `plus/minusDays/Hours/Minutes/Seconds/Millis/Nanos(n)`, `multipliedBy`, `dividedBy`, `negated`, `abs` | `DurationHelper.*(...)` |
+| `getSeconds()`, `getNano()`, `toDays/Hours/Minutes/Seconds/Millis/Nanos()`, `isZero()`, `isNegative()`, `compareTo`, `equals`, `toString()` | `DurationHelper.*(...)`, like java.time |
+| `dateTime.plus(d)`, `minus(d)` (`LocalDateTime`, `LocalTime`, `Instant`) | `.add(d)`, `.subtract(d)` |
+| `value.plus(n, unit)`, `minus(n, unit)` (also `LocalDate`, `Duration`) | `DurationHelper.plusUnits/minusUnits(value, n, unit)` |
+| `unit.between(start, end)` | `DurationHelper.unitsBetween(unit, start, end)`, whole units like Java |
 
 For libraries that work with `Date` (date pickers, charts), `LocalDateTimeHelper.toDate(value)` gives a `Date` whose
 local fields show the wall time, `LocalDateTimeHelper.fromDate(date)` the way back; an `Instant` gives its
@@ -556,12 +571,16 @@ The latter might work technically but are not specifically secured by our transp
     `getNano()`
   * `plusSeconds/Millis/Nanos`, `minusSeconds/Millis/Nanos`, `isAfter(...)`, `isBefore(...)`, `compareTo(...)`,
     `equals(...)`, `toString()`
+* `Duration` and `ChronoUnit`:
+  * the factories, `between(...)`, `parse(...)`, `ZERO`, the arithmetic, getters and conversions (see the table above)
+  * `plus(duration)`, `minus(duration)` of `LocalDateTime`, `LocalTime`, `Instant`; `plus(n, unit)`, `minus(n, unit)`
+    and `unit.between(start, end)`
 
 **Not recommended / not supported:**
 
 * `java.util.Date`: not supported (error `0xEE013`), use `Instant`.
-* Other `java.time` types like `ZonedDateTime`, `OffsetDateTime`, `Period`, `Duration`, etc.; conversions between
-  `Instant` and the local types (they need a time zone).
+* Other `java.time` types like `ZonedDateTime`, `OffsetDateTime`, `Period`, etc.; conversions between `Instant` and
+  the local types (they need a time zone).
 * Methods working with `TemporalAmount`/`TemporalAdjuster` (`plus(TemporalAmount)`, `with(TemporalAdjuster)`, etc.).
 
 ---
@@ -684,7 +703,7 @@ Other `Collections` helper functions not specifically supported by us (e.g., `Co
 | `java.util.Optional` | ⚠️ | Basic API usable, but no streams; test complex patterns. |
 | `java.util.Objects` | ⚠️ | `requireNonNull`/`equals` ok; avoid other methods if possible. |
 | `java.lang.String` | ✅ | Well usable (incl. `format`, `isBlank`). |
-| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant` | ✅ | Recommended for date/time, avoid other `java.time` types; `java.util.Date` is not supported. |
+| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration` | ✅ | Recommended for date/time, avoid other `java.time` types; `java.util.Date` is not supported. |
 | `java.util.List` & Implementations | ✅ | Use standard List API + targeted factories, no streams/`List.of`. |
 | `java.util.Map` & Implementations | ✅ | Standard Map API, avoid `Map.of`/`unmodifiableMap`. |
 | `java.util.Set` & Guava Sets | ⚠️ | Basic usage ok, avoid complex set logic. |

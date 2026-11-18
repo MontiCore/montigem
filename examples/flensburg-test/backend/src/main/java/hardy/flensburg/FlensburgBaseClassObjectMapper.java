@@ -5,12 +5,11 @@ package hardy.flensburg;
 
 import umlp.backendrte.common.SerializableDeSer;
 
-// Fügt die Basisklasse java.util.Date zum BaseClassObjectMapper hinzu
+// adds java.util.Date and java.net.InetAddress to the BaseClassObjectMapper (java.time.Instant and Duration are built
+// in)
 public class FlensburgBaseClassObjectMapper extends FlensburgBaseClassObjectMapperTOP {
   FlensburgBaseClassObjectMapper(){
     baseDeSers.put("java.util.Date", new DateDeSer());
-    baseDeSers.put("java.time.Instant", new SerializableDeSer());
-    baseDeSers.put("java.time.Duration", new SerializableDeSer());
     baseDeSers.put("java.net.InetAddress", new SerializableDeSer());
   }
 }
