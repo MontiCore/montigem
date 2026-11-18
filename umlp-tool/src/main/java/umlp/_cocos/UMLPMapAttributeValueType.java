@@ -20,7 +20,8 @@ public class UMLPMapAttributeValueType implements CDBasisASTCDAttributeCoCo, CoC
   public static final String ERROR_CODE = "0xCDC6E";
 
   public static final String ERROR_MSG_FORMAT = " The Map attribute %s needs a domain class or a simple type (a "
-      + "primitive or boxed type, String or an enum) as value type, found %s.";
+      + "primitive or boxed type, String, an enum, LocalDate, LocalDateTime, LocalTime, Instant or Duration) as value "
+      + "type, found %s.";
 
   @Override
   public void check(ASTCDAttribute attr) {

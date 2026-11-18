@@ -161,6 +161,7 @@ umlp Attributes {
     Map<LocalTime, String> slots;
     Map<Instant, double> readings;
     Map<String, Instant> lastSeen;
+    Map<String, Duration> breaks;
   }
 
   class ClassWithDefaults{

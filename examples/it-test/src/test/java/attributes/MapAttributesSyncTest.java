@@ -9,6 +9,7 @@ import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.Test;
 import umlp.backendrte.command.CommandManager;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -319,8 +320,11 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     timestamps.put(1, LocalDateTime.of(2026, 11, 17, 10, 30, 15));
     Map<String, LocalTime> times = new LinkedHashMap<>();
     times.put("lunch", LocalTime.of(12, 15));
+    Map<String, Duration> breaks = new LinkedHashMap<>();
+    breaks.put("lunch", Duration.parse("PT45M0.000000001S"));
+    breaks.put("none", Duration.ZERO);
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().dates(dates).timestamps(timestamps).times(times)
-        .build().get();
+        .breaks(breaks).build().get();
 
     // check in backend
     getBackend().activate();
@@ -330,6 +334,7 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     assertEquals(List.of("start", "end"), List.copyOf(sutServer.getDatesMap().keySet()));
     assertEquals(timestamps, sutServer.getTimestampsMap());
     assertEquals(times, sutServer.getTimesMap());
+    assertEquals(breaks, sutServer.getBreaksMap());
   }
 
   @Test
