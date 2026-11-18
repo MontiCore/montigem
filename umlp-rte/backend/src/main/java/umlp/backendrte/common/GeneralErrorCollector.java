@@ -3,6 +3,7 @@ package umlp.backendrte.common;
 
 // RTE-P
 
+import jsweet.lang.Async;
 import umlp.backendrte.command.CommandManager;
 import umlp.backendrte.command.ServerError;
 import umlp.backendrte.command.SyncError;
@@ -16,10 +17,12 @@ public class GeneralErrorCollector {
   protected static GeneralErrorCollector instance;
   protected List<GeneralErrorObserver> observers = new ArrayList<>();
 
+  @Async
   public static void init(){
     instance = new GeneralErrorCollector();
   }
 
+  @Async
   public static GeneralErrorCollector getInstance(){
     if(instance == null){
       init();
@@ -27,6 +30,7 @@ public class GeneralErrorCollector {
     return instance;
   }
 
+  @Async
   public static void addErrorObserver(GeneralErrorObserver observer){
     getInstance()._addErrorObserver(observer);
   }
@@ -39,6 +43,7 @@ public class GeneralErrorCollector {
     observers.add(observer);
   }
 
+  @Async
   public static boolean containsErrorObserver(GeneralErrorObserver observer){
     return getInstance()._containsErrorObserver(observer);
   }
@@ -47,6 +52,7 @@ public class GeneralErrorCollector {
     return observers.contains(observer);
   }
 
+  @Async
   public static boolean removeErrorObserver(GeneralErrorObserver observer){
     return getInstance()._removeErrorObserver(observer);
   }
@@ -55,6 +61,7 @@ public class GeneralErrorCollector {
     return observers.remove(observer);
   }
 
+  @Async
   public static void reportConnectionError(){
     getInstance()._reportConnectionError();
   }
@@ -69,6 +76,7 @@ public class GeneralErrorCollector {
     return "Connection error!";
   }
 
+  @Async
   public static void reportServerError(Throwable t){
     getInstance()._reportServerError(t);
   }
@@ -85,6 +93,7 @@ public class GeneralErrorCollector {
   }
 
   // TODO: Scoping, aktuell wird der SyncError an alle clients gesendet, ob wohl nur manche dieses Objekt interessiert
+  @Async
   public static void reportSyncError(){
     getInstance()._reportSyncError();
   }
