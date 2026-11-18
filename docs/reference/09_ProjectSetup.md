@@ -85,6 +85,16 @@ umlp.reports=incgen
 ```
 The setting is an input of the generator tasks, so a change runs the generators again.
 
+### Source Map support
+
+By default, no source map files are created for template-generated files.
+To activate the generation of source map files, the following gradle-property 
+can be set:
+```properties
+umlp.templateSourceMapping=include_sources
+```
+To produce source maps without embedding template sources, set the value to `no_sources`. 
+
 ## Notes for Developers of UMLP-Tool
 The gradle-``UMLPTask`` supports incremental builds.
 It only runs when a _relevant_ input has changed.
