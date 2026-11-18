@@ -12,7 +12,7 @@ page CollabDemo(List<CollabText> texts, String userName = "") {
       explanation@GemText(value = "Everyone who has this page open edits the same text."),
       currentUser@GemText(value = userName),
       actions@GemRow(hAlign = "right", vAlign = "center", colGap = "12px", components = [
-        share@ShareButton(),
+        share@ShareDialog(),
         brands@BrandLinks()
       ])
     ]),

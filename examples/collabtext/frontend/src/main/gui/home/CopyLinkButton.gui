@@ -1,0 +1,8 @@
+package home;
+
+import mc.fenix.basic.GemButton;
+
+/** Copies a link and reports the result to the containing view. */
+component CopyLinkButton(String text = "", boolean copying = false, ?String copyMessage = "") {
+  copyLinkButton@GemButton(label = "Copy link", disabled = copying, leftClick = copyLink());
+}

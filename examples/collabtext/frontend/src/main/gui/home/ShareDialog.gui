@@ -1,0 +1,32 @@
+package home;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemDialog;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemText;
+
+/** Shares the current demo URL through a QR code or the clipboard. */
+component ShareDialog(?boolean dialogOpen = false, String shareUrl = "", String qrCodeUrl = "",
+                      boolean qrAvailable = false, String copyMessage = "") {
+  openShareButton@GemButton(label = "Share", leftClick = openShare());
+  shareDialog@GemDialog(isOpen = dialogOpen, component =
+    collabSharePanel@GemColumn(width = "420px", rowGap = "8px", components = [
+      shareTitle@GemText(value = "Share this text", weight = "bold", size = "1.25rem"),
+      shareInstructions@GemText(value = "Scan the QR code or send the link to edit together."),
+      @guard(qrAvailable) {
+        shareQr@GemImage(source = qrCodeUrl, width = "240px", alt = "QR code linking to this collaborative text");
+      } else {
+        qrUnavailable@GemText(value = "The QR code could not be generated. You can still copy the link.");
+      },
+      shareLinkLabel@GemText(value = "Link to this text"),
+      shareLink@GemText(value = shareUrl),
+      shareActions@GemRow(hAlign = "right", vAlign = "center", colGap = "8px", components = [
+        closeShareButton@GemButton(label = "Close", leftClick = closeShare()),
+        copyShareButton@CopyLinkButton(text = shareUrl, copyMessage = copyMessage)
+      ]),
+      copyLinkStatus@GemText(value = copyMessage)
+    ])
+  );
+}
