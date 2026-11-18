@@ -107,4 +107,14 @@ public class ZonedDateTimeRuntimeCheck {
         + LocalDate.of(2026, 11, 17).toEpochSecond(LocalTime.of(9, 0), ZoneOffset.ofHours(1)) + " "
         + LocalTime.of(9, 0).toEpochSecond(LocalDate.of(2026, 11, 17), ZoneOffset.ofHours(1));
   }
+
+  /** truncatedTo(unit) in local time, also on the day of a DST change; until(end, unit); withNano(n) */
+  @JSweetTest
+  public static String checkTruncatedToUntilWithNano() {
+    ZonedDateTime dateTime = ZonedDateTime.of(2026, 3, 29, 9, 47, 31, 123_456_789, BERLIN);
+    return dateTime.truncatedTo(ChronoUnit.DAYS) + " " + dateTime.truncatedTo(ChronoUnit.HOURS) + " "
+        + dateTime.withNano(0) + " " + dateTime.minusDays(1).until(dateTime, ChronoUnit.DAYS) + " "
+        + dateTime.minusDays(1).until(dateTime, ChronoUnit.HOURS) + " "
+        + ZonedDateTime.of(2026, 3, 29, 9, 0, 0, 0, ZoneId.of("America/Sao_Paulo")).truncatedTo(ChronoUnit.DAYS);
+  }
 }

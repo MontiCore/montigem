@@ -73,6 +73,8 @@ Important methods:
 | `toString()`, string concatenation (`"" + date`, `s += date`, `sb.append(date)`, `String.valueOf(date)`) | `LocalDateTimeHelper.toString(...)`, the format of java.time |
 | `getNano()`, `getDayOfWeek()`, `getMonth()`, `withDayOfYear(n)` | `LocalDateTimeHelper.*(...)` |
 | `toEpochSecond(offset)`, `ofEpochSecond(sec, nanos, offset)` | `LocalDateTimeHelper.*(...)` |
+| `withNano(n)`, `toSecondOfDay()`, `toNanoOfDay()`, `ofSecondOfDay(n)`, `ofNanoOfDay(n)`, `toEpochDay()`, `ofEpochDay(n)` | `LocalDateTimeHelper.*(...)` |
+| `time.atDate(date)` | `date.toPlainDateTime(time)` |
 
 `Instant` (a point in time, exact to the nanosecond):
 
@@ -92,10 +94,12 @@ to nanoseconds and computes exactly in nanoseconds) and `ChronoUnit`:
 | `Duration.ofDays/ofHours/ofMinutes/ofSeconds/ofMillis/ofNanos(n)`, `Duration.of(n, unit)`, `Duration.ZERO` | `DurationHelper.*(...)` |
 | `Duration.between(start, end)` (`LocalDateTime`, `LocalTime`, `Instant`), `Duration.parse(str)` | `DurationHelper.*(...)`, the formats of java.time (`PT1H30M`, `PT-1M-30S`, `P2DT3H`) |
 | `plus/minus(d)`, `plus/minusDays/Hours/Minutes/Seconds/Millis/Nanos(n)`, `multipliedBy`, `dividedBy`, `negated`, `abs` | `DurationHelper.*(...)` |
-| `getSeconds()`, `getNano()`, `toDays/Hours/Minutes/Seconds/Millis/Nanos()`, `isZero()`, `isNegative()`, `compareTo`, `equals`, `toString()` | `DurationHelper.*(...)`, like java.time |
+| `getSeconds()`, `getNano()`, `toDays/Hours/Minutes/Seconds/Millis/Nanos()`, `toDaysPart()` ... `toNanosPart()`, `isZero()`, `isNegative()`, `isPositive()`, `compareTo`, `equals`, `toString()` | `DurationHelper.*(...)`, like java.time |
 | `dateTime.plus(d)`, `minus(d)` (`LocalDateTime`, `LocalTime`, `Instant`) | `.add(d)`, `.subtract(d)` |
 | `value.plus(n, unit)`, `minus(n, unit)` (also `LocalDate`, `Duration`) | `DurationHelper.plusUnits/minusUnits(value, n, unit)` |
-| `unit.between(start, end)` | `DurationHelper.unitsBetween(unit, start, end)`, whole units like Java |
+| `unit.between(start, end)`, `start.until(end, unit)` | `DurationHelper.unitsBetween(unit, start, end)`, whole units like Java |
+| `value.truncatedTo(unit)` (`LocalDateTime`, `LocalTime`, `Instant`, `ZonedDateTime`, `Duration`; units up to `DAYS`) | `DurationHelper.truncatedTo(value, unit)`, like Java (an `Instant` towards the past) |
+| `unit.getDuration()`, `ChronoUnit.valueOf(name)`, `unit.name()`, `unit.toString()` | `DurationHelper.getDuration/unitOf(...)`, the name, `DurationHelper.unitToString(unit)` (`"Days"`, also in string concatenation) |
 
 `ZonedDateTime`, `ZoneId`, `ZoneOffset` (time zones in code, e.g. to show an `Instant` in a chosen zone; no attribute
 type: store an `Instant` and, if an object has a zone of its own, its id as a `String` attribute):
@@ -588,8 +592,11 @@ The latter might work technically but are not specifically secured by our transp
 * `ZonedDateTime`, `ZoneId`, `ZoneOffset`: the conversions, factories, getters and arithmetic (see the table above)
 * `Duration` and `ChronoUnit`:
   * the factories, `between(...)`, `parse(...)`, `ZERO`, the arithmetic, getters and conversions (see the table above)
-  * `plus(duration)`, `minus(duration)` of `LocalDateTime`, `LocalTime`, `Instant`; `plus(n, unit)`, `minus(n, unit)`
-    and `unit.between(start, end)`
+  * `plus(duration)`, `minus(duration)` of `LocalDateTime`, `LocalTime`, `Instant`; `plus(n, unit)`, `minus(n, unit)`,
+    `unit.between(start, end)`, `until(end, unit)` and `truncatedTo(unit)`
+  * `toDaysPart()` ... `toNanosPart()`, `isPositive()`; `unit.getDuration()`, `ChronoUnit.valueOf(name)`, `name()`,
+    `toString()`
+* `withNano(n)`, `LocalTime.atDate(date)`, `toSecondOfDay()`, `toNanoOfDay()`, `toEpochDay()` and the `of...` factories
 
 **Not recommended / not supported:**
 

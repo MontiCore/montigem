@@ -10,6 +10,18 @@ const UNIT_NANOS: { [unit: string]: bigint } = {
 };
 
 /** the Temporal field and factor of the date-based ChronoUnits */
+/** the Temporal rounding of truncatedTo(unit): the smallest unit and its increment */
+const TRUNCATION_UNITS: { [unit: string]: [string, number] } = {
+  NANOS: ["nanosecond", 1], MICROS: ["microsecond", 1], MILLIS: ["millisecond", 1], SECONDS: ["second", 1],
+  MINUTES: ["minute", 1], HOURS: ["hour", 1], HALF_DAYS: ["hour", 12], DAYS: ["day", 1]
+};
+
+/** ChronoUnit.getDuration(): the estimated lengths of the date-based units like Java, in seconds */
+const ESTIMATED_SECONDS: { [unit: string]: bigint } = {
+  WEEKS: 7n * 86400n, MONTHS: 31556952n / 12n, YEARS: 31556952n, DECADES: 315569520n, CENTURIES: 3155695200n,
+  MILLENNIA: 31556952000n
+};
+
 const CALENDAR_UNITS: { [unit: string]: [string, number] } = {
   DAYS: ["days", 1], WEEKS: ["weeks", 1], MONTHS: ["months", 1], YEARS: ["years", 1], DECADES: ["years", 10],
   CENTURIES: ["years", 100], MILLENNIA: ["years", 1000]
@@ -168,6 +180,10 @@ export class DurationHelper {
     return duration.sign < 0 ? DurationHelper.negated(duration) : duration;
   }
 
+  static isPositive(duration: Temporal.Duration): boolean {
+    return duration.sign > 0;
+  }
+
   static isZero(duration: Temporal.Duration): boolean {
     return duration.sign === 0;
   }
@@ -200,6 +216,31 @@ export class DurationHelper {
 
   static toSeconds(duration: Temporal.Duration): number {
     return DurationHelper.getSeconds(duration);
+  }
+
+  /** toDaysPart() to toNanosPart(), like Java: from the seconds rounded down and the nanoseconds of the second */
+  static toDaysPart(duration: Temporal.Duration): number {
+    return DurationHelper.toDays(duration);
+  }
+
+  static toHoursPart(duration: Temporal.Duration): number {
+    return DurationHelper.toHours(duration) % 24;
+  }
+
+  static toMinutesPart(duration: Temporal.Duration): number {
+    return DurationHelper.toMinutes(duration) % 60;
+  }
+
+  static toSecondsPart(duration: Temporal.Duration): number {
+    return Number(BigInt(DurationHelper.getSeconds(duration)) % 60n);
+  }
+
+  static toMillisPart(duration: Temporal.Duration): number {
+    return Math.floor(DurationHelper.getNano(duration) / 1000000);
+  }
+
+  static toNanosPart(duration: Temporal.Duration): number {
+    return DurationHelper.getNano(duration);
   }
 
   static toMillis(duration: Temporal.Duration): number {
@@ -261,6 +302,57 @@ export class DurationHelper {
   /** minus(amount, unit), see plusUnits */
   static minusUnits<T>(value: T, amount: number, unit: string): T {
     return DurationHelper.plusUnits(value, -amount, unit);
+  }
+
+  /**
+   * truncatedTo(unit) of a LocalDateTime, LocalTime, Instant, ZonedDateTime or Duration: the smaller fields set to zero,
+   * for units up to DAYS like Java (an Instant towards the past, a Duration towards zero within the day)
+   */
+  static truncatedTo<T>(value: T, unit: string): T {
+    const v: any = value;
+    const truncation = TRUNCATION_UNITS[unit];
+    if (truncation === undefined) {
+      throw new RangeError("Unit is too large to be used for truncation: " + unit);
+    }
+    if (v instanceof Temporal.Duration) {
+      // like Duration.truncatedTo: the nanoseconds of the day, truncated to the unit
+      const total = DurationHelper.nanosOf(v);
+      const nanoOfDay = (DurationHelper.secondsOf(total) % 86400n) * NANOS_PER_SECOND + DurationHelper.nanoOf(total);
+      const unitNanos = DurationHelper.unitNanos(unit);
+      return DurationHelper.ofNanos(total + nanoOfDay / unitNanos * unitNanos - nanoOfDay) as any;
+    }
+    const [smallestUnit, increment] = truncation;
+    if (unit === "DAYS" && v instanceof Temporal.PlainTime) {
+      return new Temporal.PlainTime() as any;
+    }
+    if (unit === "DAYS" && v instanceof Temporal.Instant) {
+      return v.round({smallestUnit: "hour", roundingIncrement: 24, roundingMode: "floor"}) as any;
+    }
+    return v.round({smallestUnit, roundingIncrement: increment,
+      roundingMode: v instanceof Temporal.Instant ? "floor" : "trunc"});
+  }
+
+  /** ChronoUnit.getDuration(): exact for the units up to DAYS, estimated for the longer ones like Java */
+  static getDuration(unit: string): Temporal.Duration {
+    const estimated = ESTIMATED_SECONDS[unit];
+    return estimated !== undefined ? DurationHelper.ofNanos(estimated * NANOS_PER_SECOND)
+      : DurationHelper.ofNanos(DurationHelper.unitNanos(unit));
+  }
+
+  /** ChronoUnit.toString(): the display name like Java, e.g. "Days" or "HalfDays" for HALF_DAYS */
+  static unitToString(unit: string): string {
+    if (unit == null) {
+      return null;
+    }
+    return unit.split("_").map(part => part.charAt(0) + part.substring(1).toLowerCase()).join("");
+  }
+
+    /** ChronoUnit.valueOf(name): the name of a constant */
+  static unitOf(name: string): string {
+    if (UNIT_NANOS[name] === undefined && CALENDAR_UNITS[name] === undefined) {
+      throw new RangeError("No enum constant java.time.temporal.ChronoUnit." + name);
+    }
+    return name;
   }
 
   /** unit.between(start, end): the whole units from start to end, truncated like Java */
