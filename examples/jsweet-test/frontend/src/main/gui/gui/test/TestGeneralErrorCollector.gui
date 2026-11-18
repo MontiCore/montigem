@@ -1,0 +1,22 @@
+package gui.test;
+
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.navigation.GemNavItem;
+
+import gui.test.TestNav;
+
+import Jsweettest.C2;
+
+page TestGeneralErrorCollector(List<C2> c2s) {
+  @TestNav();
+  @GemText(value = "Page: TestGeneralErrorCollector");
+
+  @iterate(C2 c : c2s) {
+    @GemText(value = "Got a C2: " + c.string);
+  }
+
+  @GemButton(label = "sync error", leftClick = raiseSyncError() );
+
+  @GemButton(label = "add", leftClick = addC2() );
+}
