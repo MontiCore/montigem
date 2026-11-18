@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.TreeMap;
 import java.time.Duration;
+import java.util.Date;
 import java.util.concurrent.Executors;
 
 public class CoCoInvalid {
@@ -27,6 +28,10 @@ public class CoCoInvalid {
 
     public void testTime() {
         Duration t = Duration.ofSeconds(1);
+    }
+
+    public void testDate() {
+        Date d = new Date();
     }
 
     public void testConcurrent() {

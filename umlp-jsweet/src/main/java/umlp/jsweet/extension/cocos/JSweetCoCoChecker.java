@@ -257,12 +257,20 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
       }
     }
 
+    if ("java.util.Date".equals(ownerFqn)) {
+      Log.warn("0xEE013: java.util.Date is deprecated in transpiled code. Use java.time.Instant for points in time, "
+              + "java.time.LocalDate, LocalDateTime or LocalTime for dates and wall times.",
+          getStartSourcePosition(getContext(),getCurrentPath().getCompilationUnit(),tree));
+      return;
+    }
+
     if (ownerFqn.startsWith("java.time.")
         && !ownerFqn.equals("java.time.LocalDateTime")
         && !ownerFqn.equals("java.time.LocalDate")
-        && !ownerFqn.equals("java.time.LocalTime")) {
+        && !ownerFqn.equals("java.time.LocalTime")
+        && !ownerFqn.equals("java.time.Instant")) {
       Log.warn("0xEE009: Calls to " + ownerFqn + "." + methodName + "(...) are not explicitly supported. "
-              + "Only java.time.LocalDateTime, java.time.LocalDate, java.time.LocalTime and java.util.Date "
+              + "Only java.time.LocalDateTime, java.time.LocalDate, java.time.LocalTime and java.time.Instant "
               + "with their standard methods are supported in transpiled code.",
           getStartSourcePosition(getContext(),getCurrentPath().getCompilationUnit(),tree));
       return;

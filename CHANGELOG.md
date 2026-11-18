@@ -48,6 +48,11 @@ For MontiGem users:
   `new Date()`). `LocalDateTimeHelper.toDate`/`fromDate` convert for libraries that need a `Date`.
   `GemDateInput`, `GemTimeSeriesChart` and `GemTimelineChart` take Temporal values.
 * `Objects.equals` with dates in transpiled code is null-safe.
+* `java.time.Instant` for points in time: as attribute type (SQL `TIMESTAMP(6) WITH TIME ZONE`, Neo4j `DateTime`,
+  JSON as ISO string in UTC, e.g. `"2026-11-17T09:30:15.123Z"`) and in transpiled code as `Temporal.Instant`.
+  `GemTimeSeriesChart` also takes `Instant` time stamps.
+* `java.util.Date` is deprecated in transpiled code (warning `0xEE013`): use `Instant`, or `LocalDate`,
+  `LocalDateTime`, `LocalTime`.
 * `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums,
   `LocalDate`, `LocalDateTime`, `LocalTime`), like list attributes:
   ```

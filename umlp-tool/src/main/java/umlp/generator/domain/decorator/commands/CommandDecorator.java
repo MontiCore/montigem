@@ -26,6 +26,7 @@ public class CommandDecorator extends AbstractDecorator {
     supportedDeSers.add("java.time.LocalDate");
     supportedDeSers.add("java.time.LocalDateTime");
     supportedDeSers.add("java.time.LocalTime");
+    supportedDeSers.add("java.time.Instant");
   }
 
   @Override

@@ -48,7 +48,11 @@ and are exact to the nanosecond:
 | `java.time.LocalDate` | `Temporal.PlainDate` |
 | `java.time.LocalDateTime` | `Temporal.PlainDateTime` |
 | `java.time.LocalTime` | `Temporal.PlainTime` |
-| `java.util.Date` | `Date` |
+| `java.time.Instant` | `Temporal.Instant` |
+| `java.util.Date` (deprecated, `0xEE013`) | `Date` |
+
+`java.util.Date` is deprecated in transpiled code: use `Instant` for points in time, `LocalDate`, `LocalDateTime` or
+`LocalTime` for dates and wall times.
 
 Important methods:
 
@@ -67,8 +71,19 @@ Important methods:
 | `getNano()`, `getDayOfWeek()`, `getMonth()`, `withDayOfYear(n)` | `LocalDateTimeHelper.*(...)` |
 | `toEpochSecond(offset)`, `ofEpochSecond(sec, nanos, offset)` | `LocalDateTimeHelper.*(...)`, the offset is taken as UTC |
 
+`Instant` (a point in time, exact to the nanosecond):
+
+| Java | TypeScript Mapping |
+| :--- | :----------------- |
+| `Instant.now()`, `Instant.parse(str)`, `Instant.ofEpochMilli(ms)` | `Temporal.Now.instant()`, `Temporal.Instant.from(str)`, `Temporal.Instant.fromEpochMilliseconds(ms)` |
+| `toEpochMilli()` | `.epochMilliseconds` |
+| `plusSeconds/Millis/Nanos(n)`, `minus...` | `.add({seconds: n})`, `.subtract({milliseconds: n})`, ... |
+| `isAfter/isBefore(other)`, `compareTo(other)`, `equals(other)` | `Temporal.Instant.compare(this, other)`, `.equals` |
+| `ofEpochSecond(sec[, nanos])`, `getEpochSecond()`, `getNano()`, `toString()` | `LocalDateTimeHelper.*(...)`, `toString` in the format of java.time (UTC, `Z`) |
+
 For libraries that work with `Date` (date pickers, charts), `LocalDateTimeHelper.toDate(value)` gives a `Date` whose
-local fields show the wall time, `LocalDateTimeHelper.fromDate(date)` the way back.
+local fields show the wall time, `LocalDateTimeHelper.fromDate(date)` the way back; an `Instant` gives its
+`epochMilliseconds`.
 
 ---
 
@@ -535,7 +550,7 @@ The latter might work technically but are not specifically secured by our transp
 
 ---
 
-#### `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`, `java.util.Date` – ✅ recommended
+#### `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`, `java.time.Instant` – ✅ recommended
 
 **Recommended and secured by adapters:**
 
@@ -561,10 +576,17 @@ The latter might work technically but are not specifically secured by our transp
   * `withYear/Month/DayOfMonth/DayOfYear/Hour/Minute/Second`
 * Conversions:
   * `toLocalDate()`, `toLocalTime()`, `atStartOfDay()`, `atTime(...)`, `LocalDateTime.of(date, time)`
+* `Instant`:
+  * `now()`, `parse(...)`, `ofEpochMilli(...)`, `ofEpochSecond(...)`, `toEpochMilli()`, `getEpochSecond()`,
+    `getNano()`
+  * `plusSeconds/Millis/Nanos`, `minusSeconds/Millis/Nanos`, `isAfter(...)`, `isBefore(...)`, `compareTo(...)`,
+    `equals(...)`, `toString()`
 
 **Not recommended / not supported:**
 
-* Other `java.time` types like `Instant`, `ZonedDateTime`, `OffsetDateTime`, `Period`, `Duration`, etc.
+* `java.util.Date`: deprecated (`0xEE013`), use `Instant`.
+* Other `java.time` types like `ZonedDateTime`, `OffsetDateTime`, `Period`, `Duration`, etc.; conversions between
+  `Instant` and the local types (they need a time zone).
 * Methods working with `TemporalAmount`/`TemporalAdjuster` (`plus(TemporalAmount)`, `with(TemporalAdjuster)`, etc.).
 
 ---
@@ -687,7 +709,7 @@ Other `Collections` helper functions not specifically supported by us (e.g., `Co
 | `java.util.Optional` | ⚠️ | Basic API usable, but no streams; test complex patterns. |
 | `java.util.Objects` | ⚠️ | `requireNonNull`/`equals` ok; avoid other methods if possible. |
 | `java.lang.String` | ✅ | Well usable (incl. `format`, `isBlank`). |
-| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `java.util.Date` | ✅ | Recommended for date/time, avoid other `java.time` types. |
+| `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant` | ✅ | Recommended for date/time, avoid other `java.time` types and `java.util.Date` (deprecated). |
 | `java.util.List` & Implementations | ✅ | Use standard List API + targeted factories, no streams/`List.of`. |
 | `java.util.Map` & Implementations | ✅ | Standard Map API, avoid `Map.of`/`unmodifiableMap`. |
 | `java.util.Set` & Guava Sets | ⚠️ | Basic usage ok, avoid complex set logic. |

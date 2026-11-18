@@ -40,6 +40,7 @@ public class BaseClassObjectMapper {
     baseDeSers.put("java.time.LocalDate", new LocalDateDeSer());
     baseDeSers.put("java.time.LocalDateTime", new LocalDateTimeDeSer());
     baseDeSers.put("java.time.LocalTime", new LocalTimeDeSer());
+    baseDeSers.put("java.time.Instant", new InstantDeSer());
   }
 
   public static void addDeSers(Map<String, ? extends DeSer> addedDeSers) {

@@ -489,8 +489,14 @@ export class GemTimeSeriesChart extends GemTimeSeriesChartComponent implements O
       }
   }
 
-  /** the milliseconds of a time stamp (a LocalDateTime, a Date or a string) in local time, as the chart shows it */
+  /**
+   * the milliseconds of a time stamp (an Instant, a LocalDateTime, a Date or a string); a LocalDateTime in local time,
+   * as the chart shows it
+   */
   private toTime(timestamp: any): number {
+    if (timestamp instanceof Temporal.Instant) {
+      return timestamp.epochMilliseconds;
+    }
     if (timestamp instanceof Temporal.PlainDateTime || timestamp instanceof Temporal.PlainDate) {
       return LocalDateTimeHelper.toDate(timestamp).getTime();
     }
