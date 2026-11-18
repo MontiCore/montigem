@@ -72,6 +72,43 @@ public class LocalTimeRuntimeCheck {
         && !Objects.equals(none, date) && Objects.equals(none, none);
   }
 
+  /** string building with java.time values: the format of java.time, not the one of Temporal */
+  @JSweetTest
+  public static String checkStringBuilding() {
+    LocalTime time = LocalTime.of(10, 15);
+    LocalDate date = LocalDate.of(2024, 2, 29);
+    String s = "at ";
+    s += time;
+    String[] parts = {"from "};
+    parts[0] += time;
+    StringBuilder sb = new StringBuilder("on ");
+    sb.append(date).append(' ').append(LocalDateTime.of(date, time));
+    return s + " " + parts[0] + " " + sb + " " + String.valueOf(time) + " " + String.valueOf((LocalTime) null);
+  }
+
+  /** invalid values for the with methods are rejected, withYear and withMonth adjust the day */
+  @JSweetTest
+  public static String checkWithInvalid() {
+    LocalDate date = LocalDate.of(2024, 1, 31);
+    String result = date.withMonth(2) + " " + date.withYear(2023).withMonth(2);
+    try {
+      result += " " + date.withMonth(4).withDayOfMonth(31);
+    } catch (Exception e) {
+      result += " day rejected";
+    }
+    try {
+      result += " " + LocalDateTime.of(2024, 1, 31, 12, 0).withHour(24);
+    } catch (Exception e) {
+      result += " hour rejected";
+    }
+    try {
+      result += " " + LocalDate.of(2023, 1, 1).withDayOfYear(366);
+    } catch (Exception e) {
+      result += " day of year rejected";
+    }
+    return result;
+  }
+
   /** values of different java.time types are never equal, even if they denote the same day */
   @JSweetTest
   public static boolean checkObjectsEqualsOfDifferentTypes() {
