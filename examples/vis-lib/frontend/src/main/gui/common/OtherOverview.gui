@@ -11,6 +11,7 @@ import example_cad.GemCADExample;
 import person.SimpleOverview;
 import example_functiondisplay.FunctionDisplayExample;
 import example_advanced.GemMarkdownExample;
+import example_advanced.GemStatusIconExample;
 import example_advanced.GemToggleExample;
 
 page OtherOverview() {
@@ -33,6 +34,7 @@ page OtherOverview() {
             @ComponentCard(title = "Person Overview", icon = "people", description = "Example domain overview.", click = navigate(@SimpleOverview())),
             @ComponentCard(title = "Function Display", icon = "account_tree", description = "Show component functions.", click = navigate(@FunctionDisplayExample())),
             @ComponentCard(title = "Markdown", icon = "article", description = "Display formatted text with Markdown.", click = navigate(@GemMarkdownExample())),
+            @ComponentCard(title = "Status Icon", icon = "traffic", description = "Icon colored by a status.", click = navigate(@GemStatusIconExample())),
             @ComponentCard(title = "Toggle", icon = "toggle_on", description = "Switch a boolean state on or off.", click = navigate(@GemToggleExample()))
         ]
       )

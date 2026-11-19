@@ -1,0 +1,29 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.advanced;
+
+import mc.fenix.advanced.GemStatusIconTypes.GemStatus;
+
+/**
+  Displays an icon whose color (and optionally symbol) depends on a status value,
+  e.g. the value of an enum. A typical use is a traffic light style indicator
+  that is green, yellow or red depending on the state of an object.
+
+  The `currentStatus` is looked up (case-insensitive) in the values of `statuses`. The
+  color and icon of the matching entry are used for the display. If `statuses`
+  is not set, the default statuses `OK`, `WARNING` and `ERROR` are mapped to the
+  theme's success, warning and error colors.
+*/
+component GemStatusIcon(
+  /** Current status to display, e.g. the name of an enum constant. */
+  String currentStatus,
+  /** Possible statuses, each with its value, color and optional icon. */
+  List<GemStatus> statuses,
+  /** Icon used for all statuses without an own icon, corresponding to the icon name from https://fonts.google.com/icons. */
+  String icon = "circle",
+  /** Color used if the status does not match any of the `statuses`. */
+  String defaultColor = "gray",
+  /** Size of the icon in `px`, `%`, `em`, etc. */
+  String size = "24px",
+  /** If true, the status text is displayed next to the icon. */
+  boolean showLabel = false
+)
