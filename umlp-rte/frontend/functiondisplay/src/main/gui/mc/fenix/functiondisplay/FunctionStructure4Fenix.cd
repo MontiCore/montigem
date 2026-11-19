@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 /**
   Version of FunctionStructure.umlp where some details are adapted for usage within Fenix.
  */
+ <<pojoCD>>
 classdiagram FunctionStructure4Fenix {
     /**
       Represents a function or component in the diagram.

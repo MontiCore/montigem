@@ -12,29 +12,16 @@ sourceSets {
   cd2pojo
 }
 
-def generateGem = tasks.register("generateGem", CDGenTask) {
+def generatePyGem = tasks.register("generatePyGem", CDGenTask) {
   group = "umlp"
   input.from(project.file("../models/MyDomain.umlp"))
   class2MC = true
-  outputDir.set(project.layout.buildDirectory.dir("py_out_java"))
+  outputDir.set(project.layout.buildDirectory.dir("py_out"))
   configTemplate = 'cd2python.Gem2Py'
   tmplDir = file('src/cd2pojo/resources')
   getExtraClasspathElements().from(configurations.cdTool)
   getExtraClasspathElements().from(sourceSets.cd2pojo.output)
   // This task outputs python files with the .java extension
-}
-
-tasks.register("transformGemToPy", Sync) {
-  group = "umlp"
-  // actually rename the generated file to .py
-  from(generateGem)
-  into(project.layout.buildDirectory.dir("py_out"))
-  eachFile { file ->
-    if (file.name.endsWith(".java")) {
-      def newName = file.name.replaceAll(/\.java/, ".py")
-      file.name = newName
-    }
-  }
 }
 
 dependencies {
@@ -66,7 +53,7 @@ dependencies {
 }
 
 test {
-  dependsOn(tasks.named("transformGemToPy"))
+  dependsOn(generatePyGem)
   // Ensure the test runs when the inputs change
   inputs.dir(layout.projectDirectory.dir("../runtime-package"))
   inputs.file(layout.projectDirectory.file("../testmain.py"))
@@ -90,8 +77,10 @@ publishing {
       url "file://${project.buildDir}/repo"
     }
     maven {
-      credentials.username mavenUser
-      credentials.password mavenPassword
+      if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+        credentials.username mavenUser
+        credentials.password mavenPassword
+      }
 
       def releasesRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-releases/"
       def snapshotsRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-snapshots/"

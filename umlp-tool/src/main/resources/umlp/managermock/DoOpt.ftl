@@ -1,5 +1,6 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("name", "concreteSubclassesInclSelf")}
+<#-- keyObservers: per class name, the key observers of the map roles that may hold its objects (GemMapKeyRole) -->
+${tc.signature("name", "concreteSubclassesInclSelf", "keyObservers")}
 ${cd4c.method("protected Optional<${name}> _do${name}Opt(long gemId)")}
 
 ${name} value = null;
@@ -10,6 +11,11 @@ ${name} value = null;
   if (!tmp.containsObserver(the${subclass.name}CommandObserver)) {
     tmp.addObserver(the${subclass.name}CommandObserver);
   }
+  <#list keyObservers[subclass.name] as keyObserver>
+  if (!tmp.containsObserver(${keyObserver})) {
+    tmp.addObserver(${keyObserver});
+  }
+  </#list>
   </#if>
   value = tmp;
 }

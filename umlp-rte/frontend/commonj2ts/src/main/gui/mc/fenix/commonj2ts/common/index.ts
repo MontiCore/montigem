@@ -1,4 +1,5 @@
 export * from "./BaseClassObjectMapper";
+export * from "./PojoGraphContext";
 export * from "./Gem";
 export * from "./GeneralErrorCollector";
 export * from "./AssociationDBEntry";
@@ -27,6 +28,11 @@ export * from "./ByteDeSer";
 export * from "./AggregatedCommandDeSer";
 export * from "./LoadingState";
 export * from "./IUMLPList";
+export * from "./IUMLPMap";
+export * from "./GemValueMap";
+export * from "./GemValueMapBuilder";
+export * from "./GemEntryMap";
+export * from "./GemEntryMapBuilder";
 export * from "./NotificationScope";
 export * from "./IdStorage";
 export * from "./DomainValidationResult";

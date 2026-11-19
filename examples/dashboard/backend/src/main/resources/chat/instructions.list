@@ -1,0 +1,4 @@
+# Classpath resources, loaded in this order into the assistant's system message.
+chat/persona.md
+skills/dashboard-operations/SKILL.md
+skills/dashboard-chart-data/SKILL.md

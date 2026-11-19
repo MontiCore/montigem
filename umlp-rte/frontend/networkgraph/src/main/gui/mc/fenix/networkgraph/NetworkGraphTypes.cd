@@ -59,4 +59,153 @@ classdiagram NetworkGraphTypes {
     Optional<String> color;
   }
 
+  /**
+   *  Initial layout of a GemGraph, which places the nodes before a complex layout may refine their positions.
+   *  Only the options of the selected mode are used, e.g., `circular` for the mode CIRCULAR.
+   *  Options that are absent use the defaults of the layout.
+   */
+  public class InitialGraphLayout {
+    InitialGraphLayoutMode mode;
+    Optional<CircularLayoutOptions> circular;
+    Optional<RandomLayoutOptions> random;
+    Optional<CirclePackLayoutOptions> circlePack;
+    Optional<HierarchicalLayoutOptions> hierarchical;
+    Optional<ChannelHierarchicalLayoutOptions> channelHierarchical;
+  }
+
+  public enum InitialGraphLayoutMode {
+    /** Places the nodes equally spaced on a circle, suitable for small graphs. */
+    CIRCULAR,
+    /** Scatters the nodes randomly, e.g., as start of a complex layout. */
+    RANDOM,
+    /** Places the nodes in circles packed as closely as possible, nested by the hierarchy attributes. */
+    CIRCLE_PACK,
+    /** Sugiyama-style layered layout, which orders the nodes of each layer to reduce edge crossings. */
+    HIERARCHICAL,
+    /** Hierarchical layout that partitions the nodes into channels (Ortali & Tollis), edges are drawn directly. */
+    CHANNEL_HIERARCHICAL;
+  }
+
+  public class CircularLayoutOptions {
+    /** Center of the circle on both axes (default 0.5). */
+    Optional<Double> center;
+    /** Scale of the layout (default 1). */
+    Optional<Double> scale;
+  }
+
+  public class RandomLayoutOptions {
+    /** Center of the area the nodes are placed in on both axes (default 0.5). */
+    Optional<Double> center;
+    /** Scale of the layout (default 1). */
+    Optional<Double> scale;
+  }
+
+  public class CirclePackLayoutOptions {
+    /** Center of the layout on both axes (default 0). */
+    Optional<Double> center;
+    /** Scale of the layout (default 1). */
+    Optional<Double> scale;
+    /** Node attributes (e.g. group) whose values nest the nodes into circles, outermost first. */
+    List<String> hierarchyAttributes;
+  }
+
+  public class HierarchicalLayoutOptions {
+    /** Direction of the layers (default VERTICAL, top to bottom). */
+    Optional<HierarchicalLayoutDirection> direction;
+    /** Whether edges spanning several layers bend through the layers in between (default false). */
+    Optional<Boolean> useDummyNodes;
+  }
+
+  public class ChannelHierarchicalLayoutOptions {
+    /** Direction of the layers (default VERTICAL, top to bottom). */
+    Optional<HierarchicalLayoutDirection> direction;
+    /** Whether edges spanning several layers bend through the layers in between (default false). */
+    Optional<Boolean> useDummyNodes;
+    /** Distance between two layers (default 250). */
+    Optional<Double> levelSeparation;
+    /** Distance between two channels (default 400). */
+    Optional<Double> channelWidth;
+  }
+
+  public enum HierarchicalLayoutDirection {
+    /** Layers from top to bottom. */
+    VERTICAL,
+    /** Layers from left to right. */
+    HORIZONTAL;
+  }
+
+  /**
+   *  Complex layout of a GemGraph, which iteratively refines the positions of the initial layout.
+   *  Only the options of the selected mode are used, e.g., `forceAtlas2` for the mode FORCEATLAS2.
+   *  Options that are absent use the defaults of the layout.
+   */
+  public class ComplexGraphLayout {
+    ComplexGraphLayoutMode mode;
+    /** Maximum number of iterations, after which the layout stops (default unlimited). */
+    Optional<Integer> maxIterations;
+    /** Maximum duration of the layout in milliseconds, after which it stops (default unlimited). */
+    Optional<Integer> maxLayoutTime;
+    Optional<ForceLayoutOptions> force;
+    Optional<ForceAtlas2LayoutOptions> forceAtlas2;
+    Optional<NoOverlapLayoutOptions> noOverlap;
+  }
+
+  public enum ComplexGraphLayoutMode {
+    /** Force-directed layout: nodes repel each other, edges act like springs. Fixed nodes are not moved. */
+    FORCE,
+    /** Faster force-directed layout (ForceAtlas2), suitable for large graphs. */
+    FORCEATLAS2,
+    /** Removes overlaps between the nodes and keeps the general shape, e.g., after another layout. */
+    NO_OVERLAP;
+  }
+
+  public class ForceLayoutOptions {
+    /** Strength of the attraction along the edges (default 0.0005). */
+    Optional<Double> attraction;
+    /** Strength of the repulsion between the nodes (default 0.1). */
+    Optional<Double> repulsion;
+    /** Strength of the attraction to the center (default 0.0001). */
+    Optional<Double> gravity;
+    /** Share of the previous movement a node keeps in the next iteration (default 0.6). */
+    Optional<Double> inertia;
+    /** Maximum distance a node moves in one iteration (default 200). */
+    Optional<Double> maxMove;
+  }
+
+  public class ForceAtlas2LayoutOptions {
+    /** Logarithmic attraction, which gives tighter clusters (default false). */
+    Optional<Boolean> linLogMode;
+    /** Distributes the attraction along outbound edges, which pushes hubs to the border (default false). */
+    Optional<Boolean> outboundAttractionDistribution;
+    /** Takes the size of the nodes into account to prevent overlaps (default false). */
+    Optional<Boolean> adjustSizes;
+    /** Influence of the edge weights, 0 ignores them (default 1). */
+    Optional<Double> edgeWeightInfluence;
+    /** Scale of the repulsion, larger values spread the graph (default 10). */
+    Optional<Double> scalingRatio;
+    /** Gravity that does not decrease with the distance to the center (default true). */
+    Optional<Boolean> strongGravityMode;
+    /** Strength of the attraction to the center (default 0.05). */
+    Optional<Double> gravity;
+    /** Reduces the speed of the nodes, larger values are more stable (default 1 + ln(number of nodes)). */
+    Optional<Double> slowDown;
+    /** Approximates the repulsion (Barnes-Hut), faster for large graphs (default true above 2000 nodes). */
+    Optional<Boolean> barnesHutOptimize;
+    /** Accuracy of the Barnes-Hut approximation, smaller values are more accurate (default 0.5). */
+    Optional<Double> barnesHutTheta;
+  }
+
+  public class NoOverlapLayoutOptions {
+    /** Number of grid cells per axis used to find overlapping nodes (default 20). */
+    Optional<Integer> gridSize;
+    /** Minimal distance between two nodes (default 5). */
+    Optional<Double> margin;
+    /** Factor by which the area is expanded in each iteration (default 1.1). */
+    Optional<Double> expansion;
+    /** Ratio by which the node sizes are scaled (default 1). */
+    Optional<Double> ratio;
+    /** Speed of the movement of the nodes (default 3). */
+    Optional<Double> speed;
+  }
+
 }

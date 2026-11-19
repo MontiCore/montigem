@@ -1,5 +1,6 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("name")}
+<#-- keyObservers: the key observers of the map roles that may hold objects of the class (GemMapKeyRole) -->
+${tc.signature("name", "keyObservers")}
 ${cd4c.method("protected ${name} _doGet${name}()")}
 if (${name?uncap_first}Instance.isEmpty()) {
   // Construct a new instance of this singleton
@@ -12,5 +13,10 @@ if (${name?uncap_first}Instance.isEmpty()) {
   if (!${name?uncap_first}Instance.get().containsObserver(the${name}CommandObserver)) {
     ${name?uncap_first}Instance.get().addObserver(the${name}CommandObserver);
   }
+<#list keyObservers as keyObserver>
+  if (!${name?uncap_first}Instance.get().containsObserver(${keyObserver})) {
+    ${name?uncap_first}Instance.get().addObserver(${keyObserver});
+  }
+</#list>
 };
 return ${name?uncap_first}Instance.get();

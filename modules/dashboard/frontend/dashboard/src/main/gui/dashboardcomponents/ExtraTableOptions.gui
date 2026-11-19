@@ -1,0 +1,42 @@
+package dashboardcomponents;
+
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
+import mc.fenix.editor.MonacoEditor;
+import mc.fenix.input.GemTextInput;
+
+import DashboardModule.ExtraData;
+import DashboardModule.ColumnScripts;
+
+// Edits the optional render functions of the columns of a FILTERABLE_TABLE (their filters are edited in the table)
+component ExtraTableOptions(
+  ExtraData extra
+  ){
+      @GemColumn(rowGap = "10px", components = [
+        renderHint@GemText(value = "A render function computes the displayed text of a value v of its column (Double, String, Boolean, LocalDate, or LocalDateTime), e.g., v.toUpperCase(), Math.round(v), or v.getYear()."),
+        filterHint@GemText(value = "Filter a column with the filter button of its header in the table, e.g., >= 500."),
+        scriptsColumn@GemColumn(rowGap = "20px", components = [
+          @iterate(ColumnScripts scripts : extra.tableextra.columns) {
+            columnScripts@GemColumn(rowGap = "5px", components = [
+              @GemRow(colGap = "10px", vAlign = "center", components = [
+                columnInput@GemTextInput(inputType = "text", labelText = "Column (header):", entry = scripts.column),
+                removeButton@GemButton(width = "50px", height = "35px", leftClick = removeColumnScripts(extra, scripts), content = [
+                  @GemIcon(color = "white", name = "delete")
+                ])
+              ]),
+              renderLabel@GemText(weight = "bold", value = "Render function:"),
+              renderEditor@MonacoEditor(entry = scripts.render, showMinimap = false, autoHeight = true, width = "100%")
+            ]);
+          }
+        ]),
+        addButton@GemButton(height = "35px", leftClick = addColumnScripts(extra), content = [
+          @GemRow(vAlign = "center", components = [
+            @GemIcon(size = "15px", color = "white", name = "add"),
+            @GemText(value = "Add a render function")
+          ])
+        ])
+      ]);
+}

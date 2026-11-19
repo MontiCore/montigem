@@ -5,7 +5,21 @@ It is helpful to resolve npm resolution problems or test updates to the npm pack
 The local npm repository Verdaccio is run at `http://127.0.0.1:4873/`. The registry stores
 `@umlp/*` packages locally and proxies other public packages to npmjs.
 
-## Start and stop
+## Without docker: started by Gradle
+
+With `useLocalNpmRepo=true` or `publishToLocalNpmRepo=true`, the plugin starts Verdaccio itself
+(task `startLocalNpmRegistry`, a dependency of `npmInstall` and `localNpmAdduser`) and stops it when the build ends.
+It uses the node of the node-gradle plugin and installs Verdaccio once next to the downloaded node versions, to `<project>/.gradle/nodejs/localNpmRepo/tool`.
+Packages are stored in the directory given by `-PlocalNpmRepoDir=<dir>`, which is required to start a registry
+(the CI pipeline uses it to hand the packages to downstream jobs).
+Without `localNpmRepoDir`, only a registry that already runs can be used. If one already answers at `http://127.0.0.1:4873/` (e.g. the docker one below), it is used and left running.
+
+The port can be changed with `-PlocalNpmRepoPort=<port>`, it is then also used in the generated `.npmrc` files.
+Builds that run at the same time on one host and each bring their own `localNpmRepoDir` need different ports
+(e.g. CI jobs that share the network of their host), otherwise they publish to and install from the registry of each other.
+With both properties set, a registry that already answers at the port is therefore an error instead of being used.
+
+## Start and stop with docker
 
 From this directory:
 
@@ -19,13 +33,6 @@ locally published packages and users:
 
 ```bash
 docker compose down -v
-```
-
-*Note*: NPM does not allow overriding of already published packages, thus a new local version needs to be created by restarting the npm repo and deleting its contents:
-
-```bash
-docker compose down -v
-docker compose up -d
 ```
 
 ## Publish UMLP frontend libraries
@@ -43,10 +50,9 @@ gradle publishLib
 ```
 
 The plugin creates/logs in the fixed local development user automatically when
-required. Each `publishLib` task builds its library, checks
-whether the version already exists, and publishes to Verdaccio. npm versions
-are immutable; bump the package version or reset the volume before republishing
-different content under the same version.
+required. Each `publishLib` task builds its library and publishes a new
+timestamped version to Verdaccio, see
+[Versions and dist-tags](../../umlp-rte/frontend/README.md#versions-and-dist-tags).
 
 ## Use from an external MontiGem Gradle project
 

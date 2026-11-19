@@ -170,7 +170,9 @@ export class GraphManagerService<
 
   /** Continue the layouting process */
   public continueLayouting(): void {
-    if (this.graph) this.layoutService.continueLayout();
+    if (!this.graph) return;
+    this.releaseDraggingBBox();
+    this.layoutService.continueLayout();
   }
 
   /** Stop the layouting process */
@@ -513,6 +515,8 @@ export class GraphManagerService<
    */
   public applyGraphLayout(): void {
     if (!this.graph) return;
+    // The layouts move the nodes into a different extent, which a bounding box frozen for dragging would cut off
+    this.releaseDraggingBBox();
     this.ngZone.runOutsideAngular(() => {
       // Override the layout algorithm based on the hierarchicalLayoutMode setting when the
       // configured mode is one of the two hierarchical variants.
@@ -716,11 +720,18 @@ export class GraphManagerService<
       this.setDraggedNode(null);
     });
 
-    // Triggered when the mouse is pressed down. Used to disable autoscale.
+    // Triggered when the mouse is pressed down. Used to disable autoscale. Not while a layout runs, as the layout moves
+    // the nodes out of the frozen bounding box.
     this.renderer?.getMouseCaptor().on("mousedown", (): void => {
-      if (this.graphSettings.getSetting("draggableNodes") && !this.renderer?.getCustomBBox())
+      if (this.graphSettings.getSetting("draggableNodes") && !this.renderer?.getCustomBBox()
+        && !this.layoutService.isRunning)
         this.renderer?.setCustomBBox(this.renderer.getBBox());
     });
+  }
+
+  /** Releases the bounding box frozen for dragging nodes, the custom bounding box (if any) applies again. */
+  private releaseDraggingBBox(): void {
+    this.renderer?.setCustomBBox(this.customBoundingBox);
   }
 
   /**

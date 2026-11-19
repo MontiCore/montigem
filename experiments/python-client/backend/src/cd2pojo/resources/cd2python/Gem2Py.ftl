@@ -7,6 +7,7 @@
 ${genSetup.setTracing(false)}    <#--must be false for python-->
 ${genSetup.setCommentStart("#")}
 ${genSetup.setCommentEnd("\n")}
+${genSetup.setDefaultFileExtension(".py")} <#--output .py files-->
 
 <#--Apply the default creator: Copy the original CD and use it as the base-->
 ${decConfig.withCopyCreator().defaultApply()}

@@ -5,12 +5,15 @@ import resources.exectests.AnonymousInnerClassRuntimeCheck;
 import resources.exectests.ArrayStreamAdapterRuntimeCheck;
 import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
+import resources.exectests.FunctionDisplayGraphRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
+import resources.exectests.MapRuntimeCheck;
 import resources.exectests.NestedFlatMapElement;
 import resources.exectests.NestedFlatMapElementSource;
 import resources.exectests.NestedFlatMapRuntimeCheck;
 import resources.exectests.OptionalAdapterRuntimeCheck;
+import resources.exectests.StaticCollectionConstructorRuntimeCheck;
 import resources.exectests.StringSplitRuntimeCheck;
 import resources.exectests.UtilArraysRuntimeCheck;
 import util.ExecTestRunner;
@@ -63,8 +66,24 @@ public class ExecutionTests {
   }
 
   @Test
+  public void testMap() {
+    ExecTestRunner.runExecutionTest(MapRuntimeCheck.class);
+  }
+
+  /** a method whose only async call is the constructor of a JDK collection becomes async */
+  @Test
+  public void testStaticCollectionConstructor() {
+    ExecTestRunner.runExecutionTest(StaticCollectionConstructorRuntimeCheck.class);
+  }
+
+  @Test
   public void testNestedFlatMap() {
     ExecTestRunner.runExecutionTest(NestedFlatMapRuntimeCheck.class,
         NestedFlatMapElement.class, NestedFlatMapElementSource.class);
+  }
+
+  @Test
+  public void testFunctionDisplayGraph() {
+    ExecTestRunner.runExecutionTest(FunctionDisplayGraphRuntimeCheck.class);
   }
 }

@@ -1,0 +1,49 @@
+package dashboardcomponents;
+
+import DashboardModule.ViewConfig;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
+import mc.fenix.input.GemTextareaInput;
+
+// shows the info of the current view, opened by the info button of the dashboard;
+// the info can be edited in the edit mode, like the name of the view
+component ViewInfoDialog(
+  ViewConfig view,
+  boolean edit,
+  Event<Void> close,
+  // the tutorial is started from here, as the info button of the dashboard opens this dialog
+  Event<Void> startTutorial
+  ) {
+      @GemColumn(rowGap = "15px", components = [
+        titleRow@GemRow(hAlign = "space-between", vAlign = "center", components = [
+          title@GemText(weight = "bold", size = "17px", value = view.name),
+          @GemButton(leftClick = close, label = "Close")
+        ]),
+        @guard(edit) {
+          infoInput@GemTextareaInput(
+            labelText = "",
+            placeholder = "Describe what this view shows",
+            entry = view.info,
+            height = "160px",
+            resize = "vertical"
+          );
+        } else {
+          infoText@GemText(value = getInfoText());
+        },
+        // separated from the info of the view: the tutorial is the same for every view
+        // the button sits in the header of the section, so the text describes the tutorial and not the button
+        tutorialSection@GemColumn(rowGap = "8px", components = [
+          tutorialHeader@GemRow(hAlign = "space-between", vAlign = "center", components = [
+            @GemRow(colGap = "6px", hAlign = "left", vAlign = "center", components = [
+              @GemIcon(name = "school", size = "20px"),
+              tutorialTitle@GemText(weight = "bold", value = "Dashboard tutorial")
+            ]),
+            @GemButton(leftClick = startTutorial, label = "Start tutorial")
+          ]),
+          tutorialText@GemText(value = "The tutorial gives a general step-by-step introduction to using and configuring the dashboard: switching and creating views, and adding, editing and arranging cells.")
+        ])
+      ]);
+}

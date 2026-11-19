@@ -5,7 +5,10 @@
     "moduleResolution": "node16",
     "rootDir": ".",
     "outDir": "./out",
-    "paths": { "@umlp/commonj2ts": ["./commonj2ts-facade/index.ts"] },
+    "paths": {
+      "@umlp/commonj2ts": ["./commonj2ts-facade/index.ts"],
+      "@umlp/functiondisplay": ["./functiondisplay-facade/index.ts"]
+    },
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": false

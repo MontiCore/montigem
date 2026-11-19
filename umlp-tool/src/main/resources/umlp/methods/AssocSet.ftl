@@ -1,10 +1,10 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
 ${tc.signature("name", "className")}
 if(idx < 0){
-  throw new IllegalStateException("idx must be 0 or higher");
+  throw new IllegalStateException("idx (=" + idx + ") must be 0 or higher");
 }
 if(idx > ${name}.size()){
-  throw new IllegalStateException("idx must be at most owns.size");
+  throw new IllegalStateException("idx (=" + idx + ") must be at most owns.size (=" + ${name}.size() + ")");
 }
 
 long oldValue;

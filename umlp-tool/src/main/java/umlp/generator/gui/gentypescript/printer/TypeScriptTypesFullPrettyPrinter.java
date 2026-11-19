@@ -12,11 +12,11 @@ public class TypeScriptTypesFullPrettyPrinter extends CD4CodeFullPrettyPrinter {
     this.asyncList = asyncList;
 
     // Otherwise asyncList is always false!
-    this.initializeTraverser(false);
+    this.initializeTraverser(printer, false);
   }
 
   @Override
-  protected void initializeTraverser(boolean printComments) {
+  protected void initializeTraverser(de.monticore.prettyprint.IndentPrinter printer, boolean printComments) {
     CD4CodePrettyPrinter cD4Code = new CD4CodePrettyPrinter(getPrinter(), printComments);
     getTraverser().setCD4CodeHandler(cD4Code);
     getTraverser().add4CD4Code(cD4Code);

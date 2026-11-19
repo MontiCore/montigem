@@ -257,3 +257,27 @@
   width: 22px;
   height: 22px;
 }
+
+// title row with the info icon on the right: the theme's title container only is as wide as its content
+:host ::ng-deep gem-card.card .gem-card-title-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+:host ::ng-deep .titleRow {
+  width: 100% !important;
+}
+
+// info icon in the header, its tooltip shows the info of the cell
+:host ::ng-deep .infoTooltip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  cursor: help;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+:host ::ng-deep .infoTooltip:hover {
+  opacity: 1;
+}

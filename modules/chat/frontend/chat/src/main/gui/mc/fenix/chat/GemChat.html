@@ -1,0 +1,31 @@
+<!-- (c) https://github.com/MontiCore/monticore -->
+
+<div #history class="gem-chat-history">
+  <ng-container *ngFor="let m of messages">
+    <ng-container *ngTemplateOutlet="m"></ng-container>
+  </ng-container>
+  <gem-loading-spinner
+    *ngIf="waitingForResponse"
+    class="gem-chat-waiting"
+    size="50px"
+    [intermediate]="true"
+    [label]="waitingLabel"
+  ></gem-loading-spinner>
+</div>
+<div class="gem-chat-input">
+  <gem-textarea-input
+    class="gem-chat-entry"
+    [entry]="entry"
+    (entryChange)="onEntryChange($event)"
+    [placeholder]="placeholder"
+    height="auto"
+    (keyPress)="onKeyPress($event)"
+    resize="vertical"
+  ></gem-textarea-input>
+  <gem-button
+    class="gem-chat-send"
+    [label]="sendLabel"
+    [disabled]="waitingForResponse"
+    (leftClick)="sendEntry()"
+  ></gem-button>
+</div>

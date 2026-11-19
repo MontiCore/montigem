@@ -2,7 +2,33 @@ package home;
 
 import dashboardcomponents.Dashboard;
 import DashboardModule.DashboardModuleConfig;
+import ChatModule.MessageHistory;
+import chatcomponents.Conversation;
+import mc.fenix.arrange.GemCard;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemIcon;
 
-page TestDashboard (List<DashboardModuleConfig> configs) {
-    parent@Dashboard(config = getBackendConfig(configs));
+page TestDashboard (List<DashboardModuleConfig> configs, MessageHistory chatHistory, int currentView = 0) {
+  pageContent@GemColumn(width = "100%", height = "100%", rowGap = "8px", components = [
+    explanation@GemCard(width = "100%", title = "About this dashboard", collapsible = true, component =
+      explanationBody@GemColumn(rowGap = "4px", components = [
+        overview@GemText(value = "Explore charts about organizations, teams, and people. Switch between views to compare the example data, and drag or resize tiles to arrange your dashboard."),
+        instructions@GemText(value = "Try it yourself: ask the chat to explain the current layout, rearrange tiles, or add a chart. For example: Add a pie chart showing completed and open tasks per team. Changes apply to the selected view.")
+      ])
+    ),
+    workspace@GemRow(width = "100%", height = "100%", colGap = "16px", components = [
+      parent@Dashboard(config = getBackendConfig(configs), currentView = currentView,
+        currentViewChanged = changeCurrentView()),
+      chatPanel@GemCard(height = "100%", collapsible = true, titleComponent =
+        chatTitle@GemRow(height = "fit-content", vAlign = "center", colGap = "8px", components = [
+          chatIcon@GemIcon(name = "smart_toy", size = "24px"),
+          chatTitleText@GemText(value = "Chat")
+        ]), component =
+        chat@Conversation(msgHistory = chatHistory, contextGemId = getChatContextId(configs, currentView),
+          placeholder = "Nachricht an den Dashboard-Assistenten")
+      )
+    ])
+  ]);
 }
