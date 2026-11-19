@@ -9,7 +9,6 @@ const UNIT_NANOS: { [unit: string]: bigint } = {
   HOURS: 3600n * NANOS_PER_SECOND, HALF_DAYS: 43200n * NANOS_PER_SECOND, DAYS: 86400n * NANOS_PER_SECOND
 };
 
-/** the Temporal field and factor of the date-based ChronoUnits */
 /** the Temporal rounding of truncatedTo(unit): the smallest unit and its increment */
 const TRUNCATION_UNITS: { [unit: string]: [string, number] } = {
   NANOS: ["nanosecond", 1], MICROS: ["microsecond", 1], MILLIS: ["millisecond", 1], SECONDS: ["second", 1],
@@ -22,6 +21,7 @@ const ESTIMATED_SECONDS: { [unit: string]: bigint } = {
   MILLENNIA: 31556952000n
 };
 
+/** the Temporal field and factor of the date-based ChronoUnits */
 const CALENDAR_UNITS: { [unit: string]: [string, number] } = {
   DAYS: ["days", 1], WEEKS: ["weeks", 1], MONTHS: ["months", 1], YEARS: ["years", 1], DECADES: ["years", 10],
   CENTURIES: ["years", 100], MILLENNIA: ["years", 1000]
@@ -290,6 +290,7 @@ export class DurationHelper {
     if (v instanceof Temporal.Duration) {
       return DurationHelper.plus(v, DurationHelper.of(amount, unit)) as any;
     }
+    DurationHelper.checkTimeUnit(v, unit);
     const nanos = UNIT_NANOS[unit];
     if (v instanceof Temporal.Instant || (nanos !== undefined && nanos < UNIT_NANOS["DAYS"]
       && !(v instanceof Temporal.PlainDate))) {
@@ -357,6 +358,7 @@ export class DurationHelper {
 
   /** unit.between(start, end): the whole units from start to end, truncated like Java */
   static unitsBetween(unit: string, start: any, end: any): number {
+    DurationHelper.checkTimeUnit(start, unit);
     const nanos = UNIT_NANOS[unit];
     // a ZonedDateTime counts days in its local date-time (a day across a DST change is a day), like Java
     const zoned = start instanceof Temporal.ZonedDateTime;
@@ -400,6 +402,14 @@ export class DurationHelper {
       throw new RangeError("Unit must not have an estimated duration: " + unit);
     }
     return nanos;
+  }
+
+  /** a LocalTime supports the units up to HALF_DAYS only, like Java (Temporal ignores days on a PlainTime) */
+  private static checkTimeUnit(value: any, unit: string): void {
+    const nanos = UNIT_NANOS[unit];
+    if (value instanceof Temporal.PlainTime && (nanos === undefined || nanos >= UNIT_NANOS["DAYS"])) {
+      throw new RangeError("Unsupported unit: " + unit);
+    }
   }
 
   private static calendarUnit(unit: string): [string, number] {

@@ -3,6 +3,7 @@ package resources.exectests;
 
 import util.JSweetTest;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -148,5 +149,66 @@ public class LocalTimeRuntimeCheck {
         + LocalTime.ofSecondOfDay(49_530) + " " + LocalTime.ofNanoOfDay(49_530_000_000_500L) + " "
         + LocalDate.of(2026, 11, 17).toEpochDay() + " " + LocalDate.of(1969, 12, 31).toEpochDay() + " "
         + LocalDate.ofEpochDay(20_409) + " " + LocalDate.ofEpochDay(-1);
+  }
+
+  /** lengthOfYear, withSecond, LocalDate.getMonth, LocalDateTime.isEqual */
+  @JSweetTest
+  public static String checkRemainingGettersAndWith() {
+    LocalDateTime dateTime = LocalDateTime.of(2024, 2, 29, 12, 34, 56);
+    return dateTime.toLocalDate().lengthOfYear() + " " + LocalDate.of(2023, 6, 1).lengthOfYear() + " "
+        + dateTime.withSecond(7) + " " + dateTime.toLocalDate().getMonth() + " "
+        + dateTime.isEqual(LocalDateTime.of(2024, 2, 29, 12, 34, 56)) + " " + dateTime.isEqual(dateTime.plusNanos(1));
+  }
+
+  /** null values in string building print "null", like Java */
+  @JSweetTest
+  public static String checkNullInStringBuilding() {
+    LocalDate date = null;
+    Duration duration = null;
+    ChronoUnit unit = null;
+    String s = "s:";
+    s += date;
+    StringBuilder sb = new StringBuilder("sb:");
+    sb.append(duration).append(unit);
+    return "a:" + date + " " + duration + " " + unit + " " + s + " " + sb + " " + String.valueOf(duration);
+  }
+
+  /** units a type does not support and invalid arguments are rejected, like Java */
+  @JSweetTest
+  public static String checkUnsupportedUnitsRejected() {
+    LocalDate date = LocalDate.of(2026, 11, 17);
+    LocalDateTime dateTime = date.atTime(9, 30);
+    String result = "";
+    try {
+      result += date.until(date.plusDays(1), ChronoUnit.HOURS);
+    } catch (Exception e) {
+      result += "until rejected";
+    }
+    try {
+      result += " " + dateTime.truncatedTo(ChronoUnit.WEEKS);
+    } catch (Exception e) {
+      result += " truncatedTo rejected";
+    }
+    try {
+      result += " " + LocalTime.of(9, 0).plus(1, ChronoUnit.DAYS);
+    } catch (Exception e) {
+      result += " plus rejected";
+    }
+    try {
+      result += " " + LocalTime.of(9, 0).until(LocalTime.of(10, 0), ChronoUnit.DAYS);
+    } catch (Exception e) {
+      result += " time until rejected";
+    }
+    try {
+      result += " " + date.plus(1, ChronoUnit.HOURS);
+    } catch (Exception e) {
+      result += " date plus rejected";
+    }
+    try {
+      result += " " + LocalTime.ofSecondOfDay(86_400);
+    } catch (Exception e) {
+      result += " second of day rejected";
+    }
+    return result;
   }
 }

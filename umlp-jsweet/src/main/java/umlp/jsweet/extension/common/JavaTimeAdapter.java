@@ -569,9 +569,12 @@ public class JavaTimeAdapter extends AbstractAdapter {
     switch (methodName) {
       case "getId":
       case "toString":
-      case "normalized":
         printMacroName(methodName);
         printTarget(target);
+        return true;
+      case "normalized":
+        printMacroName(methodName);
+        printZonedHelper(methodName, List.of(target));
         return true;
       case "equals":
         printMacroName(methodName);

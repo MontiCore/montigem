@@ -25,6 +25,18 @@ export class ZonedDateTimeHelper {
     return id;
   }
 
+  /** ZoneId.normalized(): a region without any offset change becomes its offset, like Java (UTC is Z) */
+  static normalized(zone: string): string {
+    if (zone === "Z" || OFFSET.test(zone)) {
+      return zone;
+    }
+    const start = new Temporal.ZonedDateTime(0n, zone);
+    if (start.getTimeZoneTransition("next") !== null || start.getTimeZoneTransition("previous") !== null) {
+      return zone;
+    }
+    return ZonedDateTimeHelper.ofTotalSeconds(start.offsetNanoseconds / 1000000000);
+  }
+
   /** ZoneId.systemDefault(): the zone of the browser */
   static systemDefault(): string {
     return Temporal.Now.timeZoneId();

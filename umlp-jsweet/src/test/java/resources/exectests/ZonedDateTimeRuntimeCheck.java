@@ -117,4 +117,43 @@ public class ZonedDateTimeRuntimeCheck {
         + dateTime.minusDays(1).until(dateTime, ChronoUnit.HOURS) + " "
         + ZonedDateTime.of(2026, 3, 29, 9, 0, 0, 0, ZoneId.of("America/Sao_Paulo")).truncatedTo(ChronoUnit.DAYS);
   }
+
+  /** the remaining ZoneOffset factories and constants, normalized(), invalid zones */
+  @JSweetTest
+  public static String checkMoreZones() {
+    String result = ZoneOffset.ofHoursMinutesSeconds(5, 30, 15) + " " + ZoneOffset.MIN + " " + ZoneOffset.MAX + " "
+        + ZoneOffset.ofHours(2).normalized() + " " + BERLIN.normalized() + " " + ZoneId.of("UTC").normalized() + " "
+        + ZoneId.of("Etc/GMT+1").normalized();
+    try {
+      result += " " + ZoneId.of("Mars/Olympus_Mons");
+    } catch (Exception e) {
+      result += " zone rejected";
+    }
+    try {
+      result += " " + ZoneOffset.ofHours(19);
+    } catch (Exception e) {
+      result += " offset rejected";
+    }
+    try {
+      result += " " + ZoneOffset.of("2:00");
+    } catch (Exception e) {
+      result += " offset id rejected";
+    }
+    return result;
+  }
+
+  /** now(zone) and systemDefault(), checked by relations that hold at any time */
+  @JSweetTest
+  public static boolean checkNowInZones() {
+    LocalDate east = LocalDate.now(ZoneId.of("Pacific/Kiritimati"));
+    LocalDate west = LocalDate.now(ZoneId.of("Pacific/Pago_Pago"));
+    LocalDateTime utc = LocalDateTime.now(ZoneOffset.UTC);
+    int secondsApart = Math.abs(LocalTime.now(ZoneOffset.UTC).toSecondOfDay() - utc.toLocalTime().toSecondOfDay());
+    return ZonedDateTime.now(BERLIN).getZone().equals(BERLIN)
+        && ChronoUnit.DAYS.between(west, east) >= 1
+        && Duration.between(utc, LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)).abs().getSeconds() < 5
+        && Math.min(secondsApart, 86_400 - secondsApart) < 5
+        && ZoneId.systemDefault().equals(ZonedDateTime.now().getZone())
+        && LocalDate.now().equals(LocalDate.now(ZoneId.systemDefault()));
+  }
 }

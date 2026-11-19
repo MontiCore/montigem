@@ -128,4 +128,40 @@ public class DurationRuntimeCheck {
         + ChronoUnit.MONTHS.getDuration() + " " + ChronoUnit.NANOS.getDuration() + " " + sb + " "
         + String.valueOf(ChronoUnit.WEEKS);
   }
+
+  /** plusDays to minusNanos */
+  @JSweetTest
+  public static String checkShorthandArithmetic() {
+    Duration d = Duration.ofHours(1);
+    return d.plusDays(1) + " " + d.plusHours(2) + " " + d.plusMinutes(30) + " " + d.plusMillis(250) + " "
+        + d.minusDays(1) + " " + d.minusHours(2) + " " + d.minusMinutes(61) + " " + d.minusSeconds(1) + " "
+        + d.minusNanos(1);
+  }
+
+  /** invalid text, unknown units and too large truncation units are rejected, like Java */
+  @JSweetTest
+  public static String checkInvalidRejected() {
+    String result = "";
+    try {
+      result += Duration.parse("1H30M");
+    } catch (Exception e) {
+      result += "parse rejected";
+    }
+    try {
+      result += " " + ChronoUnit.valueOf("FORTNIGHTS");
+    } catch (Exception e) {
+      result += " unit rejected";
+    }
+    try {
+      result += " " + Duration.ofHours(30).truncatedTo(ChronoUnit.WEEKS);
+    } catch (Exception e) {
+      result += " truncation rejected";
+    }
+    try {
+      result += " " + Duration.ofHours(1).dividedBy(0);
+    } catch (Exception e) {
+      result += " division rejected";
+    }
+    return result;
+  }
 }
