@@ -1,0 +1,24 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.chat;
+
+/**
+  A single message of a `GemChat`.
+*/
+component GemChatMessage(
+  /** Message text, rendered as markdown. */
+  String content,
+  /** Text displayed above the message, e.g., the time the message was sent. */
+  String timestamp = "",
+  /**
+    If true, the message was written by the user and is aligned right.
+    Otherwise, it is a response and aligned left.
+  */
+  boolean user = false,
+  /**
+    Sources the message is based on, usually `GemChatSource` components. They
+    are collapsed below the message text. Without sources, nothing is displayed.
+  */
+  List<GUIViewElement> sources,
+  /** Text of the button that expands and collapses the sources. */
+  String sourcesLabel = "Sources"
+)

@@ -1,0 +1,17 @@
+<!-- (c) https://github.com/MontiCore/monticore -->
+
+<configuration>
+  <appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+    <target>System.err</target>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>TRACE</level>
+    </filter>
+    <encoder>
+      <pattern>%d [%thread] %-5level  %logger{35} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <root level="INFO">
+    <appender-ref ref="STDERR" />
+  </root>
+</configuration>

@@ -7,3 +7,10 @@ tasks.register("publishModulesToMavenLocal") {
 tasks.register("publishModules") {
   dependsOn(*subprojects.collect { sp -> sp.tasks.findAll {t->t.name.equals("publish")}})
 }
+
+// Publishes the npm libraries of the modules to the local npm registry only: the tasks of the
+// frontends refuse to run without -PpublishToLocalNpmRepo=true, so this never publishes to Nexus.
+// Resolved lazily, since the plugin registers them after the frontends are evaluated.
+tasks.register("publishModulesToLocalNpmRepo") {
+  dependsOn({ subprojects.collect { sp -> sp.tasks.matching { t -> t.name.equals("publishLibsToLocalNpmRepo") } } })
+}

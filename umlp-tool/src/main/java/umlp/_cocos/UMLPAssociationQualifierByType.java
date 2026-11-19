@@ -2,7 +2,7 @@
 package umlp._cocos;
 
 import de.monticore.ast.ASTCNode;
-import de.monticore.cd4code.typescalculator.FullSynthesizeFromCD4Code;
+import de.monticore.types3.TypeCheck3;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdassociation._cocos.CDAssociationASTCDAssociationCoCo;
 import de.monticore.types.check.SymTypeExpression;
@@ -24,8 +24,7 @@ public class UMLPAssociationQualifierByType implements CDAssociationASTCDAssocia
     }
   }
   private void checkSimpleType(ASTMCType type) {
-    FullSynthesizeFromCD4Code synthesizer = new FullSynthesizeFromCD4Code();
-    SymTypeExpression ste = synthesizer.synthesizeType(type).getResult();
+    SymTypeExpression ste = TypeCheck3.symTypeFromAST(type);
     if (!SymTypeRelations.isNumericType(ste) && !SymTypeRelations.isString(ste)){
       logError((ASTCNode) type, ste.getTypeInfo().getName());
     }

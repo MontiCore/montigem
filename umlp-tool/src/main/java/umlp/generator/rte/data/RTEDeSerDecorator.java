@@ -125,7 +125,7 @@ public class RTEDeSerDecorator extends AbstractDecorator {
     ASTCDClass deSer = UMLPMill.cDClassBuilder()
         .setName(cdClass.getName() + SUFFIX)
         .setModifier(CDModifier.PUBLIC.build())
-        .setCDInterfaceUsage(getInterfaceUsageFacade().createCDInterfaceUsage("JsonDeSer<" + cdClass.getName() + ">"))
+        .setCDInterfaceUsage(getInterfaceUsageFacade().createCDInterfaceUsage("PojoJsonDeSer<" + cdClass.getName() + ">"))
         .build();
 
     // TODO: also use for other templates!
@@ -140,9 +140,23 @@ public class RTEDeSerDecorator extends AbstractDecorator {
 
 
     getCD4C().addMethod(deSer, getSerializeTemplate(), originalClassName);
+    getCD4C().addMethod(deSer, "rte.deser.CreateObject", originalClassName);
+    getCD4C().addMethod(deSer, "rte.deser.FinishObject", originalClassName);
+    ASTCDMethod typeIdentifier = getCDMethodFacade().createMethod(PUBLIC.build(),
+        getMCTypeFacade().createStringType(), "getTypeIdentifier");
+    glex.replaceTemplate(EMPTY_BODY, typeIdentifier, new StringHookPoint("return \""
+        + GenService.getCorrectJavaFQN(cdClass.getSymbol().getFullName()) + "\";"));
+    deSer.addCDMember(typeIdentifier);
+    getCD4C().addMethod(deSer, getIsPojoDeSerTemplate(), true);
     getCD4C().addMethod(deSer, getDeserializeTemplate(),
         cdName,
         originalClassName,
+        Stream.concat(attributes.stream().map(ASTCDAttributeTOP::getName),
+            assocs.stream().map(ASTCDAssocSide::getName)).collect(Collectors.toList()));
+    getCD4C().addMethod(deSer, "rte.deser.ReadJson", originalClassName,
+        Stream.concat(attributes.stream().map(ASTCDAttributeTOP::getName),
+            assocs.stream().map(ASTCDAssocSide::getName)).collect(Collectors.toList()));
+    getCD4C().addMethod(deSer, "rte.deser.WriteJson", originalClassName,
         Stream.concat(attributes.stream().map(ASTCDAttributeTOP::getName),
             assocs.stream().map(ASTCDAssocSide::getName)).collect(Collectors.toList()));
     getCD4C().addMethod(deSer, getBuildJsonTemplate(),
@@ -196,10 +210,14 @@ public class RTEDeSerDecorator extends AbstractDecorator {
 
     getCD4C().addMethod(deSer, getSerializeSimpleFieldTemplate(),
         originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, BaseClassObjectMapperDecorator.SUFFIX);
+        useDeSer, "context");
     getCD4C().addMethod(deSer, getDeserializeSimpleFieldTemplate(),
         originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, BaseClassObjectMapperDecorator.SUFFIX);
+        useDeSer, "context");
+
+    if (!useDeSer) {
+      addContextDelegates(deSer, originalClassName, attr.getName(), type);
+    }
 
     if (makeAbstract) {
       deSer.setModifier(PUBLIC_ABSTRACT.build());
@@ -216,41 +234,53 @@ public class RTEDeSerDecorator extends AbstractDecorator {
     if (GenService.isList(attr)) {
       isList = true;
       jsonStr = GenService.calculateJSon(attr.getSymbol().getType());
-      innerTypeFull = attr.getSymbol().getPackageName().toLowerCase()+"."
-          +attr.getSymbol().getType().print();
+      innerTypeFull = GenService.getCorrectJavaFQN(attr.getSymbol().getType().printFullName());
       useDeSer = supportedDesers.contains(innerTypeFull);
       type = getMCTypeFacade().createBasicGenericTypeOf("List",
           GenService.createType(attr.getSymbol().getType()).printType()).printType();
     } else if (GenService.isOptional(attr)) {
       isOptional = true;
       jsonStr = GenService.calculateJSon(attr.getSymbol().getType());
-      innerTypeFull = attr.getSymbol().getPackageName().toLowerCase()+"."
-          +attr.getSymbol().getType().print();
+      innerTypeFull = GenService.getCorrectJavaFQN(attr.getSymbol().getType().printFullName());
       useDeSer = supportedDesers.contains(innerTypeFull);
       type = getMCTypeFacade().createBasicGenericTypeOf("Optional",
           GenService.createType(attr.getSymbol().getType()).printType()).printType();
     } else {
       jsonStr = GenService.calculateJSon(attr.getSymbol().getType());
-      useDeSer = supportedDesers.contains(attr.getSymbol().getPackageName().toLowerCase()+"."+type);
       type = GenService.getCorrectJavaFQN(attr.getSymbol().getType().printFullName());
+      useDeSer = supportedDesers.contains(type);
     }
 
     boolean makeAbstract = jsonStr.isEmpty() && !useDeSer;
 
     getCD4C().addMethod(deSer, getSerializeSimpleFieldTemplate(),
         originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, BaseClassObjectMapperDecorator.SUFFIX);
+        useDeSer, "context");
     getCD4C().addMethod(deSer, getDeserializeSimpleFieldTemplate(),
         originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, BaseClassObjectMapperDecorator.SUFFIX);
+        useDeSer, "context");
+
+    if (!useDeSer) {
+      addContextDelegates(deSer, originalClassName, attr.getName(), type);
+    }
 
     if (makeAbstract) {
       deSer.setModifier(PUBLIC_ABSTRACT.build());
     }
   }
 
+  protected String getIsPojoDeSerTemplate() {
+    return "umlp.deser.IsPojoDeSer";
+  }
+
   protected String getSerializeSimpleFieldTemplate() {
     return "umlp.deser.serializeSimpleField";
+  }
+
+  protected void addContextDelegates(ASTCDClass deSer, String className, String name, String type) {
+    // Preserve handwritten serializers for non-serializable fields (e.g. callbacks).
+    getCD4C().addMethod(deSer, "rte.deser.SerializeFieldWithContext", className, name);
+    getCD4C().addMethod(deSer, "rte.deser.DeserializeFieldWithContext", name, type);
   }
 
   protected String getDeserializeSimpleFieldTemplate() {
@@ -264,10 +294,12 @@ public class RTEDeSerDecorator extends AbstractDecorator {
     getCD4C().addImport(clazz, "de.monticore.symboltable.serialization.json.JsonElement");
     getCD4C().addImport(clazz, PathUtil.getBackendRTECommonPath("Gem"));
     getCD4C().addImport(clazz, PathUtil.getBackendRTECommandPath("JsonDeSer"));
+    getCD4C().addImport(clazz, PathUtil.getBackendRTECommandPath("PojoJsonDeSer"));
+    getCD4C().addImport(clazz, PathUtil.getBackendRTECommonPath("PojoGraphContext"));
   }
 
   protected String getSerializeTemplate() {
-    return "umlp.deser.serialize";
+    return "rte.deser.Serialize";
   }
 
   protected String getDeserializeTemplate() {

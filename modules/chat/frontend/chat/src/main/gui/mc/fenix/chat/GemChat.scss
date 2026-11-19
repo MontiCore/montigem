@@ -1,0 +1,29 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+.gem-chat-history {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  overflow-wrap: anywhere;
+}
+
+.gem-chat-waiting {
+  align-self: flex-start;
+}
+
+.gem-chat-input {
+  padding: 0 12px 12px;
+}
+
+:host ::ng-deep .gem-chat-input {
+  textarea {
+    box-sizing: border-box;
+    min-height: 75px;
+    max-height: 160px;
+  }
+
+  .gem-chat-send button {
+    margin: 8px 0 0;
+  }
+}

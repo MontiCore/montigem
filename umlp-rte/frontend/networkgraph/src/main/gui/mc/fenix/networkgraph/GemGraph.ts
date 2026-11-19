@@ -21,6 +21,9 @@ import { GraphNode } from "../../../../../../build/gui2java2ts/mc/fenix/networkg
 import { GraphNodeBuilder } from "../../../../../../build/gui2java2ts/mc/fenix/networkgraph/networkgraphtypes/GraphNodeBuilder";
 import { NodePos } from "../../../../../../build/gui2java2ts/mc/fenix/networkgraph/networkgraphtypes/NodePos";
 import { NodePosBuilder } from "../../../../../../build/gui2java2ts/mc/fenix/networkgraph/networkgraphtypes/NodePosBuilder";
+import { InitialGraphLayout } from "../../../../../../build/gui2java2ts/mc/fenix/networkgraph/networkgraphtypes/InitialGraphLayout";
+import { ComplexGraphLayout } from "../../../../../../build/gui2java2ts/mc/fenix/networkgraph/networkgraphtypes/ComplexGraphLayout";
+import { mapComplexGraphLayout, mapInitialGraphLayout } from "./layout/GraphLayoutMapper";
 import { GraphTooltipOptions } from "./shared/types/tooltip.types";
 import { Sigma } from "sigma";
 import { CameraState } from "sigma/types";
@@ -200,12 +203,17 @@ export class GemGraph extends GemGraphBasis implements OnChanges {
   })
   graph?: Internal_Graph;
 
-  // TODO make Layouts configurable in GUIDSL Model/ in GUI component itself
-  /** Initial layout configuration for displaying the graph. */
-  @Input() initialLayout?: InitialGraphLayoutConfiguration | null = { mode: InitialGraphLayouts.RANDOM };
+  /**
+   * Initial layout for displaying the graph: the layout modeled in the GUI (InitialGraphLayout of NetworkGraphTypes.cd)
+   * or a configuration of the layout library.
+   */
+  @Input() initialLayout?: InitialGraphLayout | InitialGraphLayoutConfiguration | null = { mode: InitialGraphLayouts.RANDOM };
 
-  /** Complex layout configuration for displaying the graph. */
-  @Input() complexLayout?: ComplexGraphLayoutConfiguration | null = this.exampleComplexLayout;
+  /**
+   * Complex layout for displaying the graph: the layout modeled in the GUI (ComplexGraphLayout of NetworkGraphTypes.cd)
+   * or a configuration of the layout library.
+   */
+  @Input() complexLayout?: ComplexGraphLayout | ComplexGraphLayoutConfiguration | null = this.exampleComplexLayout;
 
   /** Array of additional control buttons to be displayed. */
   @Input() cbExtendButtons?: ControlButton[] = [
@@ -215,7 +223,7 @@ export class GemGraph extends GemGraphBasis implements OnChanges {
         if (this.switchExtendedButton) {
           this.switchExtendedButton = !this.switchExtendedButton
           if (this.complexLayout) {
-            graphManager.updateLayoutConfiguration(this.complexLayout, true)
+            graphManager.updateLayoutConfiguration(mapComplexGraphLayout(this.complexLayout), true)
           }
         } else {
           this.switchExtendedButton = !this.switchExtendedButton
@@ -546,11 +554,15 @@ export class GemGraph extends GemGraphBasis implements OnChanges {
       shouldRefresh = true;
     }
     if (this.hasChanged(changes, "initialLayout")) {
-      this.graphManager.updateInitialLayout(this.initialLayout || null);
+      const initialLayout = mapInitialGraphLayout(this.initialLayout);
+      if (initialLayout.settings) {
+        this.graphManager.updateSettings(initialLayout.settings);
+      }
+      this.graphManager.updateInitialLayout(initialLayout.configuration);
       shouldRefresh = true;
     }
     if (this.hasChanged(changes, "complexLayout")) {
-      this.graphManager.updateLayoutConfiguration(this.complexLayout || null);
+      this.graphManager.updateLayoutConfiguration(mapComplexGraphLayout(this.complexLayout));
       shouldRefresh = true;
     }
     if (this.hasChanged(changes, "customBoundingBox")) {

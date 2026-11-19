@@ -1,0 +1,30 @@
+:host ::ng-deep .infoText {
+  white-space: pre-wrap;
+}
+
+:host ::ng-deep .infoInput .gem-textarea {
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+// the general tutorial is set apart from the info of the view: a tinted box below a divider;
+// !important as GemColumn sets an inline width/height: auto
+:host ::ng-deep .tutorialSection {
+  width: 100% !important;
+  box-sizing: border-box;
+  margin-top: 5px;
+  padding: 12px 14px;
+  border-top: 1px solid color-mix(in srgb, var(--text-color) 20%, transparent);
+  border-radius: 0 0 8px 8px;
+  background-color: color-mix(in srgb, var(--text-color) 5%, transparent);
+}
+
+:host ::ng-deep .titleRow,
+:host ::ng-deep .tutorialHeader {
+  width: 100% !important;
+}
+
+:host ::ng-deep .tutorialText {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}

@@ -1,14 +1,17 @@
 /* (c) https://github.com/MontiCore/monticore */
 package de.montigem.gradle.specific;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFile;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
@@ -23,8 +26,8 @@ import org.gradle.work.Incremental;
 import org.gradle.work.InputChanges;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,24 +35,30 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
 import static de.montigem.gradle.FrontendBasePlugin.inUMLP;
+import static de.montigem.gradle.FrontendBasePlugin.umlpVersion;
 import static de.montigem.gradle.FrontendBasePlugin.useLocalDependencies;
+import static de.montigem.gradle.FrontendBasePlugin.useNpmDistTag;
 
 public abstract class SetupFrontendTask extends DefaultTask {
 
   private static final List<String> EXPECTED_FILES = List.of(
-      "package.json", "angular.json",
-      "tsconfig.json", "tsconfig.app.json", "tsconfig.prod.json", "ts.config.spec.json");
+      ".npmrc", "package.json", "angular.json",
+      "tsconfig.json", "tsconfig.app.json", "tsconfig.prod.json", "tsconfig.spec.json");
   private static final List<String> EXPECTED_DIRS = List.of(
       "src", "configs");
 
@@ -121,11 +130,29 @@ public abstract class SetupFrontendTask extends DefaultTask {
   @Input
   public abstract Property<Boolean> getUseLocalNpmRepo();
 
+  /**
+   * The project's properties, usable as {@code ${name}} in {@code *.override.json} files,
+   * e.g. {@code "g-${mg_version}"}.
+   */
+  @Input
+  public abstract MapProperty<String, String> getGradleProperties();
+
+  private static final Pattern PROPERTY_REFERENCE = Pattern.compile("\\$\\{([\\w.-]+)}");
+
   public SetupFrontendTask() {
     super();
     getCreateNpmrc().convention(true);
     getUnscopedNpmrc().convention(false);
     getUseLocalNpmRepo().convention(false);
+    getGradleProperties().convention(getProject().provider(() -> {
+      Map<String, String> properties = new java.util.HashMap<>();
+      getProject().getProperties().forEach((name, value) -> {
+        if (value instanceof String) {
+          properties.put(name, (String) value);
+        }
+      });
+      return properties;
+    }));
   }
 
   @TaskAction
@@ -174,6 +201,13 @@ public abstract class SetupFrontendTask extends DefaultTask {
       }
       usedHandwrittenFiles.add(filename);
 
+      // the generator uses the libraries published by the same build
+      if (config.equals(FRONTEND_CONFIG_PROD) && filename.equals("package.json")) {
+        JsonObject packageJson = JsonParser.parseReader(new InputStreamReader(file, StandardCharsets.UTF_8)).getAsJsonObject();
+        useNpmDistTag(packageJson.getAsJsonObject("dependencies"), umlpVersion(getProject()));
+        file = new ByteArrayInputStream(new GsonBuilder().setPrettyPrinting().create().toJson(packageJson).getBytes(StandardCharsets.UTF_8));
+      }
+
       // if a handwritten file exists, use that instead
       if (doOverrideWithHWC(filename, file)) continue;
 
@@ -216,11 +250,10 @@ public abstract class SetupFrontendTask extends DefaultTask {
         getLogger().info("Merging JSON-based file with hand-written overrides one{}", filename);
 
         JsonElement base = JsonParser.parseReader(new BufferedReader(new InputStreamReader(file)));
-        try (BufferedReader reader = new BufferedReader(new FileReader(hwcOverride.toFile()))) {
-          JsonElement override = JsonParser.parseReader(reader);
-          JsonElement merged = merge(base, override);
-          FileUtils.writeStringToFile(getOutputRoot().file(filename).get().getAsFile(), merged.toString(), StandardCharsets.UTF_8);
-        }
+        JsonElement override = JsonParser.parseString(
+            resolveProperties(Files.readString(hwcOverride, StandardCharsets.UTF_8), hwcOverride));
+        JsonElement merged = merge(base, override);
+        FileUtils.writeStringToFile(getOutputRoot().file(filename).get().getAsFile(), merged.toString(), StandardCharsets.UTF_8);
         return true;
       }
       Path hwc = getInput().getAsFile().get().toPath().resolve(filename);
@@ -233,6 +266,17 @@ public abstract class SetupFrontendTask extends DefaultTask {
     return false;
   }
 
+
+  String resolveProperties(String json, Path file) {
+    Map<String, String> properties = getGradleProperties().get();
+    return PROPERTY_REFERENCE.matcher(json).replaceAll(reference -> {
+      String value = properties.get(reference.group(1));
+      if (value == null) {
+        throw new GradleException("Unknown Gradle property '" + reference.group(1) + "' in " + file);
+      }
+      return Matcher.quoteReplacement(value);
+    });
+  }
 
   /**
    * List directory contents for a resource folder. Not recursive.

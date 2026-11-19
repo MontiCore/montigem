@@ -1,8 +1,11 @@
+// the cell dialogs are anchored at their top edge and only centered horizontally, so that they grow downwards
+// with long scripts (the editor grows with its content); vertically centered, they grew upwards and pushed the
+// Main/Extra tabs (sticking out above the dialog, cf. CellDialog.scss) off-screen
 .editDialog{
    position: fixed;
-   top: 350px;
+   top: 130px;
    left: 50%;
-   transform: translate(-50%, -50%);
+   transform: translateX(-50%);
    background: #fff;
    padding: 20px;
    border-radius: 8px;
@@ -14,9 +17,9 @@
 
 .createDialog{
    position: fixed;
-   top: 350px;
+   top: 130px;
    left: 50%;
-   transform: translate(-50%, -50%);
+   transform: translateX(-50%);
    background: #fff;
    padding: 20px;
    border-radius: 8px;

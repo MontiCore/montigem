@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPAssocQualifierKeyCardinality {
+  class A;
+  class B;
+  class C;
+  association A -> (optC) C [0..1];
+  association A -> (manyC) C [*];
+  association A -> (someC) C [1..*];
+
+  // Association roles of A as qualifiers must have cardinality [1]. With A -> (optC) C [1] instead of [0..1],
+  // B [[optC]] -> A [1] would be valid (see cocovalid/UMLPAssocQualifierKeys.umlp, role d).
+  association B [[optC]] -> A [1];
+  association B [[manyC]] -> A [1];
+  association B [[someC]] -> A [1];
+  association [1] A <- [[manyC]] B;
+}

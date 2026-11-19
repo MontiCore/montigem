@@ -88,6 +88,8 @@ afterEvaluate {
 publishing {
   publications {
     mavenJava(MavenPublication) {
+      // A unique artifactId, otherwise the jar clashes with umlp.umlp-rte:frontend in using app
+      artifactId = "dashboard-frontend"
       from components.java
     }
   }
@@ -97,8 +99,10 @@ publishing {
       url "file://${project.layout.buildDirectory.get().asFile}/repo"
     }
     maven {
-      credentials.username mavenUser
-      credentials.password mavenPassword
+      if (project.hasProperty('mavenUser') && project.hasProperty('mavenPassword')) {
+        credentials.username mavenUser
+        credentials.password mavenPassword
+      }
 
       def releasesRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-releases/"
       def snapshotsRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-snapshots/"

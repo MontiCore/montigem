@@ -1,0 +1,64 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import java.util.List;
+import java.util.Optional;
+
+umlp ChatModule {
+
+  // Chat adapted from gemai-toolbox (Chatty).
+  <<singleton>>
+  class SenderService {
+    void sendMessage(Message message, MessageHistory chat, long contextGemId);
+  }
+
+  class Message {
+    String content;
+    String timestamp;
+    boolean user;
+    List<Source> sources;
+  }
+
+  class MessageHistory {
+    List<Message> messages;
+    String name;
+    List<ModelMessage> modelMessages;
+    int synchronizedMessageCount = 0;
+  }
+
+  enum ModelMessageRole {
+    SYSTEM,
+    USER,
+    ASSISTANT,
+    TOOL;
+  }
+
+  class ModelMessage {
+    int sequence;
+    ModelMessageRole role;
+    Optional<String> content;
+    Optional<String> thinking;
+    List<ToolCall> toolCalls;
+    Optional<ToolResult> toolResult;
+  }
+
+  class ToolCall {
+    int sequence;
+    Optional<String> callId;
+    String name;
+    Optional<String> arguments;
+  }
+
+  class ToolResult {
+    Optional<String> callId;
+    String name;
+    String content;
+    Optional<Boolean> error;
+  }
+
+  class Source {
+    String url;
+    String title;
+    String type;
+  }
+
+}

@@ -1,0 +1,12 @@
+package gui.test;
+
+import mc.fenix.input.GemDropdownInput;
+import mc.fenix.input.GemDropdownInputTypes.Option;
+
+page DropdownInitialEntry(String selected = "o2") {
+  initialEntryDropdown@GemDropdownInput(
+    labelText = "Initial entry:",
+    entry = selected,
+    options = [Option("o1", "First"), Option("o2", "Second"), Option("o3", "Third")]
+  );
+}

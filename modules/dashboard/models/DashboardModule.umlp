@@ -8,6 +8,7 @@ import mc.fenix.networkgraph.NetworkGraphTypes.Graph;
 import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotData;
 import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotShape;
 import mc.fenix.charts.GemGaugeChartTypes.GemGaugeChartData;
+import mc.fenix.table.GemTableTypes.GemFilterableTableData;
 
 import java.util.List;
 import java.lang.Object;
@@ -26,6 +27,9 @@ umlp DashboardModule {
     GemBoxPlotData interpretBoxPlot(String data);
     GemGaugeChartData interpretGaugeChart(String data);
     GemScatterPlotData interpretScatterPlot(String data);
+    // Interprets the data script, then the filter and render scripts of the columns, given as a JSON array of
+    // {column, filter, render} objects: the frontend cannot send lists of strings, it serializes them as objects
+    GemFilterableTableData interpretFilterableTable(String data, String columnScripts);
   }
 
   class DashboardModuleConfig {
@@ -36,12 +40,16 @@ umlp DashboardModule {
   class ViewConfig {
     int vid;
     String name;
+    // description of the view, shown in the info dialog opened by the info button of the dashboard
+    String info;
     List<CellConfig> cells;
   }
 
   class CellConfig {
     String data;
     String name;
+    // description of the cell, shown as tooltip of the info icon in the cell's header
+    String info;
     VizType viz;
     Optional<ExtraData> extra;
     -> (size) DashboardModuleSize;
@@ -56,6 +64,19 @@ umlp DashboardModule {
     Optional<GraphExtraData> graphextra;
     Optional<PieExtraData> piextra;
     Optional<ScatterExtraData> scatterextra;
+    Optional<TableExtraData> tableextra;
+  }
+
+  class TableExtraData {
+    List<ColumnScripts> columns;
+  }
+
+  // Scripts of a column of a FILTERABLE_TABLE, each returns a lambda over the values of the column (or is empty):
+  // filter keeps the rows whose value is accepted, render computes the displayed text of a value
+  class ColumnScripts {
+    String column;
+    String filter;
+    String render;
   }
 
   class PieExtraData {
@@ -68,6 +89,32 @@ umlp DashboardModule {
     boolean showSearchNode;
     boolean showControlButtons;
     boolean showInformation;
+    // layout that places the nodes, NONE keeps the positions of the data
+    GraphInitialLayoutType initialLayout;
+    // whether the layers of the hierarchical initial layouts run from left to right instead of top to bottom
+    boolean horizontalLayout;
+    // layout that refines the positions of the initial layout, NONE keeps them
+    GraphComplexLayoutType complexLayout;
+    // the complex layout stops after this number of iterations, absent for no limit
+    Optional<Integer> maxLayoutIterations;
+  }
+
+  // the initial layouts of GemGraph (NetworkGraphTypes.InitialGraphLayoutMode)
+  enum GraphInitialLayoutType {
+    NONE,
+    CIRCULAR,
+    RANDOM,
+    CIRCLE_PACK,
+    HIERARCHICAL,
+    CHANNEL_HIERARCHICAL;
+  }
+
+  // the complex layouts of GemGraph (NetworkGraphTypes.ComplexGraphLayoutMode)
+  enum GraphComplexLayoutType {
+    NONE,
+    FORCE,
+    FORCEATLAS2,
+    NO_OVERLAP;
   }
 
   class BarExtraData {
@@ -113,11 +160,6 @@ umlp DashboardModule {
     String lastUpdated;
   }
 
-  class TableData{
-    List<String> body;
-    List<String> headers;
-  }
-
   class DashboardModuleSize {
     double height;
     double width;
@@ -129,7 +171,6 @@ umlp DashboardModule {
   }
 
   enum VizType {
-    TABLE,
     TILE,
     NETWORK,
     LINE,
@@ -137,7 +178,8 @@ umlp DashboardModule {
     PIE,
     SPEED,
     BOX,
-    SCATTER;
+    SCATTER,
+    FILTERABLE_TABLE;
   }
 
   class Preset {

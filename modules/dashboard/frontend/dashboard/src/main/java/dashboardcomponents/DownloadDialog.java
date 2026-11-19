@@ -45,6 +45,7 @@ import mc.fenix.charts.gemscatterplottypes.GemScatterPlotPoint;
 import mc.fenix.charts.gemscatterplottypes.GemScatterPlotSet;
 import mc.fenix.charts.gemscatterplottypes.GemScatterPlotSetBuilder;
 import mc.fenix.networkgraph.networkgraphtypes.Graph;
+import mc.fenix.table.gemtabletypes.GemFilterableTableData;
 import mc.fenix.networkgraph.networkgraphtypes.GraphBuilder;
 import mc.fenix.networkgraph.networkgraphtypes.GraphEdge;
 import mc.fenix.networkgraph.networkgraphtypes.GraphEdgeBuilder;
@@ -81,16 +82,19 @@ public class DownloadDialog extends DownloadDialogTOP{
         return;
       }
       def.js.Object parsed = (def.js.Object) JSON.parse(json);
-      def.js.Array<Object> oldEntries = (def.js.Array<Object>) parsed.$get("entries");
-      Object[] newEntries = new Object[oldEntries.length];
+      // only the charts have entries (e.g., not the tables)
+      if (parsed.hasOwnProperty("entries")) {
+        def.js.Array<Object> oldEntries = (def.js.Array<Object>) parsed.$get("entries");
+        Object[] newEntries = new Object[oldEntries.length];
 
-      for (int i = 0; i < oldEntries.length; i++) {
-        String entryString = (String) oldEntries.$get(i);
-        Object entryObject = JSON.parse((String) JSON.parse(entryString));
-        newEntries[i] = entryObject;
+        for (int i = 0; i < oldEntries.length; i++) {
+          String entryString = (String) oldEntries.$get(i);
+          Object entryObject = JSON.parse((String) JSON.parse(entryString));
+          newEntries[i] = entryObject;
+        }
+
+        parsed.$set("entries", newEntries);
       }
-
-      parsed.$set("entries", newEntries);
       String fixedJson = JSON.stringify(parsed, (Object[]) null, 2);
 
       HTMLAnchorElement a = (HTMLAnchorElement) document.createElement("a");
@@ -117,6 +121,8 @@ public class DownloadDialog extends DownloadDialogTOP{
         return serializePieChartData(CommandManager.executeCommand(new InterpretPieChart(this.getCell().getData())).asSimpleResult().get());
       case NETWORK:
         return serializeNetworkGraph(CommandManager.executeCommand(new InterpretNetworkGraph(this.getCell().getData())).asSimpleResult().get());
+      case FILTERABLE_TABLE:
+        return serializeFilterableTableData(CommandManager.executeCommand(FilterableTableCommand.of(this.getCell())).asSimpleResult().get());
     }
     return "Visualization type of the cell is not accounted for in the cases";
   }
@@ -147,6 +153,10 @@ public class DownloadDialog extends DownloadDialogTOP{
 
   private String serializeNetworkGraph(Graph data) {
     return DashboardModuleBaseClassObjectMapper.serialize(data, "mc.fenix.networkgraph.networkgraphtypes.Graph").get();
+  }
+
+  private String serializeFilterableTableData(GemFilterableTableData data) {
+    return DashboardModuleBaseClassObjectMapper.serialize(data, "mc.fenix.table.gemtabletypes.GemFilterableTableData").get();
   }
 
   //--------------------------------------------------------------------------------

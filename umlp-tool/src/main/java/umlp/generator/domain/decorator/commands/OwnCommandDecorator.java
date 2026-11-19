@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import de.monticore.cd.codegen.TopDecorator;
 import de.monticore.cd.codegen.methods.AccessorDecorator;
 import de.monticore.cd4codebasis._ast.ASTCDMethod;
+import de.monticore.cd4codebasis._ast.ASTCDMethodSignature;
 import de.monticore.cd4codebasis._ast.ASTCDParameter;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDClass;
@@ -12,14 +13,16 @@ import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._ast.ASTCDPackage;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
+import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.SymTypeOfGenerics;
 import de.monticore.types.mcbasictypes._ast.ASTMCObjectType;
 import de.monticore.types.mcbasictypes._ast.ASTMCType;
+import de.monticore.types.mccollectiontypes._ast.ASTMCCollectionTypesNode;
 import de.monticore.types.mccollectiontypes._ast.ASTMCListType;
 import de.monticore.types.mccollectiontypes._ast.ASTMCOptionalType;
+import de.monticore.types.mcsimplegenerictypes._ast.ASTMCSimpleGenericTypesNode;
 import de.monticore.umlstereotype._ast.ASTStereotypeBuilder;
-import de.se_rwth.commons.Joiners;
 import de.se_rwth.commons.Names;
 import de.se_rwth.commons.StringTransformations;
 import de.se_rwth.commons.logging.Log;
@@ -138,8 +141,8 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
             Log.error("Unable to resolve Optional inner type " + paramType, meth.get_SourcePositionStart());
           }
           paramFQN = GenService.getCorrectJavaFQN(symbol.get().getFullName());
-        } else if (paramTypeSym.getDefiningSymbol().isPresent()) {
-          paramFQN = GenService.getCorrectJavaFQN(paramTypeSym.getDefiningSymbol().get().getFullName());
+        } else if (UMLPSymbolTables.getTypeSymbol(paramTypeSym).isPresent()) {
+          paramFQN = GenService.getCorrectJavaFQN(UMLPSymbolTables.getTypeSymbol(paramTypeSym).get().getFullName());
         } else {
           Log.error("Unable to detect type from command ", meth.get_SourcePositionStart());
           paramFQN = "Object";
@@ -166,8 +169,10 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
     List<SymTypeExpression> accessPolicyParameters = new ArrayList<>();
     meth.getCDParameterList().forEach(p -> {
       SymTypeExpression type = p.getSymbol().getType();
-      if (GenService.isDomainType(type) && !GenService.isCDEnum(type)) {
+      if (GenService.isDomainType(type) && !GenService.isCDOrInnerCDEnum(type)) {
         accessPolicyParameters.add(type);
+        getCD4C().addImport(ast, GenService.getCorrectJavaFQN(type.getTypeInfo().getFullName())
+            + AccessPolicyDecorator.SUFFIX);
       }
       addImport(type, ast);
     });
@@ -178,6 +183,23 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
   }
 
   protected String getAttributeForMethodParameter(ASTCDParameter param) {
+    if (GenService.isCDEnum(param.getSymbol().getType())) {
+      return "protected " + param.getSymbol().getType().getTypeInfo().getName() + " " + StringTransformations.uncapitalize(param.getName());
+    }
+    if (GenService.isInnerCDEnum(param.getSymbol().getType())) {
+      if (GenService.isList(param.getSymbol().getType())) {
+        return "protected List<" + param.getSymbol().getType().asGenericType().getArgument(0).getTypeInfo().getName() + "> " + StringTransformations.uncapitalize(param.getName());
+      }
+      else if (GenService.isSet(param.getSymbol().getType())) {
+        return "protected Set<" + param.getSymbol().getType().asGenericType().getArgument(0).getTypeInfo().getName() + "> " + StringTransformations.uncapitalize(param.getName());
+      }
+      else if (GenService.isOptional(param.getSymbol().getType())) {
+        return "protected Optional<" + param.getSymbol().getType().asGenericType().getArgument(0).getTypeInfo().getName() + "> " + StringTransformations.uncapitalize(param.getName());
+      }
+      else {
+        Log.error("Unhandled inner Enum type " + param.getSymbol().getType(), param.get_SourcePositionStart());
+      }
+    }
     if (isOptionalGem(param.getSymbol().getType())) {
       return "protected Optional<Long> " + param.getName() + "GemId";
     }
@@ -202,28 +224,20 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
   }
 
   protected void addImport(SymTypeExpression type, ASTCDClass ast) {
-    if(type.getTypeInfo().isPresentAstNode()) {
-      ASTCDCompilationUnit typeCD = UMLPSymbolTables.getDiagramFor((ASTCDType) type.getTypeInfo().getAstNode());
-      if (GenService.isDomainType(type) || GenService.isPojoCDType(type)) {
-        getCD4C().addImport(ast, getPackageName(typeCD, DEFAULT_PACKAGE) + "." + type.print());
-        if (!GenService.isCDEnum(type)) {
-          getCD4C().addImport(ast, getPackageName(typeCD, DEFAULT_PACKAGE) + "." + type.print()
-              + AccessPolicyDecorator.SUFFIX);
-        }
+    if (type.isGenericType()) {
+      type.asGenericType().getArgumentList().forEach(argument -> addImport(argument, ast));
+      if (GenService.isJavaType(type)) {
+        getCD4C().addImport(ast, type.asGenericType().getTypeConstructorFullName());
       }
-      else if (GenService.isCDEnum(type)) {
-        getCD4C().addImport(ast, getPackageName(typeCD, DEFAULT_PACKAGE) + "." + type.print());
-      }
+      return;
     }
-    else if (GenService.isJavaType(type)) {
+    if (GenService.isDomainType(type) || GenService.isPojoCDType(type)) {
+      // Symbols loaded from dependencies need not have an AST. Both UMLP and GUI
+      // class diagrams generate their types into the lower-case model package.
+      String javaName = GenService.getCorrectJavaFQN(type.getTypeInfo().getFullName());
+      getCD4C().addImport(ast, javaName);
+    } else if (GenService.isJavaType(type)) {
       addJavaImport(ast, type);
-    }
-    else {
-      // Assume guiLib Import?
-      if(GenService.isPojoCDType(type) && type.getTypeInfo().getFullName().startsWith("mc.fenix")) {
-        System.out.println(type.getTypeInfo().getFullName());
-        getCD4C().addImport(ast, Joiners.DOT.join(type.getTypeInfo().getPackageName().toLowerCase(), type.print()));
-      }
     }
   }
 
@@ -302,6 +316,7 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
 
     List<String> paramNameList = new ArrayList<>();
     List<SymTypeExpression> typeList = new ArrayList<>();
+    List<Boolean> isCollectionTypes = new ArrayList<>(); // workaround for https://git.rwth-aachen.de/monticore/monticore/-/work_items/5257
     List<Boolean> userDeserList = new ArrayList<>();
     List<Boolean> optionals = new ArrayList<>();
 
@@ -318,7 +333,11 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
         Gem identifiable
       */
       boolean originalGemList = isListOfGemIdentifiable(type);
-      if (isOptionalGem(type)) {
+      // Workaround for https://git.rwth-aachen.de/monticore/monticore/-/work_items/5257 (CTs behave different than java.util/SimpleGenericTypes)
+      isCollectionTypes.add(p.getMCType() instanceof ASTMCCollectionTypesNode && !(p.getMCType() instanceof ASTMCSimpleGenericTypesNode));
+      if (GenService.isCDOrInnerCDEnum(type)) {
+        optionals.add(false);
+      } else if (isOptionalGem(type) ) {
         type = GenService.getSymType("long");
         paramName += "GemId";
         optionals.add(true);
@@ -362,10 +381,13 @@ public class OwnCommandDecorator extends AbstractDeSerDecorator implements OwnCo
       ast.setModifier(PUBLIC_ABSTRACT.build());
     }
 
-    getCD4C().addMethod(ast, getOwnCommand_FromJsonObjectTemplate(), cmdName, paramNameList, typeList,
+    ASTCDMethodSignature fromJsonObjectMethod = getCD4C().addMethod(ast, getOwnCommand_FromJsonObjectTemplate(), cmdName, paramNameList, typeList,
         userDeserList, baseClassDecorator, makeAbstract, optionals);
+    // JSweet does not support the stream operator
+    glex.replaceTemplate("cd2java.Annotations", fromJsonObjectMethod,
+        new StringHookPoint("@umlp.jsweet.extension.annotation.BackendOnly(umlp.jsweet.extension.annotation.BackendOnlyModes.THROW_ERROR) "));
     getCD4C().addMethod(ast, getOwnCommand_BuildJsonTemplate(), cmdName, paramNameList, typeList,
-        userDeserList, baseClassDecorator, makeAbstract);
+        userDeserList, baseClassDecorator, makeAbstract, isCollectionTypes);
 
     getCD4C().addImport(ast, PathUtil.getBackendRTECommandPath("CommandDeSer"));
 

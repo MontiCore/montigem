@@ -6,6 +6,7 @@ package umlp.jsweet.extension.gui;
 public enum TSImportMap {
   // vis libs
   CAD("mc.fenix.cad", "@umlp/cad"),
+  ADVANCED("mc.fenix.advanced", "@umlp/advanced"),
   ARRANGE("mc.fenix.arrange", "@umlp/arrange"),
   BASIC("mc.fenix.basic", "@umlp/basic"),
   CHARTS("mc.fenix.charts", "@umlp/charts"),
@@ -19,7 +20,8 @@ public enum TSImportMap {
   EDITOR("mc.fenix.editor", "@umlp/editor"),
   LOGIN("loginmodule", "@montigem/login"),
   COMMENT("commentmodule", "@montigem/comment"),
-  DASHBOARD("dashboardmodule", "@montigem/dashboard")
+  DASHBOARD("dashboardmodule", "@montigem/dashboard"),
+  CHAT("chatmodule", "@montigem/chat")
   ;
 
   private final String tsPackage;
