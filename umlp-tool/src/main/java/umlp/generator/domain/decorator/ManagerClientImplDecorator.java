@@ -83,6 +83,10 @@ public class ManagerClientImplDecorator extends AbstractDecorator {
 
     getNonDerivedDomainInterfaces(origCD).forEach(i -> addInterfaceElements(origCD, i, managerClass));
 
+    // rekeying the values of the map roles locally in the maps of the loaded owners
+    GemMapKeyRole.declaredIn(origCD).forEach(r -> getCD4C().addMethod(managerClass, getDoRekeyTemplate(),
+        r.getRekeyName(), r.getRole(), r.getKeyType(), r.getOwners()));
+
     // Imports
     addImports(origCD, managerClass);
     return managerClass;
@@ -128,7 +132,9 @@ public class ManagerClientImplDecorator extends AbstractDecorator {
         managerClass.addCDMember(getLoadedAttribute(domainClass));
       }
       managerClass.addCDMember(getCommandObserverAttribute(domainClass));
+      managerClass.addAllCDMembers(getKeyObserverAttributes(origCD, managerClass, domainClass));
     }
+    List<String> keyObservers = GemMapKeyRole.keyObserverAttributes(origCD, domainClass);
 
     List<ASTCDType> concreteSubclassesOrderedByDistance = concreteSubclassesOrderedByDistance(origCD, domainClass);
     getCD4C().addMethod(managerClass, "umlp.managerimpl.DoGetSure", name);
@@ -139,14 +145,14 @@ public class ManagerClientImplDecorator extends AbstractDecorator {
 
     if (isSingleton) {
       getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoOptSingletonElement", name);
-      getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoGetSingletonElement", name);
+      getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoGetSingletonElement", name, keyObservers);
     } else {
       getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoOpt", name, concreteSubclassesOrderedByDistance);
       getCD4C().addMethod(managerClass, "umlp.managerimpl.IsLoaded", name, concreteSubclassesOrderedByDistance);
       if (!domainClass.getModifier().isAbstract()) {
         // Implements the abstract _doRegister<X> manager operation; objects
         // dispatch themselves here via _registerMe() (monticore#5062)
-        getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoRegister", name);
+        getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoRegister", name, keyObservers);
       }
     }
     getCD4C().addMethod(managerClass, "umlp.managerclientimpl.LoadAllWithIDs", name, getPackageName(origCD, DEFAULT_PACKAGE), isSingleton, domainClass.getModifier().isAbstract());
@@ -155,7 +161,7 @@ public class ManagerClientImplDecorator extends AbstractDecorator {
       getCD4C().addMethod(managerClass, "umlp.managerimpl.DoBuilderParam", name);
       getCD4C().addMethod(managerClass, "umlp.managerimpl.DoDeSerBuilder", name);
       if (!isSingleton) {
-        getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoAdd", name, managerName);
+        getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoAdd", name, managerName, keyObservers);
         getCD4C().addMethod(managerClass, "umlp.managerclientimpl.DoDelete", name, managerName);
       }
     }
@@ -230,6 +236,10 @@ public class ManagerClientImplDecorator extends AbstractDecorator {
         });
   }
 
+  protected String getDoRekeyTemplate() {
+    return "umlp.managerclientimpl.DoRekey";
+  }
+
   protected ASTCDAttribute getCacheAttribute(ASTCDType domainClass) {
     ASTCDAttribute domainClassDaoAttr = getCDAttributeFacade().createAttribute(PROTECTED.build(),
         getMCTypeFacade().createBasicGenericTypeOf("Map", "Long", domainClass.getName()),
@@ -260,6 +270,23 @@ public class ManagerClientImplDecorator extends AbstractDecorator {
         getMCTypeFacade().createQualifiedType(type), "the" + type);
     getGlex().replaceTemplate("cd2java.Value", domainClassDaoAttr, new StringHookPoint(" = new " + type + "()"));
     return domainClassDaoAttr;
+  }
+
+  /**
+   * the key observers of the map roles that may hold objects of domainClass, one per role (see GemMapKeyRole)
+   */
+  protected List<ASTCDAttribute> getKeyObserverAttributes(ASTCDCompilationUnit origCD, ASTCDClass managerClass,
+                                                          ASTCDClass domainClass) {
+    List<ASTCDAttribute> result = new ArrayList<>();
+    for (GemMapKeyRole role : GemMapKeyRole.observing(origCD, domainClass)) {
+      String type = role.getKeyObserverClass(domainClass.getName());
+      ASTCDAttribute attr = getCDAttributeFacade().createAttribute(PROTECTED.build(),
+          getMCTypeFacade().createQualifiedType(type), role.getKeyObserverAttribute(domainClass.getName()));
+      getGlex().replaceTemplate("cd2java.Value", attr, new StringHookPoint(" = new " + type + "()"));
+      getCD4C().addImport(managerClass, getPackageName(origCD, GEMMAP_PACKAGE) + "." + type);
+      result.add(attr);
+    }
+    return result;
   }
 
   protected ASTCDAttribute getSingletonAttribute(ASTCDType domainClass) {

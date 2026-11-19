@@ -64,7 +64,7 @@ public class GemListAssocDecorator extends AbstractDecorator {
     String sourceName = domainClass.getName();
     String assocName = assoc.getName();
     String className = getName(domainClass, assoc);
-    CDTypeSymbol targetSymbol = (CDTypeSymbol) assoc.getMCQualifiedType().getDefiningSymbol().get();
+    CDTypeSymbol targetSymbol = (CDTypeSymbol) UMLPSymbolTables.getTypeSymbol(assoc.getMCQualifiedType()).get();
     String targetName = targetSymbol.getName();
     String managerName = origCD.getCDDefinition().getName() + ManagerDecorator.SUFFIX;
 
@@ -151,6 +151,8 @@ public class GemListAssocDecorator extends AbstractDecorator {
     getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("NotificationScope"));
     getCD4C().addImport(ast, "umlp.backendrte.common.LoadResult");
     getCD4C().addImport(ast, "umlp.backendrte.common.LoadingState");
+    getCD4C().addImport(ast, "java.util.HashMap");
+    getCD4C().addImport(ast, "java.util.Map");
   }
 
   public static String getName(ASTCDType type, ASTCDAssocSide assoc) {

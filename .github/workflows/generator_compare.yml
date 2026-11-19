@@ -1,0 +1,163 @@
+name: "Generator Compare"
+
+# Compares the code that the generators produce for examples/vis-lib on the PR branch with the
+# code they produce on the branch the PR is based on (see devScripts/generatorcompare).
+# Runs if the PR changes umlp-tool or umlp-jsweet, for the backend and the frontend of vis-lib.
+# The result is informational, differences do not fail the workflow. The diff is shown in the
+# summary of the run and uploaded as artifacts: a zip with the patch, and the HTML page
+on:
+  pull_request:
+    paths:
+      - 'umlp-tool/**'
+      - 'umlp-jsweet/**'
+
+concurrency:
+  group: generator-compare-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    name: compare_vis_lib
+    # only for PRs of a branch other than dev
+    if: github.head_ref != 'dev'
+    runs-on: self-hosted
+    timeout-minutes: 10
+
+    container:
+      image: registry.git.rwth-aachen.de/monticore/container-registry/gradle8.14.4-chrome-installed
+      credentials:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    defaults:
+      run:
+        shell: bash
+
+    env:
+      # generateBranches.sh starts Gradle itself, so the credentials are given as environment
+      # variables instead of -P arguments
+      ORG_GRADLE_PROJECT_mavenUser: ${{ secrets.mavenUser }}
+      ORG_GRADLE_PROJECT_mavenPassword: ${{ secrets.mavenPassword }}
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      CHROME_BIN: "/usr/bin/google-chrome-stable"
+      PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
+      # backend and frontend
+      PROJECT_DIR: examples/vis-lib
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v7
+        with:
+          # the head of the PR instead of the merge commit
+          ref: refs/pull/${{ github.event.pull_request.number }}/head
+
+      - name: Prepare branches
+        id: branches
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          # generateBranches.sh checks out both sides by name, but the checkout above is a
+          # detached HEAD and does not have the base branch. So both get their local branch.
+          # The base is the current tip of the base branch, which needs no history. Changes of
+          # the base branch that the PR branch does not have yet show up in the diff as well.
+          # The workspace belongs to the user of the runner and not to the user of the container,
+          # git refuses to work in it otherwise. Holds for the following steps as well.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+          git checkout -B "$HEAD_REF"
+          git fetch --no-tags --depth=1 origin "refs/heads/$BASE_REF:refs/heads/$BASE_REF"
+
+          # the output folders of generateBranches.sh: <branch, / as ->_<short commit id>
+          output_dir() {
+            echo "${1//[\/\\]/-}_$(git rev-parse --short "refs/heads/$1")"
+          }
+          echo "base_dir=$(output_dir "$BASE_REF")" >> "$GITHUB_OUTPUT"
+          echo "head_dir=$(output_dir "$HEAD_REF")" >> "$GITHUB_OUTPUT"
+
+      - name: Generate both branches
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          # Workspace-relative paths are set here, as env values in the job are not shell-expanded
+          # (and ${{ github.workspace }} resolves to the host path in container jobs)
+          export GRADLE_OPTS="-Dmaven.repo.local=$GITHUB_WORKSPACE/.m2"
+          export GRADLE_USER_HOME="$GITHUB_WORKSPACE/.gradle"
+          export NPM_CONFIG_CACHE="$GITHUB_WORKSPACE/.npm"
+          # Gradle launcher JVM memory
+          export JAVA_OPTS="-Xmx2g"
+          gradle --version
+          ./devScripts/generatorcompare/generateBranches.sh -p "$PROJECT_DIR" "$BASE_REF" "$HEAD_REF"
+
+      - name: Diff generated code
+        env:
+          BASE_DIR: ${{ steps.branches.outputs.base_dir }}
+          HEAD_DIR: ${{ steps.branches.outputs.head_dir }}
+        run: |
+          # git diff --no-index exits with 1 if there are differences, anything above is an error
+          diff_generated() {
+            local rc=0
+            ./devScripts/generatorcompare/diffNoIndex.sh "$@" "$BASE_DIR" "$HEAD_DIR" || rc=$?
+            [ "$rc" -le 1 ] || exit "$rc"
+          }
+
+          diff_generated > "generator-diff.patch"
+          diff_generated --stat > "generator-diff.stat"
+
+          # The diff as a HTML page to read it in the browser, side by side
+          if ! command -v python3 > /dev/null; then
+            echo "::warning::python3 is not installed in the container, the HTML page of the diff is not created."
+          elif [ -s "generator-diff.patch" ]; then
+            python3 ./devScripts/generatorcompare/gitdiff2html.py "generator-diff.patch" --split \
+              --title "Generator compare vis-lib" -o "generator-diff.html"
+          fi
+
+          {
+            echo "## Generator compare: vis-lib"
+            echo
+            echo "\`$PROJECT_DIR\`, \`$BASE_DIR\` (base) vs. \`$HEAD_DIR\` (PR)"
+            echo
+            if [ -s "generator-diff.patch" ]; then
+              echo "The generated code differs, the full diff is in the artifact \`generator-diff\` (\`.patch\`, and \`.html\` for the browser)."
+              echo
+              echo '```'
+              # the summary of a step is limited to 1 MB
+              tail -c 200000 "generator-diff.stat"
+              echo '```'
+            else
+              echo "The generated code is identical."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload diff
+        uses: actions/upload-artifact@v7
+        with:
+          name: generator-diff
+          path: |
+            generator-diff.patch
+            generator-diff.stat
+          if-no-files-found: ignore
+
+      # Uploaded on its own and not zipped, so the browser opens the page directly.
+      # Without archive the file name is the name of the artifact.
+      - name: Upload HTML diff
+        id: upload_html
+        if: hashFiles('generator-diff.html') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          path: generator-diff.html
+          archive: false
+
+      - name: Link HTML diff
+        if: steps.upload_html.outputs.artifact-url != ''
+        env:
+          HTML_URL: ${{ steps.upload_html.outputs.artifact-url }}
+        run: |
+          {
+            echo
+            echo "[Open the diff side by side in the browser]($HTML_URL)"
+          } >> "$GITHUB_STEP_SUMMARY"

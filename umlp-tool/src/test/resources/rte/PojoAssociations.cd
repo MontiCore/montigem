@@ -1,0 +1,14 @@
+package rte;
+
+<<pojoCD>>
+classdiagram PojoAssociations {
+  class Node {}
+  class Port {}
+  class Channel {}
+
+  composition [0..1] Node (owner) <-> (children) Node [*];
+  association [0..1] Node (owner) <-> (ports) Port [*];
+  association [*] Port (ports) <-> (channel) Channel [1];
+  association [*] Node (sources) <-> (targets) Node [*];
+  association [0..1] Node (previous) <-> (next) Node [0..1];
+}

@@ -42,6 +42,14 @@ class IDOrBuilder<E extends GemIdentifiable & GemBuildable> {
   }
 
   /**
+   * @return the gemId of the element. Unlike {@link #getIDAndMaybeBuild()} this never builds;
+   *         builders carry their gemId from construction, they are just not known to the manager yet
+   */
+  public long getGemId() {
+    return isPresentID() ? gemIDOpt.get() : builderOpt.get().getGemId();
+  }
+
+  /**
    * builds the element if necessary and returns its id
    * @return the id of the element, it can be used to retrieve the object from the manager
    */

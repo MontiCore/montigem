@@ -1,0 +1,42 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+.gem-chat-message {
+  box-sizing: border-box;
+  max-width: 95%;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--color-bg);
+  color: var(--text-main);
+  border-right: 3px solid var(--color-primary);
+}
+
+.gem-chat-message-response {
+  border-right: none;
+  border-left: 3px solid var(--color-border);
+}
+
+.gem-chat-message-timestamp {
+  font-size: .75rem;
+  color: var(--text-muted);
+}
+
+.gem-chat-message-sources-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: .8rem;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-main);
+  }
+}
+
+.gem-chat-message-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+}

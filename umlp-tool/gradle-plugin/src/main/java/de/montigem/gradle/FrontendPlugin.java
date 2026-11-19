@@ -8,6 +8,7 @@ import de.montigem.gradle.specific.CreateSymlinkTask;
 import de.montigem.gradle.specific.GUIJava2TSTask;
 import de.montigem.gradle.specific.GUI2JavaTask;
 import de.montigem.gradle.specific.GUIVariabilityTask;
+import de.montigem.gradle.specific.PrepareGeneratorDiffTask;
 import de.montigem.gradle.specific.SetupFrontendTask;
 import de.montigem.gradle.specific.UMLP2JSweetObserverTask;
 import de.montigem.gradle.specific.UMLP2SymTask;
@@ -73,6 +74,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
   public static final String SYNC_UMLP_JAVA2TS_TASK = "sync_umlpJava2ts";
   public static final String SYNC_GUI2JAVA2TS_TASK = "sync_gui2java2ts";
   public static final String SYNC_GUI2JAVA_TASK = "sync_gui2java";
+  public static final String SYNC_DOMAIN_MODELS_TASK = "sync_domainModels";
   public static final String UMLP2JSWEET_OBSERVER_TASK = "umlp2jsweetObserver";
   public static final String GUI_JAVA2TS_TASK = "guiJava2ts";
   public static final String CD2GUI_TASK = "cd2gui";
@@ -121,6 +123,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
     TaskProvider<SetupFrontendTask> setupFrontend = project.getTasks().named(SETUP_FRONTEND_TASK, SetupFrontendTask.class);
 
     Provider<Boolean> withCD2GUI = extension.getWithCD2GUI();
+    Provider<Boolean> publishDomainModels = extension.getPublishDomainModels();
     Provider<Directory> cd2guiDir = project.getLayout().getBuildDirectory().dir("cd2gui");
     Provider<Directory> guiVariabilityDir = project.getLayout().getBuildDirectory().dir("guiVariability");
     Provider<Directory> guiModelsDir = project.getLayout().getBuildDirectory().dir("guiModels");
@@ -142,6 +145,7 @@ public abstract class FrontendPlugin implements Plugin<Project> {
     Provider<Directory> syncGUI2Java2TSOut = project.getLayout().getBuildDirectory().dir("app/gui2java2ts");
     Provider<Directory> syncGUI2JavaOut = project.getLayout().getBuildDirectory().dir("app/gui2java");
     Provider<Directory> syncUMLPJava2TSOut = project.getLayout().getBuildDirectory().dir("app/umlpJava2ts");
+    Provider<Directory> syncDomainModelsOut = project.getLayout().getBuildDirectory().dir("app/src/assets/models");
 
     Directory srcJSweet = project.getLayout().getProjectDirectory().dir("src/main/jsweet");
     Directory srcUMLPJSweet = srcJSweet.dir("umlp2jsweetAdapter");
@@ -399,6 +403,19 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       }
     });
 
+    // prints where the generated GUI code is, for the scripts in devScripts/generatorcompare
+    PrepareGeneratorDiffTask.register(project).configure(task -> {
+      task.dependsOn(guiJava2ts, cd2java, cd2sym);
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getOutputDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getSymbolOutDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getJSweetAdapterDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getCD2JavaJSweetAdapterDir));
+      // only exist if the app has .cd files
+      task.addDir(cd2java.flatMap(CD2JavaTask::getOutputDir));
+      task.addDir(cd2sym.flatMap(CD2SymTask::getOutput));
+      task.addDir(cd2java.flatMap(CD2JavaTask::getSymbolOutDir));
+    });
+
     TaskProvider<UMLP2JSweetObserverTask> umlp2jsweetObserver = project.getTasks().register(
         UMLP2JSWEET_OBSERVER_TASK, UMLP2JSweetObserverTask.class, task -> {
           task.setGroup(UMLP_GROUP_NAME);
@@ -440,8 +457,18 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       task.getInto().set(syncGUI2JavaOut);
       task.getIncludes().add("**/*.html");
     });
+    // the domain model the GUI is generated for, as umlp2sym and cd2gui read it, served as asset of the app
+    TaskProvider<ContentSyncTask> syncDomainModels = project.getTasks().register(SYNC_DOMAIN_MODELS_TASK, ContentSyncTask.class, task -> {
+      task.setGroup(UMLP_GROUP_NAME);
+      task.dependsOn(mergeUMLP);
+      // syncs nothing if disabled, so models copied before are removed
+      task.getFrom().from(publishDomainModels.map(v -> v ? List.of(umlpFile) : List.of()));
+      task.getInto().set(syncDomainModelsOut);
+      // setupFrontend writes the rest of src/
+      task.mustRunAfter(setupFrontend);
+    });
     TaskProvider<Task> generate = project.getTasks().named("generate");
-    generate.configure(task -> task.dependsOn(guiJava2ts, syncUMLPJava2TS, syncGUI2Java2TS, syncGUI2Java));
+    generate.configure(task -> task.dependsOn(guiJava2ts, syncUMLPJava2TS, syncGUI2Java2TS, syncGUI2Java, syncDomainModels));
 
     createSymlinkTask.configure(task -> {
       task.getLinks().put(

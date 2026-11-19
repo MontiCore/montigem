@@ -2,7 +2,8 @@
 
 
 ## Use in Gradle
-0. Request Nexus-Login from Supervisor & store it in `~/.gradle/gradle.properties`
+0. The SE-Nexus can be read anonymously.
+   Only for publishing, request a Nexus-Login from your supervisor & store it as `mavenUser` and `mavenPassword` in `~/.gradle/gradle.properties`
 1. Add SE-Nexus to Plugin Repositories.
 
 in ``settings.gradle``:
@@ -10,8 +11,6 @@ in ``settings.gradle``:
 pluginManagement {
   repositories {
     maven { // For UMLP Plugin
-      credentials.username mavenUser
-      credentials.password mavenPassword
       url = "https://nexus.se.rwth-aachen.de/content/groups/umlp"
     }
     gradlePluginPortal()
@@ -36,8 +35,6 @@ plugins {
 ````
 repositories {
   maven {
-      credentials.username mavenUser
-      credentials.password mavenPassword
       url "https://nexus.se.rwth-aachen.de/content/groups/umlp"
   }
 }

@@ -18,6 +18,10 @@ import dashboardmodule.GaugeExtraData;
 import dashboardmodule.BoxExtraData;
 import dashboardmodule.PieExtraData;
 import dashboardmodule.GraphExtraData;
+import dashboardmodule.GraphComplexLayoutType;
+import dashboardmodule.GraphInitialLayoutType;
+import dashboardmodule.TableExtraData;
+import dashboardmodule.ColumnScripts;
 import dashboardmodule.Axis;
 import umlp.backendrte.common.NotificationScope;
 
@@ -95,10 +99,14 @@ public class View extends ViewTOP{
         case NETWORK:
           initialExtra = extraBuilder.graphextra(copyPasteGraphExtra(cell));
           break;
+        case FILTERABLE_TABLE:
+          initialExtra = extraBuilder.tableextra(copyPasteTableExtra(cell));
+          break;
       }
     }
     CellConfigBuilder builder = DashboardModuleManager.cellConfigBuilder()
         .name(cell.getName())
+        .info(cell.getInfo())
         .viz(cell.getViz())
         .data(cell.getData())
         .position(DashboardModuleManager.dashboardModulePositionBuilder().x(cell.getPosition().getX()).y(cell.getPosition().getY()))
@@ -115,6 +123,8 @@ public class View extends ViewTOP{
     } else {
       initialState = builder;
     }
+    // without them the extra options of the dialog would edit nothing (e.g. graphs created without extra options)
+    MainCellOptions.setDefaultExtraIfMissing(initialState);
     lastEditedCell = editCellId;
     lastInitialState = initialState;
     return initialState;
@@ -199,6 +209,25 @@ public class View extends ViewTOP{
         .innerRadius(original.getInnerRadius());
   }
 
+  public TableExtraData copyPasteTableExtra(CellConfig cell) {
+    if (cell.getExtra().getTableextra() == null) {
+      return null;
+    }
+
+    // a built copy, as the dialog adds and removes columns (ExtraTableOptions): the list of a builder references its
+    // elements by ID, and reading it while elements are added left it empty
+    TableExtraData copy = DashboardModuleManager.tableExtraDataBuilder().build().get();
+    for (ColumnScripts original : cell.getExtra().getTableextra().getColumnsList()) {
+      copy.addColumns(DashboardModuleManager.columnScriptsBuilder()
+          .column(original.getColumn())
+          .filter(original.getFilter())
+          .render(original.getRender())
+          .build()
+          .get());
+    }
+    return copy;
+  }
+
   public GraphExtraData copyPasteGraphExtra(CellConfig cell) {
     if (cell.getExtra().getGraphextra() == null) {
       return null;
@@ -211,7 +240,12 @@ public class View extends ViewTOP{
         .showFilterGroup(original.isShowFilterGroup())
         .showSearchNode(original.isShowSearchNode())
         .showControlButtons(original.isShowControlButtons())
-        .showInformation(original.isShowInformation());
+        .showInformation(original.isShowInformation())
+        // cells stored before the layouts could be chosen have none, they get the layouts used before
+        .initialLayout(original.getInitialLayout() == null ? GraphInitialLayoutType.RANDOM : original.getInitialLayout())
+        .horizontalLayout(original.isHorizontalLayout())
+        .complexLayout(original.getComplexLayout() == null ? GraphComplexLayoutType.FORCEATLAS2 : original.getComplexLayout())
+        .maxLayoutIterations(original.getMaxLayoutIterations());
   }
 
 }

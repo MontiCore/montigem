@@ -12,6 +12,7 @@ import example_arrange.GemColumnExample;
 import example_arrange.GemCardExample;
 import example_arrange.GemDialogExample;
 import example_arrange.GemTreeNodeExample;
+import example_arrange.GemDividerExample;
 import example_table.GemTableExample;
 
 page ArrangeOverview() {
@@ -33,6 +34,7 @@ page ArrangeOverview() {
             @ComponentCard(title = "Column", icon = "view_stream", description = "Vertical layout.", click = navigate(@GemColumnExample())),
             @ComponentCard(title = "Card", icon = "crop_portrait", description = "Container with header.", click = navigate(@GemCardExample())),
             @ComponentCard(title = "Dialog", icon = "open_in_new", description = "Modal dialog window.", click = navigate(@GemDialogExample())),
+            @ComponentCard(title = "Divider", icon = "horizontal_rule", description = "Visual separator line.", click = navigate(@GemDividerExample())),
             @ComponentCard(title = "Tree Node", icon = "account_tree", description = "Hierarchical tree structure.", click = navigate(@GemTreeNodeExample())),
             @ComponentCard(title = "Table", icon = "table_chart", description = "Data table.", click = navigate(@GemTableExample()))
         ]

@@ -1,0 +1,27 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPAssocQualifierKeys {
+  class A {
+    String name;
+    int number;
+    boolean flag;
+    C c;
+  }
+
+  class B;
+
+  class C;
+
+  class D;
+
+  // a key via an association role instead of an attribute
+  association A -> (d) D [1];
+  association B [[d]] (byD) -> A [1];
+
+  association B [[name]] (byName) -> A [1];
+  association B [[number]] (byNumber) -> A [1];
+  association B [[flag]] (byFlag) -> A [1];
+  association B [[c]] (byC) -> A [1];
+
+  // the qualifier on the right side, navigable from right to left
+  association [1] A (byNameFromRight) <- [[name]] B;
+}
