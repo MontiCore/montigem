@@ -10,6 +10,14 @@ configurations {
   testRuntimeClasspath.exclude group: 'de.monticore.language-server', module: 'monticore-language-server-runtime'
 }
 
+dependencies {
+  testImplementation project(':umlp-test-rte')
+}
+
+test {
+  useJUnitPlatform()
+}
+
 tasks.named("gui2java", GUI2JavaTask) {
   guiCreateModels = [
       "gui.login.UserCreate",

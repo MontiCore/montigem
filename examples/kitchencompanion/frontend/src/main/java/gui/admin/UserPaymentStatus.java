@@ -36,18 +36,20 @@ public class UserPaymentStatus extends UserPaymentStatusTOP {
   }
 
   @Override
+  public Boolean canReset(Receipt receipt) {
+    return !receipt.isPaidFromBalance();
+  }
+
+  @Override
   public Consumer<Void> reset() {
     return $ -> {
-      if (getReceipt().isConfirmed() && getReceipt().isPaid()) {
-        if (getReceipt().getAmountPaid() >= getReceipt().getAmountToPay() &&
-            !((getReceipt().getAmountPaid() == getReceipt().getPastBalance())
-                && (getReceipt().getAmountPaid() == getReceipt().getSum() + getReceipt().getDebt()))) {
-          double addedBalance = getReceipt().getAmountPaid() - getReceipt().getAmountToPay();
-          getUser().setBalance(getUser().getBalance() - addedBalance);
-          getReceipt().setPaid(false);
-          setPaidChecked(false);
-          getReceipt().setConfirmed(false);
-        }
+      Receipt r = getReceipt();
+      if (!r.isConfirmed() || !r.isPaid() || !canReset(r)) {
+        return;
+      }
+      if (r.getAmountPaid() >= r.getAmountToPay()) {
+        getUser().setBalance(getUser().getBalance() - (r.getAmountPaid() - r.getAmountToPay()));
+        setPaidChecked(false);
       }
     };
   }
