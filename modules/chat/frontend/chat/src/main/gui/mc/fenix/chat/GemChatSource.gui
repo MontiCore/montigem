@@ -1,0 +1,12 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.chat;
+
+/**
+  A source of a `GemChatMessage`, displayed as a link that opens in a new tab.
+*/
+component GemChatSource(
+  /** Text of the link. */
+  String title,
+  /** URL the link redirects to. */
+  String url
+)

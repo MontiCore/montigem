@@ -2,6 +2,7 @@
 
 <gem-column
   class="gem-card"
+  [height]="collapsible && isCollapsed ? 'auto' : '100%'"
   [components]="[gemNode2, gemNodeCollapse]"
 >
 </gem-column>

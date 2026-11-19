@@ -1,0 +1,28 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_network;
+
+import mc.fenix.arrange.GemColumn;
+import common.ExamplePage;
+import mc.fenix.networkgraph.GemGraph;
+import mc.fenix.basic.GemText;
+
+page GemGraphExample(String lastClickedNodeName = "None") {
+  @ExamplePage(
+    component = @GemColumn(width = "100%", components = [
+      @GemText(value="Last Clicked Node: " + lastClickedNodeName),
+      personGraph@GemGraph(
+        graph=null,
+        showFilterGroup=true,
+        showSearchNode=true,
+        showControlButtons=true,
+        showInformation=true,
+        nodePositionsAfterLayout=getPositions(),
+        graphClickNode=updateClickedNode(),
+        customBoundingBox = null,
+        initialLayout = null
+      )
+    ]),
+    basePath = "example_network",
+    componentName = "GemGraphExample"
+  );
+}

@@ -16,7 +16,7 @@ ${tc.signature("clazzL", "attrL", "clazzR", "attrR", "domain", "listL", "listR" 
     elif domain_manager.is_loaded_locally(${domain}.${clazzL}.${clazzL}, message["old${attrR?cap_first}GemId"]):
     <@indent>
       <#if listL>
-        old_obj = await domain_manager.get(${domain}.${clazzL}.${clazzL}, message["old${attrR}GemId"])
+        old_obj = await domain_manager.get(${domain}.${clazzL}.${clazzL}, message["old${attrR?cap_first}GemId"])
         index = "todo"
         await old_obj.${attrL}_rem(message["${attrR}Index"], message["${attrL}GemId"], montigem_runtime.gembase.NotificationScope.MINIMAL)
       <#else>

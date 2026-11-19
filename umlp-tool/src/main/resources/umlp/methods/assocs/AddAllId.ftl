@@ -3,11 +3,11 @@ ${tc.signature("name", "targetName")}
 
 ${cd4c.method("public void addAll${name?cap_first}s(int idx, List<${targetName}> l, NotificationScope scope)")}
 if(idx < 0){
-  throw new IllegalStateException("idx must be 0 or higher");
+  throw new IllegalStateException("idx (=" + idx + ") must be 0 or higher");
 }
 
 if(idx > _${name}.size()){
-  throw new IllegalStateException("idx must be at most owns.size");
+  throw new IllegalStateException("idx (=" + idx + ") must be at most owns.size (=" + _${name}.size() + ")");
 }
 
 List<Long> list = new ArrayList<>();

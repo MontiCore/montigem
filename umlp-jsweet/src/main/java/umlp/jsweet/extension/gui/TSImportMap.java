@@ -19,7 +19,8 @@ public enum TSImportMap {
   EDITOR("mc.fenix.editor", "@umlp/editor"),
   LOGIN("loginmodule", "@montigem/login"),
   COMMENT("commentmodule", "@montigem/comment"),
-  DASHBOARD("dashboardmodule", "@montigem/dashboard")
+  DASHBOARD("dashboardmodule", "@montigem/dashboard"),
+  CHAT("chatmodule", "@montigem/chat")
   ;
 
   private final String tsPackage;

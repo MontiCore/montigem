@@ -96,7 +96,12 @@ public class UMLPReports implements ReportManager.ReportManagerFactory {
     ArtifactGVReporter artifactGVReporter = new ArtifactGVReporter(this.reportDirectory, lowerCaseName);
     SuccessfulReporter successfulReporter = new SuccessfulReporter(this.reportDirectory, lowerCaseName);
     IncGenGradleReporter incGenGradleReporter = new IncGenGradleReporter(this.reportDirectory, reportPathOutput,
-        lowerCaseName);
+        lowerCaseName) {
+      @Override
+      protected boolean isModelFile(String fileName) {
+        return super.isModelFile(fileName) || fileName.endsWith(".ocl");
+      }
+    };
     StatisticsReporter statisticsReporter = new StatisticsReporter(jsonElement, "UMLP_JAR_JSON", this.reportDirectory, modelName, repository, traverserNodeTree);
 
     if (reportLevel == ReportLevel.INCGEN) {

@@ -26,7 +26,9 @@ public enum TypeScriptTypes {
   ASYNC_ARRAY_LIST("ArrayList", "IUMLPList", "java.util.ArrayList"),
   COLLECTION("Collection", "Array", "java.util.Collection"),
   MAP("Map", "Map", "java.util.Map"),
+  ASYNC_MAP("Map", "IUMLPMap", "java.util.Map"),
   HASH_MAP("HashMap", "Map", "java.util.HashMap"),
+  ASYNC_HASH_MAP("HashMap", "IUMLPMap", "java.util.HashMap"),
   LOCAL_DATE("LocalDate", "Date", "java.time.LocalDate"),
   LOCAL_DATE_TIME("LocalDateTime", "Date", "java.time.LocalDateTime"),
   ITERATOR("Iterator", "Iterator", "java.util.Iterator"),
@@ -107,6 +109,10 @@ public enum TypeScriptTypes {
           return ASYNC_LIST.tsType;
         } else if(type == ARRAY_LIST)  {
           return ASYNC_ARRAY_LIST.tsType;
+        } else if(type == MAP)  {
+          return ASYNC_MAP.tsType;
+        } else if(type == HASH_MAP)  {
+          return ASYNC_HASH_MAP.tsType;
         } else {
           return type.tsType;
         }

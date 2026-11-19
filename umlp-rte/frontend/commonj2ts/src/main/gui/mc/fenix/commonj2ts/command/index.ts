@@ -9,6 +9,7 @@ export * from "./CommandResultDeSer";
 export * from "./ServerError";
 export * from "./ClientCommandCommunication";
 export * from "./JsonDeSer";
+export * from "./PojoJsonDeSer";
 export * from "./ServerCommandCommunication";
 export * from "./CommandDeSer";
 export * from "./CommandResultReceiveObserver";

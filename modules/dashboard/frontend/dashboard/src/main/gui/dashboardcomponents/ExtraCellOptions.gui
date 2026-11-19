@@ -17,6 +17,7 @@ import dashboardcomponents.ExtraBarOptions;
 import dashboardcomponents.ExtraBoxOptions;
 import dashboardcomponents.ExtraSpeedOptions;
 import dashboardcomponents.ExtraScatterOptions;
+import dashboardcomponents.ExtraTableOptions;
 
 import mc.fenix.arrange.GemRow;
 import mc.fenix.arrange.GemColumn;
@@ -25,7 +26,9 @@ import mc.fenix.basic.GemButton;
 component ExtraCellOptions(
      CellConfig cell,
      int tutorialStep,
-     Event<Integer> changeTutorialStep
+     Event<Integer> changeTutorialStep,
+     // the CellDialog interprets the data to check it, shown in the preview
+     boolean interpreting = false
    ) {
 
       @GemColumn(components = [
@@ -52,6 +55,9 @@ component ExtraCellOptions(
                  },
                  @guard(compareViz(VizType.PIE)) {
                    @ExtraPieOptions(extra = cell.extra);
+                 },
+                 @guard(compareViz(VizType.FILTERABLE_TABLE)) {
+                   @ExtraTableOptions(extra = cell.extra);
                  }
              ]);
            } else {
@@ -76,16 +82,19 @@ component ExtraCellOptions(
                    },
                    @guard(compareViz(VizType.PIE)) {
                      @ExtraPieOptions(extra = cell.extra);
+                   },
+                   @guard(compareViz(VizType.FILTERABLE_TABLE)) {
+                     @ExtraTableOptions(extra = cell.extra);
                    }
               ]);
            },
            @guard(checkIfTutorialStep15()) {
              tutorialDisplay@GemColumn(width = "450px", height = "300px", components = [
-               @CellDisplay(cell = cell)
+               @CellDisplay(cell = cell, interpreting = interpreting)
              ]);
            } else {
               displayColumn@GemColumn(width = "450px", height = "300px", components = [
-                 @CellDisplay(cell = cell)
+                 @CellDisplay(cell = cell, interpreting = interpreting)
               ]);
            }
          ])

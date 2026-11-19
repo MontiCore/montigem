@@ -1,6 +1,5 @@
 import SomeCd.Foo;
 
-<<extends="SomeCd">>
 umlp AnotherCd {
   class Bar extends Foo {
     int bField;

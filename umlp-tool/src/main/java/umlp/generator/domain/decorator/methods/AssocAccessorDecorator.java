@@ -12,15 +12,34 @@ import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import umlp.generator.domain.decorator.GenService;
 
 public class AssocAccessorDecorator extends AccessorDecorator {
+
+  protected final AbstractMethodDecorator mapMethodDecorator;
+
   public AssocAccessorDecorator(GlobalExtensionManagement glex, CDGenService service,
                                 ASTCDType ast) {
     super(glex, new AssocMandatoryAccessorDecorator(glex, service),
             new OptionalAccessorDecorator(glex, service),
             new AssocListAccessorDecorator(glex, service, ast));
+    this.mapMethodDecorator = new AssocMapAccessorDecorator(glex, service, ast);
+  }
+
+  @Override
+  public void enableTemplates() {
+    super.enableTemplates();
+    mapMethodDecorator.enableTemplates();
+  }
+
+  @Override
+  public void disableTemplates() {
+    super.disableTemplates();
+    mapMethodDecorator.disableTemplates();
   }
 
   @Override
   protected AbstractMethodDecorator determineMethodDecoratorStrategy(ASTCDAttribute ast) {
+    if (GenService.isGemMap(ast)) {
+      return mapMethodDecorator;
+    }
     if (GenService.isGemList(ast)) {
       return listMethodDecorator;
     }

@@ -1,6 +1,10 @@
 import {DeSer} from "../command/DeSer";
 
 export class DateDeSer implements DeSer<Date> {
+
+  public isPojoDeSer(): boolean {
+    return false;
+  }
   serialize(obj: Date): Promise<string> {
     return Promise.resolve('"' + obj.toLocaleDateString() + '"');
   }

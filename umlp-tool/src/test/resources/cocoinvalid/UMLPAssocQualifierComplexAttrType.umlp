@@ -1,15 +1,19 @@
 /* (c) https://github.com/MontiCore/monticore */
 umlp UMLPAssocQualifierComplexAttrType {
   class A {
-    C a;
+    E e;
   }
 
   class B {
-    boolean isTrue;
+    java.util.List<String> names;
+    java.util.Optional<String> optName;
+    java.util.Set<Integer> ids;
   }
 
-  class C;
+  enum E;
 
-  association A [[isTrue]] -> B [*];
-  association B [[a]] -> A [*];
+  association A [[names]] -> B [1];
+  association A [[optName]] -> B [1];
+  association A [[ids]] -> B [1];
+  association B [[e]] -> A [1];
 }

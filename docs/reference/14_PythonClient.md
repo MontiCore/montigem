@@ -19,27 +19,16 @@ dependencies {
 }
 
 // Generate the files for use with the python-generator
-def generateGemForPy = tasks.register("generateGemForPy", CDGenTask) {
+def generatePyGem = tasks.register("generatePyGem", CDGenTask) {
   input.from(project.file("models/MyDomain.umlp"))
   class2MC = true
-  outputDir.set(project.layout.buildDirectory.dir("py_out_java"))
+  outputDir.set(project.layout.buildDirectory.dir("py_out"))
   configTemplate = 'cd2python.Gem2Py' // This config template describes the Gem2Py decorators
   getExtraClasspathElements().from(configurations.cdTool)
 }
-// Rename python files to .py 
-tasks.register("transformGemToPy", Sync) {
-  from(generateGemForPy)
-  dependsOn(generateGemForPy)
-  into(project.layout.buildDirectory.dir("py_out"))
-  eachFile { file ->
-    if (file.name.endsWith(".java")) {
-      file.name = file.name.replaceAll(/\.java/, ".py")
-    }
-  }
-}
 ```
 
-Run `gradle transformGemToPy`; the client is placed in `build/py_out`.
+Run `gradle generatePyGem`; the client is placed in `build/py_out`.
 
 **Known issue:** The .umlp model MUST use `classdiagram` instead of the keyword `umlp`!
 
