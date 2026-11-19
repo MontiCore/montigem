@@ -12,6 +12,7 @@ import de.monticore.symbols.basicsymbols._ast.ASTDiagram;
 import de.monticore.symbols.basicsymbols._symboltable.DiagramSymbol;
 import umlp.generator.AbstractDecorator;
 import umlp.generator.Filter;
+import umlp.generator.gui.gentypescript.printer.TSImportMap;
 import umlp.generator.util.UMLPSymbolTables;
 
 import java.nio.file.Path;
@@ -67,8 +68,13 @@ public class ComponentObserverManagerGenerator {
 
     List<String> names = new ArrayList<>(new LinkedHashSet<>(domainClassNamesToPackageMap.values()));
 
+    // CDs of precompiled libraries (e.g., MontiGem modules) are imported from their TS library
+    LinkedHashMap<String, String> cdNameToTSLibraryMap = new LinkedHashMap<>();
+    names.forEach(name -> TSImportMap.INSTANCE.getTSPackage(name)
+        .ifPresent(tsLibrary -> cdNameToTSLibraryMap.put(name, tsLibrary)));
+
     generatorEngine.generateNoA("umlp.gui2ts.TSComponentObserverManager", targetPath, ast,
-        cdName, names, domainClassNamesToPackageMap);
+        cdName, names, domainClassNamesToPackageMap, cdNameToTSLibraryMap);
 
     // resume the pipeline's report, the Gradle task reads its IncGenGradleCheck.txt
     if (reportingWasEnabled) {

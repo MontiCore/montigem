@@ -1,0 +1,58 @@
+:host ::ng-deep .gemIcon{
+  border-radius: 50%;
+  border: 12px solid #014E9D;
+  margin-left: -60px;
+  margin-top: -45px;
+  max-width: 75px;
+  max-height: 75px;
+  min-width: 75px;
+  min-height: 75px;
+}
+
+:host ::ng-deep .assistantTitle{
+  font-weight: 1000px;
+  color: white;
+  margin-top: -30px;
+  font-size: 14px;
+  margin-left: -44px;
+  border-radius: 8px;
+  background-color: #4F93DB;
+  padding-left: 50px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  max-width: 200px;
+  z-index: -1;
+}
+
+:host ::ng-deep .sectionTitle{
+  text-align: center;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  color: var(--blue-text);
+}
+
+// the text column takes the remaining width of the dialog, so short instructions are centred in it
+:host > gem-row > gem-column {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+// the lines are broken in the instruction texts; only wrap them where the dialog is too narrow
+// (with nowrap and overflow: hidden, too long lines were cut off)
+:host ::ng-deep .instruction {
+  font-size: 14px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+:host ::ng-deep .nextStep {
+  align-self: center;
+}
+
+:host ::ng-deep .nextStep .gem-button{
+  max-width: 80px;
+  border-radius: 5px;
+  margin: 20px auto 0;
+  min-width: 80px;
+}

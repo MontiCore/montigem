@@ -44,12 +44,12 @@ You can try UMLP using the [Vis-Lib Example](./examples/vis-lib).
 - Once you're finished you can stop the server in the terminal window by pressing the `CTRL` and `C` keys
 
 ## Editor plugins
-- Download Latest Plugin
-  - [IntelliJ](https://git.rwth-aachen.de/monticore/umlp/-/jobs/artifacts/dev/raw/umlp-tool/umlp-intellij-plugin/build/distributions/umlp-intellij-plugin.zip?job=build_intellij_plugin)
-  - [Visual Studio Code](https://git.rwth-aachen.de/monticore/umlp/-/jobs/artifacts/dev/raw/umlp-tool/build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp.vsix?job=build_with_deploy)
-- Install it
-  - IntelliJ: https://www.jetbrains.com/help/idea/managing-plugins.html#install_plugin_from_disk
-  - VSCode: https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
+
+Download the plugins from the **Assets** section of the [latest development snapshot](https://github.com/MontiCore/montigem/releases/tag/snapshot), updated after successful plugin builds on `dev`.
+For published versions, see [GitHub Releases](https://github.com/MontiCore/montigem/releases).
+
+- IntelliJ: download `UMLP-Intellij-Plugin-<version>.zip` and [install the plugin from disk](https://www.jetbrains.com/help/idea/managing-plugins.html#install_plugin_from_disk).
+- Visual Studio Code: download `UMLP-<version>.vsix` and [install the extension from VSIX](https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix).
 
 ## Project Structure
 * **doc** contains the documentation for the UMLPTool
@@ -103,4 +103,3 @@ The tool can be called with the following options:
 | -use_shell |                            | If the backend is generated, generate additional spring shell classes
 | -use_spring |                           | If the backend is generated, generate additional spring classes
 | -v | --version                          | Prints version information 
-

@@ -20,8 +20,8 @@ import gui.base.Footer;
 
 page OfferEdit(Offer offer){
   @GemCard(title = "Offer Edit", component =
-    @GemRow( components = [
-      @GemColumn(width = "40ch", rowGap = "5px",components = [
+    @GemRow(wrap = "wrap", colGap = "1rem", rowGap = "1rem", components = [
+      @GemColumn(width = "min(40ch, calc(100vw - 4rem))", rowGap = "5px",components = [
         @GemTextInput(
           labelText = "Offer Name",
           entry = offer.name
@@ -42,7 +42,7 @@ page OfferEdit(Offer offer){
         )
       ]),
       @GemImage(
-          width = "500px",
+          width = "min(500px, calc(100vw - 4rem))",
           source = offer.imgSource
       )
     ])

@@ -1,0 +1,31 @@
+name: "Trigger MontiGem Downstream Pipeline"
+
+on:
+  push:
+    branches:
+      - '**'  # every branch (dev included), but no tags
+
+jobs:
+  # Run the MontiGem Downstream pipeline (tests this change on a suite of projects)
+  # The MontiGem Downstream is a suite of projects, which are not build & tested with the given changes on a branch
+  trigger-montigem-downstream-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout trigger script
+        uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            .github/workflows/scripts/trigger-gitlab-pipeline.sh
+          sparse-checkout-cone-mode: false
+      - name: Trigger MontiGem Pipeline
+        # Trigger the MontiGem Downstream GitLab pipeline (via a plain curl script, see
+        # .github/workflows/scripts/trigger-gitlab-pipeline.sh) and wait for it to complete.
+        # umlp_ref is the pushed branch, as the GitLab pipeline clones it with `git clone --branch`
+        run: .github/workflows/scripts/trigger-gitlab-pipeline.sh
+        env:
+          GITLAB_HOST: 'git.rwth-aachen.de'
+          GITLAB_PROJECT_ID: '129999'  # MontiGem CI project id
+          GITLAB_REF: 'main'
+          GITLAB_TRIGGER_TOKEN: ${{ secrets.PIPELINE_TRIGGER_TOKEN }}
+          GITLAB_ACCESS_TOKEN: ${{ secrets.PIPELINE_ACCESS_TOKEN }}  # Access is required to show the status
+          GITLAB_INPUTS_JSON: '{"umlp_ref":"${{ github.ref_name }}"}'

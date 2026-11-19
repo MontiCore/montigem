@@ -1,0 +1,47 @@
+plugins {
+  id 'de.rwth.se.montigem-backend'
+  id 'java-library'
+
+  // id 'io.spring.dependency-management' version '1.0.15.RELEASE''
+  id 'org.springframework.boot' version "${spring_version}"
+  id 'maven-publish'
+}
+
+dependencies {
+  implementation project(':umlp-rte')
+  // Java types of the chart data (e.g., GemBarChartData)
+  api project(':umlp-rte:frontend')
+  // Interpreter for the data scripts of the dashboard cells
+  api project(':modules:dashboard:lang')
+  implementation "com.h2database:h2:${h2_database}"
+  // Neo4j DAOs (see umlp2java below)
+  implementation group: 'org.neo4j.driver', name: 'neo4j-java-driver', version: "$neo4j_java_driver_version"
+}
+
+// Also generate the Neo4j DAOs, such that the module can be used by applications using Neo4j
+// (SQL stays the default database access of the module)
+umlp2java {
+  genNeo4j.set(true)
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.java
+    }
+  }
+  // TODO: correct repo
+  repositories {
+    maven {
+      url "file://${project.layout.buildDirectory.get().asFile}/repo"
+    }
+    maven {
+      credentials.username mavenUser
+      credentials.password mavenPassword
+
+      def releasesRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-releases/"
+      def snapshotsRepoUrl = "https://nexus.se.rwth-aachen.de/content/repositories/umlp-snapshots/"
+      url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+    }
+  }
+}

@@ -34,3 +34,66 @@
     transform: translateY(0);
   }
 }
+
+@property --fade-left {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --fade-right {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 2rem;
+}
+
+@keyframes letter-fade {
+  0% { --fade-left: 0px; --fade-right: 2rem; }
+  5%, 95% { --fade-left: 2rem; --fade-right: 2rem; }
+  100% { --fade-left: 2rem; --fade-right: 0px; }
+}
+
+@include phone {
+  :host {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  :host ::ng-deep {
+    .letterRow {
+      width: 100% !important;
+      flex-wrap: nowrap !important;
+      justify-content: flex-start !important;
+      column-gap: 0.25rem !important;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 0.25rem;
+
+      --fade-left: 0px;
+      --fade-right: 2rem;
+      -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fade-left), #000 calc(100% - var(--fade-right)), transparent);
+      mask-image: linear-gradient(to right, transparent, #000 var(--fade-left), #000 calc(100% - var(--fade-right)), transparent);
+
+      @supports (animation-timeline: scroll()) {
+        animation: letter-fade linear both;
+        animation-timeline: scroll(self inline);
+      }
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      > gem-button {
+        flex: 0 0 auto;
+      }
+    }
+
+    .gem-button, .clear, .alphabetButton {
+      min-width: 2.5rem;
+      min-height: 2.5rem;
+      font-size: 13px;
+    }
+  }
+}

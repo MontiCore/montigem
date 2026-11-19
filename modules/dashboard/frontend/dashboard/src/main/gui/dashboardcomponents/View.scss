@@ -1,0 +1,103 @@
+.editDialog{
+   position: fixed;
+   top: 350px;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1000;
+   color: var(--text-color);
+   background-color: var(--background-color);
+ }
+
+.createDialog{
+   position: fixed;
+   top: 350px;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1000;
+   color: var(--text-color);
+   background-color: var(--background-color);
+ }
+
+.tutorialDialog{
+   width: 500px;
+   position: fixed;
+   top: 150px;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1000;
+   color: var(--text-color);
+   background-color: var(--background-color);
+ }
+
+.tutorialDialogBottom{
+   width: 500px;
+   position: fixed;
+   top: 600px;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   background: #fff;
+   padding: 20px;
+   border-radius: 8px;
+   border: 1px solid #e0e0e0;
+   z-index: 1000;
+   color: var(--text-color);
+   background-color: var(--background-color);
+ }
+
+// full-screen overlay behind the dialogs; fixed so it takes no space in the (full-height) view layout
+.backdrop{
+  position: fixed;
+  inset: 0;
+  width: auto !important;
+  height: auto !important;
+  background-color: rgba(0,0,0,0.3);
+  z-index: 500;
+}
+
+:host ::ng-deep .empty-gridstack {
+ margin-top: 100px;
+ font-weight: bold;
+ color:  #A3A3A3;
+ background-color: var(--view-background);
+ margin-top: 80px;
+}
+
+
+// the theme renders images as blocks, so text-align: center of the parent does not center it
+:host ::ng-deep .empty-icon {
+  margin: 0 auto;
+}
+
+
+
+
+
+// stretch the grid over the whole height of the view
+:host > gem-column {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+// min-height: 0 keeps the host at the page height even when the grid content is taller, since GridstackComp
+// derives the row height from it
+:host ::ng-deep gridstack-comp {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+}
+
+:host ::ng-deep gridstack-comp > gridstack {
+  flex: 1 1 auto;
+}

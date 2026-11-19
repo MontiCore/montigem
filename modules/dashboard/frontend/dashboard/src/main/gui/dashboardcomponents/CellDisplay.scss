@@ -1,0 +1,20 @@
+// no min-height: the card body fills the cell, a fixed minimum would let the pie overflow small cells
+:host ::ng-deep .pieChart {
+  background-color: var(--background-color) !important;
+}
+
+:host ::ng-deep .legend .bg {
+  fill: var(--background-color) !important;
+}
+
+:host ::ng-deep  .legendtext {
+  fill: var(--text-color) !important;
+}
+
+:host ::ng-deep .svg-container > svg.main-svg:first-of-type {
+  background: var(--background-color) !important;
+  background-color: var(--background-color) !important;
+}
+
+
+

@@ -35,7 +35,7 @@ public class PyExecTest extends AbstractPyTest {
     assertEquals(0, MyDomainManager.getBList().size());
     assertEquals("0", handler.sendCommand(
         "print(len((await my_domain_manager.list_filtered(MyDomain.B.B))['list']))").get());
-    assertEquals("gemId=0", handler.sendCommand(
+    assertEquals("gemId=0 bAttr='BAttr' c=Gem[MyDomain.C.C](gemId=-1)", handler.sendCommand(
             "new_b = await my_domain_manager.create(MyDomain.B.B(gemId=await my_domain_manager.get_free_gem_id() ))\nprint(new_b)")
         .get());
     assertEquals(1, MyDomainManager.getBList().size());
@@ -121,6 +121,15 @@ public class PyExecTest extends AbstractPyTest {
     assertEquals("<enum 'MyEnum'>", handler.sendCommand("print(type(my_a.enumState))").get());
     // enum
 
+    // direct access via Gem-proxy and chainable awaits
+    assertWait(() -> assertEquals("BAttr", handler.sendCommand("print(await(my_a.directB.bAttr))").get()));
+    my_a.getDirectB().setC(MyDomainManager.cBuilder().build().orElseThrow());
+    assertWait(() -> assertEquals(Long.toString(my_a.getDirectB().getCGem().getGemId()), handler.sendCommand("print(await(my_a.directB).c.gemId)").get()));
+    assertWait(() -> assertEquals(Long.toString(my_a.getDirectB().getCGem().getGemId()), handler.sendCommand("print(await my_a.directB.c.gemId)").get()));
+    assertWait(() -> assertEquals("CAttr", handler.sendCommand("print(await(await(my_a.directB).c).cAttr)").get()));
+    assertWait(() -> assertEquals("CAttr", handler.sendCommand("print(await my_a.directB.c.cAttr)").get()));
+    assertWait(() -> assertEquals("None", handler.sendCommand("print(await my_a.directB.c.setCAttr('newCVal'))").get()));
+    assertWait(() -> assertEquals("newCVal", handler.sendCommand("print(await my_a.directB.c.cAttr)").get()));
   }
 
   @Test
@@ -154,6 +163,7 @@ public class PyExecTest extends AbstractPyTest {
     assertEquals("0", handler.sendCommand("print(len(a1.listB))").get());
     a1.addListB(b1);
     assertWait(() -> assertEquals("1", handler.sendCommand("print(len(a1.listB))").get()));
+    assertWait(() -> assertEquals("[" + b1.getGemId() + "]", handler.sendCommand("print([b.gemId async for b in a1.listB])").get()));
 
     assertEquals("", handler.sendCommand("await a1.listB_add(1, " + b2.getGemId() + ")").get());
     assertWait(() -> assertEquals(2, a1.getListBList().size()));

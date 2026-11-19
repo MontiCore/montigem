@@ -1,9 +1,17 @@
+@import "variables";
+
 :host ::ng-deep {
   .wholeColumn {
     max-height: calc(100dvh - 10px);
     overflow: hidden;
     padding-bottom: 2.75rem;
     box-sizing: border-box;
+  }
+
+  .topColumn, .columnOverflow {
+    align-self: stretch;
+    width: 100% !important;
+    min-width: 0;
   }
 
   .topColumn {
@@ -26,5 +34,14 @@
       background-color: rgba(0, 0, 0, 0.2);
       border-radius: 4px;
     }
+  }
+}
+
+@include phone {
+  :host ::ng-deep .topColumn,
+  :host ::ng-deep .columnOverflow {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    box-sizing: border-box;
   }
 }

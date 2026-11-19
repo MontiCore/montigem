@@ -15,6 +15,7 @@
 @import "./Dialog";
 @import "./components/GemGrid";
 @import "./components/GemGridCell";
+@import "./components/GemGraph";
 @import "./components/GemOverlay";
 @import "./components/GemOverlayItem";
 @import "./components/GemRow";
@@ -52,6 +53,7 @@
   @include dialog-theme($rwth-blue-2, $rwth-black, $rwth-black-4);
   @include gem-grid-theme();
   @include gem-grid-cell-theme();
+  @include gem-graph-theme();
   @include gem-overlay-theme();
   @include gem-overlay-item-theme();
   @include gem-row-theme();

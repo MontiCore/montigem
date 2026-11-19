@@ -1,0 +1,67 @@
+package dashboardcomponents;
+
+import DashboardModule.CellConfig;
+import dashboardcomponents.DeleteDialog;
+import dashboardcomponents.CellDisplay;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.arrange.GemCard;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+
+component Cell(
+    boolean activateEditing,
+    Event<Long> editCell,
+    boolean editCellFlag,
+    CellConfig cell,
+    boolean delete,
+    boolean localDelete,
+    boolean download,
+    //special boolean flag for delete dialog being open, so
+    //just a single cell's dialogs open not all of them at once
+    boolean localDownload,
+    Event<Boolean> changeDownload,
+    Event<Void> deleteWidget,
+    Event<Boolean> changeDelete,
+    Event<Void> retrigger,
+    long viewGemId,
+    boolean create,
+    //tutorial
+    int tutorialStep,
+    Event<Integer> changeTutorialStep
+    //
+    ) {
+
+      @guard(localDelete) {
+        deleteDialog@DeleteDialog(cell = cell, viewGemId = viewGemId, close = closeDeleteDialog(), delete = deleteCell(), text = "Are you sure you want to delete this cell?");
+      };
+      @guard(localDownload) {
+        downloadDialog@DownloadDialog(cell = cell, close = closeDownloadDialog());
+      };
+      card@GemCard(
+        height = "100%",
+        title = cell.name,
+        component = cardBodyWrapper@GemColumn(
+          components=[
+             display@CellDisplay(cell = cell),
+              @guard(activateEditing) {
+                overlay@GemRow(colGap = "5px", hAlign = "center", vAlign = "center", components = [
+                  @guard(checkIfTutorialStep23()) {
+                    tutorialMove@GemButton(leftClick = acceptEditCell(cell, editCell, changeTutorialStep), disabled = checkIfDialogOpen(), content = [@GemIcon(name = "edit")]);
+                  } else {
+                    moveButton@GemButton(leftClick = acceptEditCell(cell, editCell, changeTutorialStep), disabled = alwaysDisabledByTutorial(), content = [@GemIcon(name = "edit")]);
+                  },
+                  @guard(checkIfTutorialStep22()) {
+                    tutorialDownload@GemButton(leftClick = openDownloadDialog(), disabled = checkIfDialogOpen(), content = [@GemIcon(color = "white", name = "download")]);
+                  }else{
+                    @GemButton(leftClick = openDownloadDialog(), disabled = alwaysDisabledByTutorial(), content = [@GemIcon(color = "white", name = "download")]);
+                  },
+                  deleteButton@GemButton(leftClick = openDeleteDialog(), disabled = alwaysDisabledByTutorial(), content = [@GemIcon(color = "white", name = "delete")])
+                ]);
+              }
+          ]
+        )
+      );
+}
+

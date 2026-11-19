@@ -414,13 +414,12 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
       String nullCheck = nullCheckPrinter.prettyprint(arg.getExpression());
 
       ASTExpression argExpr = arg.getExpression();
-      if (GUIDSLMill.typeDispatcher().isCommonExpressionsASTCallExpression(argExpr)) {
-        ASTCallExpression methodCall = GUIDSLMill.typeDispatcher().asCommonExpressionsASTCallExpression(argExpr);
+      if (argExpr instanceof ASTCallExpression methodCall) {
         if (methodCall.getArguments().sizeExpressions() > 0) {
           boolean hasViewElementArg = false;
           List<ASTExpression> expressions = methodCall.getArguments().getExpressionList();
           for(ASTExpression expr : expressions) {
-            if (GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(expr)) {
+            if (expr instanceof ASTGUIComponent) {
               hasViewElementArg = true;
               break;
             }
@@ -1110,13 +1109,13 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
               }
 
               if (util.isStringLiteral(navArgExpr)) {
-                ASTLiteralExpression routingUrlExpr = GUIDSLMill.typeDispatcher().asExpressionsBasisASTLiteralExpression(navArgExpr);
-                ASTStringLiteral routingUrl = GUIDSLMill.typeDispatcher().asMCCommonLiteralsASTStringLiteral(routingUrlExpr.getLiteral());
+                ASTLiteralExpression routingUrlExpr = (ASTLiteralExpression) navArgExpr;
+                ASTStringLiteral routingUrl = (ASTStringLiteral) routingUrlExpr.getLiteral();
                 getCD4C().addMethod(clazz, getNavigateStringTemplate(),
                     method.getAlias(), routingUrl.getValue());
               }
               else if (util.isViewElement(method.getParamTypes().getFirst())) {
-                ASTGUIComponent guiComponent = GUIDSLMill.typeDispatcher().asGUIDSLASTGUIComponent(navArgExpr);
+                ASTGUIComponent guiComponent = (ASTGUIComponent) navArgExpr;
                 printNavigateMethod(method, node, guiComponent);
                 prepareNavigateEventCaller(node, guiComponent);
               }

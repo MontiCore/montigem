@@ -1,0 +1,33 @@
+package dashboardcomponents;
+
+import DashboardModule.ViewConfig;
+import DashboardModule.CellConfig;
+import DashboardModule.TutorialStep;
+
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemImage;
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemButton;
+
+
+component TutorialDialog(
+  int tutorialStep,
+  List<TutorialStep> tutorialSteps,
+  Event<Integer> changeTutorialStep
+  ) {
+    @GemRow(components = [
+      gemIcon@GemImage(width = "75px", height = "75px", source = "assets/images/montigem-diamond.png"),
+      @GemColumn(components = [
+        assistantTitle@GemText(weight = "bold", value = "Dashboard Manager"),
+        sectionTitle@GemText(weight = "bold", value = getSectionTitle()),
+        @iterate(String line: getTutorialInstruction()) {
+          instruction@GemText(weight = "700px", value = line);
+        },
+        @guard(hasStepButton()) {
+          nextStep@GemButton(leftClick = nextStep(changeTutorialStep), label = "Next");
+        }
+      ])
+    ]);
+}

@@ -7,6 +7,7 @@ import de.monticore.cd4codebasis._ast.ASTCDClass;
 import de.monticore.cd4codebasis._ast.ASTCDParameter;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
+import de.monticore.expressions.expressionsbasis._ast.ASTNameExpression;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.generating.templateengine.TemplateHookPoint;
@@ -247,8 +248,8 @@ public class GUI2AngularClassDecorator extends GUI2ClassDecorator implements GUI
   public void endVisit(ASTGUIComponent node) {
     Map<ASTGUINamedArg, SymTypeExpression> argumentTypeMap = node.getArgumentTypes();
     for (ASTGUINamedArg arg : node.getGUINamedArgs().getGUINamedArgList()) {
-      if (GUIDSLMill.typeDispatcher().isExpressionsBasisASTNameExpression(arg.getExpression())) {
-        String argName = GUIDSLMill.typeDispatcher().asExpressionsBasisASTNameExpression(arg.getExpression()).getName();
+      if (arg.getExpression() instanceof ASTNameExpression nameExpression) {
+        String argName = nameExpression.getName();
         Optional<GUIParamSymbol> paramSymbol = node.getEnclosingScope().resolveGUIParam(argName);
         if (paramSymbol.isPresent() && paramSymbol.get().isIsReference()) {
 

@@ -1,0 +1,19 @@
+/* You can add global styles to this file, and also import other style files */
+@import "../../../../../../umlp-rte/frontend/theme/src/main/gui/mc/fenix/theme/theme";
+
+@include montigem-theme();
+
+:root {
+  color-scheme: light;
+}
+
+// Touch devices: suppress the blue tap flash and the focus ring a tap leaves behind.
+// Keyboard focus (:focus-visible) keeps its outline for accessibility.
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+  box-shadow: none;
+}

@@ -1,0 +1,135 @@
+# (c) https://github.com/MontiCore/monticore
+name: Release Editor Plugins
+
+concurrency: # Keep only the latest plugin build per ref
+  group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  push:
+    # Always trigger plugin build, release upload is filtered in jobs
+    branches:
+      - '**'
+    tags:
+      - '**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: self-hosted
+    container:
+      image: registry.git.rwth-aachen.de/monticore/container-registry/gradle8.14.4-chrome-installed
+      credentials:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+    env:
+      CI_REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+      CI_REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      CHROME_BIN: "/usr/bin/google-chrome-stable"
+      PUPPETEER_EXECUTABLE_PATH: "/usr/bin/google-chrome-stable"
+      MAVEN_USER: ${{ secrets.mavenUser }}
+      MAVEN_PASSWORD: ${{ secrets.mavenPassword }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Build with Gradle
+        shell: bash
+        run: |
+          # Resolve paths inside the container, where the workspace mount differs from the host.
+          export GRADLE_OPTS="-Dmaven.repo.local=$GITHUB_WORKSPACE/.m2"
+          export GRADLE_USER_HOME="$GITHUB_WORKSPACE/.gradle"
+          export NPM_CONFIG_CACHE="$GITHUB_WORKSPACE/.npm"
+          export JAVA_OPTS="-Xmx2g"
+          LOG="$GITHUB_WORKSPACE/build.log"
+
+          gradle --version 2>&1 | tee "$LOG"
+          gradle -p umlp-tool :umlp-intellij-plugin:buildPlugin :packageUMLPWithGUIVscodePlugin \
+            -PbuildVscodePlugin=true -PbuildIntelliJPlugin=true \
+            -PmavenUser="$MAVEN_USER" -PmavenPassword="$MAVEN_PASSWORD" \
+            -Dorg.gradle.jvmargs="-Xmx8192m -Dfile.encoding=UTF-8" \
+            --refresh-dependencies --stacktrace >> "$LOG" 2> >(tee -a "$LOG" >&2)
+          wait
+
+      - name: Extract version name
+        shell: bash
+        run: |
+          echo "version=$(grep '^[[:space:]]*version[[:space:]]*=' umlp-tool/gradle.properties | sed 's/^[[:space:]]*version[[:space:]]*=[[:space:]]*//' | sed 's/-SNAPSHOT$//')" >> "$GITHUB_OUTPUT"
+          echo "full_version=$(grep '^[[:space:]]*version[[:space:]]*=' umlp-tool/gradle.properties | sed 's/^[[:space:]]*version[[:space:]]*=[[:space:]]*//')" >> "$GITHUB_OUTPUT"
+        id: extract_version
+
+      - name: Rename and move artifacts
+        run: |
+          mkdir dist
+          mv umlp-tool/build/generated-sources/UMLPWithGUI/plugins/umlpwithgui-vscode-plugin/umlpwithgui-lsp-${{ steps.extract_version.outputs.full_version }}.vsix dist/UMLP-${{ steps.extract_version.outputs.version }}.vsix
+          mv umlp-tool/umlp-intellij-plugin/build/distributions/umlp-intellij-plugin-${{ steps.extract_version.outputs.full_version }}.zip dist/UMLP-Intellij-Plugin-${{ steps.extract_version.outputs.version }}.zip
+
+      # Upload the build.
+      - name: 'Upload Vscode Artifact'
+        uses: actions/upload-artifact@v7
+        with:
+          name: UMLP-${{ steps.extract_version.outputs.version }}.vsix
+          path: dist/UMLP-${{ steps.extract_version.outputs.version }}.vsix
+          if-no-files-found: error
+      - name: 'Upload Intellij Artifact'
+        uses: actions/upload-artifact@v7
+        with:
+          name: UMLP-Intellij-Plugin-${{ steps.extract_version.outputs.version }}.zip
+          path: dist/UMLP-Intellij-Plugin-${{ steps.extract_version.outputs.version }}.zip
+          if-no-files-found: error
+
+  snapshot-release:
+    name: Release SNAPSHOT
+    runs-on: ubuntu-latest
+    # Only upload snapshot release on dev branch
+    if: github.repository_owner == 'MontiCore' && github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Extract version name
+        shell: bash
+        run: echo "version=$(grep '^[[:space:]]*version[[:space:]]*=' umlp-tool/gradle.properties | sed 's/^[[:space:]]*version[[:space:]]*=[[:space:]]*//' | sed 's/-SNAPSHOT$//')" >> "$GITHUB_OUTPUT"
+        id: extract_version
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      # GitHub Releases require a tag
+      - name: Delete release if exist then create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "snapshot" && gh release delete "snapshot" -y --cleanup-tag || true
+          gh release create "snapshot" ./dist/* --target "$GITHUB_SHA" -p -t "UMLP ${{ steps.extract_version.outputs.version }} SNAPSHOT" --generate-notes
+
+  tag-release:
+    name: Release
+    runs-on: ubuntu-latest
+    # Only upload release on tag
+    if: github.repository_owner == 'MontiCore' && startsWith(github.ref, 'refs/tags/')
+    needs: build
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Extract version name
+        shell: bash
+        run: echo "version=$(grep '^[[:space:]]*version[[:space:]]*=' umlp-tool/gradle.properties | sed 's/^[[:space:]]*version[[:space:]]*=[[:space:]]*//' | sed 's/-SNAPSHOT$//')" >> "$GITHUB_OUTPUT"
+        id: extract_version
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" ./dist/* --verify-tag -d -t "UMLP ${{ steps.extract_version.outputs.version }}" --generate-notes

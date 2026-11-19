@@ -21,8 +21,14 @@ classdiagram MyDomain { //b
     MyEnum enumState = MyEnum.A;
   }
 
-  class B {}
+  class B {
+    String bAttr = "BAttr";
+  }
   association A -> B;
+  class C {
+    String cAttr = "CAttr";
+  }
+  association B -> C [0..1];
 
   class TestAssoc_1_A {}
   class TestAssoc_1_B {}

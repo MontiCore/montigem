@@ -48,4 +48,4 @@ When exporting a page containing charts (like ApexCharts or Chart.js) to PDF:
 *   **SVG-based charts:** Do not attempt to convert the SVG directly (tools like `html2canvas` often fail here). Instead, manually redraw the chart's geometry within the PDF using the primitive shapes API of your PDF library (e.g., `doc.rect()`, `doc.text()` in `jspdf`).
 
 ---
-[< Previous: Deployment](12_Deployment.md) | [Back to Index](../MontiGem_Documentation.md)
+[< Previous: Deployment](12_Deployment.md) | [Back to Index](../MontiGem_Documentation.md) | [Next: Python Client Generator >](14_PythonClient.md)

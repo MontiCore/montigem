@@ -40,8 +40,10 @@
   vertical-align: baseline;
 }
 
-:host ::ng-deep .gem-button:hover {
-  background-color: lightblue;
+:host ::ng-deep .gem-button {
+  @include hover {
+    background-color: lightblue;
+  }
 }
 
 :host ::ng-deep .gem-button:active {
@@ -65,4 +67,36 @@
 
 :host(.ordinaryPanel) ::ng-deep .gem-button {
   min-height: 3.5rem;
+}
+
+@include phone {
+  :host {
+    display: block;
+    align-self: stretch;
+    width: 100%;
+  }
+
+  :host ::ng-deep gem-row {
+    width: 100% !important;
+  }
+
+  :host ::ng-deep gem-row > gem-button {
+    width: calc(50% - 0.5rem) !important;
+  }
+
+  :host ::ng-deep .gem-button {
+    min-height: 3.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 15px;
+    overflow-wrap: anywhere;
+  }
+
+  :host(.leadPanel) ::ng-deep .gem-button {
+    min-height: 4.5rem;
+    font-size: 1.05rem;
+  }
+
+  :host(.ordinaryPanel) ::ng-deep .gem-button {
+    min-height: 3rem;
+  }
 }

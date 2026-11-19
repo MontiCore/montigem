@@ -150,3 +150,20 @@ $rwth-lila-1: #9B91C1;
 $rwth-lila-2: #BCB5D7;
 $rwth-lila-3: #DEDAEB;
 $rwth-lila-4: #F2F0F7;
+
+$bp-tablet: 1024px;
+$bp-phone: 600px;
+
+@mixin tablet {
+  @media (max-width: $bp-tablet) { @content; }
+}
+
+@mixin phone {
+  @media (max-width: $bp-phone) { @content; }
+}
+
+@mixin hover {
+  @media (hover: hover) {
+    &:hover { @content; }
+  }
+}

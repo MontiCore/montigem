@@ -1,0 +1,83 @@
+package dashboardcomponents;
+
+import DashboardModule.ViewConfig;
+import DashboardModule.CellConfig;
+import DashboardModule.TutorialStep;
+
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import mc.fenix.basic.GemIcon;
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemButton;
+import dashboardcomponents.DeleteDialog;
+
+//------------------------------------------------------------------------------
+//To check method we initialize the temporary state holding cell
+//for the cell dialog instances as it is a temporary fix which still
+//requires user to click on "save" multiple times for it to actually go through
+//-------------------------------------------------------------------------------
+component View(
+    boolean edit,
+    boolean create,
+    //boolean flags used for dialogs/functions in lower/upper components but needed to be initialized here
+    //so we can keep track for button disabling
+    boolean delete,
+    boolean download,
+    Event<Boolean> changeRunning,
+    Event<Boolean> changeDownload,
+    Event<Boolean> changeDelete,
+    Event<Void> closeCreate,
+    Event<Void> closeEdit,
+    //Event<Long> setEditCell,
+    //tutorial
+    int tutorialStep,
+    List<TutorialStep> tutorialSteps,
+    Event<Integer> changeTutorialStep,
+    //
+    long configGemId,
+    boolean editCellFlag,
+    long editCellId,
+    ViewConfig view
+  ) {
+  //cell dialog in "editing mode"
+  @guard(editCellFlag) {
+     backdrop@GemText();
+     editDialog@CellDialog(
+      edit = true,
+      cell = getEditCell(editCellId),
+      cellForEdit = getCellBuilder(editCellId),
+      first = true,
+      //tutorial
+      tutorialStep = tutorialStep,
+      changeTutorialStep = changeTutorialStep,
+      //
+      close = closeEditDialog());
+  };
+  //cell dialog in "create mode"
+  @guard(create) {
+     backdrop@GemText();
+     createDialog@CellDialog(
+      edit = false,
+      view = view,
+      //tutorial
+      tutorialStep = tutorialStep,
+      changeTutorialStep = changeTutorialStep,
+      //
+      close = closeCreate);
+  };
+  @GemColumn(components = [
+     @GridstackComp(
+       view = view,
+       edit = edit,
+       download = download,
+       changeDownload = changeDownload,
+       changeRunning = changeRunning,
+       editCell = setEditCell(),
+       editCellFlag = editCellFlag,
+       delete = delete,
+       changeDelete = changeDelete,
+       tutorialStep = tutorialStep,
+       changeTutorialStep = changeTutorialStep,
+       create = create)
+  ]);
+}

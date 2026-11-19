@@ -1,3 +1,5 @@
+@import "variables";
+
 :host ::ng-deep {
 
 
@@ -10,8 +12,8 @@
     padding: 24px;
     box-sizing: border-box;
 
-    width: 400px !important;
-    max-width: 400px;
+    width: min(400px, calc(100vw - 2rem)) !important;
+    max-width: none;
     height: auto !important;
     margin: 50px auto 0 auto !important;
 
@@ -91,5 +93,21 @@
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0, 84, 159, 0.1);
     margin-top: 4px;
+  }
+}
+
+@include phone {
+  :host ::ng-deep {
+    gem-column.gem-card,
+    .gem-card {
+      margin-top: 1.5rem !important;
+      padding: 16px;
+    }
+
+    .gem-card-body .password,
+    .gem-card-body .gem-text-input,
+    .gem-card-body div:has(> input[type="password"]) {
+      max-width: none;
+    }
   }
 }

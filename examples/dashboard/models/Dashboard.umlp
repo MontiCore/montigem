@@ -1,0 +1,79 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+// The dashboard itself (configs, cells, views, ...) is provided by the dashboard module
+import DashboardModule.*;
+
+import java.util.List;
+
+<<extends="DashboardModule">>
+umlp Dashboard {
+
+  // EXAMPLE DATA DOMAIN
+
+  class Organization {
+    String name;
+    List<Team> teams;
+  }
+
+  class Team {
+    String name;
+    Department department;
+    List<Person> people;
+    List<Task> tasks;
+  }
+
+  class Person {
+    String name;
+    Role role;
+    int tenure;
+    Education education;
+    boolean international;
+    int age;
+    Statistics statistics;
+  }
+
+  enum Role {
+    JUNIOR,
+    MID,
+    SENIOR,
+    MANAGER;
+  }
+
+  enum Education {
+    NONE,
+    BACHELOR,
+    MASTER,
+    PHD;
+  }
+
+  enum Department {
+    QA,
+    DEVOPS,
+    SECURITY,
+    FRONTEND,
+    BACKEND;
+  }
+
+  class Statistics {
+    List<DataPoint> numberOfIssuesClosed;
+    List<DataPoint> numberOfCommits;
+    List<DataPoint> numberOfDocumentationPages;
+    List<DataPoint> numberOfBugsReported;
+    List<DataPoint> numberOfPullRequestsReviewed;
+  }
+
+  class DataPoint {
+    String time;
+    int value;
+  }
+
+  class Task {
+    String name;
+    String description;
+    boolean completed;
+  }
+
+  association Team -> (collaboratingWith) Team [*];
+  association Person -> (friendsWith) Person [*];
+
+}

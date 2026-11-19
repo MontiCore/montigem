@@ -2,6 +2,7 @@
 package umlp.jsweet.extension.module;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.CompilationUnitElement;
@@ -36,7 +37,8 @@ public class RelativeImportAdapter extends PrinterAdapter {
     String qName = importedClass.getQualifiedName().toString();
     ModuleImportDescriptor res = super.getModuleImportDescriptor(compilationUnit, importedName, importedClass);
 
-    if (qName != null) {
+    // erased classes (e.g., backend-only helpers) are not transpiled, thus there is nothing to import
+    if (qName != null && !context.hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
       Optional<String> tsPath = getRelativePath(
           compilationUnit.getPackage().getQualifiedName().toString(), qName);
       if (tsPath.isPresent()) {

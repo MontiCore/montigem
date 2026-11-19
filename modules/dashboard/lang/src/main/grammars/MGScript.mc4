@@ -1,0 +1,29 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+grammar MGScript
+  extends // Symbols
+          de.monticore.symbols.OOSymbols,
+
+          // Literals
+          de.monticore.literals.MCCommonLiterals,
+
+          // Expressions
+          de.monticore.expressions.CommonExpressions,
+          de.monticore.ocl.SetExpressions,
+          de.monticore.expressions.AssignmentExpressions,
+          de.monticore.expressions.LambdaExpressions,
+
+          // Statements
+          de.monticore.statements.MCCommonStatements,
+          de.monticore.statements.MCVarDeclarationStatements,
+          de.monticore.statements.MCReturnStatements,
+          de.monticore.statements.MCArrayStatements,
+
+          // Types
+          de.monticore.types.MCFunctionTypes,
+          de.monticore.types.MCArrayTypes,
+          de.monticore.types.MCFullGenericTypes {
+
+  InterpreterCompilationUnit = MCImportStatement* MCBlockStatement*;
+
+}

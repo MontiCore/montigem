@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  // fill the browser window, the app shell (app-root, main) has no height of its own
+  height: 100vh;
+}
+
+.parent{
+  text-color: var(--text-color);
+  background-color: var(--view-background);
+  height: 100%;
+  padding-left: 5px;
+  padding-right: 5px;
+}

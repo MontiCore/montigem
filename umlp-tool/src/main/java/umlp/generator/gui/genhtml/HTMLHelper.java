@@ -160,7 +160,7 @@ public class HTMLHelper implements GUIDSLVisitor2 {
   }
 
   protected void addToCurrentBlocks(ASTGUIBlockContent block) {
-    if (block.isPresentExpression() && GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(block.getExpression())) {
+    if (block.isPresentExpression() && block.getExpression() instanceof ASTGUIComponent) {
       currentBlocks.add(block.getExpression());
     }
     if (block.isPresentGUIGuard()) {
@@ -172,7 +172,7 @@ public class HTMLHelper implements GUIDSLVisitor2 {
   }
 
   protected void removeFromCurrentBlocks(ASTGUIBlockContent block) {
-    if (block.isPresentExpression() && GUIDSLMill.typeDispatcher().isGUIDSLASTGUIComponent(block.getExpression())) {
+    if (block.isPresentExpression() && block.getExpression() instanceof ASTGUIComponent) {
       currentBlocks.remove(block.getExpression());
     }
     if (block.isPresentGUIGuard()) {
