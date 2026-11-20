@@ -10,6 +10,7 @@ export class GeneralErrorCollector {
   observers: IUMLPList<GeneralErrorObserver>;
 
   constructor() {
+    this.observers = new AsyncList(); // HWC: also required when non-async
   }
 
   public async __GeneralErrorCollectorConstructor(): Promise<GeneralErrorCollector> {
