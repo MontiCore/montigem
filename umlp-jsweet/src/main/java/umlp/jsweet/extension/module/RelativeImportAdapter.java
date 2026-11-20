@@ -29,13 +29,22 @@ public class RelativeImportAdapter extends PrinterAdapter {
     this.adapterUtils = new GUIAdapterUtils(this, types(), context, util());
   }
 
+  /**
+   * Replaces JSweet's default import by a relative path to the actual file.
+   * JSweet defaults are null or '.'-relative; paths set by other adapters, e.g.,
+   * {@link umlp.jsweet.extension.common.UMLPRTEImportAdapter}, are kept.
+   */
   @Override
   public ModuleImportDescriptor getModuleImportDescriptor(
       CompilationUnitElement compilationUnit, String importedName,
       TypeElement importedClass
   ) {
     String qName = importedClass.getQualifiedName().toString();
-    ModuleImportDescriptor res = super.getModuleImportDescriptor(compilationUnit, importedName, importedClass);
+    ModuleImportDescriptor innerImport = super.getModuleImportDescriptor(compilationUnit, importedName, importedClass);
+
+    if (innerImport != null && !StringUtils.startsWith(innerImport.getPathToImportedClass(), ".")) {
+      return innerImport;
+    }
 
     // erased classes (e.g., backend-only helpers) are not transpiled, thus there is nothing to import
     if (qName != null && !context.hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
@@ -56,7 +65,7 @@ public class RelativeImportAdapter extends PrinterAdapter {
         }
       }
     }
-    return res;
+    return innerImport;
   }
 
   @Override
