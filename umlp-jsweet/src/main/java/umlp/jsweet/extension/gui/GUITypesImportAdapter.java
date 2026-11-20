@@ -5,8 +5,7 @@ import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ImportElement;
-import org.jsweet.transpiler.model.NewClassElement;
-import umlp.jsweet.extension.AbstractAdapter;
+import umlp.jsweet.extension.common.AbstractAdapter;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
 
 import javax.lang.model.element.PackageElement;

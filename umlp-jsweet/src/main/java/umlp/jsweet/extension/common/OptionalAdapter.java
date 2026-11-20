@@ -8,7 +8,6 @@ import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import standalone.com.sun.source.tree.LambdaExpressionTree;
 import standalone.com.sun.source.tree.Tree;
-import umlp.jsweet.extension.AbstractAdapter;
 
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;

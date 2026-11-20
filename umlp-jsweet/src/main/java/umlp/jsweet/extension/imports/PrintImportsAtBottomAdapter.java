@@ -1,4 +1,4 @@
-package umlp.jsweet.extension;
+package umlp.jsweet.extension.imports;
 
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;

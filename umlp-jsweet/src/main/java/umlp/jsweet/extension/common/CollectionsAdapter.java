@@ -2,7 +2,6 @@
 package umlp.jsweet.extension.common;
 
 import de.se_rwth.commons.logging.Log;
-import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
@@ -17,17 +16,12 @@ import standalone.com.sun.source.tree.EnhancedForLoopTree;
 import standalone.com.sun.source.tree.ExpressionTree;
 import standalone.com.sun.source.tree.MemberSelectTree;
 import standalone.com.sun.source.tree.MethodInvocationTree;
-import standalone.com.sun.source.tree.MethodTree;
 import standalone.com.sun.tools.javac.tree.JCTree;
-import umlp.jsweet.extension.AbstractAdapter;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
-import umlp.jsweet.extension.util.RTEPathUtil;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;

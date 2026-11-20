@@ -19,7 +19,6 @@ import standalone.com.sun.source.tree.Tree;
 import standalone.com.sun.source.tree.VariableTree;
 import standalone.com.sun.source.util.TreeScanner;
 import standalone.com.sun.tools.javac.tree.JCTree;
-import umlp.jsweet.extension.AbstractAdapter;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
 

@@ -2,7 +2,7 @@
 package umlp.jsweet.extension.gui;
 
 import org.jsweet.transpiler.extension.PrinterAdapter;
-import umlp.jsweet.extension.AbstractAdapter;
+import umlp.jsweet.extension.common.AbstractAdapter;
 
 import javax.lang.model.type.TypeMirror;
 import java.util.function.Function;
