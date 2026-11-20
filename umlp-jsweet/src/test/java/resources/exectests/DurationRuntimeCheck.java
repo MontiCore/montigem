@@ -191,4 +191,24 @@ public class DurationRuntimeCheck {
         + Duration.ofNanos(-1_000_001).toMillis() + " " + Duration.ofSeconds(-2).toMillis() + " "
         + Duration.ofNanos(1_999_999).toMillis();
   }
+
+  /** switch over a ChronoUnit */
+  @JSweetTest
+  public static String checkSwitchOverChronoUnit() {
+    String result = "";
+    ChronoUnit[] units = {ChronoUnit.DAYS, ChronoUnit.HOURS, ChronoUnit.MONTHS};
+    for (ChronoUnit unit : units) {
+      switch (unit) {
+        case DAYS:
+          result += "d";
+          break;
+        case HOURS:
+          result += "h";
+          break;
+        default:
+          result += "?";
+      }
+    }
+    return result;
+  }
 }

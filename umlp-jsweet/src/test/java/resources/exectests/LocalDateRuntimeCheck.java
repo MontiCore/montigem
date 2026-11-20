@@ -119,4 +119,24 @@ public class LocalDateRuntimeCheck {
     LocalDateTime dateTime = LocalDateTime.of(2024, 2, 29, 12, 34, 56);
     return dateTime.toLocalDate().equals(LocalDate.of(2024, 2, 29));
   }
+
+  /** switch over a DayOfWeek */
+  @JSweetTest
+  public static String checkSwitchOverDayOfWeek() {
+    String result = "";
+    for (int day = 16; day <= 22; day++) {
+      switch (LocalDate.of(2026, 11, day).getDayOfWeek()) {
+        case SATURDAY:
+        case SUNDAY:
+          result += "w";
+          break;
+        case FRIDAY:
+          result += "f";
+          break;
+        default:
+          result += "d";
+      }
+    }
+    return result;
+  }
 }

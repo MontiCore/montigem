@@ -5,6 +5,7 @@ import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.AssignmentWithOperatorElement;
 import org.jsweet.transpiler.model.BinaryOperatorElement;
+import org.jsweet.transpiler.model.CaseElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ExtendedElementFactory;
 import org.jsweet.transpiler.model.MethodInvocationElement;
@@ -799,6 +800,17 @@ public class JavaTimeAdapter extends AbstractAdapter {
     } else {
       printDurationHelper("unitToString", List.of(element));
     }
+  }
+
+  /** a case label of DayOfWeek or ChronoUnit is the name of the constant, like the constants themselves */
+  @Override
+  public boolean substituteCaseStatementPattern(CaseElement caseStatement, ExtendedElement pattern) {
+    if (pattern.getType() != null && ("java.time.DayOfWeek".equals(pattern.getType().toString())
+        || CHRONO_UNIT.equals(pattern.getType().toString()))) {
+      print("\"" + ExtendedElementFactory.toTree(pattern) + "\"");
+      return true;
+    }
+    return super.substituteCaseStatementPattern(caseStatement, pattern);
   }
 
   @Override
