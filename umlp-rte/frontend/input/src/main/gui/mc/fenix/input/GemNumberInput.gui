@@ -18,6 +18,8 @@ component GemNumberInput(
   ?double entry,
   /** Step increment for the number input. Default is 1.0. */
   double step = 1.0,
+  /** Minimum value allowed for the number input. */
+  double min,
   /** Whether the input field is disabled. */
   boolean disabled = false,
   /** Text displayed when the field is empty. */

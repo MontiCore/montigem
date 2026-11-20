@@ -17,10 +17,12 @@
     [value]="displayValue"
     [disabled]="disabled"
     [placeholder]="placeholder"
+    [attr.min]="min ?? null"
     (input)="onInput($event)"
     (keyup)="keyRelease.emit($event)"
     (keydown)="onKeyDown($event)"
     (paste)="onPaste($event)"
+    (blur)="onBlur()"
   />
   <div class="gem-number-stepper">
     <button type="button" class="gem-number-stepper-up" (click)="onStepUp()" [disabled]="disabled" tabindex="-1"></button>
