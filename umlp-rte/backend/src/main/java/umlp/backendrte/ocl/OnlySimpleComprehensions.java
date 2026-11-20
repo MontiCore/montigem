@@ -7,7 +7,8 @@ import de.monticore.expressions.commonexpressions._ast.ASTGreaterThanExpression;
 import de.monticore.expressions.commonexpressions._ast.ASTLessEqualExpression;
 import de.monticore.expressions.commonexpressions._ast.ASTLessThanExpression;
 import de.monticore.expressions.commonexpressions._ast.ASTNotEqualsExpression;
-import de.monticore.expressions.expressionsbasis._ast.ASTNameExpression;
+import de.monticore.expressions.commonexpressions._ast.ASTQualifiedNameExpression;
+import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
 import de.monticore.ocl.ocl.OCLMill;
 import de.monticore.ocl.setexpressions._ast.ASTSetComprehension;
 import de.monticore.ocl.setexpressions._ast.ASTSetComprehensionItem;
@@ -23,13 +24,13 @@ public class OnlySimpleComprehensions implements SetExpressionsASTSetComprehensi
   public void check(ASTSetComprehension node) {
     // left side is only simple expression, like `p`, `foo`, ...
     if (node.getLeft().isPresentExpression()
-        && node.getLeft().getExpression() instanceof ASTNameExpression) {
-      String left = ((ASTNameExpression) node.getLeft().getExpression()).getName();
+        && isName(node.getLeft().getExpression())) {
+      String left = ((ASTQualifiedNameExpression) node.getLeft().getExpression()).getMCQualifiedName().getQName();
       int generators = 0;
       for (ASTSetComprehensionItem right : node.getSetComprehensionItemList()) {
         // if right side has a generator declaration, then only simple, like `p in Person`
         if (right.isPresentGeneratorDeclaration()) {
-          if (right.getGeneratorDeclaration().getExpression() instanceof ASTNameExpression) {
+          if (isName(right.getGeneratorDeclaration().getExpression())) {
             if (!right.getGeneratorDeclaration().getName().equals(left)) {
               Log.error("0xB0002 Unsupported format: Generator on the right side of SetComprehension must use"
                   + " the name from the left side but was\n"
@@ -74,5 +75,13 @@ public class OnlySimpleComprehensions implements SetExpressionsASTSetComprehensi
       Log.error("0xB0001 Unsupported format: Left side of SetComprehension must be a name expression, like `person`"
           + " or `x` but was\n" + OCLMill.prettyPrint(node.getLeft(), false));
     }
+  }
+
+  /**
+   * simple names, like `p`, are parsed as qualified names with a single part
+   */
+  protected boolean isName(ASTExpression expr) {
+    return expr instanceof ASTQualifiedNameExpression qName
+        && qName.getMCQualifiedName().sizeParts() == 1;
   }
 }

@@ -3,6 +3,7 @@ package umlp.generator.gui.genjava.decorator;
 import de.monticore.ast.ASTNode;
 import de.monticore.expressions.commonexpressions._ast.ASTCallExpression;
 import de.monticore.expressions.commonexpressions._ast.ASTFieldAccessExpression;
+import de.monticore.expressions.commonexpressions._ast.ASTStaticFieldAccessExpression;
 import de.monticore.expressions.commonexpressions._visitor.CommonExpressionsVisitor2;
 import de.monticore.expressions.expressionsbasis._visitor.ExpressionsBasisVisitor2;
 import de.monticore.guidsl.GUIDSLMill;
@@ -158,6 +159,17 @@ public class InitDependencyTree implements GUIDSLVisitor2, CommonExpressionsVisi
 
   @Override
   public void endVisit(ASTFieldAccessExpression node) {
+    putDependency(node);
+    maybeJumpDepStack(node);
+  }
+
+  @Override
+  public void visit(ASTStaticFieldAccessExpression node) {
+    rememberDepStackJump(node);
+  }
+
+  @Override
+  public void endVisit(ASTStaticFieldAccessExpression node) {
     putDependency(node);
     maybeJumpDepStack(node);
   }

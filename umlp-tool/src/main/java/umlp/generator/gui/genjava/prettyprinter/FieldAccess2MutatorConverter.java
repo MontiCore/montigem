@@ -22,6 +22,7 @@ import de.monticore.expressions.commonexpressions._ast.ASTMultExpression;
 import de.monticore.expressions.commonexpressions._ast.ASTNotEqualsExpression;
 import de.monticore.expressions.commonexpressions._ast.ASTPlusExpression;
 import de.monticore.expressions.commonexpressions._ast.ASTPlusPrefixExpression;
+import de.monticore.expressions.commonexpressions._ast.ASTStaticFieldAccessExpression;
 import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
 import de.monticore.prettyprint.CommentPrettyPrinter;
 import de.monticore.prettyprint.IndentPrinter;
@@ -76,6 +77,14 @@ public class FieldAccess2MutatorConverter extends FieldAccess2AccessorConverter 
     if (this.isPrintComments()) {
       CommentPrettyPrinter.printPostComments(node, getPrinter());
     }
+  }
+
+  @Override
+  public void handle(ASTStaticFieldAccessExpression node) {
+    // e.g., enum constants
+    Log.error("0x0000B Expected a mutable value, but got "
+        + GUIGeneratorUtil.getInstance().print(node));
+    super.handle(node);
   }
 
   protected String attr2Setter(ASTFieldAccessExpression node) {

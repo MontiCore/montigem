@@ -13,6 +13,8 @@ import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._visitor.CDBasisVisitor2;
 import de.monticore.class2mc.OOClass2MCResolver;
+import de.monticore.expressions.expressionsbasis._ast.ASTExpression;
+import de.monticore.expressions.expressionsbasis._visitor.ExpressionsBasisVisitor2;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.generating.templateengine.TemplateController;
@@ -28,6 +30,7 @@ import de.monticore.guidsl._symboltable.GUIDSLSymbols2Json;
 import de.monticore.guidsl._symboltable.IGUIDSLArtifactScope;
 import de.monticore.guidsl._symboltable.IGUIDSLScope;
 import de.monticore.guidsl._symboltable.RoleSymbolDeSer;
+import de.monticore.guidsl._visitor.GUIDSLTraverser;
 import de.monticore.io.FileReaderWriter;
 import de.monticore.io.paths.MCPath;
 import de.monticore.ocl.ocl._ast.ASTOCLCompilationUnit;
@@ -38,6 +41,8 @@ import de.monticore.symboltable.serialization.json.JsonBoolean;
 import de.monticore.symboltable.serialization.json.JsonElement;
 import de.monticore.symboltable.serialization.json.JsonObject;
 import de.monticore.symboltable.serialization.json.UserJsonString;
+import de.monticore.types3.TypeCheck3;
+import de.monticore.types3.util.PostTypeCheckNodeReplacer;
 import de.se_rwth.commons.logging.Log;
 import oclwitherrormessages.OCLWithErrorMessagesMill;
 import org.apache.commons.cli.CommandLine;
@@ -433,11 +438,27 @@ public class UMLPTool extends UMLPToolTOP {
 
       guidslTool.defaultImportTrafo(ast);
       guidslTool.registerLoadedFile(modelFilePath.toString());
-      return Map.entry(
-          ast,
-          createSymbolTable(guidslTool, ast)
-      );
+      IGUIDSLArtifactScope as = createSymbolTable(guidslTool, ast);
+      runAfterTypeCheckTrafos(ast);
+      return Map.entry(ast, as);
     }
+  }
+
+  /**
+   * replaces the qualified names in expressions,
+   * e.g., "p.name" with field accesses, as the generators expect them
+   */
+  public static void runAfterTypeCheckTrafos(ASTGUICompilationUnit node) {
+    GUIDSLTraverser traverser = GUIDSLMill.inheritanceTraverser();
+    // types each expression, outer expressions first to have their context
+    traverser.add4ExpressionsBasis(new ExpressionsBasisVisitor2() {
+      @Override
+      public void visit(ASTExpression expr) {
+        TypeCheck3.typeOf(expr);
+      }
+    });
+    node.accept(traverser);
+    PostTypeCheckNodeReplacer.replace(GUIDSLMill::inheritanceTraverser, node);
   }
 
   protected Optional<IGUIDSLArtifactScope> findGUIArtifactScope(Path modelFilePath) {
