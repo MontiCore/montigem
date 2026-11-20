@@ -17,19 +17,22 @@ export class GeneralErrorCollector {
     return this;
   }
 
-  public static init() {
+  public static async init() {
     GeneralErrorCollector.instance = new GeneralErrorCollector();
+    // Since this class is not transpiled but HW (why?) with a parallel java class,
+    // the async constructors of JSweet have to be called as well :( (see monticore/monticore#5271)
+    await GeneralErrorCollector.instance.__GeneralErrorCollectorConstructor();
   }
 
-  public static getInstance(): GeneralErrorCollector {
+  public static async getInstance(): Promise<GeneralErrorCollector> {
     if (GeneralErrorCollector.instance == null) {
-      GeneralErrorCollector.init();
+      await GeneralErrorCollector.init();
     }
     return GeneralErrorCollector.instance;
   }
 
-  public static addErrorObserver(observer: GeneralErrorObserver) {
-    GeneralErrorCollector.getInstance()._addErrorObserver(observer);
+  public static async addErrorObserver(observer: GeneralErrorObserver) {
+    await (await GeneralErrorCollector.getInstance())._addErrorObserver(observer);
   }
 
   public static initMe(generalErrorCollector: GeneralErrorCollector) {
@@ -37,23 +40,23 @@ export class GeneralErrorCollector {
   }
 
   public static async containsErrorObserver(observer: GeneralErrorObserver): Promise<boolean> {
-    return await GeneralErrorCollector.getInstance()._containsErrorObserver(observer);
+    return await (await GeneralErrorCollector.getInstance())._containsErrorObserver(observer);
   }
 
   public static async removeErrorObserver(observer: GeneralErrorObserver): Promise<boolean> {
-    return await GeneralErrorCollector.getInstance()._removeErrorObserver(observer);
+    return await (await GeneralErrorCollector.getInstance())._removeErrorObserver(observer);
   }
 
-  public static reportConnectionError() {
-    GeneralErrorCollector.getInstance()._reportConnectionError();
+  public static async reportConnectionError() {
+    (await GeneralErrorCollector.getInstance())._reportConnectionError();
   }
 
-  public static reportServerError(t: Error) {
-    GeneralErrorCollector.getInstance()._reportServerError(t);
+  public static async reportServerError(t: Error) {
+    (await GeneralErrorCollector.getInstance())._reportServerError(t);
   }
 
-  public static reportSyncError() {
-    GeneralErrorCollector.getInstance()._reportSyncError();
+  public static async reportSyncError() {
+    (await GeneralErrorCollector.getInstance())._reportSyncError();
   }
 
   async _addErrorObserver(observer: GeneralErrorObserver) {
