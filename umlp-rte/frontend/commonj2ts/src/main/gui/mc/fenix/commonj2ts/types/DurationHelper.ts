@@ -253,10 +253,6 @@ export class DurationHelper {
     return difference < 0n ? -1 : difference > 0n ? 1 : 0;
   }
 
-  static equals(duration: Temporal.Duration, other: any): boolean {
-    return other instanceof Temporal.Duration && DurationHelper.compareTo(duration, other) === 0;
-  }
-
   /** toString() like java.time, e.g. PT1H30M, PT0.5S, PT-0.5S, PT-1M-30S, PT0S */
   static toString(duration: Temporal.Duration): string {
     if (duration == null) {

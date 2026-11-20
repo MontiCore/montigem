@@ -322,9 +322,9 @@ public class JavaBasicsAdapter extends AbstractAdapter {
     if (!invocation.getMethodName().equals("append") || invocation.getArgumentCount() != 1) {
       return false;
     }
+    // a value with a string of its own (e.g. a java.time value) is appended by JavaTimeAdapter, also when awaited
     if (!printsAwait(ExtendedElementFactory.toTree(invocation.getArgument(0)))
         || JavaTimeAdapter.hasJavaString(invocation.getArgument(0))) {
-      // java.time values: JavaTimeAdapter
       return false;
     }
     print("(/* async append */ await (async sb => { sb.str += <any>")
