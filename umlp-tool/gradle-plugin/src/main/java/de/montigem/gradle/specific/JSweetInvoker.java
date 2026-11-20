@@ -21,6 +21,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -65,12 +66,15 @@ public class JSweetInvoker {
     ProcessUtil.addExtraPath(".gradle/nodejs/node-v" + settings.nodeVersion + "-win-x64");
 
     SourceFile[] sourceFiles = settings.input.stream().map(SourceFile::new).toArray(SourceFile[]::new);
+    // Must stay modifiable: adapters add files to it, see UMLPAdapterUtils#excludeFromGeneration
     Set<String> excludedSources = settings.excluded.stream()
-        .map(SourceFile::new).map(SourceFile::toString).collect(Collectors.toSet());
+        .map(SourceFile::new).map(SourceFile::toString).collect(Collectors.toCollection(HashSet::new));
 
     ErrorCountTranspilationHandler transpilationHandler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
     // closing releases the classpath jars that javac keeps open, else they stay locked in the daemon
     try (transpiler) {
+      // Never use transpile(handler, files): it passes an unmodifiable empty set of excluded sources,
+      // adapters then fail to exclude files from generation (see UMLPAdapterUtils#excludeFromGeneration)
       transpiler.transpile(transpilationHandler, excludedSources, sourceFiles);
     } catch (Exception e) {
       throw new RuntimeException(e);

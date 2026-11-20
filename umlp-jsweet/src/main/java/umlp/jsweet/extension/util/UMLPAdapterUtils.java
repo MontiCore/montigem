@@ -11,6 +11,8 @@ import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.OverloadScanner;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.util.Util;
+import standalone.com.sun.source.tree.CompilationUnitTree;
+import standalone.com.sun.source.tree.Tree;
 import standalone.com.sun.tools.javac.code.Symbol;
 
 import javax.lang.model.element.Element;
@@ -37,6 +39,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -60,6 +63,36 @@ public class UMLPAdapterUtils {
 
   public void printMacroName(String macroName) {
     adapter.print("/* " + macroName + " */");
+  }
+
+  /**
+   * Excludes the matching compilation units from generation. Unlike {@code @Erased}, JSweet still
+   * compiles them, so references keep their types instead of becoming {@code any}.
+   * <p>
+   * Must be called in {@link PrinterAdapter#onTranspilationStarted()}, JSweet checks the excluded
+   * source paths afterward. Requires a modifiable set of excluded source paths, i.e., the transpilation
+   * has to be started with
+   * {@link org.jsweet.transpiler.JSweetTranspiler#transpile(org.jsweet.transpiler.TranspilationHandler, Set, org.jsweet.transpiler.SourceFile...)}.
+   */
+  public static void excludeFromGeneration(JSweetContext context, Predicate<CompilationUnitTree> exclude) {
+    for (CompilationUnitTree compilationUnit : context.compilationUnits) {
+      if (exclude.test(compilationUnit)) {
+        context.excludedSourcePaths.add(compilationUnit.getSourceFile().getName());
+      }
+    }
+  }
+
+  /**
+   * @return true iff a top-level type of the compilation unit is annotated with {@code @CD2Java}
+   */
+  public static boolean isCD2Java(JSweetContext context, CompilationUnitTree compilationUnit) {
+    for (Tree typeDeclaration : compilationUnit.getTypeDecls()) {
+      Element type = Util.getElement(typeDeclaration);
+      if (context.elementHasAnnotationType(type, GUIAdapterUtils.CD2JAVA_ANNOTATION)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static String getSimpleNameOfFQN(String importedName) {

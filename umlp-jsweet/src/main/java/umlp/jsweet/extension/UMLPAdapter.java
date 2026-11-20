@@ -25,9 +25,6 @@ import umlp.jsweet.extension.util.UMLPAdapterUtils;
 public class UMLPAdapter extends PrinterAdapter {
   public UMLPAdapter(PrinterAdapter parentAdapter) {
     super(
-        new PrintImportsAtBottomAdapter( // must be outermost adapter to do its job
-        //new JavaStreamAdapter(
-        // new RelativeImportAdapter(
         new GUITypesImportAdapter(
         new OptionalAdapter(
         new FutureAdapter(
@@ -41,7 +38,7 @@ public class UMLPAdapter extends PrinterAdapter {
         new MutexAdapter(
         new UMLPEnumAdapter(
         parentAdapter
-    ))))))))))))));
+    )))))))))))));
   }
 
   @Override
