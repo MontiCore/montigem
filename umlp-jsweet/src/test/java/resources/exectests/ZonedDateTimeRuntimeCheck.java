@@ -156,4 +156,15 @@ public class ZonedDateTimeRuntimeCheck {
         && ZoneId.systemDefault().equals(ZonedDateTime.now().getZone())
         && LocalDate.now().equals(LocalDate.now(ZoneId.systemDefault()));
   }
+
+  /** date-based units count the local date-times, also into the gap of a DST change */
+  @JSweetTest
+  public static String checkUnitsBetweenInLocalTime() {
+    ZonedDateTime beforeGap = ZonedDateTime.of(2024, 3, 30, 2, 30, 0, 0, BERLIN);
+    ZonedDateTime afterGap = ZonedDateTime.of(2024, 3, 31, 3, 0, 0, 0, BERLIN);
+    return ChronoUnit.DAYS.between(beforeGap, afterGap) + " " + ChronoUnit.HOURS.between(beforeGap, afterGap) + " "
+        + ChronoUnit.MONTHS.between(ZonedDateTime.of(2024, 1, 31, 10, 0, 0, 0, BERLIN),
+        ZonedDateTime.of(2024, 2, 29, 10, 0, 0, 0, BERLIN)) + " "
+        + ChronoUnit.DAYS.between(beforeGap, afterGap.withZoneSameInstant(ZoneId.of("Asia/Tokyo")));
+  }
 }

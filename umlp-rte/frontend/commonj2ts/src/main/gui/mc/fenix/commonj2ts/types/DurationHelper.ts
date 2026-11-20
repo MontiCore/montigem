@@ -243,9 +243,9 @@ export class DurationHelper {
     return DurationHelper.getNano(duration);
   }
 
+  /** toMillis(): the whole milliseconds, truncated towards zero like Java */
   static toMillis(duration: Temporal.Duration): number {
-    const nanos = DurationHelper.nanosOf(duration);
-    return Number(DurationHelper.secondsOf(nanos) * 1000n + DurationHelper.nanoOf(nanos) / 1000000n);
+    return Number(DurationHelper.nanosOf(duration) / UNIT_NANOS["MILLIS"]);
   }
 
   static compareTo(duration: Temporal.Duration, other: Temporal.Duration): number {
@@ -356,19 +356,47 @@ export class DurationHelper {
     return name;
   }
 
-  /** unit.between(start, end): the whole units from start to end, truncated like Java */
+  /**
+   * unit.between(start, end): the whole units from start to end, truncated like Java; the date-based units of a
+   * date-time count its local date-time (a ZonedDateTime in the zone of start, a day across a DST change is a day)
+   */
   static unitsBetween(unit: string, start: any, end: any): number {
     DurationHelper.checkTimeUnit(start, unit);
     const nanos = UNIT_NANOS[unit];
-    // a ZonedDateTime counts days in its local date-time (a day across a DST change is a day), like Java
     const zoned = start instanceof Temporal.ZonedDateTime;
     if (nanos !== undefined && !(start instanceof Temporal.PlainDate) && !(zoned && unit === "DAYS")) {
       return Number(DurationHelper.nanosBetween(start, end) / nanos);
     }
+    if (start instanceof Temporal.PlainDate) {
+      return DurationHelper.dateUnitsBetween(unit, start, end);
+    }
+    if (start instanceof Temporal.Instant) {
+      throw new RangeError("Unsupported unit: " + unit);
+    }
+    const from: Temporal.PlainDateTime = zoned ? start.toPlainDateTime() : start;
+    const to: Temporal.PlainDateTime = zoned ? end.withTimeZone(start.timeZoneId).toPlainDateTime() : end;
+    // like LocalDateTime.until: the end date counts only if its time is reached
+    let endDate = to.toPlainDate();
+    const byDate = Temporal.PlainDate.compare(endDate, from.toPlainDate());
+    const byTime = Temporal.PlainTime.compare(to.toPlainTime(), from.toPlainTime());
+    if (byDate > 0 && byTime < 0) {
+      endDate = endDate.subtract({days: 1});
+    } else if (byDate < 0 && byTime > 0) {
+      endDate = endDate.add({days: 1});
+    }
+    return DurationHelper.dateUnitsBetween(unit, from.toPlainDate(), endDate);
+  }
+
+  /** the date-based units between two dates like LocalDate.until: a month counts once its day of month is reached */
+  private static dateUnitsBetween(unit: string, start: Temporal.PlainDate, end: Temporal.PlainDate): number {
     const [field, factor] = DurationHelper.calendarUnit(unit);
-    const to = zoned ? end.withTimeZone(start.timeZoneId) : end;
-    const difference = start.until(to, {largestUnit: field, smallestUnit: field, roundingMode: "trunc"});
-    return Math.trunc(difference[field] / factor);
+    if (field === "days" || field === "weeks") {
+      const days = start.until(end, {largestUnit: "days"}).days;
+      return Math.trunc(days / (field === "weeks" ? 7 : 1) / factor);
+    }
+    const packed = (date: Temporal.PlainDate) => ((date.year * 12 + date.month) * 32 + date.day);
+    const months = Math.trunc((packed(end) - packed(start)) / 32);
+    return Math.trunc(months / (field === "years" ? 12 * factor : factor));
   }
 
   private static nanosBetween(start: any, end: any): bigint {
