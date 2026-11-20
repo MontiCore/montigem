@@ -25,6 +25,7 @@ import java.util.Properties;
 import static org.jsweet.transpiler.SourceFile.getSourceFiles;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.HashSet;
 
 /**
  * Runs a Java fixture through the real UMLP adapters (UMLPAdapter -&gt; ... -&gt;
@@ -191,7 +192,7 @@ public final class RealTscCheck {
         new ConsoleTranspilationHandler());
     SourceFile[] sourceFiles = getSourceFiles(
         fixtures.stream().map(Path::toFile).toArray(File[]::new));
-    transpiler.transpile(handler, sourceFiles);
+    transpiler.transpile(handler, new HashSet<>(), sourceFiles);
     assertEquals(0, handler.getErrorCount(),
         "JSweet transpilation of " + fixtures + " reported errors");
 

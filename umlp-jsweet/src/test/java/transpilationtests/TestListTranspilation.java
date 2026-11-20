@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.HashSet;
 
 public class TestListTranspilation {
 
@@ -43,9 +44,9 @@ public class TestListTranspilation {
 
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
         new ConsoleTranspilationHandler());
-    transpiler.transpile(handler, getSourceFiles(input));
+    transpiler.transpile(handler, new HashSet<>(), getSourceFiles(input));
     SourceFile[] sourceFiles = getSourceFiles(input);
-    transpiler.transpile(handler, sourceFiles);
+    transpiler.transpile(handler, new HashSet<>(), sourceFiles);
     assertNotNull(sourceFiles[0]);
     assertNotNull(sourceFiles[0].getTsFile());
     assertEquals(0, handler.getErrorCount());

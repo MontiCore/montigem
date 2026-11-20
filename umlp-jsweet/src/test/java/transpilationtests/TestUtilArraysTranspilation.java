@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import static org.jsweet.transpiler.SourceFile.getSourceFiles;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.HashSet;
 
 public class TestUtilArraysTranspilation {
   @Test
@@ -26,7 +27,7 @@ public class TestUtilArraysTranspilation {
         new ConsoleTranspilationHandler());
 
     SourceFile[] files = getSourceFiles(input);
-    transpiler.transpile(handler,files);
+    transpiler.transpile(handler, new HashSet<>(), files);
 
     assertEquals(0, handler.getErrorCount());
     assertNotNull(files[0]);
@@ -55,7 +56,7 @@ public class TestUtilArraysTranspilation {
         new ConsoleTranspilationHandler());
 
     SourceFile[] files = getSourceFiles(input);
-    transpiler.transpile(handler,files);
+    transpiler.transpile(handler, new HashSet<>(), files);
 
     assertEquals(13, handler.getErrorCount());
   }

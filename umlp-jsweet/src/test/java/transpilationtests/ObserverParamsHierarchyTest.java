@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import static org.jsweet.transpiler.SourceFile.getSourceFiles;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.HashSet;
 
 /**
  * A method with observer registration parameters and the methods it overrides or that override it must have the
@@ -29,7 +30,7 @@ public class ObserverParamsHierarchyTest {
     JSweetTranspiler transpiler = TranspilerSetupUtil.getGUITranspiler();
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler());
     SourceFile[] sourceFiles = getSourceFiles(input);
-    transpiler.transpile(handler, sourceFiles);
+    transpiler.transpile(handler, new HashSet<>(), sourceFiles);
     assertEquals(0, handler.getErrorCount());
 
     String ts = Files.readString(sourceFiles[0].getTsFile().toPath());

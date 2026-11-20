@@ -1,7 +1,6 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp.jsweet.extension;
 
-import org.jsweet.transpiler.extension.AnnotationManager;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import standalone.com.sun.source.tree.CompilationUnitTree;
 import umlp.jsweet.extension.cocos.JSweetCoCoChecker;
@@ -24,11 +23,6 @@ import umlp.jsweet.extension.gui.GUIUtilAdapter;
 import umlp.jsweet.extension.gui.TSTypesAdapter;
 import umlp.jsweet.extension.umlp.BackendOnlyAdapter;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
-
-import javax.lang.model.element.Element;
-
-import static org.jsweet.JSweetConfig.ANNOTATION_ERASED;
-import static umlp.jsweet.extension.util.GUIAdapterUtils.CD2JAVA_ANNOTATION;
 
 /**
  * This adapter combines the adapters for GUI transpilation
@@ -56,25 +50,6 @@ public class GUIAdapter extends PrinterAdapter {
         new AnnotationToDecoratorAdapter(
         parentAdapter
     ))))))))))))))))));
-    addAnnotationManager(getSynchronizedAnnotationManager());
-  }
-
-  private AnnotationManager getSynchronizedAnnotationManager() {
-    return new AnnotationManager() {
-      // Specifies if the `annotation` should be added to, removed from, be left alone
-      // for the `element` depending on the return value
-      @Override
-      public Action manageAnnotation(Element element, String annotation) {
-        if (ANNOTATION_ERASED.equals(annotation) && element.getKind().isClass()) {
-          return isAnnotatedWithCD2Java(element) ? Action.ADD : Action.VOID;
-        }
-        return Action.VOID;
-      }
-
-      private boolean isAnnotatedWithCD2Java(Element element) {
-        return getContext().elementHasAnnotationType(element, CD2JAVA_ANNOTATION);
-      }
-    };
   }
 
   @Override
@@ -86,6 +61,9 @@ public class GUIAdapter extends PrinterAdapter {
         new JSweetCoCoChecker(getContext(), compilationUnit).scan(compilationUnit, getContext().trees);
       }
     }
+    // CD2Java classes are transpiled separately (see ModuleUMLPAdapter), they keep their types here
+    UMLPAdapterUtils.excludeFromGeneration(getContext(),
+        compilationUnit -> UMLPAdapterUtils.isCD2Java(getContext(), compilationUnit));
     super.onTranspilationStarted();
   }
 
