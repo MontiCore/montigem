@@ -2,6 +2,7 @@
 package mc.fenix.charts;
 
 import mc.fenix.charts.GemBoxPlotTypes.GemBoxPlotData;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
  A BoxPlot presents a set of two dimensional data with a number of rectangular boxes + whiskers that represent max, min,
@@ -36,5 +37,7 @@ component GemBoxPlot(
   /** Direction of the boxes (diagram as a whole).  */
   boolean horizontal = true,
   /** Whether the chart's configuration panel is shown. */
-  boolean showConfig = false
+  boolean showConfig = false,
+  /** Position of the legend relative to the plot (default: RIGHT). NONE hides the legend. */
+  LegendPosition legendPosition
 )

@@ -13,6 +13,7 @@ import manual.GemCandlestickChartTest;
 import manual.GemCardTest;
 import manual.GemGaugeChartTest;
 import manual.GemHeatmapChartTest;
+import manual.GemLegendPositionTest;
 import manual.GemLineChartTest;
 import manual.GemGraphTest;
 import manual.GemPieChartTest;
@@ -52,7 +53,8 @@ page ComponentTestOverview() {
             @ComponentCard(title = "Candlestick Test", icon = "waterfall_chart", description = "Test scenarios for Candlestick Charts.", click = navigate(@GemCandlestickChartTest())),
             @ComponentCard(title = "Radar Chart Test", icon = "radar", description = "Test scenarios for Radar Charts.", click = navigate(@GemRadarChartTest())),
             @ComponentCard(title = "Scatter Plot Test", icon = "scatter_plot", description = "Test scenarios for Scatter Plots.", click = navigate(@GemScatterPlotTest())),
-            @ComponentCard(title = "Card Test", icon = "dashboard", description = "Test scenarios for Cards.", click = navigate(@GemCardTest()))
+            @ComponentCard(title = "Card Test", icon = "dashboard", description = "Test scenarios for Cards.", click = navigate(@GemCardTest())),
+            @ComponentCard(title = "Legend Position Test", icon = "legend_toggle", description = "Every chart with a legend in every legend position.", click = navigate(@GemLegendPositionTest()))
         ]
       )
     ]

@@ -4,11 +4,13 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemBarChart;
 import common.ExamplePage;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemBarChartExample(List<Person> persons) 
 {
   @ExamplePage(
     component = barchart@GemBarChart(
+      legendPosition = LegendPosition.RIGHT,
       data = null,
       stacked = false,
       maxValue = 10,
