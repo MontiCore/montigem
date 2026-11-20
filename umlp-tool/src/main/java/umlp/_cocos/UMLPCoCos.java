@@ -68,5 +68,6 @@ public class UMLPCoCos {
     checker.addCoCo(new UMLPCheckCommandUnique());
     checker.addCoCo(new UMLPAttributeGenericArgumentInGeneric());
     checker.addCoCo(new UMLPCheckParameterOfCommand());
+    checker.addCoCo(new UMLPAssociationBidirectionalSameRolename());
   }
 }
