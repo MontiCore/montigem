@@ -167,4 +167,12 @@ public class ZonedDateTimeRuntimeCheck {
         ZonedDateTime.of(2024, 2, 29, 10, 0, 0, 0, BERLIN)) + " "
         + ChronoUnit.DAYS.between(beforeGap, afterGap.withZoneSameInstant(ZoneId.of("Asia/Tokyo")));
   }
+
+  /** parse with an offset that does not fit the zone keeps the instant; LocalDateTime.toInstant(offset) */
+  @JSweetTest
+  public static String checkParseOffsetAndToInstant() {
+    LocalDateTime nine = LocalDateTime.of(2026, 11, 17, 9, 0);
+    return ZonedDateTime.parse("2026-11-17T09:00+02:00[Europe/Berlin]") + " " + nine.toInstant(ZoneOffset.UTC) + " "
+        + nine.toInstant(ZoneOffset.ofHours(2)) + " " + nine.toInstant(ZoneOffset.ofHoursMinutes(-5, -30));
+  }
 }

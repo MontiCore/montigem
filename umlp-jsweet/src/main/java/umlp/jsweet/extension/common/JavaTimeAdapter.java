@@ -18,10 +18,13 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -65,6 +68,30 @@ public class JavaTimeAdapter extends AbstractAdapter {
       "java.time.ZonedDateTime", "");
 
   public static final String CHRONO_UNIT = "java.time.temporal.ChronoUnit";
+
+  /** the java.time types whose methods are translated, see JSweetCoCoChecker (0xEE009) */
+  public static final Set<String> SUPPORTED_TYPES = Set.of("java.time.LocalDate", "java.time.LocalDateTime",
+      "java.time.LocalTime", "java.time.Instant", "java.time.Duration", "java.time.ZonedDateTime", "java.time.ZoneId",
+      "java.time.ZoneOffset", CHRONO_UNIT);
+
+  /**
+   * the translated methods that java.time declares in other types (interfaces of the supported types, DayOfWeek), see
+   * JSweetCoCoChecker (0xEE009)
+   */
+  public static final Map<String, Set<String>> SUPPORTED_METHODS = Map.of(
+      "java.time.chrono.ChronoZonedDateTime", Set.of("isBefore", "isAfter", "isEqual", "compareTo", "toInstant",
+          "toEpochSecond", "toLocalDate", "toLocalTime", "toLocalDateTime"),
+      "java.time.chrono.ChronoLocalDateTime", Set.of("isBefore", "isAfter", "isEqual", "compareTo", "toInstant",
+          "toEpochSecond", "toLocalDate", "toLocalTime"),
+      "java.time.chrono.ChronoLocalDate", Set.of("isBefore", "isAfter", "isEqual", "compareTo", "toEpochDay",
+          "lengthOfYear", "isLeapYear"),
+      "java.time.DayOfWeek", Set.of("getValue"));
+
+  /** the parse methods of LocalDateTimeHelper, which accept the formats of java.time only */
+  private static final Map<String, String> PARSE_METHODS = Map.of(
+      "java.time.LocalDate", "parseDate",
+      "java.time.LocalDateTime", "parseDateTime",
+      "java.time.LocalTime", "parseTime");
 
   /** the static methods of Duration, see DurationHelper */
   private static final List<String> DURATION_FACTORIES = List.of(
@@ -202,6 +229,13 @@ public class JavaTimeAdapter extends AbstractAdapter {
     if (substituteStringBuilding(invocation, targetType)) {
       return true;
     }
+    if ("toString".equals(invocation.getMethodName()) && invocation.getArgumentCount() == 0
+        && invocation.getTargetExpression() != null && isUntyped(invocation.getTargetExpression())) {
+      // a java.time value as Object: the format of java.time
+      printMacroName("toString");
+      printHelper("toJavaString", List.of(invocation.getTargetExpression()));
+      return true;
+    }
     if (CHRONO_UNIT.equals(targetType) && substituteMethodInvocation_ChronoUnit(invocation)) {
       return true;
     }
@@ -292,7 +326,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
         if (zoned) {
           printZonedHelper("parse", args);
         } else {
-          print(temporalType + ".from(").print(args.get(0)).print(")");
+          printHelper(PARSE_METHODS.get(javaType), args);
         }
         return true;
       case "ofEpochSecond":
@@ -357,8 +391,15 @@ public class JavaTimeAdapter extends AbstractAdapter {
         printTarget(target).print(".toPlainDateTime()");
         return true;
       case "toInstant":
+        // ZonedDateTime.toInstant(), LocalDateTime.toInstant(offset)
         printMacroName(methodName);
-        printTarget(target).print(".toInstant()");
+        printTarget(target);
+        if (!args.isEmpty()) {
+          print(".toZonedDateTime(");
+          printTimeZone(args.get(0));
+          print(")");
+        }
+        print(".toInstant()");
         return true;
       case "withZoneSameInstant":
         printMacroName(methodName);
@@ -789,7 +830,25 @@ public class JavaTimeAdapter extends AbstractAdapter {
    * Temporal values refuse the conversion) or a ChronoUnit (its display name, e.g. "Days")
    */
   public static boolean hasJavaString(ExtendedElement element) {
-    return isTemporal(element) || element.getType() != null && CHRONO_UNIT.equals(element.getType().toString());
+    return isTemporal(element) || element.getType() != null && CHRONO_UNIT.equals(element.getType().toString())
+        || isUntyped(element);
+  }
+
+  /**
+   * whether the static type of the element does not tell whether it is a java.time value: Object, a type parameter or
+   * an interface of java.time.temporal or java.time.chrono
+   */
+  private static boolean isUntyped(ExtendedElement element) {
+    TypeMirror type = element.getType();
+    if (type == null) {
+      return false;
+    }
+    if (type.getKind() == TypeKind.TYPEVAR) {
+      return true;
+    }
+    String name = type instanceof DeclaredType ? ((DeclaredType) type).asElement().toString() : type.toString();
+    return "java.lang.Object".equals(name)
+        || (name.startsWith("java.time.temporal.") || name.startsWith("java.time.chrono.")) && !CHRONO_UNIT.equals(name);
   }
 
   /** the toString of the element like in Java, see hasJavaString */
@@ -797,6 +856,8 @@ public class JavaTimeAdapter extends AbstractAdapter {
     if (isTemporal(element)) {
       useTemporal();
       printHelper("toString", List.of(element));
+    } else if (isUntyped(element)) {
+      printHelper("toJavaString", List.of(element));
     } else {
       printDurationHelper("unitToString", List.of(element));
     }

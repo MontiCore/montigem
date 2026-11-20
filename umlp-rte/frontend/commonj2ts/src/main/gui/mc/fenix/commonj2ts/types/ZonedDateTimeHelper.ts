@@ -105,7 +105,8 @@ export class ZonedDateTimeHelper {
   /** ZonedDateTime.parse(text): also without a zone in brackets, e.g. 2026-11-17T09:00+01:00 or 2026-11-17T08:00Z */
   static parse(text: string): Temporal.ZonedDateTime {
     if (text.includes("[")) {
-      return Temporal.ZonedDateTime.from(text);
+      // an offset that does not fit the zone keeps the instant, like Java
+      return Temporal.ZonedDateTime.from(text, {offset: "use"});
     }
     const offset = /(Z|[+-]\d{2}:\d{2}(?::\d{2})?)$/i.exec(text);
     if (offset == null) {

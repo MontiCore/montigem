@@ -7,6 +7,7 @@ import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
 import resources.exectests.FunctionDisplayGraphRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
+import resources.exectests.JavaTimeStringRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
 import resources.exectests.DurationRuntimeCheck;
 import resources.exectests.ZonedDateTimeRuntimeCheck;
@@ -77,6 +78,11 @@ public class ExecutionTests {
   @Test
   public void testDuration() {
     ExecTestRunner.runExecutionTest(DurationRuntimeCheck.class);
+  }
+
+  @Test
+  public void testJavaTimeString() {
+    ExecTestRunner.runExecutionTest(JavaTimeStringRuntimeCheck.class);
   }
 
   @Test

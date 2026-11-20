@@ -2,6 +2,11 @@
 import {Temporal} from "./Temporal";
 import {DurationHelper} from "./DurationHelper";
 import {ZonedDateTimeHelper} from "./ZonedDateTimeHelper";
+import {JavaUtilUtils} from "../javautil/JavaUtilUtils";
+
+/** the ISO formats of java.time (DateTimeFormatter.ISO_LOCAL_DATE, ISO_LOCAL_TIME); Temporal's from takes more */
+const ISO_DATE = "(?:\\d{4}|[+-]\\d{4,10})-\\d{2}-\\d{2}";
+const ISO_TIME = "\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,9})?)?";
 
 type DateOrDateTime = Temporal.PlainDate | Temporal.PlainDateTime;
 type TimeOrDateTime = Temporal.PlainTime | Temporal.PlainDateTime;
@@ -73,6 +78,36 @@ export class LocalDateTimeHelper {
   /** getMonth(), the name of the Month */
   static getMonth(date: WithDate): string {
     return LocalDateTimeHelper.MONTHS[date.month - 1];
+  }
+
+  /** LocalDate.parse(text): the format of java.time only (Temporal also takes e.g. a date-time or 20240101) */
+  static parseDate(text: string): Temporal.PlainDate {
+    return Temporal.PlainDate.from(LocalDateTimeHelper.checkFormat(text, ISO_DATE));
+  }
+
+  /** LocalDateTime.parse(text), see parseDate */
+  static parseDateTime(text: string): Temporal.PlainDateTime {
+    return Temporal.PlainDateTime.from(LocalDateTimeHelper.checkFormat(text, ISO_DATE + "[Tt]" + ISO_TIME));
+  }
+
+  /** LocalTime.parse(text), see parseDate */
+  static parseTime(text: string): Temporal.PlainTime {
+    return Temporal.PlainTime.from(LocalDateTimeHelper.checkFormat(text, ISO_TIME));
+  }
+
+  private static checkFormat(text: string, format: string): string {
+    if (text == null || !new RegExp("^" + format + "$").test(text)) {
+      throw new RangeError("Text '" + text + "' could not be parsed");
+    }
+    return text;
+  }
+
+  /**
+   * String(value) like Java for a value of a static type that may be a java.time value (Object, a type parameter):
+   * a java.time value in the format of java.time, as Temporal values refuse the conversion to a string
+   */
+  static toJavaString(value: any): string {
+    return JavaUtilUtils.isTemporal(value) ? LocalDateTimeHelper.toString(value) : String(value);
   }
 
   /** withNano(nanoOfSecond) of a LocalDateTime, LocalTime or ZonedDateTime; a value out of range is rejected */
