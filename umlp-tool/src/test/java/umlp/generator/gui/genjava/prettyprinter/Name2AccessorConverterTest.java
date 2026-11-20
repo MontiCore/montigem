@@ -1,7 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp.generator.gui.genjava.prettyprinter;
 
-import de.monticore.expressions.commonexpressions._ast.ASTFieldAccessExpression;
+import de.monticore.expressions.commonexpressions._ast.ASTStaticFieldAccessExpression;
 import de.monticore.expressions.expressionsbasis._ast.ASTNameExpression;
 import de.monticore.guidsl._ast.ASTGUIComponent;
 import de.monticore.guidsl._ast.ASTGUIComponentDeclaration;
@@ -70,10 +70,9 @@ public class Name2AccessorConverterTest extends DomainGUITest {
     ));
 
     String expect6 = removeSpaces("MaritalStatus");
-    String result6 = removeSpaces(conv.attr2Getter((ASTNameExpression)
-        ((ASTFieldAccessExpression) comp6.getGUINamedArgs().getGUINamedArg(0)
-            .getExpression()).getExpression()
-    ));
+    String result6 = removeSpaces(((ASTStaticFieldAccessExpression)
+        comp6.getGUINamedArgs().getGUINamedArg(0).getExpression()
+    ).getType().printType());
     assertAll(
         () -> assertEquals(expect1, result1),
         () -> assertEquals(expect2, result2),
