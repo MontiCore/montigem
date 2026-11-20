@@ -10,7 +10,7 @@ import java.util.Locale;
 
 public class Receipt extends ReceiptTOP {
   public double getAmountToPay() {
-    return Math.max(0, getSum() + getDebt() - getPastBalance());
+    return getSum() + getDebt() - getPastBalance();
   }
 
   public boolean isPaidFromBalance() {

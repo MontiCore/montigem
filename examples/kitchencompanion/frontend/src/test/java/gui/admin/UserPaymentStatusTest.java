@@ -62,10 +62,18 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     return card;
   }
 
-  /** The guard around the reset button in UserPaymentStatus.gui. */
+  /**
+   * Guards in UserPaymentStatus.gui: 3 = receipt.paid, 5 = receipt.confirmed (reset in the if
+   * branch, confirm in the else branch), 6 = canReset(receipt).
+   */
   private static boolean resetButtonShown(UserPaymentStatus card) {
     assertEquals("reset", card.getResetBtnLabel());
-    return card.getGuard5Condition();
+    return card.getGuard3Condition() && card.getGuard5Condition() && card.getGuard6Condition();
+  }
+
+  private static boolean confirmButtonShown(UserPaymentStatus card) {
+    assertEquals("confirm", card.getConfirmBtnLabel());
+    return card.getGuard3Condition() && !card.getGuard5Condition();
   }
 
   private User backendUser(long userId) {
@@ -74,7 +82,8 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
   }
 
   /** Asserts the state endMonth() leaves for a receipt paid from the balance. */
-  private void assertStillPaidFromBalance(long userId, double balanceLeft, double pastBalance) {
+  private void assertStillPaidFromBalance(long userId, double balanceLeft, double pastBalance,
+                                          double amountToPay) {
     User server = backendUser(userId);
     Receipt receipt = server.getReceipts(0);
     assertEquals(balanceLeft, server.getBalance(), EPS);
@@ -82,25 +91,28 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     assertTrue(receipt.isConfirmed());
     assertEquals(pastBalance, receipt.getPastBalance(), EPS);
     assertEquals(pastBalance, receipt.getAmountPaid(), EPS);
-    assertEquals(0.0, receipt.getAmountToPay(), EPS);
+    assertEquals(amountToPay, receipt.getAmountToPay(), EPS);
   }
 
   /**
    * Tom has 10 €, buys 1.50 € and the month end pays the bill from his balance (8.50 € left).
-   * That payment is final: the card offers no reset, and triggering it anyway changes nothing.
+   * That payment is final: the card offers neither confirm nor reset, and triggering reset anyway
+   * changes nothing. The amount to pay is negative: the balance exceeded the bill by 8.50 €.
    */
   @Test
   public void receiptPaidFromTheBalanceCannotBeReset() {
     long tom = userAfterMonthEnd(10.0, 6);
     UserPaymentStatus card = openCard(tom);
-    assertStillPaidFromBalance(tom, 8.5, 10.0);
+    assertStillPaidFromBalance(tom, 8.5, 10.0, -8.5);
 
     getClients(0).activate();
+    assertEquals("-8.5 €", card.getGemText2Value());
+    assertFalse(confirmButtonShown(card));
     assertFalse(resetButtonShown(card));
     card.resetBtnLeftClick(null);
 
     assertEquals(8.5, card.getUser().getBalance(), EPS);
-    assertStillPaidFromBalance(tom, 8.5, 10.0);
+    assertStillPaidFromBalance(tom, 8.5, 10.0, -8.5);
   }
 
   /** Same when the balance matched the bill exactly (1.50 € balance, 1.50 € bill). */
@@ -108,18 +120,20 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
   public void receiptPaidWithTheExactBalanceCannotBeReset() {
     long tom = userAfterMonthEnd(1.5, 6);
     UserPaymentStatus card = openCard(tom);
-    assertStillPaidFromBalance(tom, 0.0, 1.5);
+    assertStillPaidFromBalance(tom, 0.0, 1.5, 0.0);
 
     getClients(0).activate();
+    assertFalse(confirmButtonShown(card));
     assertFalse(resetButtonShown(card));
     card.resetBtnLeftClick(null);
 
-    assertStillPaidFromBalance(tom, 0.0, 1.5);
+    assertStillPaidFromBalance(tom, 0.0, 1.5, 0.0);
   }
 
   /**
    * Tom has 1 € and buys 3 €, so 2 € are open. He pays 5 € in cash; the admin confirms that and
-   * 3 € are credited. Resetting takes the 3 € back off again.
+   * 3 € are credited. Resetting takes the 3 € back off again. Confirm is only offered while there
+   * is something to confirm, reset only once something has been confirmed.
    */
   @Test
   public void confirmCreditsOverpaymentAndResetTakesItBack() {
@@ -127,11 +141,14 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     UserPaymentStatus card = openCard(tom);
     assertFalse(card.getReceipt().isPaid());
     assertEquals("2.0 €", card.getGemText2Value());
-    assertTrue(resetButtonShown(card));
+    // nothing ticked yet: neither button
+    assertFalse(confirmButtonShown(card));
+    assertFalse(resetButtonShown(card));
 
     card.setPaidChecked(true);
     card.setAmountPaidEntry("5");
-    assertEquals("confirm", card.getConfirmBtnLabel());
+    assertTrue(confirmButtonShown(card));
+    assertFalse(resetButtonShown(card));
     card.confirmBtnLeftClick(null);
 
     User server = backendUser(tom);
@@ -140,6 +157,7 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     assertTrue(server.getReceipts(0).isConfirmed());
 
     getClients(0).activate();
+    assertFalse(confirmButtonShown(card));
     assertTrue(resetButtonShown(card));
     card.resetBtnLeftClick(null);
 
@@ -149,5 +167,9 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     assertFalse(server.getReceipts(0).isConfirmed());
     assertEquals(0.0, server.getReceipts(0).getAmountPaid(), EPS);
     assertEquals(2.0, server.getReceipts(0).getAmountToPay(), EPS);
+
+    getClients(0).activate();
+    assertFalse(confirmButtonShown(card));
+    assertFalse(resetButtonShown(card));
   }
 }

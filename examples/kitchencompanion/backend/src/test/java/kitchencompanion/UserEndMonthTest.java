@@ -73,7 +73,7 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
     assertEquals(0.0, r.getDebt(), EPS);
     assertTrue(r.isPaid());
     assertTrue(r.isConfirmed());
-    assertEquals(0.0, r.getAmountToPay(), EPS);
+    assertEquals(-8.5, r.getAmountToPay(), EPS);
     // the whole balance is used to pay; whatever is not needed stays on the user's balance
     assertEquals(10.0, r.getAmountPaid(), EPS);
     assertEquals(8.5, u.getBalance(), EPS);

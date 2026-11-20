@@ -70,13 +70,13 @@ public class MailContentServiceTest extends KitchenCompanionMockTestSetup {
   }
 
   @Test
-  public void invoiceMentionsTheCreditBalanceAndNothingIsLeftToPay() {
+  public void invoiceMentionsTheCreditBalanceAndANegativeTotal() {
     String mail = MailContentService.getMailContent(userWithReceipt(1.5, 0.0, 10.0));
 
     assertTrue(mail.contains("Guthaben: <strong>-10€"), mail);
     assertTrue(mail.contains("Credit balance: <strong>-10€"), mail);
-    assertTrue(mail.contains("Gesamtbetrag: <strong>0€"), mail);
-    assertTrue(mail.contains("Total amount: <strong>0€"), mail);
+    assertTrue(mail.contains("Gesamtbetrag: <strong>-8,5€"), mail);
+    assertTrue(mail.contains("Total amount: <strong>-8.5€"), mail);
     assertFalse(mail.contains("Schulden"), mail);
   }
 

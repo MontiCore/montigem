@@ -68,8 +68,8 @@ public class TallyAndReceiptTest extends KitchenCompanionMockTestSetup {
   }
 
   @Test
-  public void amountToPayIsNeverNegative() {
-    assertEquals(0.0, receipt(1.0, 0.0, 5.0).getAmountToPay(), EPS);
+  public void amountToPayIsNegativeWhenTheBalanceExceedsTheBill() {
+    assertEquals(-4.0, receipt(1.0, 0.0, 5.0).getAmountToPay(), EPS);
     assertEquals(0.0, receipt(0.0, 0.0, 0.0).getAmountToPay(), EPS);
   }
 
