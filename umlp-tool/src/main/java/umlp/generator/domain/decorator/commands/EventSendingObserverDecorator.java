@@ -24,7 +24,7 @@ public class EventSendingObserverDecorator extends AbstractDecorator {
   @Override
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, COMMAND_PACKAGE);
-    var concreteClasses = getConcreteDomainClasses(origCD);
+    var concreteClasses = getConcreteNonPojoDomainClasses(origCD);
     astcdPackage.addCDElement(withOrigin(createClass(origCD, concreteClasses, astcdPackage)));
   }
 

@@ -39,7 +39,7 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
   @Override
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, CLIENT_PACKAGE);
-    getConcreteDomainClasses(origCD).forEach(c -> astcdPackage.addCDElement(withOrigin(createClass(origCD, c))));
+    getConcreteNonPojoDomainClasses(origCD).forEach(c -> astcdPackage.addCDElement(withOrigin(createClass(origCD, c))));
   }
 
   protected ASTCDClass createClass(ASTCDCompilationUnit origCD, ASTCDClass domainClass) {

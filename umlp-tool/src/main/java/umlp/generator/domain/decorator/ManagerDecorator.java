@@ -122,6 +122,18 @@ public class ManagerDecorator extends AbstractDecorator {
       getCD4C().addMethod(managerClass, "umlp.manager.GetDerived", name, false);
     } else {
       boolean isSingleton = TagLookUp.isSingleton(domainClass);
+      boolean isPojo = TagLookUp.isPojo(domainClass);
+      if(isPojo){
+        if (!domainClass.getModifier().isAbstract()) {
+          getCD4C().addMethod(managerClass, "umlp.manager.Builder", name, true);
+          getCD4C().addMethod(managerClass, "umlp.manager.Builder", name, false);
+          getCD4C().addMethod(managerClass, "umlp.manager.BuilderParam", name, true);
+          getCD4C().addMethod(managerClass, "umlp.manager.BuilderParam", name, false);
+          getCD4C().addMethod(managerClass, "umlp.manager.DeSerBuilder", name, true);
+          getCD4C().addMethod(managerClass, "umlp.manager.DeSerBuilder", name, false);
+        }
+        return;
+      }
       if (isSingleton) {
         getCD4C().addMethod(managerClass, "umlp.manager.GetSingletonElement", name, true);
         getCD4C().addMethod(managerClass, "umlp.manager.GetSingletonElement", name, false);

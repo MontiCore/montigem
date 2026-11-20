@@ -1,0 +1,20 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+umlp Pojos{
+
+  class FooDomain{
+    int a;
+  }
+
+  <<pojo>>
+  class TestPojo{
+    int a;
+    List<FooDomain> fooDomains;
+  }
+
+  <<singleton>>
+  class App{
+    List<TestPojo> getPojoTests(int count);
+  }
+
+}

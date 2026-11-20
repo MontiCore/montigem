@@ -2,7 +2,7 @@
 <#--
   The build method is generated to allow object creation.
 -->
-${tc.signature("name", "managerName", "assocList", "isSingleton")}
+${tc.signature("name", "managerName", "assocList", "isSingleton", "isPojo")}
 ${cd4c.method("public Optional<${name}> build()")}
 
 if (!buildFinished) {
@@ -31,7 +31,7 @@ if (!buildFinished) {
 </#list>
 
     if(!INTERNAL_deser_mode) {
-    <#if !isSingleton>
+    <#if !isSingleton && !isPojo>
       ${managerName}.add${name}(this);
     </#if>
 

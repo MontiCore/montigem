@@ -69,6 +69,9 @@ public class UMLAttrToAssocTrafo implements CDBasisVisitor2, CDInterfaceAndEnumV
 
   @Override
   public void visit(ASTCDAttribute attr) {
+    if(GenService.hasStereotype(astcdType.getModifier(), "pojo")){
+      return; // Do not convert attributes of POJOs into associations
+    }
     SymTypeExpression attrType = attr.getSymbol().getType();
     if (GenService.isDomainType(attrType) && !GenService.isCDEnum(attrType)) {
       assocMap.put(astcdPackage,

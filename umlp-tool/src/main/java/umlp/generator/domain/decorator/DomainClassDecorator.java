@@ -404,7 +404,8 @@ public class DomainClassDecorator extends DomainTypeDecorator implements OwnComm
         domainClass.getName(),
         getCorrectManager(domainClass),
         domainClass.getModifier().isAbstract(),
-        TagLookUp.isSingleton(domainClass));
+        TagLookUp.isSingleton(domainClass),
+        TagLookUp.isPojo(domainClass));
   }
 
   protected String getRegisterMeTemplate() {

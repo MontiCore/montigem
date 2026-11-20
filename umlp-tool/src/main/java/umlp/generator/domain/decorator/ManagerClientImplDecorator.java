@@ -74,7 +74,7 @@ public class ManagerClientImplDecorator extends AbstractDecorator {
     getCD4C().addMethod(managerClass, getDoGetFreeGemIdTemplate());
     getCD4C().addMethod(managerClass, getErrorNotificationScopeTemplate());
 
-    List<ASTCDClass> concreteDomainClasses = getDomainClasses(origCD, Filter.ABSTRACT.or(Filter.DERIVED).or(Filter.SINGLETON).negate());
+    List<ASTCDClass> concreteDomainClasses = getDomainClasses(origCD, Filter.ABSTRACT.or(Filter.DERIVED).or(Filter.SINGLETON).or(Filter.POJO).negate());
     getCD4C().addMethod(managerClass, getClearCacheTemplate(), concreteDomainClasses);
 
 
@@ -123,6 +123,15 @@ public class ManagerClientImplDecorator extends AbstractDecorator {
     }
 
     boolean isSingleton = TagLookUp.isSingleton(domainClass);
+    boolean isPojo = TagLookUp.isPojo(domainClass);
+
+    if(isPojo){
+      if(!domainClass.getModifier().isAbstract()) {
+        getCD4C().addMethod(managerClass, "umlp.managerimpl.DoBuilderParam", name);
+        getCD4C().addMethod(managerClass, "umlp.managerimpl.DoDeSerBuilder", name);
+      }
+      return;
+    }
 
     if (!domainClass.getModifier().isAbstract()) {
       if (isSingleton) {

@@ -209,11 +209,11 @@ public class RTEDeSerDecorator extends AbstractDecorator {
     boolean makeAbstract = jsonStr.isEmpty() && !useDeSer;
 
     getCD4C().addMethod(deSer, getSerializeSimpleFieldTemplate(),
-        originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, "context");
+        originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional, false,
+        useDeSer, "context", "");
     getCD4C().addMethod(deSer, getDeserializeSimpleFieldTemplate(),
-        originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, "context");
+        originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional, false,
+        useDeSer, "context", "");
 
     if (!useDeSer) {
       addContextDelegates(deSer, originalClassName, attr.getName(), type);
@@ -254,11 +254,11 @@ public class RTEDeSerDecorator extends AbstractDecorator {
     boolean makeAbstract = jsonStr.isEmpty() && !useDeSer;
 
     getCD4C().addMethod(deSer, getSerializeSimpleFieldTemplate(),
-        originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, "context");
+        originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional, false,
+        useDeSer, "context", "");
     getCD4C().addMethod(deSer, getDeserializeSimpleFieldTemplate(),
-        originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, "context");
+        originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional, false,
+        useDeSer, "context", "");
 
     if (!useDeSer) {
       addContextDelegates(deSer, originalClassName, attr.getName(), type);
