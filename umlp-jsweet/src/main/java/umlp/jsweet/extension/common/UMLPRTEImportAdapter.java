@@ -1,12 +1,10 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp.jsweet.extension.common;
 
-import org.jsweet.transpiler.AsyncAwaitPropagationScanner;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ImportElement;
-import umlp.jsweet.extension.AbstractAdapter;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 import umlp.jsweet.extension.util.RTEPathUtil;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;

@@ -20,7 +20,7 @@ import umlp.jsweet.extension.gui.GUITypesImportAdapter;
 import umlp.jsweet.extension.gui.GUIUtilAdapter;
 import umlp.jsweet.extension.gui.TSTypesAdapter;
 import umlp.jsweet.extension.module.JavaCollectionToJSArrayAdapter;
-import umlp.jsweet.extension.module.RelativeImportAdapter;
+import umlp.jsweet.extension.imports.RelativeImportAdapter;
 import umlp.jsweet.extension.umlp.BackendOnlyAdapter;
 
 import javax.lang.model.element.Element;

@@ -7,10 +7,9 @@ import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ImportElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
-import org.jsweet.transpiler.model.NewClassElement;
 import org.jsweet.transpiler.model.support.ExtendedElementSupport;
 import standalone.com.sun.tools.javac.tree.JCTree;
-import umlp.jsweet.extension.AbstractAdapter;
+import umlp.jsweet.extension.common.AbstractAdapter;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 
 import javax.lang.model.element.PackageElement;

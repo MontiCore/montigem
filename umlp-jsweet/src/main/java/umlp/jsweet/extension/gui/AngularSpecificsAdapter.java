@@ -8,7 +8,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import standalone.com.sun.source.tree.MethodTree;
 import standalone.com.sun.source.tree.Tree;
-import umlp.jsweet.extension.AbstractAdapter;
+import umlp.jsweet.extension.common.AbstractAdapter;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 import umlp.jsweet.extension.util.RouterAdapterUtils;
 

@@ -8,8 +8,7 @@ import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.ForeachLoopElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
 import org.jsweet.transpiler.model.NewClassElement;
-import umlp.jsweet.extension.AbstractAdapter;
-import umlp.jsweet.extension.util.GUIAdapterUtils;
+import umlp.jsweet.extension.common.AbstractAdapter;
 import umlp.jsweet.extension.util.RTEPathUtil;
 
 import javax.lang.model.element.Modifier;

@@ -1,6 +1,6 @@
 {
   "adapters": [
-    "umlp.jsweet.extension.PrintImportsAtBottomAdapter",
+    "umlp.jsweet.extension.imports.PrintImportsAtBottomAdapter",
     "umlp.jsweet.extension.UMLPAdapter"
   ]
 }

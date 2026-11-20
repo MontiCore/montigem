@@ -18,7 +18,6 @@ import standalone.com.sun.source.tree.ParenthesizedTree;
 import standalone.com.sun.source.tree.Tree;
 import standalone.com.sun.source.tree.TypeCastTree;
 import standalone.com.sun.source.util.TreeScanner;
-import umlp.jsweet.extension.AbstractAdapter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;

@@ -1,13 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
-package umlp.jsweet.extension.module;
+package umlp.jsweet.extension.imports;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.CompilationUnitElement;
-import org.jsweet.transpiler.model.ImportElement;
-import org.jsweet.transpiler.model.TypeCastElement;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 
 import javax.lang.model.element.PackageElement;
