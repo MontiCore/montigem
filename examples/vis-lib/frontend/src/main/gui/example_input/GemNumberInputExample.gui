@@ -28,6 +28,12 @@ page GemNumberInputExample(double priceEntry, int quantityEntry) {
         placeholder = "Enter rating e.g. 4.5..."
       ),
       @GemNumberInput(
+        id = "minNumber",
+        labelText = "Positive Number (min 1.2):",
+        min = 1.2,
+        placeholder = "Enter number >= 1.2..."
+      ),
+      @GemNumberInput(
         id = "disabledNumber",
         labelText = "Disabled Number Input:",
         disabled = true

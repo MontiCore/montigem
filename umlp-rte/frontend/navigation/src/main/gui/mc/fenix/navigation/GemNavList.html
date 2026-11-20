@@ -9,11 +9,15 @@
   >
     <mat-icon [fontIcon]="collapsed ? 'chevron_right' : 'chevron_left'"></mat-icon>
   </button>
-  <ng-container *ngTemplateOutlet="header"></ng-container>
+  <div *ngIf="header" class="gem-nav-list-header">
+    <ng-container *ngTemplateOutlet="header"></ng-container>
+  </div>
   <div class="gem-nav-list-items">
     <ng-container *ngFor="let c of components">
       <ng-container *ngTemplateOutlet="c"></ng-container>
     </ng-container>
   </div>
-  <ng-container *ngTemplateOutlet="footer"></ng-container>
+  <div *ngIf="footer" class="gem-nav-list-footer">
+    <ng-container *ngTemplateOutlet="footer"></ng-container>
+  </div>
 </nav>

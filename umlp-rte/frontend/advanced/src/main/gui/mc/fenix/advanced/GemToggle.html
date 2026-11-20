@@ -1,0 +1,15 @@
+<label class="gem-toggle" [class.gem-toggle-disabled]="isDisabled()">
+  <span *ngIf="getLabel()" class="gem-toggle-label">{{ getLabel() }}</span>
+  <button
+    type="button"
+    role="switch"
+    class="gem-toggle-control"
+    [class.gem-toggle-active]="isSwitchedOn()"
+    [attr.aria-checked]="isSwitchedOn()"
+    [attr.aria-label]="getLabel() || 'Toggle'"
+    [disabled]="isDisabled()"
+    (click)="toggle()"
+  >
+    <span class="gem-toggle-thumb"></span>
+  </button>
+</label>

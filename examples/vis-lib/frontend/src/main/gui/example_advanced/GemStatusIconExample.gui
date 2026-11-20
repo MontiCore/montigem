@@ -1,0 +1,136 @@
+/* (c) https://github.com/MontiCore/monticore */
+package example_advanced;
+
+import mc.fenix.advanced.GemStatusIcon;
+import mc.fenix.advanced.GemStatusIconTypes.GemStatus;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.arrange.GemRow;
+import mc.fenix.arrange.GemColumn;
+import common.ExamplePage;
+
+page GemStatusIconExample(?String trafficLight = "OK") {
+  @ExamplePage(
+    component = @GemColumn(rowGap = "15px", components = [
+      @GemText(value = "Default Statuses", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
+      // Default traffic light mapping: OK -> green, WARNING -> yellow, ERROR -> red
+      @GemRow(colGap = "15px", components = [
+        @GemStatusIcon(currentStatus = "OK", showLabel = true),
+        @GemStatusIcon(currentStatus = "WARNING", showLabel = true),
+        @GemStatusIcon(currentStatus = "ERROR", showLabel = true)
+      ]),
+
+      @GemText(value = "Changing Status", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
+      // Status that changes at runtime
+      @GemRow(colGap = "15px", vAlign = "center", components = [
+        @GemStatusIcon(currentStatus = currentStatus(), size = "40px", showLabel = true),
+        @GemButton(label = "Next status", leftClick = nextStatus())
+      ]),
+
+      @GemText(value = "Custom Statuses", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
+      // Custom statuses: GemStatus(value, color, icon)
+      // - value: any name, e.g. the constants of an enum; compared case-insensitive with `currentStatus`
+      // - color: any CSS color (hex, rgb, color name, ...)
+      // - icon:  icon name from https://fonts.google.com/icons (same as `name` of GemIcon)
+      @GemRow(colGap = "15px", components = [
+        @GemStatusIcon(
+          currentStatus = "RUNNING",
+          statuses = [
+            GemStatus("RUNNING", "#2e7d32", "play_circle"),
+            GemStatus("PAUSED", "orange", "pause_circle"),
+            GemStatus("STOPPED", "rgb(198,40,40)", "stop_circle")
+          ],
+          size = "32px",
+          showLabel = true
+        ),
+        @GemStatusIcon(
+          currentStatus = "PAUSED",
+          statuses = [
+            GemStatus("RUNNING", "#2e7d32", "play_circle"),
+            GemStatus("PAUSED", "orange", "pause_circle"),
+            GemStatus("STOPPED", "rgb(198,40,40)", "stop_circle")
+          ],
+          size = "32px",
+          showLabel = true
+        ),
+        @GemStatusIcon(
+          currentStatus = "STOPPED",
+          statuses = [
+            GemStatus("RUNNING", "#2e7d32", "play_circle"),
+            GemStatus("PAUSED", "orange", "pause_circle"),
+            GemStatus("STOPPED", "rgb(198,40,40)", "stop_circle")
+          ],
+          size = "32px",
+          showLabel = true
+        )
+      ]),
+
+      @GemText(value = "Use Cases", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
+      // Free status names for different use cases
+      @GemRow(colGap = "25px", wrap = "wrap", components = [
+        // Presence of a user
+        @GemStatusIcon(
+          currentStatus = "Online",
+          statuses = [
+            GemStatus("Online", "limegreen", "wifi"),
+            GemStatus("Away", "gold", "schedule"),
+            GemStatus("Offline", "gray", "wifi_off")
+          ],
+          size = "28px",
+          showLabel = true
+        ),
+        // State of an invoice
+        @GemStatusIcon(
+          currentStatus = "Overdue",
+          statuses = [
+            GemStatus("Paid", "#2e7d32", "check_circle"),
+            GemStatus("Open", "#1565c0", "hourglass_empty"),
+            GemStatus("Overdue", "crimson", "priority_high")
+          ],
+          size = "28px",
+          showLabel = true
+        ),
+        // Charge of a battery
+        @GemStatusIcon(
+          currentStatus = "low",
+          statuses = [
+            GemStatus("full", "green", "battery_full"),
+            GemStatus("low", "darkorange", "battery_2_bar"),
+            GemStatus("empty", "red", "battery_alert")
+          ],
+          size = "28px",
+          showLabel = true
+        ),
+        // Weather
+        @GemStatusIcon(
+          currentStatus = "Sunny",
+          statuses = [
+            GemStatus("Sunny", "#ffb300", "wb_sunny"),
+            GemStatus("Cloudy", "#90a4ae", "cloud"),
+            GemStatus("Stormy", "#5c6bc0", "thunderstorm")
+          ],
+          size = "28px",
+          showLabel = true
+        ),
+        // Without an own icon (null) the `icon` of the GemStatusIcon is used
+        @GemStatusIcon(
+          currentStatus = "Gold",
+          statuses = [
+            GemStatus("Gold", "#d4af37", null),
+            GemStatus("Silver", "silver", null),
+            GemStatus("Bronze", "#cd7f32", null)
+          ],
+          icon = "emoji_events",
+          size = "28px",
+          showLabel = true
+        )
+      ]),
+
+      @GemText(value = "Unknown Status", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
+      // Unknown status falls back to defaultColor
+      @GemStatusIcon(currentStatus = "UNKNOWN", icon = "help", defaultColor = "gray", showLabel = true)
+    ]),
+    basePath = "example_advanced",
+    componentName = "GemStatusIconExample"
+  );
+}

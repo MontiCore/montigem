@@ -4,7 +4,7 @@ name: "Generator Compare"
 # code they produce on the branch the PR is based on (see devScripts/generatorcompare).
 # Runs if the PR changes umlp-tool or umlp-jsweet, for the backend and the frontend of vis-lib.
 # The result is informational, differences do not fail the workflow. The diff is shown in the
-# summary of the run and uploaded as an artifact, as a patch and as a HTML page (gitdiff2html.py).
+# summary of the run and uploaded as artifacts: a zip with the patch, and the HTML page
 on:
   pull_request:
     paths:
@@ -64,6 +64,10 @@ jobs:
           # detached HEAD and does not have the base branch. So both get their local branch.
           # The base is the current tip of the base branch, which needs no history. Changes of
           # the base branch that the PR branch does not have yet show up in the diff as well.
+          # The workspace belongs to the user of the runner and not to the user of the container,
+          # git refuses to work in it otherwise. Holds for the following steps as well.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
           git checkout -B "$HEAD_REF"
           git fetch --no-tags --depth=1 origin "refs/heads/$BASE_REF:refs/heads/$BASE_REF"
 
@@ -130,11 +134,30 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload diff
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: generator-diff
           path: |
             generator-diff.patch
             generator-diff.stat
-            generator-diff.html
           if-no-files-found: ignore
+
+      # Uploaded on its own and not zipped, so the browser opens the page directly.
+      # Without archive the file name is the name of the artifact.
+      - name: Upload HTML diff
+        id: upload_html
+        if: hashFiles('generator-diff.html') != ''
+        uses: actions/upload-artifact@v7
+        with:
+          path: generator-diff.html
+          archive: false
+
+      - name: Link HTML diff
+        if: steps.upload_html.outputs.artifact-url != ''
+        env:
+          HTML_URL: ${{ steps.upload_html.outputs.artifact-url }}
+        run: |
+          {
+            echo
+            echo "[Open the diff side by side in the browser]($HTML_URL)"
+          } >> "$GITHUB_STEP_SUMMARY"

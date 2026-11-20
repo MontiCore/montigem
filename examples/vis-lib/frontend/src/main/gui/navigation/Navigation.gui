@@ -68,6 +68,7 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "TreeNode", target = "/example_arrange/GemTreeNodeExample");
         @GemNavItem(title = "Dialog", target = "/example_arrange/GemDialogExample");
         @GemNavItem(title = "Card", target = "/example_arrange/GemCardExample");
+        @GemNavItem(title = "Divider", target = "/example_arrange/GemDividerExample");
         @GemNavItem(title = "Column", target = "/example_arrange/GemColumnExample");
         @GemNavItem(title = "Column2", target = "/example_arrange/GemColumnExample2");
         @GemNavItem(title = "Row", target = "/example_arrange/GemRowExample");
@@ -123,6 +124,8 @@ component Navigation(String activeCategory = "Basic") {
         @GemNavItem(title = "CAD Viewer", target = "/example_cad/GemCADExample");
         @GemNavItem(title = "Function Display", target = "/example_functiondisplay/FunctionDisplayExample");
         @GemNavItem(title = "Markdown", target = "/example_advanced/GemMarkdownExample");
+        @GemNavItem(title = "StatusIcon", target = "/example_advanced/GemStatusIconExample");
+        @GemNavItem(title = "Toggle", target = "/example_advanced/GemToggleExample");
         @GemNavItem(title = "NavList", target = "/common/NavListExample");
         //@GemNavItem(title = "Component Tests", target = "/manual/ComponentTestOverview");
       }

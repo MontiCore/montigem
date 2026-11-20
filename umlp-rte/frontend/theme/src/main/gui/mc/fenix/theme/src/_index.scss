@@ -7,6 +7,7 @@
 @import "./components/GemLoadingSpinner";
 @import "./components/GemAudio";
 @import "./components/GemIcon";
+@import "./components/GemStatusIcon";
 @import "./components/GemNavItem";
 @import "./components/GemNavList";
 @import "./components/GemMarkdown";
@@ -29,6 +30,7 @@
 @import "./components/GemTextareaInput";
 @import "./components/GemVideo";
 @import "./components/GemImage";
+@import "./components/GemDivider";
 @import "./Table";
 
 
@@ -44,12 +46,14 @@
   @include loading-spinner-theme();
   @include gem-audio-theme();
   @include gem-image-theme();
+  @include gem-status-icon-theme();
   @include gem-nav-item-theme();
   @include gem-video-theme();
   @include gem-nav-list-theme();
   @include gem-markdown-theme();
   @include gem-charts-dark-theme();
   @include gem-column-theme();
+  @include gem-divider-theme();
   @include dialog-theme($rwth-blue-2, $rwth-black, $rwth-black-4);
   @include gem-grid-theme();
   @include gem-grid-cell-theme();

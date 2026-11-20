@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+@mixin gem-status-icon-theme() {
+  gem-status-icon {
+    display: inline-flex;
+  }
+
+  .gem-status-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  .gem-status-icon-symbol {
+    line-height: 1;
+  }
+
+  .gem-status-icon-label {
+    color: var(--text-main);
+  }
+}

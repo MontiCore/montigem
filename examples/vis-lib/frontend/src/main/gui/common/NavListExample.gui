@@ -12,7 +12,7 @@ page NavListExample() {
     hAlign = "center",
     components = [
       @GemText(value = "GemNavList Examples", size = "2rem", weight = "bold", height = "auto", width = "auto"),
-      @GemText(value = "Digital-Twin-style navigation with icons, collapse and active state", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
+      @GemText(value = "Digital-Twin-style navigation with icons, collapse, active state, header and footer", size = "1.2rem", color = "gray", height = "auto", width = "auto"),
 
       @GemRow(
         wrap = "wrap",
@@ -46,6 +46,20 @@ page NavListExample() {
               @GemNavItem(title = "Home", target = "/common/NavListExample", iconName = "home"),
               @GemNavItem(title = "Cockpit", target = "/common/OtherOverview", iconName = "dashboard"),
               @GemNavItem(title = "Function Model", target = "/example_basic/BasicOverview", iconName = "show_chart")
+            ]
+          ),
+
+          // header stays at the top, footer at the bottom, only the entries scroll
+          @GemNavList(
+            width = "280px",
+            height = "400px",
+            header = @GemText(value = "Digital Twin", size = "1.2rem", weight = "bold", height = "auto", width = "auto"),
+            footer = @GemNavItem(title = "Settings", target = "/common/OtherOverview", iconName = "settings"),
+            components = [
+              @GemNavItem(title = "Home", target = "/common/NavListExample", iconName = "home"),
+              @GemNavItem(title = "Cockpit", target = "/common/OtherOverview", iconName = "dashboard"),
+              @GemNavItem(title = "Function Model", target = "/example_basic/BasicOverview", iconName = "show_chart"),
+              @GemNavItem(title = "Visual Analysis", target = "/example_charts/ChartsOverview", iconName = "analytics")
             ]
           )
         ]
