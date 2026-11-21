@@ -70,6 +70,7 @@ public class E2ETestDecorator extends AbstractDecorator {
 
     getCD4C().addImport(res, "org.springframework.beans.factory.annotation.Autowired");
     getCD4C().addImport(res, "org.junit.jupiter.api.AfterEach");
+    getCD4C().addImport(res, "org.junit.jupiter.api.TestInfo");
     getCD4C().addImport(res, "umlp.backendrte.service.websocket.CommandWebSocketService");
     getCD4C().addImport(res, "umlp.backendrte.common.DatabaseAccessManager");
     getCD4C().addImport(res, "org.springframework.beans.factory.annotation.Qualifier");

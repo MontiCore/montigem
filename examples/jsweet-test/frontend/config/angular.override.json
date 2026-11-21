@@ -1,0 +1,24 @@
+{
+  "projects" : {
+    "client": {
+      "architect": {
+        "build": {
+          "configurations": {
+            "production": {
+              "sourceMap": {
+                "scripts": true,
+                "vendor": true
+              }
+            },
+            "development": {
+              "sourceMap": {
+                "scripts": true,
+                "vendor": true
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

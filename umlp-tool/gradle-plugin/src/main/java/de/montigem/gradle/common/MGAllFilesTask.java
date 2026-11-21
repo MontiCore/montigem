@@ -19,6 +19,7 @@ import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.PathSensitive;
 import org.gradle.api.tasks.PathSensitivity;
+import umlp.UMLPToolOptions;
 import umlp.module_system.TaskModuleMetadata;
 
 import java.nio.file.Path;
@@ -32,6 +33,8 @@ abstract public class MGAllFilesTask extends MCAllFilesTask implements GradleTas
    * Gradle property for {@link #getReportLevel()}, e.g. {@code umlp.reports=incgen} in gradle.properties.
    */
   public static final String REPORT_LEVEL_PROPERTY = "umlp.reports";
+
+  public static final String TEMPLATE_SOURCE_MAPPING_PROPERTY = "umlp.templateSourceMapping";
 
   protected final TaskStatData statdata = new TaskStatData("AllFiles");
   private final Provider<? extends BuildService<?>> javaBeansCacheCleanup;
@@ -52,9 +55,14 @@ abstract public class MGAllFilesTask extends MCAllFilesTask implements GradleTas
   @Optional
   public abstract Property<String> getReportLevel();
 
+  @Input
+  @Optional
+  public abstract Property<String> getTemplateSourceMapping();
+
   public MGAllFilesTask(String type) {
     super(type, null);
     getReportLevel().convention(getProject().getProviders().gradleProperty(REPORT_LEVEL_PROPERTY));
+    getTemplateSourceMapping().convention(getProject().getProviders().gradleProperty(TEMPLATE_SOURCE_MAPPING_PROPERTY));
 
     Configuration montigemModuleGeneratorExtension = getProject().getConfigurations().findByName(MGBasePlugin.MONTIGEM_MODULE_GENERATOR_EXTENSION_CONFIG);
     if (montigemModuleGeneratorExtension != null) {
@@ -87,6 +95,10 @@ abstract public class MGAllFilesTask extends MCAllFilesTask implements GradleTas
     if (getReportLevel().isPresent()) {
       result.add("--reportLevel");
       result.add(getReportLevel().get());
+    }
+    if(getTemplateSourceMapping().isPresent()){
+      result.add("-" + UMLPToolOptions.TEMPL_SOURCE_MAPPING.getCMD());
+      result.add(getTemplateSourceMapping().get());
     }
     return result;
   }
