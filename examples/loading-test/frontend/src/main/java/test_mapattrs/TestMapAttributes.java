@@ -56,7 +56,7 @@ public class TestMapAttributes extends TestMapAttributesTOP {
 
   @Override
   public Consumer<Void> readStates(Gradebook g) {
-    return $ -> setResult("size=" + g.sizeStatess() + ";max=" + g.getStates(GemValueMap.MAX_SAFE_KEY).name());
+    return $ -> setResult("size=" + g.sizeStates() + ";max=" + g.getStates(GemValueMap.MAX_SAFE_KEY).name());
   }
 
   @Override
@@ -79,7 +79,7 @@ public class TestMapAttributes extends TestMapAttributesTOP {
 
   @Override
   public Consumer<Void> readVisits(Gradebook g) {
-    return $ -> setResult("size=" + g.sizeVisitsByDays() + ";visits=" + g.getVisitsByDay(LocalDate.of(2026, 11, 17)));
+    return $ -> setResult("size=" + g.sizeVisitsByDay() + ";visits=" + g.getVisitsByDay(LocalDate.of(2026, 11, 17)));
   }
 
   /**

@@ -189,7 +189,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     course.putParticipantByMatNr(ben);
     open(page, anna);
     click(page, "Clear");
-    waitUntil(() -> course.sizeParticipantByMatNrs() == 0, "backend: course.sizeParticipantByMatNrs() == 0");
+    waitUntil(() -> course.sizeParticipantByMatNr() == 0, "backend: course.sizeParticipantByMatNr() == 0");
   }
 
   /** type qualified association: the key chosen in the browser reaches the backend */
@@ -212,7 +212,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     waitUntil(() -> !course.containsKeyStudentBySeat("A1"), "backend: !course.containsKeyStudentBySeat(\"A1\")");
     waitUntil(() -> course.containsKeyStudentBySeat("B2"), "backend: course.containsKeyStudentBySeat(\"B2\")");
     assertEquals(anna.getGemId(), course.getStudentBySeat("B2").getGemId());
-    waitUntil(() -> course.sizeStudentBySeats() == 1, "backend: course.sizeStudentBySeats() == 1");
+    waitUntil(() -> course.sizeStudentBySeat() == 1, "backend: course.sizeStudentBySeat() == 1");
   }
 
   /** the browser loads the map from the backend with the keys and the value ids */
@@ -265,7 +265,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
 
     assertTrue(LoadingTestsManager.deleteTutor(mentor.getGemId()));
     clickUntil(page, "Read Mentees", "mentees=0");
-    waitUntil(() -> course.sizeMenteeByTutors() == 0, "backend: course.sizeMenteeByTutors() == 0");
+    waitUntil(() -> course.sizeMenteeByTutor() == 0, "backend: course.sizeMenteeByTutor() == 0");
   }
 
   /** the largest long key the browser represents exactly arrives in the backend unchanged */
@@ -285,7 +285,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Unsafe Phone");
     assertThat(result(page)).hasText("unsafe=false;size=0");
-    waitUntil(() -> course.sizeStudentByPhones() == 0, "backend: course.sizeStudentByPhones() == 0");
+    waitUntil(() -> course.sizeStudentByPhone() == 0, "backend: course.sizeStudentByPhone() == 0");
   }
 
   /** type qualified GemEntryMap: the key is the Tutor chosen in the browser */
@@ -316,7 +316,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     assertThat(result(page)).hasText("size=1;exam=Ben");
     waitUntil(() -> course.getStudentByExamDay(LocalDate.of(2026, 11, 17)).getGemId() == ben.getGemId(),
         "backend: Ben under the exam day");
-    assertEquals(1, course.sizeStudentByExamDays());
+    assertEquals(1, course.sizeStudentByExamDay());
   }
 
   /** a remove in the browser with a key equal to the loaded one reaches the backend */
@@ -347,6 +347,6 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Fine Lecture");
     assertThat(result(page)).hasText("lectures=0");
-    assertEquals(0, course.sizeStudentByLectures());
+    assertEquals(0, course.sizeStudentByLecture());
   }
 }

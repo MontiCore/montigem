@@ -63,16 +63,16 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var directory = QualifiedAssocsManager.directoryBuilder().build().get();
     getClients(0).activate();
     var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
-    assertEquals(0, clientDirectory.sizeByLogins());
+    assertEquals(0, clientDirectory.sizeByLogin());
 
     getBackend().activate();
     assertFalse(CommandManager.executeCommand(new Directory_putByLogin(directory.getGemId(), 999_999_999L, "ghost"))
         .isSuccessful());
-    assertEquals(0, directory.sizeByLogins());
+    assertEquals(0, directory.sizeByLogin());
     assertEquals(0, QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get()
-        .sizeByLogins());
+        .sizeByLogin());
     getClients(0).activate();
-    assertEquals(0, clientDirectory.sizeByLogins());
+    assertEquals(0, clientDirectory.sizeByLogin());
   }
 
   @Test
@@ -86,18 +86,18 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     assertSame(anna, directory.getByLogin("anna"));
     assertTrue(directory.containsKeyByLogin("anna"));
     assertTrue(directory.containsByLogin(anna));
-    assertEquals(1, directory.sizeByLogins());
+    assertEquals(1, directory.sizeByLogin());
     assertFalse(directory.containsKeyByLogin("bob"));
 
     // the key is unique: putting another target with the same key replaces the first
     assertLogsError("0xA7307", () -> directory.putByLogin(otherAnna));
     assertSame(otherAnna, directory.getByLogin("anna"));
     assertFalse(directory.containsByLogin(anna));
-    assertEquals(1, directory.sizeByLogins());
+    assertEquals(1, directory.sizeByLogin());
 
     assertTrue(directory.removeByLogin("anna"));
     assertFalse(directory.removeByLogin("anna"));
-    assertEquals(0, directory.sizeByLogins());
+    assertEquals(0, directory.sizeByLogin());
   }
 
   @Test
@@ -143,7 +143,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     getBackend().activate();
     assertFalse(directory.containsKeyByLogin("anna"));
     clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
-    assertEquals(0, clone.sizeByLogins());
+    assertEquals(0, clone.sizeByLogin());
   }
 
   @Test
@@ -277,9 +277,9 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     clientMap.put("bob", QualifiedAssocsManager.getPersonSure(bob.getGemId()));
 
     getBackend().activate();
-    assertEquals(2, directory.sizeByLogins());
+    assertEquals(2, directory.sizeByLogin());
     var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
-    assertEquals(2, clone.sizeByLogins());
+    assertEquals(2, clone.sizeByLogin());
 
     getClients(0).activate();
     clientMap.remove("anna");
@@ -293,7 +293,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     getBackend().activate();
     assertTrue(directory.getByLoginMap().isEmpty());
     clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
-    assertEquals(0, clone.sizeByLogins());
+    assertEquals(0, clone.sizeByLogin());
   }
 
   @Test
@@ -321,7 +321,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     getBackend().activate();
     assertTrue(directory.getByLoginMap().isEmpty());
     var clone = QualifiedAssocsDAOFactory.getDirectoryDAO().selectDirectory(directory.getGemId()).get();
-    assertEquals(0, clone.sizeByLogins());
+    assertEquals(0, clone.sizeByLogin());
   }
 
   /** a loaded map knows its values by id only: contains/remove of the views derive the keys first */
@@ -429,7 +429,7 @@ public interface QualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
 
     assertFalse(directory.containsKeyByLogin("anna"));
     assertFalse(directory.containsKeyByLoginFromRight("anna"));
-    assertEquals(1, directory.sizeByLogins());
+    assertEquals(1, directory.sizeByLogin());
     assertSame(bob, directory.getByLogin("bob"));
     assertSame(bob, directory.getByLoginFromRight("bob"));
 

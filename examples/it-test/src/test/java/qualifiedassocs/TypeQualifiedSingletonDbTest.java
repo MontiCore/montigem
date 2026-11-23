@@ -76,7 +76,7 @@ public interface TypeQualifiedSingletonDbTest extends QualifiedAssocsTestSetup {
     registry.putByCode("b1", bob);
     getClients(0).activate();
     var clientRegistry = QualifiedAssocsManager.getRegistrySure(registry.getGemId());
-    assertEquals(2, clientRegistry.sizeByCodes());
+    assertEquals(2, clientRegistry.sizeByCode());
 
     getBackend().activate();
     assertTrue(QualifiedAssocsManager.deletePerson(anna.getGemId()));
@@ -102,7 +102,7 @@ public interface TypeQualifiedSingletonDbTest extends QualifiedAssocsTestSetup {
     registry.putHeadByDepartment(it, bob);
     getClients(0).activate();
     var clientRegistry = QualifiedAssocsManager.getRegistrySure(registry.getGemId());
-    assertEquals(2, clientRegistry.sizeHeadByDepartments());
+    assertEquals(2, clientRegistry.sizeHeadByDepartment());
 
     getBackend().activate();
     assertTrue(QualifiedAssocsManager.deleteDepartment(sales.getGemId()));

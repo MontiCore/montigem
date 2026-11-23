@@ -74,10 +74,10 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
 
     var result = CommandManager.executeCommand(new Directory_putByCode(directory.getGemId(), anna.getGemId(), null));
     assertFalse(result.isSuccessful());
-    assertEquals(0, directory.sizeByCodes());
-    assertEquals(0, load(directory).sizeByCodes());
-    assertEquals(0, directory.sizeHeadByDepartments());
-    assertEquals(0, load(directory).sizeHeadByDepartments());
+    assertEquals(0, directory.sizeByCode());
+    assertEquals(0, load(directory).sizeByCode());
+    assertEquals(0, directory.sizeHeadByDepartment());
+    assertEquals(0, load(directory).sizeHeadByDepartment());
   }
 
   /**
@@ -91,7 +91,7 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     var anna = QualifiedAssocsManager.personBuilder().login("anna").number(1).build().get();
     getClients(0).activate();
     var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
-    assertEquals(0, clientDirectory.sizeByCodes());
+    assertEquals(0, clientDirectory.sizeByCode());
 
     getBackend().activate();
     long missing = 999_999_999L;
@@ -99,13 +99,13 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
         .isSuccessful());
     assertFalse(CommandManager.executeCommand(new Directory_putHeadByDepartment(directory.getGemId(),
         anna.getGemId(), missing)).isSuccessful());
-    assertEquals(0, directory.sizeByCodes());
-    assertEquals(0, directory.sizeHeadByDepartments());
-    assertEquals(0, load(directory).sizeByCodes());
-    assertEquals(0, load(directory).sizeHeadByDepartments());
+    assertEquals(0, directory.sizeByCode());
+    assertEquals(0, directory.sizeHeadByDepartment());
+    assertEquals(0, load(directory).sizeByCode());
+    assertEquals(0, load(directory).sizeHeadByDepartment());
     getClients(0).activate();
-    assertEquals(0, clientDirectory.sizeByCodes());
-    assertEquals(0, clientDirectory.sizeHeadByDepartments());
+    assertEquals(0, clientDirectory.sizeByCode());
+    assertEquals(0, clientDirectory.sizeHeadByDepartment());
   }
 
   @Test
@@ -132,7 +132,7 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
 
     assertTrue(directory.removeByCode("b1"));
     assertFalse(directory.removeByCode("b1"));
-    assertEquals(0, directory.sizeByCodes());
+    assertEquals(0, directory.sizeByCode());
   }
 
   @Test
@@ -213,8 +213,8 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
     clientDirectory.removeByCode("a2");
 
     getBackend().activate();
-    assertEquals(0, directory.sizeByCodes());
-    assertEquals(0, load(directory).sizeByCodes());
+    assertEquals(0, directory.sizeByCode());
+    assertEquals(0, load(directory).sizeByCode());
   }
 
   /**
@@ -233,7 +233,7 @@ public interface TypeQualifiedAssocsDbTest extends QualifiedAssocsTestSetup {
 
     getClients(0).activate();
     var clientDirectory = QualifiedAssocsManager.getDirectoryList().get(0);
-    assertEquals(2, clientDirectory.sizeHeadByDepartments());
+    assertEquals(2, clientDirectory.sizeHeadByDepartment());
 
     getBackend().activate();
     assertTrue(QualifiedAssocsManager.deleteDepartment(sales.getGemId()));

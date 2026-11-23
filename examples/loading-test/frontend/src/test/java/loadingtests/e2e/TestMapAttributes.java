@@ -75,7 +75,7 @@ public class TestMapAttributes extends AbstractLoadingTestsE2ETest {
     open(page);
     click(page, "Put Grade");
     click(page, "Replace Grade");
-    waitUntil(() -> gradebook.sizeGradess() == 2 && gradebook.getGrades("math") == 3,
+    waitUntil(() -> gradebook.sizeGrades() == 2 && gradebook.getGrades("math") == 3,
         "backend: math=3 and art=2");
     assertEquals(List.of("math", "art"), List.copyOf(gradebook.getGradesMap().keySet()));
     click(page, "Remove Grade");
@@ -115,7 +115,7 @@ public class TestMapAttributes extends AbstractLoadingTestsE2ETest {
     clickUntil(page, "Read Visits", "size=1;visits=1");
     click(page, "Count Visit");
     waitUntil(() -> gradebook.getVisitsByDay(LocalDate.of(2026, 11, 17)) == 2, "backend: 2 visits");
-    assertEquals(1, gradebook.sizeVisitsByDays());
+    assertEquals(1, gradebook.sizeVisitsByDay());
     clickUntil(page, "Read Visits", "size=1;visits=2");
   }
 

@@ -145,7 +145,7 @@ public class TestGemMap extends TestGemMapTOP {
     return $ -> {
       c.putStudentBySeat("B2", s);
       setResult("A1=" + c.containsKeyStudentBySeat("A1") + ";B2=" + c.containsKeyStudentBySeat("B2")
-          + ";size=" + c.sizeStudentBySeats());
+          + ";size=" + c.sizeStudentBySeat());
     };
   }
 
@@ -176,7 +176,7 @@ public class TestGemMap extends TestGemMapTOP {
    */
   @Override
   public Consumer<Void> readMentees(Course c) {
-    return $ -> setResult("mentees=" + c.sizeMenteeByTutors());
+    return $ -> setResult("mentees=" + c.sizeMenteeByTutor());
   }
 
   /**
@@ -197,7 +197,7 @@ public class TestGemMap extends TestGemMapTOP {
   public Consumer<Void> putUnsafePhone(Course c, Student s) {
     return $ -> {
       c.putStudentByPhone(9007199254740993L, s);
-      setResult("unsafe=" + c.containsKeyStudentByPhone(9007199254740993L) + ";size=" + c.sizeStudentByPhones());
+      setResult("unsafe=" + c.containsKeyStudentByPhone(9007199254740993L) + ";size=" + c.sizeStudentByPhone());
     };
   }
 
@@ -219,7 +219,7 @@ public class TestGemMap extends TestGemMapTOP {
   public Consumer<Void> readExamDay(Course c) {
     return $ -> {
       Student s = c.getStudentByExamDay(LocalDate.of(2026, 11, 17));
-      setResult("size=" + c.sizeStudentByExamDays() + ";exam=" + (s == null ? "-" : s.getName()));
+      setResult("size=" + c.sizeStudentByExamDay() + ";exam=" + (s == null ? "-" : s.getName()));
     };
   }
 
@@ -228,7 +228,7 @@ public class TestGemMap extends TestGemMapTOP {
   public Consumer<Void> putExamDay(Course c, Student s) {
     return $ -> {
       c.putStudentByExamDay(LocalDate.of(2026, 11, 17), s);
-      setResult("size=" + c.sizeStudentByExamDays() + ";exam="
+      setResult("size=" + c.sizeStudentByExamDay() + ";exam="
           + c.getStudentByExamDay(LocalDate.of(2026, 11, 17)).getName());
     };
   }

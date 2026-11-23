@@ -1,0 +1,15 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPMapAttributeNameClash {
+  class A {
+    // invalid (0xCDC70): getScoresMap() twice, getByNickMap() twice
+    java.util.Map<String, Integer> scores;
+    int scoresMap;
+    java.util.Map<String, B> byNick;
+    String byNickMap;
+    // valid
+    java.util.Map<String, Integer> grades;
+    java.util.List<Integer> gradesList;
+  }
+
+  class B;
+}

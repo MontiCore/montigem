@@ -73,9 +73,9 @@ public interface SingleOwnerMoveDbTest extends QualifiedAssocsTestSetup {
     club2.putLeaderByDepartment(it, anna);
     club2.putMemberByNumber(anna);
 
-    assertEquals(0, club1.sizeMemberByCodes());
-    assertEquals(0, club1.sizeLeaderByDepartments());
-    assertEquals(0, club1.sizeMemberByNumbers());
+    assertEquals(0, club1.sizeMemberByCode());
+    assertEquals(0, club1.sizeLeaderByDepartment());
+    assertEquals(0, club1.sizeMemberByNumber());
     assertEquals(Map.of("b1", anna.getGemId()), club2._internal_getMemberByCodeGemMap().getIDMap());
     assertEquals(Map.of(it.getGemId(), anna.getGemId()), club2._internal_getLeaderByDepartmentGemMap().getIDMap());
     assertEquals(Map.of(1, anna.getGemId()), club2._internal_getMemberByNumberGemMap().getIDMap());
@@ -84,9 +84,9 @@ public interface SingleOwnerMoveDbTest extends QualifiedAssocsTestSetup {
     assertEquals(club2.getGemId(), anna.getNumberClubGem().getGemId());
 
     var loaded1 = load(club1);
-    assertEquals(0, loaded1.sizeMemberByCodes());
-    assertEquals(0, loaded1.sizeLeaderByDepartments());
-    assertEquals(0, loaded1.sizeMemberByNumbers());
+    assertEquals(0, loaded1.sizeMemberByCode());
+    assertEquals(0, loaded1.sizeLeaderByDepartment());
+    assertEquals(0, loaded1.sizeMemberByNumber());
     assertEquals(Map.of("b1", anna.getGemId()), load(club2)._internal_getMemberByCodeGemMap().getIDMap());
   }
 
@@ -114,12 +114,12 @@ public interface SingleOwnerMoveDbTest extends QualifiedAssocsTestSetup {
     club1.putMemberByCode("a1", anna);
     getClients(0).activate();
     var clientClub1 = QualifiedAssocsManager.getClubSure(club1.getGemId());
-    assertEquals(1, clientClub1.sizeMemberByCodes());
+    assertEquals(1, clientClub1.sizeMemberByCode());
 
     getBackend().activate();
     club2.putMemberByCode("b1", anna);
     getClients(0).activate();
-    assertEquals(0, clientClub1.sizeMemberByCodes());
+    assertEquals(0, clientClub1.sizeMemberByCode());
   }
 
   /** a put on a client moves the value there and, through the server, everywhere else */
@@ -134,16 +134,16 @@ public interface SingleOwnerMoveDbTest extends QualifiedAssocsTestSetup {
     var clientClub1 = QualifiedAssocsManager.getClubSure(club1.getGemId());
     var clientClub2 = QualifiedAssocsManager.getClubSure(club2.getGemId());
     var clientAnna = QualifiedAssocsManager.getPersonSure(anna.getGemId());
-    assertEquals(1, clientClub1.sizeMemberByCodes());
+    assertEquals(1, clientClub1.sizeMemberByCode());
 
     clientClub2.putMemberByCode("b1", clientAnna);
-    assertEquals(0, clientClub1.sizeMemberByCodes());
+    assertEquals(0, clientClub1.sizeMemberByCode());
     assertEquals(club2.getGemId(), clientAnna.getClubGem().getGemId());
     getBackend().activate();
-    assertEquals(0, club1.sizeMemberByCodes());
+    assertEquals(0, club1.sizeMemberByCode());
     assertEquals(Map.of("b1", anna.getGemId()), club2._internal_getMemberByCodeGemMap().getIDMap());
     assertEquals(club2.getGemId(), anna.getClubGem().getGemId());
-    assertEquals(0, load(club1).sizeMemberByCodes());
+    assertEquals(0, load(club1).sizeMemberByCode());
   }
 
   /** an owner built with the value takes it from its old owner */
@@ -154,9 +154,9 @@ public interface SingleOwnerMoveDbTest extends QualifiedAssocsTestSetup {
     var anna = person("anna", 1);
     club1.putMemberByCode("a1", anna);
     var club2 = QualifiedAssocsManager.clubBuilder().memberByCodePut("b1", anna).build().get();
-    assertEquals(0, club1.sizeMemberByCodes());
+    assertEquals(0, club1.sizeMemberByCode());
     assertEquals(club2.getGemId(), anna.getClubGem().getGemId());
-    assertEquals(0, load(club1).sizeMemberByCodes());
+    assertEquals(0, load(club1).sizeMemberByCode());
   }
 
   /** an owner built on a client takes the value from its old owner, on the client and on the server (create command) */
@@ -170,12 +170,12 @@ public interface SingleOwnerMoveDbTest extends QualifiedAssocsTestSetup {
     var clientClub1 = QualifiedAssocsManager.getClubSure(club1.getGemId());
     var clientAnna = QualifiedAssocsManager.getPersonSure(anna.getGemId());
     var club2 = QualifiedAssocsManager.clubBuilder().memberByCodePut("b1", clientAnna).build().get();
-    assertEquals(0, clientClub1.sizeMemberByCodes());
+    assertEquals(0, clientClub1.sizeMemberByCode());
 
     getBackend().activate();
-    assertEquals(0, club1.sizeMemberByCodes());
+    assertEquals(0, club1.sizeMemberByCode());
     assertEquals(club2.getGemId(), anna.getClubGem().getGemId());
-    assertEquals(0, load(club1).sizeMemberByCodes());
+    assertEquals(0, load(club1).sizeMemberByCode());
     assertEquals(Map.of("b1", anna.getGemId()), load(QualifiedAssocsManager.getClubSure(club2.getGemId()))
         ._internal_getMemberByCodeGemMap().getIDMap());
   }

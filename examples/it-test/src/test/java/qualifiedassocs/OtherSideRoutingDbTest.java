@@ -113,8 +113,8 @@ public interface OtherSideRoutingDbTest extends QualifiedAssocsTestSetup {
     club1.putLeaderByDepartment(sales, anna);
     getClients(0).activate();
     var club1OfClient0 = QualifiedAssocsManager.getClubSure(club1.getGemId());
-    assertEquals(1, club1OfClient0.sizeMemberByCodes());
-    assertEquals(1, club1OfClient0.sizeLeaderByDepartments());
+    assertEquals(1, club1OfClient0.sizeMemberByCode());
+    assertEquals(1, club1OfClient0.sizeLeaderByDepartment());
 
     getClients(1).activate();
     var annaOfClient1 = QualifiedAssocsManager.getPersonSure(anna.getGemId());
@@ -123,12 +123,12 @@ public interface OtherSideRoutingDbTest extends QualifiedAssocsTestSetup {
     club2OfClient1.putMemberByCode("b1", annaOfClient1);
     club2OfClient1.putLeaderByDepartment(itOfClient1, annaOfClient1);
     getClients(0).activate();
-    assertEquals(0, club1OfClient0.sizeMemberByCodes());
-    assertEquals(0, club1OfClient0.sizeLeaderByDepartments());
+    assertEquals(0, club1OfClient0.sizeMemberByCode());
+    assertEquals(0, club1OfClient0.sizeLeaderByDepartment());
     assertFalse(QualifiedAssocsManager.isLoadedPerson(anna.getGemId()));
 
     getBackend().activate();
-    assertEquals(0, club1.sizeMemberByCodes());
+    assertEquals(0, club1.sizeMemberByCode());
     assertEquals(Map.of("b1", anna.getGemId()), club2._internal_getMemberByCodeGemMap().getIDMap());
     assertEquals(club2.getGemId(), clubId(anna));
     assertEquals(club2.getGemId(), ledClubId(anna));
@@ -196,17 +196,17 @@ public interface OtherSideRoutingDbTest extends QualifiedAssocsTestSetup {
     club1.putMemberByCode("a1", anna);
     getClients(0).activate();
     var club1OfClient0 = QualifiedAssocsManager.getClubSure(club1.getGemId());
-    assertEquals(1, club1OfClient0.sizeMemberByCodes());
+    assertEquals(1, club1OfClient0.sizeMemberByCode());
 
     getClients(1).activate();
     assertTrue(CommandManager.executeCommand(
         new Club_putMemberByCode(club2.getGemId(), anna.getGemId(), "b1", -1, -1)).isSuccessful());
     assertFalse(QualifiedAssocsManager.isLoadedPerson(anna.getGemId()));
     getClients(0).activate();
-    assertEquals(0, club1OfClient0.sizeMemberByCodes());
+    assertEquals(0, club1OfClient0.sizeMemberByCode());
 
     getBackend().activate();
-    assertEquals(0, club1.sizeMemberByCodes());
+    assertEquals(0, club1.sizeMemberByCode());
     assertEquals(club2.getGemId(), clubId(anna));
   }
 }

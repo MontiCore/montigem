@@ -64,7 +64,7 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
   @Test
   public void testPutWithWrongKeyIsCorrectedByServer() {
     getClients(1).activate();
-    assertEquals(0, owner().sizeByKeys());
+    assertEquals(0, owner().sizeByKey());
 
     getClients(0).activate();
     CommandManager.executeCommand(new NumPlainOwner_putByKey(ownerId, annaId, 9999));
@@ -146,7 +146,7 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     assertFalse(built.containsKeyByKey(1001));
     assertEquals(carlId, built.getByKey(2003).getGemId());
     assertFalse(built.containsKeyByKey(1003));
-    assertEquals(2, built.sizeByKeys());
+    assertEquals(2, built.sizeByKey());
   }
 
   /**
@@ -161,7 +161,7 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     owner().putByKey(value(benId));
 
     getClients(1).activate();
-    assertEquals(2, owner().sizeByKeys());
+    assertEquals(2, owner().sizeByKey());
 
     getBackend().activate();
     // Ben takes Anna's key: his rekeying is refused, he stays under 1002
@@ -172,12 +172,12 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     // Anna leaves, Ben is put again: moved from 1002 to 1001
     owner().removeByKey(1001);
     owner().putByKey(value(benId));
-    assertEquals(1, owner().sizeByKeys());
+    assertEquals(1, owner().sizeByKey());
     assertEquals(benId, owner().getByKey(1001).getGemId());
     assertFalse(owner().containsKeyByKey(1002));
 
     getClients(1).activate();
-    assertEquals(1, owner().sizeByKeys());
+    assertEquals(1, owner().sizeByKey());
     assertTrue(owner().containsKeyByKey(1001));
     assertFalse(owner().containsKeyByKey(1002));
     assertFalse(logged("0xA7307"));
@@ -197,7 +197,7 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     long carlId = AssociationsManager.numPlainValueBuilder().key(1001).build().get().getGemId();
     owner().putByKey(value(carlId));
     assertFalse(logged("0xA7307"));
-    assertEquals(2, owner().sizeByKeys());
+    assertEquals(2, owner().sizeByKey());
     assertEquals(carlId, owner().getByKey(1001).getGemId());
     assertEquals(benId, owner().getByKey(1002).getGemId());
   }
@@ -214,8 +214,8 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
     long otherOwnerId = AssociationsManager.numPlainOwnerBuilder().byKeyPut(value(annaId)).build().get().getGemId();
 
     getClients(1).activate();
-    assertEquals(2, owner().sizeByKeys());
-    assertEquals(1, AssociationsManager.getNumPlainOwnerSure(otherOwnerId).sizeByKeys());
+    assertEquals(2, owner().sizeByKey());
+    assertEquals(1, AssociationsManager.getNumPlainOwnerSure(otherOwnerId).sizeByKey());
 
     getClients(0).activate();
     assertTrue(AssociationsManager.deleteNumPlainValue(annaId));
@@ -227,8 +227,8 @@ public class GemMapSyncTest extends AssociationsMockTestSetup {
 
     getClients(1).activate();
     assertFalse(owner().containsKeyByKey(1001));
-    assertEquals(1, owner().sizeByKeys());
-    assertEquals(0, AssociationsManager.getNumPlainOwnerSure(otherOwnerId).sizeByKeys());
+    assertEquals(1, owner().sizeByKey());
+    assertEquals(0, AssociationsManager.getNumPlainOwnerSure(otherOwnerId).sizeByKey());
     assertFalse(AssociationsManager.isLoadedNumPlainValue(annaId));
   }
 

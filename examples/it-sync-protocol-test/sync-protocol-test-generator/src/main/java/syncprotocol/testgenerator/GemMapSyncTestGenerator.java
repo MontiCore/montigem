@@ -922,7 +922,7 @@ public final class GemMapSyncTestGenerator {
     content.append("  default void assert").append(persisted)
         .append("MapSize(GemMapSyncProtocolTestScenario scenario, int size) {\n");
     content.append("    ").append(ownerType).append(" owner = ").append(owner).append(";\n");
-    content.append("    assertEquals(size, owner.sizeByKeys());\n");
+    content.append("    assertEquals(size, owner.sizeByKey());\n");
     content.append("  }\n\n");
   }
 

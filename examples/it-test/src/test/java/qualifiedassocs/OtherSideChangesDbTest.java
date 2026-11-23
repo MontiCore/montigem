@@ -64,15 +64,15 @@ public interface OtherSideChangesDbTest extends QualifiedAssocsTestSetup {
     assertEquals(Map.of(1, anna.getGemId()), load(club1)._internal_getMemberByNumberGemMap().getIDMap());
 
     anna.setNumberClub(club2);
-    assertEquals(0, club1.sizeMemberByNumbers());
+    assertEquals(0, club1.sizeMemberByNumber());
     assertEquals(Map.of(1, anna.getGemId()), club2._internal_getMemberByNumberGemMap().getIDMap());
     assertEquals(club2.getGemId(), anna.getNumberClubGem().getGemId());
-    assertEquals(0, load(club1).sizeMemberByNumbers());
+    assertEquals(0, load(club1).sizeMemberByNumber());
 
     anna.setNumberClub(null);
-    assertEquals(0, club2.sizeMemberByNumbers());
+    assertEquals(0, club2.sizeMemberByNumber());
     assertEquals(-1, anna.getNumberClubGem().getGemId());
-    assertEquals(0, load(club2).sizeMemberByNumbers());
+    assertEquals(0, load(club2).sizeMemberByNumber());
   }
 
   /** adding and removing owners puts the value into and removes it from their maps, also through the list */
@@ -91,9 +91,9 @@ public interface OtherSideChangesDbTest extends QualifiedAssocsTestSetup {
     assertEquals(List.of(club1.getGemId(), club2.getGemId()), anna._internal_getClubsGemList().getIDs());
 
     assertTrue(anna.removeClubs(club1));
-    assertEquals(0, club1.sizeMemberByLogins());
+    assertEquals(0, club1.sizeMemberByLogin());
     assertEquals(List.of(club2.getGemId()), anna._internal_getClubsGemList().getIDs());
-    assertEquals(0, load(club1).sizeMemberByLogins());
+    assertEquals(0, load(club1).sizeMemberByLogin());
 
     anna._internal_getClubsGemList().add(club3);
     assertTrue(club3.containsKeyMemberByLogin("anna"));

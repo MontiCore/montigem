@@ -163,7 +163,7 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     assertEquals(club.getGemId(), ledClubId(anna));
 
     assertTrue(QualifiedAssocsManager.deleteDepartment(sales.getGemId()));
-    assertEquals(0, club.sizeLeaderByDepartments());
+    assertEquals(0, club.sizeLeaderByDepartment());
     assertEquals(-1, ledClubId(anna));
   }
 
@@ -202,8 +202,8 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     getBackend().activate();
     QualifiedAssocsManager.TESTING_clearCache();
     var loadedClub = QualifiedAssocsManager.getClubSure(club.getGemId());
-    assertEquals(0, loadedClub.sizeLeaderByDepartments());
-    assertEquals(0, loadedClub.sizeSponsorByDepartments());
+    assertEquals(0, loadedClub.sizeLeaderByDepartment());
+    assertEquals(0, loadedClub.sizeSponsorByDepartment());
     assertEquals(-1, ledClubId(QualifiedAssocsManager.getPersonSure(anna.getGemId())));
   }
 
@@ -263,7 +263,7 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     var anna = person("anna", 1);
     assertLogsError("0xA7330", () -> anna._internal_getSponsoredClubsGemList().add(club));
     assertEquals(List.of(), anna._internal_getSponsoredClubsGemList().getIDs());
-    assertEquals(0, club.sizeSponsorByDepartments());
+    assertEquals(0, club.sizeSponsorByDepartment());
   }
 
   /**
@@ -284,7 +284,7 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
 
     getBackend().activate();
     other.putMemberByCode("b1", admin);
-    assertEquals(0, club.sizeMemberByCodes());
+    assertEquals(0, club.sizeMemberByCode());
     assertEquals(other.getGemId(), clubId(admin));
     getClients(0).activate();
     assertEquals(other.getGemId(), clubId(clientAdmin));
@@ -308,11 +308,11 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
     assertEquals(team.getGemId(), clubId(anna));
 
     club.putMemberByCode("c1", anna);
-    assertEquals(0, team.sizeMemberByCodes());
+    assertEquals(0, team.sizeMemberByCode());
     assertEquals(club.getGemId(), clubId(anna));
 
     team.putMemberByCode("t1", anna);
-    assertEquals(0, club.sizeMemberByCodes());
+    assertEquals(0, club.sizeMemberByCode());
     assertTrue(QualifiedAssocsManager.deleteTeam(team.getGemId()));
     assertEquals(-1, clubId(anna));
 
@@ -340,10 +340,10 @@ public interface BidirectionalQualifiedAssocsDbTest extends QualifiedAssocsTestS
 
     assertTrue(QualifiedAssocsManager.deletePerson(anna.getGemId()));
     var loadedClub = QualifiedAssocsManager.getClubSure(club.getGemId());
-    assertEquals(0, loadedClub.sizeMenteeByMentors());
+    assertEquals(0, loadedClub.sizeMenteeByMentor());
     assertEquals(-1, loadedBob.getMentorClubGem().getGemId());
 
     QualifiedAssocsManager.TESTING_clearCache();
-    assertEquals(0, QualifiedAssocsManager.getClubSure(club.getGemId()).sizeMenteeByMentors());
+    assertEquals(0, QualifiedAssocsManager.getClubSure(club.getGemId()).sizeMenteeByMentor());
   }
 }

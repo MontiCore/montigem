@@ -61,12 +61,12 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(2, sutServer.sizeScoress());
+    assertEquals(2, sutServer.sizeScores());
 
     // client: put a new key, added at the end
     getClients(0).activate();
     sut.putScores("music", 2);
-    assertEquals(3, sut.sizeScoress());
+    assertEquals(3, sut.sizeScores());
     assertEquals(List.of("math", "art", "music"), List.copyOf(sutServer.getScoresMap().keySet()));
 
     // put an existing key: the value is replaced in its position
@@ -87,18 +87,18 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(3, sutServer.sizeScoress());
+    assertEquals(3, sutServer.sizeScores());
 
     // client: remove the first key
     getClients(0).activate();
     sut.removeScores("math");
-    assertEquals(2, sut.sizeScoress());
-    assertEquals(2, sutServer.sizeScoress());
+    assertEquals(2, sut.sizeScores());
+    assertEquals(2, sutServer.sizeScores());
     assertFalse(sutServer.containsKeyScores("math"));
 
     // remove the last key
     sut.removeScores("music");
-    assertEquals(1, sut.sizeScoress());
+    assertEquals(1, sut.sizeScores());
     assertEquals(Map.of("art", 1), sutServer.getScoresMap());
   }
 
@@ -131,12 +131,12 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(2, sutServer.sizeLabelss());
+    assertEquals(2, sutServer.sizeLabels());
 
     // client: put a new key, added at the end
     getClients(0).activate();
     sut.putLabels((byte) 3, "X");
-    assertEquals(3, sut.sizeLabelss());
+    assertEquals(3, sut.sizeLabels());
     assertEquals(List.of((byte) 1, (byte) 2, (byte) 3), List.copyOf(sutServer.getLabelsMap().keySet()));
 
     // put an existing key: the value is replaced in its position
@@ -157,18 +157,18 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(3, sutServer.sizeLabelss());
+    assertEquals(3, sutServer.sizeLabels());
 
     // client: remove the first key
     getClients(0).activate();
     sut.removeLabels((byte) 1);
-    assertEquals(2, sut.sizeLabelss());
-    assertEquals(2, sutServer.sizeLabelss());
+    assertEquals(2, sut.sizeLabels());
+    assertEquals(2, sutServer.sizeLabels());
     assertFalse(sutServer.containsKeyLabels((byte) 1));
 
     // remove the last key
     sut.removeLabels((byte) 3);
-    assertEquals(1, sut.sizeLabelss());
+    assertEquals(1, sut.sizeLabels());
     assertEquals(Map.of((byte) 2, "B"), sutServer.getLabelsMap());
   }
 
@@ -200,12 +200,12 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(2, sutServer.sizeFlagss());
+    assertEquals(2, sutServer.sizeFlags());
 
     // client: put a new key, added at the end
     getClients(0).activate();
     sut.putFlags((short) 3, true);
-    assertEquals(3, sut.sizeFlagss());
+    assertEquals(3, sut.sizeFlags());
     assertEquals(List.of((short) 1, (short) 2, (short) 3), List.copyOf(sutServer.getFlagsMap().keySet()));
 
     // put an existing key: the value is replaced in its position
@@ -226,18 +226,18 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(3, sutServer.sizeFlagss());
+    assertEquals(3, sutServer.sizeFlags());
 
     // client: remove the first key
     getClients(0).activate();
     sut.removeFlags((short) 1);
-    assertEquals(2, sut.sizeFlagss());
-    assertEquals(2, sutServer.sizeFlagss());
+    assertEquals(2, sut.sizeFlags());
+    assertEquals(2, sutServer.sizeFlags());
     assertFalse(sutServer.containsKeyFlags((short) 1));
 
     // remove the last key
     sut.removeFlags((short) 3);
-    assertEquals(1, sut.sizeFlagss());
+    assertEquals(1, sut.sizeFlags());
     assertEquals(Map.of((short) 2, false), sutServer.getFlagsMap());
   }
 
@@ -269,12 +269,12 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(2, sutServer.sizeStatusByIds());
+    assertEquals(2, sutServer.sizeStatusById());
 
     // client: put a new key, added at the end
     getClients(0).activate();
     sut.putStatusById(3, MaritalStatus.WIDOWED);
-    assertEquals(3, sut.sizeStatusByIds());
+    assertEquals(3, sut.sizeStatusById());
     assertEquals(List.of(1, 2, 3), List.copyOf(sutServer.getStatusByIdMap().keySet()));
 
     // put an existing key: the value is replaced in its position
@@ -295,18 +295,18 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(3, sutServer.sizeStatusByIds());
+    assertEquals(3, sutServer.sizeStatusById());
 
     // client: remove the first key
     getClients(0).activate();
     sut.removeStatusById(1);
-    assertEquals(2, sut.sizeStatusByIds());
-    assertEquals(2, sutServer.sizeStatusByIds());
+    assertEquals(2, sut.sizeStatusById());
+    assertEquals(2, sutServer.sizeStatusById());
     assertFalse(sutServer.containsKeyStatusById(1));
 
     // remove the last key
     sut.removeStatusById(3);
-    assertEquals(1, sut.sizeStatusByIds());
+    assertEquals(1, sut.sizeStatusById());
     assertEquals(Map.of(2, MaritalStatus.MARRIED), sutServer.getStatusByIdMap());
   }
 
@@ -349,12 +349,12 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(2, sutServer.sizeDatess());
+    assertEquals(2, sutServer.sizeDates());
 
     // client: put a new key, added at the end
     getClients(0).activate();
     sut.putDates("exam", LocalDate.of(2027, 2, 10));
-    assertEquals(3, sut.sizeDatess());
+    assertEquals(3, sut.sizeDates());
     assertEquals(List.of("start", "end", "exam"), List.copyOf(sutServer.getDatesMap().keySet()));
 
     // put an existing key: the value is replaced in its position
@@ -375,18 +375,18 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(3, sutServer.sizeDatess());
+    assertEquals(3, sutServer.sizeDates());
 
     // client: remove the first key
     getClients(0).activate();
     sut.removeDates("start");
-    assertEquals(2, sut.sizeDatess());
-    assertEquals(2, sutServer.sizeDatess());
+    assertEquals(2, sut.sizeDates());
+    assertEquals(2, sutServer.sizeDates());
     assertFalse(sutServer.containsKeyDates("start"));
 
     // remove the last key
     sut.removeDates("end");
-    assertEquals(1, sut.sizeDatess());
+    assertEquals(1, sut.sizeDates());
     assertEquals(Map.of("exam", LocalDate.of(2027, 2, 10)), sutServer.getDatesMap());
   }
 
@@ -433,12 +433,12 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     assertNotSame(sut, sutServer);
-    assertEquals(2, sutServer.sizeCountsByDays());
+    assertEquals(2, sutServer.sizeCountsByDay());
 
     // client: put an existing key, the value is replaced in its position
     getClients(0).activate();
     sut.putCountsByDay(LocalDate.of(2026, 11, 17), 2);
-    assertEquals(2, sutServer.sizeCountsByDays());
+    assertEquals(2, sutServer.sizeCountsByDay());
     assertEquals(List.of(LocalDate.of(2026, 11, 17), LocalDate.of(2026, 11, 18)),
         List.copyOf(sutServer.getCountsByDayMap().keySet()));
     assertEquals(2, sutServer.getCountsByDay(LocalDate.of(2026, 11, 17)));
@@ -524,11 +524,11 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     var sut = builder.build().get();
     assertLogs("0xA7332", () -> sut.putWeights(unsafe, 1.0));
     assertLogs("0xA7336", () -> sut.putReadings(fine, 1.0));
-    assertEquals(0, sut.sizeReadingss());
+    assertEquals(0, sut.sizeReadings());
     assertLogs("0xA7331", () -> sut.putScores(null, 1));
     assertLogs("0xA7331", () -> sut.putScores("math", null));
-    assertEquals(0, sut.sizeWeightss());
-    assertEquals(0, sut.sizeScoress());
+    assertEquals(0, sut.sizeWeights());
+    assertEquals(0, sut.sizeScores());
 
     // other client
     getClients(1).activate();
@@ -550,9 +550,9 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     getBackend().activate();
     var sutServer = AttributesManager.getMapsOfSimpleTypesSure(sut.gemId);
     for (var o : List.of(sutServer, sutOther)) {
-      assertEquals(0, o.sizeWeightss());
-      assertEquals(0, o.sizeScoress());
-      assertEquals(0, o.sizeReadingss());
+      assertEquals(0, o.sizeWeights());
+      assertEquals(0, o.sizeScores());
+      assertEquals(0, o.sizeReadings());
     }
   }
 

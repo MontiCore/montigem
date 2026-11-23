@@ -51,7 +51,7 @@ public interface MapAttributeDbTest extends QualifiedAssocsTestSetup {
 
     assertSame(anna, roster.getByNick("an"));
     assertTrue(roster.containsKeyByNick("be"));
-    assertEquals(2, roster.sizeByNicks());
+    assertEquals(2, roster.sizeByNick());
     assertEquals(Set.of("an", "be"), roster.getByNickMap().keySet());
 
     var loaded = load(roster);

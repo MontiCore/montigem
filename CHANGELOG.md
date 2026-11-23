@@ -87,7 +87,7 @@ For MontiGem users:
   class Person { Map<String, Integer> scores; }
   ```
   The attribute has the API of a GemMap: `putScores(key, value)`, `removeScores(key)`,
-  `getScores(key)`, `containsKeyScores(key)`, `sizeScoress()`, `getScoresMap()`; builder
+  `getScores(key)`, `containsKeyScores(key)`, `sizeScores()`, `getScoresMap()`; builder
   `scores(map)` and `scoresPut(key, value)`. Puts and removes are synchronized per entry (commands
   `Person_putScores`, `Person_removeScores`) and stored per entry (SQL table `person$scores$map`,
   Neo4j properties `Scores_keys` and `Scores_values`); the entries keep their insertion order. The
@@ -97,7 +97,10 @@ For MontiGem users:
   commands `0xA7334`), long keys beyond ±(2^53−1) (`0xA7332`, `0xA7335`) and time keys finer than
   the microseconds a database stores (`0xA7336`, `0xA7337`). `getScores(key)` of a missing key is an
   error (`0xA7333`), like for GemMaps. As with `get<Attr>List()`, changes through `getScoresMap()`
-  are not synchronized.
+  are not synchronized. An attribute `scoresMap` next to `scores` is rejected (`0xCDC70`, the same
+  getter).
+* **Breaking:** the size method of a GemMap is named after the role as written, like that of map
+  attributes: `sizeMemberByCode()`, before `sizeMemberByCodes()`. GemLists keep `size<Role>s()`.
 * Qualified associations take date/time keys: `LocalDate`, `LocalDateTime`, `LocalTime` and
   `Instant` as type qualifier (`association Directory [java.time.LocalDate] -> (byBirthday) Person [1];`),
   as qualifying attribute (`[[start]]`) and as key of a `Map` attribute with domain class values.

@@ -97,14 +97,14 @@ public interface LongKeyAssocsDbTest extends QualifiedAssocsTestSetup {
     var builder = QualifiedAssocsManager.directoryBuilder();
     assertLogsError("0xA7309", () -> builder.byPhonePut(MAX + 1, anna));
     var directory = builder.build().get();
-    assertEquals(0, directory.sizeByPhones());
+    assertEquals(0, directory.sizeByPhone());
     assertLogsError("0xA7326", () -> directory.putByPhone(MAX + 1, anna));
     assertLogsError("0xA7309", () -> directory.getByPhoneMap().put(-MAX - 1, anna));
     var result = CommandManager.executeCommand(new Directory_putByPhone(directory.getGemId(), anna.getGemId(),
         Long.MAX_VALUE));
     assertFalse(result.isSuccessful());
-    assertEquals(0, directory.sizeByPhones());
-    assertEquals(0, load(directory).sizeByPhones());
+    assertEquals(0, directory.sizeByPhone());
+    assertEquals(0, load(directory).sizeByPhone());
   }
 
   /**
@@ -118,14 +118,14 @@ public interface LongKeyAssocsDbTest extends QualifiedAssocsTestSetup {
     var builder = QualifiedAssocsManager.directoryBuilder();
     assertLogsError("0xA7309", () -> builder.byBadgeCodePut(unsafe));
     var directory = builder.build().get();
-    assertEquals(0, directory.sizeByBadgeCodes());
+    assertEquals(0, directory.sizeByBadgeCode());
     assertLogsError("0xA7326", () -> directory.putByBadgeCode(unsafe));
     assertLogsError("0xA7309", () -> directory.getByBadgeCodeMap().put(MAX + 1, unsafe));
     var result = CommandManager.executeCommand(new Directory_putByBadgeCode(directory.getGemId(), unsafe.getGemId(),
         MAX + 1));
     assertFalse(result.isSuccessful());
-    assertEquals(0, directory.sizeByBadgeCodes());
-    assertEquals(0, load(directory).sizeByBadgeCodes());
+    assertEquals(0, directory.sizeByBadgeCode());
+    assertEquals(0, load(directory).sizeByBadgeCode());
   }
 
   /**
@@ -150,7 +150,7 @@ public interface LongKeyAssocsDbTest extends QualifiedAssocsTestSetup {
       assertEquals(MAX + 1, QualifiedAssocsManager.getBadgeSure(badge.getGemId()).getCode());
       assertEquals(Map.of(7L, badge.getGemId()), clientDirectory._internal_getByBadgeCodeGemMap().getIDMap());
       getBackend().activate();
-      assertEquals(0, load(directory).sizeByBadgeCodes());
+      assertEquals(0, load(directory).sizeByBadgeCode());
     });
   }
 }

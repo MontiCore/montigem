@@ -100,7 +100,7 @@ public interface TimeKeyAssocsDbTest extends QualifiedAssocsTestSetup {
     var bob = person("bob", 2);
     var directory = QualifiedAssocsManager.directoryBuilder().byBirthdayPut(DAY, anna).build().get();
     directory.putByBirthday(LocalDate.of(2026, 11, 17), bob);
-    assertEquals(1, directory.sizeByBirthdays());
+    assertEquals(1, directory.sizeByBirthday());
     assertSame(bob, directory.getByBirthday(DAY));
     assertEquals(Map.of(DAY, bob.getGemId()), load(directory)._internal_getByBirthdayGemMap().getIDMap());
   }
@@ -117,13 +117,13 @@ public interface TimeKeyAssocsDbTest extends QualifiedAssocsTestSetup {
     var builder = QualifiedAssocsManager.directoryBuilder();
     assertLogs("0xA7309", () -> builder.byShiftStartPut(fine, anna));
     var directory = builder.build().get();
-    assertEquals(0, directory.sizeByShiftStarts());
+    assertEquals(0, directory.sizeByShiftStart());
     assertLogs("0xA7326", () -> directory.putByShiftStart(fine, anna));
     assertLogs("0xA7309", () -> directory.getByShiftStartMap().put(fine, anna));
     assertLogs("0xA7338", () -> assertFalse(CommandManager.executeCommand(
         new Directory_putByShiftStart(directory.getGemId(), anna.getGemId(), fine)).isSuccessful()));
-    assertEquals(0, directory.sizeByShiftStarts());
-    assertEquals(0, load(directory).sizeByShiftStarts());
+    assertEquals(0, directory.sizeByShiftStart());
+    assertEquals(0, load(directory).sizeByShiftStart());
   }
 
   /** a derived key follows its attribute, also loaded again */
@@ -162,8 +162,8 @@ public interface TimeKeyAssocsDbTest extends QualifiedAssocsTestSetup {
     clientDirectory.removeByBirthday(LocalDate.parse("2026-11-17"));
 
     getBackend().activate();
-    assertEquals(0, directory.sizeByBirthdays());
-    assertEquals(0, load(directory).sizeByBirthdays());
+    assertEquals(0, directory.sizeByBirthday());
+    assertEquals(0, load(directory).sizeByBirthday());
   }
 
   /** a Map attribute with date keys and domain class values is a type qualified association */

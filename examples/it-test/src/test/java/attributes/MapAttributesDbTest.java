@@ -63,11 +63,11 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().scoresPut("math", 3).scoresPut("art", 1).build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeScoress());
+    assertEquals(2, clone.sizeScores());
 
     // put a new key: added at the end
     sut.putScores("music", 2);
-    assertEquals(3, sut.sizeScoress());
+    assertEquals(3, sut.sizeScores());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(List.of("math", "art", "music"), List.copyOf(clone.getScoresMap().keySet()));
 
@@ -85,18 +85,18 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .scoresPut("math", 3).scoresPut("art", 1).scoresPut("music", 2).build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(3, clone.sizeScoress());
+    assertEquals(3, clone.sizeScores());
 
     // remove the first key
     sut.removeScores("math");
-    assertEquals(2, sut.sizeScoress());
+    assertEquals(2, sut.sizeScores());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeScoress());
+    assertEquals(2, clone.sizeScores());
     assertFalse(clone.containsKeyScores("math"));
 
     // remove the last key
     sut.removeScores("music");
-    assertEquals(1, sut.sizeScoress());
+    assertEquals(1, sut.sizeScores());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(Map.of("art", 1), clone.getScoresMap());
   }
@@ -122,11 +122,11 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeLabelss());
+    assertEquals(2, clone.sizeLabels());
 
     // put a new key: added at the end
     sut.putLabels((byte) 3, "X");
-    assertEquals(3, sut.sizeLabelss());
+    assertEquals(3, sut.sizeLabels());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(List.of((byte) 1, (byte) 2, (byte) 3), List.copyOf(clone.getLabelsMap().keySet()));
 
@@ -144,18 +144,18 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .labelsPut((byte) 1, "A").labelsPut((byte) 2, "B").labelsPut((byte) 3, "C").build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(3, clone.sizeLabelss());
+    assertEquals(3, clone.sizeLabels());
 
     // remove the first key
     sut.removeLabels((byte) 1);
-    assertEquals(2, sut.sizeLabelss());
+    assertEquals(2, sut.sizeLabels());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeLabelss());
+    assertEquals(2, clone.sizeLabels());
     assertFalse(clone.containsKeyLabels((byte) 1));
 
     // remove the last key
     sut.removeLabels((byte) 3);
-    assertEquals(1, sut.sizeLabelss());
+    assertEquals(1, sut.sizeLabels());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(Map.of((byte) 2, "B"), clone.getLabelsMap());
   }
@@ -180,11 +180,11 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeFlagss());
+    assertEquals(2, clone.sizeFlags());
 
     // put a new key: added at the end
     sut.putFlags((short) 3, true);
-    assertEquals(3, sut.sizeFlagss());
+    assertEquals(3, sut.sizeFlags());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(List.of((short) 1, (short) 2, (short) 3), List.copyOf(clone.getFlagsMap().keySet()));
 
@@ -202,18 +202,18 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .flagsPut((short) 1, true).flagsPut((short) 2, false).flagsPut((short) 3, true).build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(3, clone.sizeFlagss());
+    assertEquals(3, clone.sizeFlags());
 
     // remove the first key
     sut.removeFlags((short) 1);
-    assertEquals(2, sut.sizeFlagss());
+    assertEquals(2, sut.sizeFlags());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeFlagss());
+    assertEquals(2, clone.sizeFlags());
     assertFalse(clone.containsKeyFlags((short) 1));
 
     // remove the last key
     sut.removeFlags((short) 3);
-    assertEquals(1, sut.sizeFlagss());
+    assertEquals(1, sut.sizeFlags());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(Map.of((short) 2, false), clone.getFlagsMap());
   }
@@ -238,11 +238,11 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .statusByIdPut(1, MaritalStatus.SINGLE).statusByIdPut(2, MaritalStatus.MARRIED).build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeStatusByIds());
+    assertEquals(2, clone.sizeStatusById());
 
     // put a new key: added at the end
     sut.putStatusById(3, MaritalStatus.WIDOWED);
-    assertEquals(3, sut.sizeStatusByIds());
+    assertEquals(3, sut.sizeStatusById());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(List.of(1, 2, 3), List.copyOf(clone.getStatusByIdMap().keySet()));
 
@@ -260,18 +260,18 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .statusByIdPut(2, MaritalStatus.MARRIED).statusByIdPut(3, MaritalStatus.WIDOWED).build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(3, clone.sizeStatusByIds());
+    assertEquals(3, clone.sizeStatusById());
 
     // remove the first key
     sut.removeStatusById(1);
-    assertEquals(2, sut.sizeStatusByIds());
+    assertEquals(2, sut.sizeStatusById());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeStatusByIds());
+    assertEquals(2, clone.sizeStatusById());
     assertFalse(clone.containsKeyStatusById(1));
 
     // remove the last key
     sut.removeStatusById(3);
-    assertEquals(1, sut.sizeStatusByIds());
+    assertEquals(1, sut.sizeStatusById());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(Map.of(2, MaritalStatus.MARRIED), clone.getStatusByIdMap());
   }
@@ -307,11 +307,11 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .datesPut("end", LocalDate.of(2027, 2, 28)).build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeDatess());
+    assertEquals(2, clone.sizeDates());
 
     // put a new key: added at the end
     sut.putDates("exam", LocalDate.of(2027, 2, 10));
-    assertEquals(3, sut.sizeDatess());
+    assertEquals(3, sut.sizeDates());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(List.of("start", "end", "exam"), List.copyOf(clone.getDatesMap().keySet()));
 
@@ -329,18 +329,18 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
         .datesPut("exam", LocalDate.of(2027, 2, 10)).datesPut("end", LocalDate.of(2027, 2, 28)).build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(3, clone.sizeDatess());
+    assertEquals(3, clone.sizeDates());
 
     // remove the first key
     sut.removeDates("start");
-    assertEquals(2, sut.sizeDatess());
+    assertEquals(2, sut.sizeDates());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeDatess());
+    assertEquals(2, clone.sizeDates());
     assertFalse(clone.containsKeyDates("start"));
 
     // remove the last key
     sut.removeDates("end");
-    assertEquals(1, sut.sizeDatess());
+    assertEquals(1, sut.sizeDates());
     clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
     assertEquals(Map.of("exam", LocalDate.of(2027, 2, 10)), clone.getDatesMap());
   }
@@ -383,7 +383,7 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
     // put an existing key: the value is replaced in its position
     sut.putCountsByDay(LocalDate.of(2026, 11, 17), 2);
     var clone = dao.selectMapsOfSimpleTypes(sut.gemId).get();
-    assertEquals(2, clone.sizeCountsByDays());
+    assertEquals(2, clone.sizeCountsByDay());
     assertEquals(List.of(LocalDate.of(2026, 11, 17), LocalDate.of(2026, 11, 18)),
         List.copyOf(clone.getCountsByDayMap().keySet()));
     assertEquals(2, clone.getCountsByDay(LocalDate.of(2026, 11, 17)));
