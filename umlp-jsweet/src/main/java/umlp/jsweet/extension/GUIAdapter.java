@@ -30,7 +30,6 @@ import umlp.jsweet.extension.util.UMLPAdapterUtils;
 public class GUIAdapter extends PrinterAdapter {
   public GUIAdapter(PrinterAdapter parentAdapter) {
     super(
-       //new JavaStreamAdapter(
         new OptionalAdapter(
         new FutureAdapter(
         new CollectionsAdapter(
