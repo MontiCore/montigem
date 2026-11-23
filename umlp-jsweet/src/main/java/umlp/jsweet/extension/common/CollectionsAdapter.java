@@ -16,6 +16,7 @@ import standalone.com.sun.source.tree.EnhancedForLoopTree;
 import standalone.com.sun.source.tree.ExpressionTree;
 import standalone.com.sun.source.tree.MemberSelectTree;
 import standalone.com.sun.source.tree.MethodInvocationTree;
+import standalone.com.sun.source.tree.TypeCastTree;
 import standalone.com.sun.tools.javac.tree.JCTree;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
@@ -510,19 +511,33 @@ public class CollectionsAdapter extends AbstractAdapter {
         || "java.util.LinkedHashSet".equals(type);
   }
 
+
   @Override
-  public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
-    EnhancedForLoopTree loop = ExtendedElementFactory.toTree(foreachLoop);
-    TypeMirror expressionType = Util.getType(loop.getExpression());
-    if (types().isSubtype(expressionType, types().erasure(util().getType(List.class)))
-        // TODO how to catch every Collection that we want here?
-    || types().isSubtype(expressionType, types().erasure(util().getType(Set.class)))
-    || types().isSubtype(expressionType, types().erasure(util().getType(Collection.class)))
-    ) {
-      printAwaitForEachLoop(loop, indexVarName);
+  public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String
+      indexVarName) {
+    if (!targetHasLength) {
+      printForEachLoop(ExtendedElementFactory.toTree(foreachLoop), indexVarName);
       return true;
     }
     return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
+  }
+
+  protected void printForEachLoop(EnhancedForLoopTree loop, String indexVarName) {
+    getPrinter().print("for(" + Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " " + indexVarName + "=");
+    if (loop.getExpression() instanceof TypeCastTree || loop.getExpression() instanceof MethodInvocationTree) {
+      print("(");
+    }
+    getPrinter().print(loop.getExpression());
+    if (loop.getExpression() instanceof TypeCastTree || loop.getExpression() instanceof MethodInvocationTree) {
+      print(")");
+    }
+    print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
+
+    getPrinter().print(Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " " +
+            loop.getVariable().getName().toString() + " = ")
+        .print(indexVarName + ".next();").println();
+    getPrinter().printIndent().print(loop.getStatement());
+    endIndent().println().printIndent().print("}");
   }
 
   protected void printAwaitForEachLoop(EnhancedForLoopTree loop, String indexVarName) {

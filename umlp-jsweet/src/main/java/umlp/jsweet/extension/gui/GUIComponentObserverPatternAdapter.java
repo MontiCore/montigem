@@ -794,7 +794,7 @@ public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
     };
   }
 
-  @Override
+ /* @Override
   public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
     EnhancedForLoopTree loop = ExtendedElementFactory.toTree(foreachLoop);
     TypeMirror expressionType = Util.getType(loop.getExpression());
@@ -837,7 +837,7 @@ public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
     printForEachLoopWithObserver(loop);
     return true;
   }
-
+*/
   /**
    * Prints the for each loop and adds line __regObsToDomainObj(${loopVar}); before the actual statement.
    * This activates the jsweet -> angular sync if on of the iterated elements changes
