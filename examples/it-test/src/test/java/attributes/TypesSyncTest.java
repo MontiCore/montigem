@@ -5,6 +5,7 @@ import attributes.test_infrastructure.AttributesMockTestSetup;
 import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,6 +33,7 @@ public class TypesSyncTest extends AttributesMockTestSetup {
         .bar_local_time(LocalTime.of(9, 30, 15, 123_456_789))
         .bar_local_date_time(LocalDateTime.of(2026, 11, 17, 9, 30, 15, 123_456_789))
         .bar_instant(Instant.parse("2026-11-17T09:30:15.123456789Z"))
+        .bar_duration(Duration.parse("PT-1M-30.000000001S"))
         .build().get();
 
     // check in backend: exact to the nanosecond
@@ -42,6 +44,7 @@ public class TypesSyncTest extends AttributesMockTestSetup {
     assertEquals(sut.getBar_local_time(), sutServer.getBar_local_time());
     assertEquals(sut.getBar_local_date_time(), sutServer.getBar_local_date_time());
     assertEquals(sut.getBar_instant(), sutServer.getBar_instant());
+    assertEquals(sut.getBar_duration(), sutServer.getBar_duration());
   }
 
   @Test

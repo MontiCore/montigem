@@ -75,6 +75,11 @@ For MontiGem users:
   `LocalDateTime`).
 * **Breaking:** `java.util.Date` is not supported in transpiled code any more (error `0xEE013`): use `Instant`
   for points in time, or `LocalDate`, `LocalDateTime`, `LocalTime`.
+* `java.time.Duration` as attribute type (SQL `BIGINT` nanoseconds, Neo4j nanoseconds, JSON as ISO string like
+  `"PT1H30M"`) and in transpiled code as `Temporal.Duration` (`DurationHelper`: factories, `between`, `parse`,
+  arithmetic, `toString` like java.time), with `plus(duration)`/`minus(duration)` of the other java.time values and
+  the `ChronoUnit` methods `plus(n, unit)`, `minus(n, unit)`, `unit.between(start, end)`. Projects that registered
+  `Duration` themselves (generator extension, own DeSer) can drop that.
 * `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums,
   `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant`), like list attributes:
   ```

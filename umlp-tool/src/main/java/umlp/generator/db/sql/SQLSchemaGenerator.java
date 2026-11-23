@@ -170,6 +170,8 @@ public class SQLSchemaGenerator {
     fqnClassNameToType.put("java.time.LocalDateTime", "TIMESTAMP");
     fqnClassNameToType.put("java.time.LocalTime", "TIME(6) WITHOUT TIME ZONE");
     fqnClassNameToType.put("java.time.Instant", "TIMESTAMP(6) WITH TIME ZONE");
+    // nanoseconds, see dao/set/java_time_Duration
+    fqnClassNameToType.put("java.time.Duration", "BIGINT");
   }
 
   public void addClassToSQLTypeMapping(String fqnClassName, String sqlType) {

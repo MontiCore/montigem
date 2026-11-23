@@ -37,6 +37,7 @@ class Customer extends Person { String customerId; }
 | `LocalDate` | `java.time.LocalDate` | `Temporal.PlainDate` | |
 | `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
 | `Instant` | `java.time.Instant` | `Temporal.Instant` | A point in time; SQL `TIMESTAMP WITH TIME ZONE`. |
+| `Duration` | `java.time.Duration` | `Temporal.Duration` | An exact length of time; SQL `BIGINT` nanoseconds. |
 | `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
 | `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
 
