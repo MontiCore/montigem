@@ -3,13 +3,14 @@
 
   <div *ngIf="showConfig" style="position: absolute; top: 0px; left: 0px; z-index: 10; max-height: 100%; overflow-y: auto;">
     <gem-chart-options>
-      <li *ngIf="displayLegend === true" style="list-style-type: none;">
+      <li *ngIf="displayLegend === true || legendHiddenByPosition" style="list-style-type: none;">
         <h3>Legend Position</h3>
         <div class="legendButtons" style="display: flex; column-gap: 10px;">
           <button (click)="setLegendPosition('left')">Left</button>
           <button (click)="setLegendPosition('top')">Top</button>
           <button (click)="setLegendPosition('bottom')">Bottom</button>
           <button (click)="setLegendPosition('right')">Right</button>
+          <button (click)="setLegendPosition('none')">None</button>
         </div>
       </li>
       <li style="list-style-type: none; margin-top: 10px;">

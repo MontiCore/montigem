@@ -3,6 +3,7 @@ package mc.fenix.charts;
 
 import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotData;
 import mc.fenix.charts.GemScatterPlotTypes.GemScatterPlotAxis;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 /**
   A scatter plot visualizes a set of scattered points in a two dimensional space.
@@ -20,5 +21,7 @@ component GemScatterPlot(
   /** Configuration (range, title) of the vertical axis. */
   GemScatterPlotAxis yAxis,
   /** Whether the chart's configuration panel is shown. */
-  boolean showConfig = false
+  boolean showConfig = false,
+  /** Position of the legend relative to the plot (default: BOTTOM). NONE hides the legend. */
+  LegendPosition legendPosition
 )

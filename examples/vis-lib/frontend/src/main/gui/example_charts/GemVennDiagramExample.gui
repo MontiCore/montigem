@@ -4,10 +4,12 @@ package example_charts;
 import Domain.Person;
 import mc.fenix.charts.GemVennDiagram;
 import common.ExamplePage;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemVennDiagramExample(List<Person> persons) {
   @ExamplePage(
     component = venndiagramm@GemVennDiagram(
+      legendPosition = LegendPosition.RIGHT,
       data = null,
       showConfig = true
     ),

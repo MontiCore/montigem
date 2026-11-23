@@ -6,17 +6,20 @@ import mc.fenix.charts.GemTimeSeriesChart;
 import common.ExamplePage;
 import mc.fenix.arrange.GemColumn;
 import mc.fenix.basic.GemText;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemTimeSeriesChartExmaple (List<Person> persons, String lastClickedEvent = "No event clicked yet") {
   @ExamplePage(
     component = @GemColumn(components = [
       chart1@GemTimeSeriesChart(
+        legendPosition = LegendPosition.BOTTOM,
         data = computeData1(persons),
         hideLiveDataToggle = true,
         showConfig = true
       ),
       @GemText(value = "Clicked Annotation: " + lastClickedEvent, size = "1.2rem"),
       chart2@GemTimeSeriesChart(
+        legendPosition = LegendPosition.BOTTOM,
         data = computeData2(persons),
         hideLiveDataToggle = false,
         viewPort = "60s",

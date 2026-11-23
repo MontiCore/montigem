@@ -30,6 +30,7 @@ export * from "./build/gui2java2ts/mc/fenix/charts/gemcandlestickcharttypes/GemC
 export * from "./build/gui2java2ts/mc/fenix/charts/gemcandlestickcharttypes/GemCandlestickChartEntryDeSer";
 export * from "./build/gui2java2ts/mc/fenix/charts/gemcandlestickcharttypes/GemCandlestickChartTypesDeSer";
 
+export * from "./build/gui2java2ts/mc/fenix/charts/gemcharttypes/LegendPosition";
 export * from "./src/main/gui/mc/fenix/charts/GemChartLegend";
 export * from "./src/main/gui/mc/fenix/charts/GemChartOptions";
 

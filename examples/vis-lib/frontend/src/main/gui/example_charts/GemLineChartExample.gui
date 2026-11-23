@@ -5,11 +5,13 @@ import Domain.Person;
 import mc.fenix.charts.GemLineChart;
 import common.ExamplePage;
 import mc.fenix.arrange.GemRow;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemLineChartExample(List<Person> persons) {
   @ExamplePage(
     component = @GemRow(height = "450px", components = [
       linechart@GemLineChart(
+        legendPosition = LegendPosition.RIGHT,
         data = null,
         enableBackgroundColor = false,
         maxValue = null,

@@ -6,12 +6,14 @@ import mc.fenix.arrange.GemColumn;
 import mc.fenix.arrange.GemRow;
 import mc.fenix.charts.GemSunburstChart;
 import common.ExamplePage;
+import mc.fenix.charts.GemChartTypes.LegendPosition;
 
 page GemSunburstChartExample(List<Person> persons) {
   @ExamplePage(
     component = @GemRow(width = "513px", height = "620px", components = [
       @GemColumn(rowGap = "10px", width = "100%", components = [
         @GemSunburstChart(
+          legendPosition = LegendPosition.BOTTOM,
           data = getData(),
           ignoreError = true,
           showConfig = true
