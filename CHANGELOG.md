@@ -98,7 +98,7 @@ For MontiGem users:
   the microseconds a database stores (`0xA7336`, `0xA7337`). `getScores(key)` of a missing key is an
   error (`0xA7333`), like for GemMaps. As with `get<Attr>List()`, changes through `getScoresMap()`
   are not synchronized. An attribute `scoresMap` next to `scores` is rejected (`0xCDC70`, the same
-  getter).
+  getter), as is `xList` next to a `List` attribute `x`.
 * **Breaking:** the size method of a GemMap is named after the role as written, like that of map
   attributes: `sizeMemberByCode()`, before `sizeMemberByCodes()`. GemLists keep `size<Role>s()`.
 * Qualified associations take date/time keys: `LocalDate`, `LocalDateTime`, `LocalTime` and

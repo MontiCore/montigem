@@ -6,22 +6,31 @@ import de.monticore.cdbasis._cocos.CDBasisASTCDAttributeCoCo;
 import umlp.generator.domain.decorator.GenService;
 
 /**
- * A {@code java.util.Map} attribute {@code x} gets the getter {@code getXMap()} (map attributes and GemMaps alike), so
- * no other attribute of the class may be named {@code xMap}: its getter would have the same name.
+ * A {@code java.util.List} attribute {@code x} gets the getter {@code getXList()}, a {@code java.util.Map} attribute
+ * {@code getXMap()} (with simple and domain class elements alike), so no other attribute of the class may be named
+ * {@code xList} or {@code xMap}: its getter would have the same name.
  */
-public class UMLPMapAttributeNameClash implements CDBasisASTCDAttributeCoCo, CoCoTestable {
+public class UMLPCollectionAttributeNameClash implements CDBasisASTCDAttributeCoCo, CoCoTestable {
 
   public static final String ERROR_CODE = "0xCDC70";
 
-  public static final String ERROR_MSG_FORMAT = " The Map attribute %s and the attribute %s would both have the getter "
+  public static final String ERROR_MSG_FORMAT = " The attribute %s and the attribute %s would both have the getter "
       + "%s; rename one of them.";
 
   @Override
   public void check(ASTCDAttribute attr) {
-    if (!attr.isPresentSymbol() || !GenService.isMap(attr.getSymbol().getType())) {
+    if (!attr.isPresentSymbol()) {
       return;
     }
-    String clashing = attr.getName() + "Map";
+    String suffix;
+    if (GenService.isList(attr.getSymbol().getType())) {
+      suffix = "List";
+    } else if (GenService.isMap(attr.getSymbol().getType())) {
+      suffix = "Map";
+    } else {
+      return;
+    }
+    String clashing = attr.getName() + suffix;
     boolean clash = attr.getSymbol().getEnclosingScope().getLocalFieldSymbols().stream()
         .anyMatch(f -> f.getName().equals(clashing));
     if (clash) {

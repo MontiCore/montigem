@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+umlp UMLPCollectionAttributeNameClash {
+  class A {
+    // invalid (0xCDC70): getScoresMap(), getByNickMap(), getTagsList(), getFriendsList() twice
+    java.util.Map<String, Integer> scores;
+    int scoresMap;
+    java.util.Map<String, B> byNick;
+    String byNickMap;
+    java.util.List<String> tags;
+    int tagsList;
+    java.util.List<B> friends;
+    String friendsList;
+    // valid
+    java.util.Map<String, Integer> grades;
+    java.util.List<Integer> gradesList;
+    java.util.List<Integer> notes;
+    java.util.Map<String, Integer> notesMap;
+  }
+
+  class B;
+}
