@@ -120,7 +120,7 @@ public class ZonedDateTimeRuntimeCheck {
 
   /** the remaining ZoneOffset factories and constants, normalized(), invalid zones */
   @JSweetTest
-  public static String checkMoreZones() {
+  public static String checkZoneOffsetConstantsAndNormalized() {
     String result = ZoneOffset.ofHoursMinutesSeconds(5, 30, 15) + " " + ZoneOffset.MIN + " " + ZoneOffset.MAX + " "
         + ZoneOffset.ofHours(2).normalized() + " " + BERLIN.normalized() + " " + ZoneId.of("UTC").normalized() + " "
         + ZoneId.of("Etc/GMT+1").normalized();

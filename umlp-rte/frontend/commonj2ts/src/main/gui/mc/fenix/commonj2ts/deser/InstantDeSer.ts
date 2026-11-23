@@ -1,23 +1,15 @@
 /* (c) https://github.com/MontiCore/monticore */
-import {DeSer} from "../command/DeSer";
 import {Temporal} from "../types/Temporal";
+import {IsoStringDeSer} from "./IsoStringDeSer";
 
-/**
- * java.time.Instant as Temporal.Instant, in the ISO format of the backend (e.g. 2026-11-17T09:30:15.123Z), as JSON
- * string
- */
-export class InstantDeSer implements DeSer<Temporal.Instant> {
+/** java.time.Instant as Temporal.Instant, in the ISO format of the backend (e.g. 2026-11-17T09:30:15.123Z) */
+export class InstantDeSer extends IsoStringDeSer<Temporal.Instant> {
 
-  public isPojoDeSer(): boolean {
-    return false;
+  protected toIso(obj: Temporal.Instant): string {
+    return obj.toString();
   }
 
-  serialize(obj: Temporal.Instant): Promise<string> {
-    return Promise.resolve('"' + obj.toString() + '"');
-  }
-
-  deserialize(str: string): Promise<Temporal.Instant> {
-    const iso = str.startsWith('"') ? str.slice(1, str.length - 1) : str;
-    return Promise.resolve(Temporal.Instant.from(iso));
+  protected fromIso(iso: string): Temporal.Instant {
+    return Temporal.Instant.from(iso);
   }
 }

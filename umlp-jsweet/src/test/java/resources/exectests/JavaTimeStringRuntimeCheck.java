@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * java.time values as text in transpiled code: string building and toString in the format of java.time, also for
@@ -64,5 +65,32 @@ public class JavaTimeStringRuntimeCheck {
       }
     }
     return result;
+  }
+
+  /** string building with java.time values: the format of java.time, not the one of Temporal */
+  @JSweetTest
+  public static String checkStringBuilding() {
+    LocalTime time = LocalTime.of(10, 15);
+    LocalDate date = LocalDate.of(2024, 2, 29);
+    String s = "at ";
+    s += time;
+    String[] parts = {"from "};
+    parts[0] += time;
+    StringBuilder sb = new StringBuilder("on ");
+    sb.append(date).append(' ').append(LocalDateTime.of(date, time));
+    return s + " " + parts[0] + " " + sb + " " + String.valueOf(time) + " " + String.valueOf((LocalTime) null);
+  }
+
+  /** null values in string building print "null", like Java */
+  @JSweetTest
+  public static String checkNullInStringBuilding() {
+    LocalDate date = null;
+    Duration duration = null;
+    ChronoUnit unit = null;
+    String s = "s:";
+    s += date;
+    StringBuilder sb = new StringBuilder("sb:");
+    sb.append(duration).append(unit);
+    return "a:" + date + " " + duration + " " + unit + " " + s + " " + sb + " " + String.valueOf(duration);
   }
 }

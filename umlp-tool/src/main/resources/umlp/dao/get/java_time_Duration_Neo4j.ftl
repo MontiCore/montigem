@@ -1,2 +1,2 @@
 ${signature("statement","columnName")}
-(${statement}.get(${columnName}).isNull() ? null : java.time.Duration.ofNanos(${statement}.get(${columnName}).asLong()))
+(${statement}.get(${columnName}).isNull()? null :java.time.Duration.ofNanos(${statement}.get(${columnName}).asLong()))

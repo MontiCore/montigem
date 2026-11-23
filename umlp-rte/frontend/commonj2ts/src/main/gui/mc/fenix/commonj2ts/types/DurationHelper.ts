@@ -1,12 +1,20 @@
 /* (c) https://github.com/MontiCore/monticore */
 import {Temporal} from "./Temporal";
+import {TimeUnits} from "./TimeUnits";
 
-const NANOS_PER_SECOND = 1000000000n;
+const NANOS_PER_SECOND = BigInt(TimeUnits.NANOS_PER_SECOND);
+const SECONDS_PER_MINUTE = BigInt(TimeUnits.SECONDS_PER_MINUTE);
+const SECONDS_PER_HOUR = BigInt(TimeUnits.SECONDS_PER_HOUR);
+const SECONDS_PER_DAY = BigInt(TimeUnits.SECONDS_PER_DAY);
+
+/** the estimated length of a year like Java (365.2425 days), in seconds */
+const SECONDS_PER_ESTIMATED_YEAR = 31556952n;
 
 /** the nanoseconds of the ChronoUnits of exact length (Duration.of, plus(amount, unit) on times) */
 const UNIT_NANOS: { [unit: string]: bigint } = {
-  NANOS: 1n, MICROS: 1000n, MILLIS: 1000000n, SECONDS: NANOS_PER_SECOND, MINUTES: 60n * NANOS_PER_SECOND,
-  HOURS: 3600n * NANOS_PER_SECOND, HALF_DAYS: 43200n * NANOS_PER_SECOND, DAYS: 86400n * NANOS_PER_SECOND
+  NANOS: 1n, MICROS: BigInt(TimeUnits.NANOS_PER_MICRO), MILLIS: BigInt(TimeUnits.NANOS_PER_MILLI),
+  SECONDS: NANOS_PER_SECOND, MINUTES: SECONDS_PER_MINUTE * NANOS_PER_SECOND, HOURS: SECONDS_PER_HOUR * NANOS_PER_SECOND,
+  HALF_DAYS: SECONDS_PER_DAY / 2n * NANOS_PER_SECOND, DAYS: SECONDS_PER_DAY * NANOS_PER_SECOND
 };
 
 /** the Temporal rounding of truncatedTo(unit): the smallest unit and its increment */
@@ -17,8 +25,9 @@ const TRUNCATION_UNITS: { [unit: string]: [string, number] } = {
 
 /** ChronoUnit.getDuration(): the estimated lengths of the date-based units like Java, in seconds */
 const ESTIMATED_SECONDS: { [unit: string]: bigint } = {
-  WEEKS: 7n * 86400n, MONTHS: 31556952n / 12n, YEARS: 31556952n, DECADES: 315569520n, CENTURIES: 3155695200n,
-  MILLENNIA: 31556952000n
+  WEEKS: 7n * SECONDS_PER_DAY, MONTHS: SECONDS_PER_ESTIMATED_YEAR / 12n, YEARS: SECONDS_PER_ESTIMATED_YEAR,
+  DECADES: 10n * SECONDS_PER_ESTIMATED_YEAR, CENTURIES: 100n * SECONDS_PER_ESTIMATED_YEAR,
+  MILLENNIA: 1000n * SECONDS_PER_ESTIMATED_YEAR
 };
 
 /** the Temporal field and factor of the date-based ChronoUnits */
@@ -194,24 +203,24 @@ export class DurationHelper {
 
   /** getSeconds(): the seconds rounded down, like Java (the nanoseconds are never negative) */
   static getSeconds(duration: Temporal.Duration): number {
-    return Number(DurationHelper.secondsOf(DurationHelper.nanosOf(duration)));
+    return Number(TimeUnits.secondsOf(DurationHelper.nanosOf(duration)));
   }
 
   /** getNano(): the nanoseconds within the second, 0 to 999,999,999 */
   static getNano(duration: Temporal.Duration): number {
-    return Number(DurationHelper.nanoOf(DurationHelper.nanosOf(duration)));
+    return Number(TimeUnits.nanoOf(DurationHelper.nanosOf(duration)));
   }
 
   static toDays(duration: Temporal.Duration): number {
-    return Number(BigInt(DurationHelper.getSeconds(duration)) / 86400n);
+    return Number(BigInt(DurationHelper.getSeconds(duration)) / SECONDS_PER_DAY);
   }
 
   static toHours(duration: Temporal.Duration): number {
-    return Number(BigInt(DurationHelper.getSeconds(duration)) / 3600n);
+    return Number(BigInt(DurationHelper.getSeconds(duration)) / SECONDS_PER_HOUR);
   }
 
   static toMinutes(duration: Temporal.Duration): number {
-    return Number(BigInt(DurationHelper.getSeconds(duration)) / 60n);
+    return Number(BigInt(DurationHelper.getSeconds(duration)) / SECONDS_PER_MINUTE);
   }
 
   static toSeconds(duration: Temporal.Duration): number {
@@ -232,11 +241,11 @@ export class DurationHelper {
   }
 
   static toSecondsPart(duration: Temporal.Duration): number {
-    return Number(BigInt(DurationHelper.getSeconds(duration)) % 60n);
+    return Number(BigInt(DurationHelper.getSeconds(duration)) % SECONDS_PER_MINUTE);
   }
 
   static toMillisPart(duration: Temporal.Duration): number {
-    return Math.floor(DurationHelper.getNano(duration) / 1000000);
+    return Math.floor(DurationHelper.getNano(duration) / TimeUnits.NANOS_PER_MILLI);
   }
 
   static toNanosPart(duration: Temporal.Duration): number {
@@ -259,15 +268,15 @@ export class DurationHelper {
       return null;
     }
     const total = DurationHelper.nanosOf(duration);
-    const seconds = DurationHelper.secondsOf(total);
-    const nanos = DurationHelper.nanoOf(total);
+    const seconds = TimeUnits.secondsOf(total);
+    const nanos = TimeUnits.nanoOf(total);
     if (total === 0n) {
       return "PT0S";
     }
     const effectiveSeconds = seconds < 0n && nanos > 0n ? seconds + 1n : seconds;
-    const hours = effectiveSeconds / 3600n;
-    const minutes = (effectiveSeconds % 3600n) / 60n;
-    const secs = effectiveSeconds % 60n;
+    const hours = effectiveSeconds / SECONDS_PER_HOUR;
+    const minutes = (effectiveSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE;
+    const secs = effectiveSeconds % SECONDS_PER_MINUTE;
     let s = "PT" + (hours !== 0n ? hours + "H" : "") + (minutes !== 0n ? minutes + "M" : "");
     if (secs === 0n && nanos === 0n && s.length > 2) {
       return s;
@@ -302,8 +311,8 @@ export class DurationHelper {
   }
 
   /**
-   * truncatedTo(unit) of a LocalDateTime, LocalTime, Instant, ZonedDateTime or Duration: the smaller fields set to zero,
-   * for units up to DAYS like Java (an Instant towards the past, a Duration towards zero within the day)
+   * truncatedTo(unit) of a LocalDateTime, LocalTime, Instant, ZonedDateTime or Duration: the smaller fields set to
+   * zero, for units up to DAYS like Java (an Instant towards the past, a Duration towards zero within the day)
    */
   static truncatedTo<T>(value: T, unit: string): T {
     const v: any = value;
@@ -314,7 +323,7 @@ export class DurationHelper {
     if (v instanceof Temporal.Duration) {
       // like Duration.truncatedTo: the nanoseconds of the day, truncated to the unit
       const total = DurationHelper.nanosOf(v);
-      const nanoOfDay = (DurationHelper.secondsOf(total) % 86400n) * NANOS_PER_SECOND + DurationHelper.nanoOf(total);
+      const nanoOfDay = (TimeUnits.secondsOf(total) % SECONDS_PER_DAY) * NANOS_PER_SECOND + TimeUnits.nanoOf(total);
       const unitNanos = DurationHelper.unitNanos(unit);
       return DurationHelper.ofNanos(total + nanoOfDay / unitNanos * unitNanos - nanoOfDay) as any;
     }
@@ -344,7 +353,7 @@ export class DurationHelper {
     return unit.split("_").map(part => part.charAt(0) + part.substring(1).toLowerCase()).join("");
   }
 
-    /** ChronoUnit.valueOf(name): the name of a constant */
+  /** ChronoUnit.valueOf(name): the name of a constant */
   static unitOf(name: string): string {
     if (UNIT_NANOS[name] === undefined && CALENDAR_UNITS[name] === undefined) {
       throw new RangeError("No enum constant java.time.temporal.ChronoUnit." + name);
@@ -406,18 +415,6 @@ export class DurationHelper {
     return ((((((BigInt(duration.days) * 24n + BigInt(duration.hours)) * 60n + BigInt(duration.minutes)) * 60n
       + BigInt(duration.seconds)) * 1000n + BigInt(duration.milliseconds)) * 1000n
       + BigInt(duration.microseconds)) * 1000n) + BigInt(duration.nanoseconds);
-  }
-
-  /** the seconds of nanos rounded down */
-  private static secondsOf(nanos: bigint): bigint {
-    const seconds = nanos / NANOS_PER_SECOND;
-    return nanos % NANOS_PER_SECOND < 0n ? seconds - 1n : seconds;
-  }
-
-  /** the nanoseconds within the second, 0 to 999,999,999 */
-  private static nanoOf(nanos: bigint): bigint {
-    const nano = nanos % NANOS_PER_SECOND;
-    return nano < 0n ? nano + NANOS_PER_SECOND : nano;
   }
 
   private static unitNanos(unit: string): bigint {
