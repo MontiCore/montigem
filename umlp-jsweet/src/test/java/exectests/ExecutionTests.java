@@ -8,6 +8,7 @@ import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
 import resources.exectests.FunctionDisplayGraphRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
+import resources.exectests.InstantRuntimeCheck;
 import resources.exectests.LocalTimeRuntimeCheck;
 import resources.exectests.MapRuntimeCheck;
 import resources.exectests.NestedFlatMapElement;
@@ -64,6 +65,11 @@ public class ExecutionTests {
   @Test
   public void testLocalTime() {
     ExecTestRunner.runExecutionTest(LocalTimeRuntimeCheck.class);
+  }
+
+  @Test
+  public void testInstant() {
+    ExecTestRunner.runExecutionTest(InstantRuntimeCheck.class);
   }
 
   @Test

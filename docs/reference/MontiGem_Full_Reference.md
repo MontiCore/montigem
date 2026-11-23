@@ -84,6 +84,7 @@ class Customer extends Person { String customerId; }
 | `String` | `String` | `string` | |
 | `LocalDate` | `java.time.LocalDate` | `Temporal.PlainDate` | |
 | `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
+| `Instant` | `java.time.Instant` | `Temporal.Instant` | A point in time; SQL `TIMESTAMP WITH TIME ZONE`. |
 | `LocalDateTime` | `java.time.LocalDateTime` | `Temporal.PlainDateTime` | Temporal API from `@umlp/commonj2ts`. |
 | `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
 | `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
@@ -364,7 +365,8 @@ MontiGem uses JSweet to transpile Java to TypeScript. For a detailed guide on su
     *   `java.util.List`, `ArrayList`, `LinkedList` -> JS `Array`
     *   `java.util.Map`, `HashMap` -> JS `Map`
     *   `java.util.Optional` -> Unwrapped value (nullable)
-    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime` -> `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`
+    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant` -> `Temporal.PlainDateTime`, `PlainDate`,
+        `PlainTime`, `Instant`
     *   `java.lang.String`, `Math`, `System.out.println`
 *   **Unsupported:**
     *   `java.util.stream` (Streams): **Do not use.** Use loops instead.

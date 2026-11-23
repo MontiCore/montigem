@@ -4,6 +4,7 @@ package attributes;
 import attributes.test_infrastructure.AttributesSQLDBTestSetup;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,6 +27,7 @@ public class TypesTest extends AttributesSQLDBTestSetup {
         .bar_local_date(LocalDate.now())
         .bar_local_time(LocalTime.now())
         .bar_local_date_time(LocalDateTime.now())
+        .bar_instant(Instant.parse("2026-11-17T09:30:15.123456Z"))
         .build().get();
 
     MinimalJavaTimeDAO dao = new MinimalJavaTimeDAO();
@@ -35,6 +37,7 @@ public class TypesTest extends AttributesSQLDBTestSetup {
     assertEquals(minimalJavaTime.getBar_local_time().truncatedTo(ChronoUnit.MILLIS), minimalJavaTime2.getBar_local_time().truncatedTo(ChronoUnit.MILLIS));
     assertEquals(minimalJavaTime.getBar_local_date_time().truncatedTo(ChronoUnit.MILLIS), minimalJavaTime2.getBar_local_date_time().truncatedTo(ChronoUnit.MILLIS));
     assertEquals(minimalJavaTime.getBar_local_date(), minimalJavaTime2.getBar_local_date());
+    assertEquals(minimalJavaTime.getBar_instant(), minimalJavaTime2.getBar_instant());
   }
 
   @Test
@@ -43,6 +46,7 @@ public class TypesTest extends AttributesSQLDBTestSetup {
         .bar_local_date(LocalDate.now())
         .bar_local_time(LocalTime.now())
         .bar_local_date_time(LocalDateTime.now())
+        .bar_instant(Instant.parse("2026-11-17T09:30:15.123456Z"))
         .build().get();
 
     AttributesBaseClassObjectMapper.init();
@@ -55,6 +59,7 @@ public class TypesTest extends AttributesSQLDBTestSetup {
     assertEquals(minimalJavaTime.getBar_local_time().truncatedTo(ChronoUnit.MILLIS), minimalJavaTime2.getBar_local_time().truncatedTo(ChronoUnit.MILLIS));
     assertEquals(minimalJavaTime.getBar_local_date_time().truncatedTo(ChronoUnit.MILLIS), minimalJavaTime2.getBar_local_date_time().truncatedTo(ChronoUnit.MILLIS));
     assertEquals(minimalJavaTime.getBar_local_date(), minimalJavaTime2.getBar_local_date());
+    assertEquals(minimalJavaTime.getBar_instant(), minimalJavaTime2.getBar_instant());
   }
 
   @Test

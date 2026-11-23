@@ -12,6 +12,7 @@ import {StringDeSer} from "../common/StringDeSer";
 import {LocalDateDeSer} from "../deser";
 import {LocalDateTimeDeSer} from "../deser/LocalDateTimeDeSer";
 import {LocalTimeDeSer} from "../deser/LocalTimeDeSer";
+import {InstantDeSer} from "../deser/InstantDeSer";
 import {DeSer, JsonDeSer} from "../command";
 import {IUMLPMap} from "./IUMLPMap";
 import {AsyncMap} from "../javautil/AsyncMap";
@@ -42,6 +43,7 @@ export class BaseClassObjectMapper {
     this.baseDeSers.set("java.time.LocalDate", new LocalDateDeSer());
     this.baseDeSers.set("java.time.LocalDateTime", new LocalDateTimeDeSer());
     this.baseDeSers.set("java.time.LocalTime", new LocalTimeDeSer());
+    this.baseDeSers.set("java.time.Instant", new InstantDeSer());
   }
 
   public async __BaseClassObjectMapperConstructor(): Promise<BaseClassObjectMapper> {
