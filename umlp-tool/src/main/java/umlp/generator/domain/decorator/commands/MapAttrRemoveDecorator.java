@@ -9,7 +9,7 @@ import java.util.Set;
  * Generates the command {@code <Class>_remove<Attr>} of a map attribute with simple values, the counterpart of
  * {@code _remove<Attr>} of list attributes: removes the entry of a key.
  */
-public class MapAttrRemoveDecorator extends MapAttrPutDecorator {
+public class MapAttrRemoveDecorator extends MapAttrCommandDecorator {
 
   public static final String REMOVE_SUFFIX = "_remove";
 

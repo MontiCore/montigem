@@ -126,7 +126,7 @@ public class QualifierKey {
       return new QualifierKey(null, targetName, true, keySymbol.getName(), "long", null, null,
           "getAsJsonNumber().getNumberAsLong()", false, keySymbol);
     }
-    // numeric or String (CoCo 0xCDC63): a GemValueMap
+    // numeric, String or a date/time type (CoCo 0xCDC63): a GemValueMap
     String print = new CdUtilsPrinter().printType(qualifierType);
     String keyType = type.isPrimitive() ? box(type.printFullName())
         : GenService.isTimeType(type) ? type.printFullName() : print;
@@ -187,7 +187,7 @@ public class QualifierKey {
    * -2^53+1 and 2^53-1, so larger keys are refused (GemValueMap#isSafeKey)
    */
   public boolean isLongKey() {
-    return !isEntryKey && ("java.lang.Long".equals(keyType) || "Long".equals(keyType));
+    return !isEntryKey && GenService.isLongType(keyType);
   }
 
   /**
@@ -195,7 +195,7 @@ public class QualifierKey {
    * serialized by the DeSers of the object mapper, stored by the date/time templates of the DAOs
    */
   public boolean isTimeKey() {
-    return !isEntryKey && keyType.startsWith("java.time.");
+    return !isEntryKey && GenService.isTimeType(keyType);
   }
 
   /**

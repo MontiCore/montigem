@@ -20,7 +20,7 @@ import java.util.Set;
  * Elements are loaded as they are required.
  * Useful if e.g. the elements are loaded over a network.
  *
- * The keys are values (numbers, Strings), the values are domain objects.
+ * The keys are values (numbers, Strings, java.time values), the values are domain objects.
  *
  * Attribute qualified associations derive the key of a value from the value itself
  * (see {@link #deriveKey}). Values added by id only (e.g. when loading) are keyed

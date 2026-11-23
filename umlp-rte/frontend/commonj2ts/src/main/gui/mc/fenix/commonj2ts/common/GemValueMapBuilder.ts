@@ -61,6 +61,7 @@ export abstract class GemValueMapBuilder<K, V extends GemIdentifiable & GemBuild
 
     // from now on, all elements are loaded by the manager
     this.builderElemStorage.clear();
+    this.builderTemporalKeys.reset();
 
     return this;
   }

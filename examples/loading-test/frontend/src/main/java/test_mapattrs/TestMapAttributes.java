@@ -3,6 +3,7 @@ package test_mapattrs;
 
 import loadingtests.Gradebook;
 import loadingtests.MyEnum;
+import umlp.backendrte.common.GemValueMap;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -47,12 +48,12 @@ public class TestMapAttributes extends TestMapAttributesTOP {
    */
   @Override
   public Consumer<Void> putState(Gradebook g) {
-    return $ -> g.putStates(9007199254740991L, MyEnum.B);
+    return $ -> g.putStates(GemValueMap.MAX_SAFE_KEY, MyEnum.B);
   }
 
   @Override
   public Consumer<Void> readStates(Gradebook g) {
-    return $ -> setResult("size=" + g.sizeStatess() + ";max=" + g.getStates(9007199254740991L).name());
+    return $ -> setResult("size=" + g.sizeStatess() + ";max=" + g.getStates(GemValueMap.MAX_SAFE_KEY).name());
   }
 
   @Override

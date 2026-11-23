@@ -187,6 +187,9 @@ public class PutDecorator extends AddDecorator {
       // on otherwise)
       getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", false, key.isLongKey(), false, a.getName(),
           targetType, getCorrectManagerOfTargetType(a), "", "");
+      if (key.isLongKey()) {
+        getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("GemValueMap"));
+      }
       return;
     }
     String keyTypeManager = "";
@@ -205,6 +208,9 @@ public class PutDecorator extends AddDecorator {
     // microseconds), the value and the key object exist; a put that fails them is neither executed nor sent on
     getCD4C().addMethod(ast, "umlp.commands.put.CheckContract", true, key.isLongKey(), key.isMicrosecondKey(),
         a.getName(), targetType, getCorrectManagerOfTargetType(a), key.getKeyType(), keyTypeManager);
+    if (key.isLongKey()) {
+      getCD4C().addImport(ast, PathUtil.getBackendRTECommonPath("GemValueMap"));
+    }
   }
 
   /**

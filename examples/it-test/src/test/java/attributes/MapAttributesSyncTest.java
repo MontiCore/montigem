@@ -8,6 +8,7 @@ import attributes.test_infrastructure.AttributesMockTestSetup;
 import de.se_rwth.commons.logging.Log;
 import org.junit.jupiter.api.Test;
 import umlp.backendrte.command.CommandManager;
+import umlp.backendrte.common.GemValueMap;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -37,8 +38,8 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     values.put("math", 3);
     values.put("art", -1);
     Map<Long, Double> weights = new LinkedHashMap<>();
-    weights.put(9007199254740991L, 0.5);
-    weights.put(-9007199254740991L, -1.5);
+    weights.put(GemValueMap.MAX_SAFE_KEY, 0.5);
+    weights.put(-GemValueMap.MAX_SAFE_KEY, -1.5);
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().scores(values).weights(weights).build().get();
 
     // check in backend
@@ -451,7 +452,8 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
   public void testPutAndRemoveWithInstantKey() {
     // client
     getClients(0).activate();
-    var sut = AttributesManager.mapsOfSimpleTypesBuilder().readingsPut(Instant.parse("2026-11-17T09:30:15.123456Z"), 1.0)
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder()
+        .readingsPut(Instant.parse("2026-11-17T09:30:15.123456Z"), 1.0)
         .readingsPut(Instant.parse("2026-11-17T10:00:00Z"), 2.0).build().get();
 
     // backend
@@ -488,7 +490,7 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
 
   @Test
   public void testInvalidKeysAreRejected() {
-    long unsafe = 9007199254740992L;
+    long unsafe = GemValueMap.MAX_SAFE_KEY + 1;
     // finer than the microseconds of a database
     Instant fine = Instant.parse("2026-11-17T09:30:15.123456789Z");
     // client: owner and builder refuse null and unsafe long keys and time keys finer than microseconds

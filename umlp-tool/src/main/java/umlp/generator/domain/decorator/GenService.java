@@ -689,23 +689,47 @@ public class GenService {
     return Optional.empty();
   }
 
+  /** the date/time types that can be keys (map attributes, qualifiers) and values */
+  public static final List<String> TIME_TYPES = List.of("java.time.LocalDate", "java.time.LocalDateTime",
+      "java.time.LocalTime", "java.time.Instant");
+
+  /** the time types with fractions of a second, whose keys SQL stores only to the microsecond */
+  public static final List<String> NANO_TIME_TYPES = List.of("java.time.LocalDateTime", "java.time.LocalTime",
+      "java.time.Instant");
+
+  public static final String DURATION = "java.time.Duration";
+
   /**
    * whether the type can be the value of a map attribute with simple values ({@code Map<String, Integer> scores}):
    * a primitive or boxed type, String, an enum, a date/time type or a Duration, like the elements of list attributes
    */
   public static boolean isSimpleMapValue(SymTypeExpression type) {
     return type.isPrimitive() || SymTypeRelations.isNumericType(type) || SymTypeRelations.isBoolean(type)
-        || SymTypeRelations.isString(type) || (type.hasTypeInfo() && isCDEnum(type)) || isTimeType(type)
-        || "java.time.Duration".equals(type.printFullName());
+        || SymTypeRelations.isString(type) || (type.hasTypeInfo() && isCDEnum(type))
+        || isTimeValueType(type.printFullName());
+  }
+
+  /** whether the type is a date/time type that can be a key, see {@link #TIME_TYPES} */
+  public static boolean isTimeType(SymTypeExpression type) {
+    return isTimeType(type.printFullName());
+  }
+
+  /** @param type a type name, qualified or not, see {@link #qualifiedTimeName} */
+  public static boolean isTimeType(String type) {
+    return TIME_TYPES.contains(qualifiedTimeName(type));
+  }
+
+  /** @param type a type name: a date/time type or a Duration, the java.time values of map attributes */
+  public static boolean isTimeValueType(String type) {
+    return isTimeType(type) || DURATION.equals(qualifiedTimeName(type));
   }
 
   /**
-   * whether the type is a date/time type with built-in database and DeSer support: LocalDate, LocalDateTime,
-   * LocalTime, Instant
+   * @return the type name qualified with java.time if it is a simple name: the attributes of the decorated class
+   * diagram have no symbol, {@link #getMapAttributeType} prints their types as written (e.g. Instant)
    */
-  public static boolean isTimeType(SymTypeExpression type) {
-    return List.of("java.time.LocalDate", "java.time.LocalDateTime", "java.time.LocalTime", "java.time.Instant")
-        .contains(type.printFullName());
+  protected static String qualifiedTimeName(String type) {
+    return type.contains(".") ? type : "java.time." + type;
   }
 
   /**
@@ -733,7 +757,7 @@ public class GenService {
   public static String getMapAttributeType(ASTCDAttribute attr, int index) {
     if (attr.isPresentSymbol()) {
       Optional<SymTypeExpression> type = getMapTypeArgument(attr.getSymbol().getType(), index);
-      if (type.isPresent() && type.get().printFullName().startsWith("java.time.")) {
+      if (type.isPresent() && isTimeValueType(type.get().printFullName())) {
         return type.get().printFullName();
       }
     }
@@ -742,19 +766,17 @@ public class GenService {
   }
 
   /**
+   * @param type a type name, qualified or not, e.g. a key type of {@link #getMapAttributeType}
+   * @return whether it is a time type with nanoseconds, see {@link #NANO_TIME_TYPES}
+   */
+  public static boolean isNanoTimeType(String type) {
+    return NANO_TIME_TYPES.contains(qualifiedTimeName(type));
+  }
+
+  /**
    * @param type a type name as printed, e.g. a key type of {@link #getMapAttributeType}
    * @return whether it is long or Long, whose values a browser represents exactly only within +-(2^53-1)
    */
-  /**
-   * whether the type is a time type with nanoseconds (LocalDateTime, LocalTime, Instant), whose map keys are refused
-   * beyond the microseconds SQL stores (methods/mapattrs/Put)
-   */
-  public static boolean isNanoTimeType(String type) {
-    // qualified or not, like isLongType
-    return List.of("java.time.LocalDateTime", "java.time.LocalTime", "java.time.Instant", "LocalDateTime", "LocalTime",
-        "Instant").contains(type);
-  }
-
   public static boolean isLongType(String type) {
     return "java.lang.Long".equals(box(type)) || "Long".equals(type);
   }
@@ -948,6 +970,18 @@ public class GenService {
   }
 
   /**
+   * @return the call narrowing an integer read from the database to int, byte or short (also as element of a list),
+   * empty otherwise
+   */
+  public static String getTypeConversionCall(SymTypeExpression type, String neo4j) {
+    if (type.isGenericType()) {
+      return getTypeConversionCall(((SymTypeOfGenerics) type).getArgument(0), neo4j);
+    }
+    boolean narrowed = TypeCheck.isInt(type) || TypeCheck.isByte(type) || TypeCheck.isShort(type);
+    return narrowed ? getNumberValueCall(type) : "";
+  }
+
+  /**
    * @return for a numeric type the call converting a {@link Number} to it, e.g. ".shortValue()", empty otherwise
    */
   public static String getNumberValueCall(SymTypeExpression type) {
@@ -963,20 +997,6 @@ public class GenService {
       return ".floatValue()";
     } else if (TypeCheck.isDouble(type)) {
       return ".doubleValue()";
-    }
-    return "";
-  }
-
-  public static String getTypeConversionCall(SymTypeExpression type, String neo4j) {
-    if (TypeCheck.isInt(type)) {
-      return ".intValue()";
-    } else if(TypeCheck.isByte(type)) {
-      return ".byteValue()";
-    } else if(TypeCheck.isShort(type)) {
-      return ".shortValue()";
-    }
-    if (type.isGenericType()) {
-      return getTypeConversionCall(((SymTypeOfGenerics) type).getArgument(0),neo4j);
     }
     return "";
   }

@@ -11,9 +11,9 @@ import java.util.Optional;
 /**
  * The value type V of a {@code java.util.Map<K, V>} attribute is a domain class or interface (the attribute becomes the
  * type qualified association {@code Owner [K] -> (attr) V [1]}, UMLAttrToAssocTrafo) or a simple type like the elements
- * of list attributes: a primitive or boxed type, String or an enum (a map attribute, persisted and synchronized per
- * entry). Raw maps and maps of collections, Optionals or maps are not supported. The key type is checked by
- * {@link UMLPMapAttributeKeyType}.
+ * of list attributes: a primitive or boxed type, String, an enum, a date/time type or a Duration (a map attribute,
+ * persisted and synchronized per entry). Raw maps and maps of collections, Optionals or maps are not supported. The
+ * key type is checked by {@link UMLPMapAttributeKeyType}.
  */
 public class UMLPMapAttributeValueType implements CDBasisASTCDAttributeCoCo, CoCoTestable {
 

@@ -49,7 +49,7 @@ public class MapAttrMutatorDecorator extends MandatoryMutatorDecorator {
         GenService.isNanoTimeType(keyType)));
     methodList.add(createMethod("umlp.methods.mapattrs.Remove", sourceName, name, keyType, valueType));
     // put/remove without scope
-    methodList.addAll(createDelegatesWithScope(methodList));
+    methodList.addAll(createDelegatesWithoutScope(methodList));
 
     cd4c.addImport(this.ast, "java.util.LinkedHashMap");
     cd4c.addImport(this.ast, "java.util.Objects");
@@ -62,7 +62,7 @@ public class MapAttrMutatorDecorator extends MandatoryMutatorDecorator {
   /**
    * @return the methods without their last parameter, the notification scope, delegating with NotificationScope.ALL
    */
-  protected List<ASTCDMethod> createDelegatesWithScope(List<ASTCDMethod> methodList) {
+  protected List<ASTCDMethod> createDelegatesWithoutScope(List<ASTCDMethod> methodList) {
     List<ASTCDMethod> delegates = Lists.newArrayList();
     for (ASTCDMethod method : methodList) {
       ASTCDMethod delegate = method.deepClone();

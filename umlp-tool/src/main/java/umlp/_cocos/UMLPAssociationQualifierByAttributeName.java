@@ -17,10 +17,10 @@ import java.util.Optional;
 
 /**
  * The attribute that qualifies an attribute qualified association ({@code Owner [[attr]] -> Value}) has a type that
- * can be a key: a primitive or String (GemValueMap) or a domain class (GemEntryMap). Optional, collection and array
- * types are rejected as well, they would give a value object no key or several keys. That the attribute exists is
- * checked by {@link UMLPAssociationQualifierAttributeExists}, the cardinality of a role that is used as qualifier by
- * {@link UMLPAssociationQualifierKeyCardinality}.
+ * can be a key: a primitive, String or date/time type (GemValueMap) or a domain class (GemEntryMap). Optional,
+ * collection and array types are rejected as well, they would give a value object no key or several keys. That the
+ * attribute exists is checked by {@link UMLPAssociationQualifierAttributeExists}, the cardinality of a role that is
+ * used as qualifier by {@link UMLPAssociationQualifierKeyCardinality}.
  */
 public class UMLPAssociationQualifierByAttributeName implements CDAssociationASTCDAssociationCoCo, CoCoTestable {
 

@@ -18,7 +18,7 @@ if (key == null) {
 }
 </#if>
 <#if longKey>
-if (key != null && (key < -9007199254740991L || key > 9007199254740991L)) {
+if (key != null && (key < -GemValueMap.MAX_SAFE_KEY || key > GemValueMap.MAX_SAFE_KEY)) {
   Log.warn("0xA7327 The put of the object with id " + getGemId() + " under the key " + key
       + " is rejected: a browser cannot represent the key exactly");
   return false;

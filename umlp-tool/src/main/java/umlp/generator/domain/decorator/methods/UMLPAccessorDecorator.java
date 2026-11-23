@@ -21,22 +21,25 @@ public class UMLPAccessorDecorator extends AccessorDecorator {
    * without map attributes: a map is a plain field (RTE POJOs)
    */
   public UMLPAccessorDecorator(final GlobalExtensionManagement glex, final CDGenService service) {
-    super(
-        glex,
-        new MandatoryAccessorDecorator(glex, service),
-        new OptionalAccessorDecorator(glex, service),
-        new ListAccessorDecorator(glex, service));
-    this.mapMethodDecorator = this.mandatoryMethodDecorator;
+    this(glex, service, (AbstractMethodDecorator) null);
   }
 
   public UMLPAccessorDecorator(final GlobalExtensionManagement glex, final CDGenService service,
                                final ASTCDType ast) {
+    this(glex, service, new MapAttrAccessorDecorator(glex, service, ast));
+  }
+
+  /**
+   * @param mapMethodDecorator the accessors of map attributes; null: a map is a plain field
+   */
+  protected UMLPAccessorDecorator(final GlobalExtensionManagement glex, final CDGenService service,
+                                  final AbstractMethodDecorator mapMethodDecorator) {
     super(
         glex,
         new MandatoryAccessorDecorator(glex, service),
         new OptionalAccessorDecorator(glex, service),
         new ListAccessorDecorator(glex, service));
-    this.mapMethodDecorator = new MapAttrAccessorDecorator(glex, service, ast);
+    this.mapMethodDecorator = mapMethodDecorator != null ? mapMethodDecorator : this.mandatoryMethodDecorator;
   }
 
   @Override

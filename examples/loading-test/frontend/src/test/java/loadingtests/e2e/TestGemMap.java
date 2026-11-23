@@ -10,8 +10,10 @@ import loadingtests.Tutor;
 import loadingtests.test_infrastructure.AbstractLoadingTestsE2ETest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import umlp.backendrte.common.GemValueMap;
 
 import java.time.LocalDate;
+
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -271,8 +273,9 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     open(page, anna);
     click(page, "Put Max Phone");
     assertThat(result(page)).hasText("max=true");
-    waitUntil(() -> course.containsKeyStudentByPhone(9007199254740991L), "backend: course.containsKeyStudentByPhone(9007199254740991L)");
-    assertEquals(anna.getGemId(), course.getStudentByPhone(9007199254740991L).getGemId());
+    waitUntil(() -> course.containsKeyStudentByPhone(GemValueMap.MAX_SAFE_KEY),
+        "backend: course.containsKeyStudentByPhone(MAX_SAFE_KEY)");
+    assertEquals(anna.getGemId(), course.getStudentByPhone(GemValueMap.MAX_SAFE_KEY).getGemId());
   }
 
   /** a long key beyond the limit is refused in the browser, nothing reaches the backend */

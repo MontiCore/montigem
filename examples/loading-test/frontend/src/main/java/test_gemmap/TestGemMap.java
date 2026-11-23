@@ -6,6 +6,7 @@ import loadingtests.Enrollment;
 import loadingtests.LoadingTestsManager;
 import loadingtests.Student;
 import loadingtests.Tutor;
+import umlp.backendrte.common.GemValueMap;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -183,8 +184,8 @@ public class TestGemMap extends TestGemMapTOP {
   @Override
   public Consumer<Void> putMaxPhone(Course c, Student s) {
     return $ -> {
-      c.putStudentByPhone(9007199254740991L, s);
-      setResult("max=" + c.containsKeyStudentByPhone(9007199254740991L));
+      c.putStudentByPhone(GemValueMap.MAX_SAFE_KEY, s);
+      setResult("max=" + c.containsKeyStudentByPhone(GemValueMap.MAX_SAFE_KEY));
     };
   }
 

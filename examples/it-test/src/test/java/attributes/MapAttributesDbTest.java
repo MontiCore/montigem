@@ -6,6 +6,7 @@ import attributes.test_infrastructure.AttributesSQLDBTestSetup;
 import attributes.test_infrastructure.AttributesTestSetup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import umlp.backendrte.common.GemValueMap;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -44,8 +45,8 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
     values.put("math", 3);
     values.put("art", -1);
     Map<Long, Double> weights = new LinkedHashMap<>();
-    weights.put(9007199254740991L, 0.5);
-    weights.put(-9007199254740991L, -1.5);
+    weights.put(GemValueMap.MAX_SAFE_KEY, 0.5);
+    weights.put(-GemValueMap.MAX_SAFE_KEY, -1.5);
     var sut = AttributesManager.mapsOfSimpleTypesBuilder().scores(values).weights(weights).build().get();
 
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
@@ -395,7 +396,8 @@ public interface MapAttributesDbTest extends AttributesTestSetup {
 
   @Test
   default void testPutAndRemoveWithInstantKeyInDb() {
-    var sut = AttributesManager.mapsOfSimpleTypesBuilder().readingsPut(Instant.parse("2026-11-17T09:30:15.123456Z"), 1.0)
+    var sut = AttributesManager.mapsOfSimpleTypesBuilder()
+        .readingsPut(Instant.parse("2026-11-17T09:30:15.123456Z"), 1.0)
         .readingsPut(Instant.parse("2026-11-17T10:00:00Z"), 2.0).build().get();
     var dao = AttributesDAOFactory.getMapsOfSimpleTypesDAO();
 

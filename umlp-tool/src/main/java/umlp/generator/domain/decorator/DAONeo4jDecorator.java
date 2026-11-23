@@ -9,9 +9,7 @@ import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.cdbasis._ast.ASTCDTypeTOP;
-import de.monticore.cd4codebasis._ast.ASTCDMethod;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
-import de.monticore.generating.templateengine.StringHookPoint;
 import de.monticore.types.check.SymTypeExpression;
 import de.se_rwth.commons.StringTransformations;
 import umlp.generator.db.sql.SQLSchemaGenerator;
@@ -23,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static de.monticore.cd.codegen.CD2JavaTemplates.EMPTY_BODY;
 
 import static de.monticore.cd.facade.CDModifier.PRIVATE;
 
@@ -148,7 +144,8 @@ public class DAONeo4jDecorator extends DAODecorator {
     getCD4C().addMethod(daoClass, "umlp.dao.InsertInitNeo4j", domainClass.getName(),
         superTypeNamesInclSelf, attributes, optionalAttributes);
     getCD4C().addMethod(daoClass, "umlp.dao.InsertNeo4j", domainClass.getName(), cdName, attributes,
-        optionalAttributes , listAttributes, getMapAttributes(domainClass), listAssociationMap, gemAssociationMap, assocToCorrectManagerMap, neo4J_Template_SUFFIX);
+        optionalAttributes, listAttributes, getMapAttributes(domainClass), listAssociationMap, gemAssociationMap,
+        assocToCorrectManagerMap, neo4J_Template_SUFFIX);
     /*getCD4C().addMethod(daoClass, "umlp.dao.BulkInsert", domainClass.getName(), cdName, attributes,
         optionalAttributes , listAttributes, listAssociationMap, gemAssociationMap, neo4J_Template_SUFFIX);*/
   }
@@ -214,6 +211,11 @@ public class DAONeo4jDecorator extends DAODecorator {
    * map attributes are two parallel array properties of the node, written together, see dao/mapattrs/WriteNeo4j
    */
   @Override
+  protected List<String> mapAttrStatements() {
+    return List.of("select", "write");
+  }
+
+  @Override
   protected void mapAttrMethods(ASTCDType daoClass, ASTCDClass domainClass) {
     getMapAttributes(domainClass).forEach(attr -> {
       String keyType = GenService.getMapAttributeType(attr, 0);
@@ -225,12 +227,8 @@ public class DAONeo4jDecorator extends DAODecorator {
       getCD4C().addMethod(daoClass, "umlp.dao.mapattrs.WriteNeo4j", domainClass.getName(), attr.getName(), keyType,
           valueType, GenService.getDBType(keySymType), GenService.getDBType(valueSymType));
       // put, remove and insert write the whole map
-      for (String template : List.of("Put", "Remove", "Insert")) {
-        ASTCDMethod method = (ASTCDMethod) getCD4C().addMethod(daoClass, "umlp.daointerface.mapattrs." + template,
-            attr.getName(), keyType, valueType);
-        method.getModifier().setAbstract(false);
-        glex.replaceTemplate(EMPTY_BODY, method,
-            new StringHookPoint("write" + StringTransformations.capitalize(attr.getName()) + "(gemId, map);"));
+      for (String template : List.of("PutNeo4j", "RemoveNeo4j", "InsertNeo4j")) {
+        getCD4C().addMethod(daoClass, "umlp.dao.mapattrs." + template, attr.getName(), keyType, valueType);
       }
       getCD4C().addImport(daoClass, "java.util.Map");
       getCD4C().addImport(daoClass, "java.util.LinkedHashMap");
@@ -315,7 +313,8 @@ public class DAONeo4jDecorator extends DAODecorator {
     Map<ASTCDAttribute, String> attributeMap = Maps.newLinkedHashMap();
     attributes.forEach(e -> attributeMap.put(e, "\"" + e.getName() + "\""));
     getCD4C().addMethod(daoClass, "umlp.dao.UnpackNeo4j", domainClass.getName(), cdName, attributeMap,
-        optMap, listAttributes, getMapAttributes(domainClass), listAssociationMap, gemAssociationMap, assocToCorrectManagerMap, assocToCorrectDAOFactoryMap,neo4J_Template_SUFFIX);
+        optMap, listAttributes, getMapAttributes(domainClass), listAssociationMap, gemAssociationMap,
+        assocToCorrectManagerMap, assocToCorrectDAOFactoryMap, neo4J_Template_SUFFIX);
   }
 
   @Override

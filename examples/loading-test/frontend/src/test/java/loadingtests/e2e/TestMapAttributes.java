@@ -9,6 +9,7 @@ import loadingtests.MyEnum;
 import loadingtests.test_infrastructure.AbstractLoadingTestsE2ETest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import umlp.backendrte.common.GemValueMap;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -89,8 +90,8 @@ public class TestMapAttributes extends AbstractLoadingTestsE2ETest {
   public void testLongKeyAndEnumValue(Page page) {
     open(page);
     click(page, "Put State");
-    waitUntil(() -> gradebook.containsKeyStates(9007199254740991L), "backend: state under the max key");
-    assertEquals(MyEnum.B, gradebook.getStates(9007199254740991L));
+    waitUntil(() -> gradebook.containsKeyStates(GemValueMap.MAX_SAFE_KEY), "backend: state under the max key");
+    assertEquals(MyEnum.B, gradebook.getStates(GemValueMap.MAX_SAFE_KEY));
     clickUntil(page, "Read States", "size=1;max=B");
   }
 

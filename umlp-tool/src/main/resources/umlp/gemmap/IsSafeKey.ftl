@@ -3,4 +3,4 @@
      GemValueMap#isSafeKey); a null key is reported elsewhere -->
 ${tc.signature("keyType")}
 ${cd4c.method("public boolean isSafeKey(${keyType} key)")}
-return key == null || (key >= -9007199254740991L && key <= 9007199254740991L);
+return key == null || (key >= -GemValueMap.MAX_SAFE_KEY && key <= GemValueMap.MAX_SAFE_KEY);
