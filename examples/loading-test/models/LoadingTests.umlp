@@ -168,6 +168,9 @@ classdiagram LoadingTests {
     Map<long, MyEnum> states;
     Map<String, java.time.LocalDate> dueDates;
     Map<java.time.LocalDate, int> visitsByDay;
+    Map<java.time.LocalTime, String> slot;
+    Map<java.time.LocalDateTime, String> noteAt;
+    Map<java.time.Instant, String> readingAt;
   }
 
   class Staff {
@@ -206,6 +209,8 @@ classdiagram LoadingTests {
 
   // GemValueMap, type qualified with date keys: equal dates are the same key, also in the browser
   association Course [java.time.LocalDate] (examCourse) -> (studentByExamDay) Student [1];
+  // keys with fractions of a second: to the microsecond
+  association Course [java.time.Instant] (lectureCourse) -> (studentByLecture) Student [1];
 
   // Bidirectional qualified associations: the value side is the map's other side
   class Club {

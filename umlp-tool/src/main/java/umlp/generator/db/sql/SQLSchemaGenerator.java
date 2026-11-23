@@ -227,10 +227,11 @@ public class SQLSchemaGenerator {
     for (ASTCDClass node : cd.getCDClassesList()) {
       generateClassSchema(cd, node, p);
     }
-    // List attributes are saved in a table named after the defining type
+    // List and map attributes are saved in a table named after the defining type
     // thus we also need to take interfaces into account here
     for (ASTCDInterface node : cd.getCDInterfacesList()) {
       generateListAttributeTables(cd, node, p);
+      generateMapAttributeTables(cd, node, p);
     }
   }
 

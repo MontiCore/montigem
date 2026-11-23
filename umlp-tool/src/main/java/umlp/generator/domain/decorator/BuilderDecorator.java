@@ -185,9 +185,12 @@ public class BuilderDecorator extends AbstractDecorator {
 
   protected void createSetAndCheckMethods(ASTCDClass domainClass, ASTCDClass builderClass, List<ASTCDAttribute> attrList, List<ASTCDAssocSide> assocList) {
     for (ASTCDAttribute attribute : attrList) {
+      boolean isMap = GenService.isMap(attribute);
       getCD4C().addMethod(builderClass, "umlp.builder.Attr",
           attribute.getName(), getCDPrinter().prettyprint(createType(attribute)),
-          getClassName(domainClass.getName()), GenService.isList(attribute), GenService.isMap(attribute));
+          getClassName(domainClass.getName()), GenService.isList(attribute), isMap,
+          isMap ? GenService.getMapAttributeType(attribute, 0) : "",
+          isMap ? GenService.getMapAttributeType(attribute, 1) : "");
       if (GenService.isMap(attribute)) {
         createMapAttrMethods(domainClass, builderClass, attribute);
       }

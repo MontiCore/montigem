@@ -20,6 +20,9 @@ umlp UMLPMapAttribute {
     java.util.Map<String, Integer> counts;
     java.util.Map<String, E> kinds;
     java.util.Map<java.time.LocalDate, Integer> countByDay;
+    // invalid value types (0xCDC6E): a char, a number in Java but a string in the browser
+    java.util.Map<String, Character> initials;
+    java.util.Map<String, char> letters;
   }
 
   class B;

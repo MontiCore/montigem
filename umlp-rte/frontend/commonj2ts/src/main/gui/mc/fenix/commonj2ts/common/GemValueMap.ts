@@ -14,6 +14,7 @@ import {AsyncSet} from "../javautil/AsyncSet";
 import {Collection} from "../javautil/Collection";
 import {JavaUtilUtils} from "../javautil/JavaUtilUtils";
 import {TemporalKeys} from "../javautil/TemporalKeys";
+import {LocalDateTimeHelper} from "../types/LocalDateTimeHelper";
 
 /*
  * A lazy Map for Keys/Values
@@ -183,7 +184,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
       // the key of a value is derived from the value, it cannot be chosen
       const derived: K = await this.deriveKey(value);
       if (!JavaUtilUtils.equalsSync(key, derived)) {
-        Log.error("0xA7305 Key " + key + " does not match the key " + derived
+        Log.error("0xA7305 Key " + GemValueMap.text(key) + " does not match the key " + GemValueMap.text(derived)
           + " derived from the object with id " + value.getGemId());
         return null;
       }
@@ -250,7 +251,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     if (this.isSafeKey(key)) {
       return false;
     }
-    Log.error("0xA7309 The key " + key + " of the object with id " + valueGemID + " is refused: "
+    Log.error("0xA7309 The key " + GemValueMap.text(key) + " of the object with id " + valueGemID + " is refused: "
       + this.unsafeKeyReason());
     return true;
   }
@@ -454,7 +455,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
     }
     const present: number = this.lookupID(key);
     if (present != null && present !== value.getGemId()) {
-      Log.error("0xA7303 Key " + key + " is not unique: it is derived from the objects with ids "
+      Log.error("0xA7303 Key " + GemValueMap.text(key) + " is not unique: it is derived from the objects with ids "
         + present + " and " + value.getGemId());
       return;
     }
@@ -507,7 +508,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
       return false;
     }
     if (this.lookupID(newKey) != null) {
-      Log.error("0xA7304 Key " + newKey + " is not unique: it is derived from the objects with ids "
+      Log.error("0xA7304 Key " + GemValueMap.text(newKey) + " is not unique: it is derived from the objects with ids "
         + this.lookupID(newKey) + " and " + valueGemID);
       return false;
     }
@@ -583,6 +584,11 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
 
   __internalMap(): Map<K, V> {
     throw Error("__internalMap is not allowed, since GemMaps are always asynchronous.");
+  }
+
+  /** a key in a message like Java: a java.time key in its format (Temporal values refuse the + operator) */
+  protected static text(key: any): string {
+    return LocalDateTimeHelper.toJavaString(key);
   }
 }
 

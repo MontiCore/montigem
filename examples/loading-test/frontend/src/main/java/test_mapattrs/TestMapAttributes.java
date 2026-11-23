@@ -5,7 +5,10 @@ import loadingtests.Gradebook;
 import loadingtests.MyEnum;
 import umlp.backendrte.common.GemValueMap;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -77,5 +80,27 @@ public class TestMapAttributes extends TestMapAttributesTOP {
   @Override
   public Consumer<Void> readVisits(Gradebook g) {
     return $ -> setResult("size=" + g.sizeVisitsByDays() + ";visits=" + g.getVisitsByDay(LocalDate.of(2026, 11, 17)));
+  }
+
+  /**
+   * LocalTime, LocalDateTime and Instant keys put by the backend, read with keys created here; the map in the format
+   * of Java
+   */
+  @Override
+  public Consumer<Void> readTimes(Gradebook g) {
+    return $ -> setResult("slot=" + g.getSlot(LocalTime.of(10, 0)) + ";note="
+        + g.getNoteAt(LocalDateTime.of(2026, 11, 17, 10, 0, 30, 500_000_000)) + ";reading="
+        + g.getReadingAt(Instant.parse("2026-11-17T09:00:00.123456Z")) + ";slots=" + g.getSlotMap());
+  }
+
+  /**
+   * a key finer than the microseconds a database stores is refused
+   */
+  @Override
+  public Consumer<Void> putFineReading(Gradebook g) {
+    return $ -> {
+      g.putReadingAt(Instant.parse("2026-11-17T09:00:00.1234567Z"), "fine");
+      setResult("readings=" + g.getReadingAtMap().size());
+    };
   }
 }

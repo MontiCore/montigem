@@ -67,6 +67,7 @@ umlp Inheritance{
   interface MI1 {
     int simpleAttr1;
     List<int> listAttr1;
+    Map<String, int> mapAttr1;
   }
 
   interface MI2 {
@@ -77,6 +78,7 @@ umlp Inheritance{
   class MultipleInhClass implements MI1, MI2 {
     int simpleAttr3;
     List<int> listAttr3;
+    Map<String, int> mapAttr3;
   }
 
   class AssocHelper;

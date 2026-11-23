@@ -131,7 +131,8 @@ public class DomainClassDecorator extends DomainTypeDecorator implements OwnComm
       } else if (GenService.isList(attr)) {
         glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(defaultListValue()));
       } else if (GenService.isMap(attr)) {
-        glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(" = new LinkedHashMap<>()"));
+        glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(defaultMapValue()));
+        getCD4C().addImport(clazz, "java.util.LinkedHashMap");
       } else if (GenService.isBoolean(attr.getMCType())) {
         glex.replaceTemplate("cd2java.Value", attr, new StringHookPoint(defaultBooleanValue()));
       }
@@ -291,6 +292,11 @@ public class DomainClassDecorator extends DomainTypeDecorator implements OwnComm
 
   protected String defaultListValue() {
     return "= new ArrayList<>()";
+  }
+
+  /** the initial value of a map attribute with simple values, insertion ordered like the GemMaps */
+  protected String defaultMapValue() {
+    return "= new LinkedHashMap<>()";
   }
 
   protected String defaultBooleanValue() {

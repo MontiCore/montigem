@@ -11,7 +11,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import umlp.backendrte.common.GemValueMap;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -114,5 +117,24 @@ public class TestMapAttributes extends AbstractLoadingTestsE2ETest {
     waitUntil(() -> gradebook.getVisitsByDay(LocalDate.of(2026, 11, 17)) == 2, "backend: 2 visits");
     assertEquals(1, gradebook.sizeVisitsByDays());
     clickUntil(page, "Read Visits", "size=1;visits=2");
+  }
+
+  /** LocalTime, LocalDateTime and Instant keys from the backend are found with equal keys created in the browser */
+  @Test
+  public void testTimeKeysFromBackend(Page page) {
+    gradebook.putSlot(LocalTime.parse("10:00:00"), "morning");
+    gradebook.putNoteAt(LocalDateTime.parse("2026-11-17T10:00:30.5"), "note");
+    gradebook.putReadingAt(Instant.parse("2026-11-17T09:00:00.123456Z"), "reading");
+    open(page);
+    clickUntil(page, "Read Times", "slot=morning;note=note;reading=reading;slots={10:00=morning}");
+  }
+
+  /** a time key finer than microseconds is refused in the browser, nothing reaches the backend */
+  @Test
+  public void testFineTimeKeyRefused(Page page) {
+    open(page);
+    click(page, "Put Fine Reading");
+    assertThat(result(page)).hasText("readings=0");
+    assertEquals(0, gradebook.getReadingAtMap().size());
   }
 }

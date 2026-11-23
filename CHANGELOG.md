@@ -81,7 +81,7 @@ For MontiGem users:
   java.time methods (see `docs/JSweetUserGuide.md`). `toEpochSecond(offset)` and `ofEpochSecond(..., offset)` use
   the given offset (before, every offset was taken as UTC), and `ChronoUnit.toString()` gives the display name like
   Java (`"Days"`, before `"DAYS"`).
-* `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums,
+* `Map<K, V>` attributes with simple values (primitive and boxed types except `char`, `String`, enums,
   `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant`, `Duration`), like list attributes:
   ```
   class Person { Map<String, Integer> scores; }
@@ -92,9 +92,12 @@ For MontiGem users:
   `Person_putScores`, `Person_removeScores`) and stored per entry (SQL table `person$scores$map`,
   Neo4j properties `Scores_keys` and `Scores_values`); the entries keep their insertion order. The
   keys are those of type qualifiers without domain classes and `LocalDate`, `LocalDateTime`,
-  `LocalTime`, `Instant` (`0xCDC6F`), time keys only to the microsecond (`0xA7336`); in the
-  frontend, equal date/time keys are the same key, like in Java. As with `get<Attr>List()`,
-  changes through `getScoresMap()` are not synchronized.
+  `LocalTime`, `Instant` (`0xCDC6F`); in the frontend, equal date/time keys are the same key, like
+  in Java. Refused, also when the builder gets a whole map: `null` keys and values (`0xA7331`,
+  commands `0xA7334`), long keys beyond ±(2^53−1) (`0xA7332`, `0xA7335`) and time keys finer than
+  the microseconds a database stores (`0xA7336`, `0xA7337`). `getScores(key)` of a missing key is an
+  error (`0xA7333`), like for GemMaps. As with `get<Attr>List()`, changes through `getScoresMap()`
+  are not synchronized.
 * Qualified associations take date/time keys: `LocalDate`, `LocalDateTime`, `LocalTime` and
   `Instant` as type qualifier (`association Directory [java.time.LocalDate] -> (byBirthday) Person [1];`),
   as qualifying attribute (`[[start]]`) and as key of a `Map` attribute with domain class values.

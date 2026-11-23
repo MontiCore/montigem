@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import umlp.backendrte.common.GemValueMap;
 
+import java.time.Instant;
 import java.time.LocalDate;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
@@ -326,5 +327,26 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
     click(page, "Remove Exam Day");
     waitUntil(() -> !course.containsKeyStudentByExamDay(LocalDate.of(2026, 11, 17)),
         "backend: no student under the exam day");
+  }
+
+  /** an Instant key from the backend is found with an equal key created in the browser */
+  @Test
+  public void testInstantKeyFromBackend(Page page) {
+    course.putStudentByLecture(Instant.parse("2026-11-17T09:00:00.123456Z"), anna);
+    open(page, anna);
+    click(page, "Read Lecture");
+    assertThat(result(page)).hasText("lecture=Anna");
+  }
+
+  /**
+   * a key finer than microseconds put through the map in the browser is refused with a message (the message used to
+   * throw for java.time keys), nothing is stored
+   */
+  @Test
+  public void testFineTimeKeyRefusedInBrowser(Page page) {
+    open(page, anna);
+    click(page, "Put Fine Lecture");
+    assertThat(result(page)).hasText("lectures=0");
+    assertEquals(0, course.sizeStudentByLectures());
   }
 }

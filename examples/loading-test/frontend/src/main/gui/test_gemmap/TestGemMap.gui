@@ -40,4 +40,6 @@ page TestGemMap(Course c, Student s, Tutor t, Enrollment e, String result = "loa
   readExamDay@GemButton(label = "Read Exam Day", leftClick = readExamDay(c));
   putExamDay@GemButton(label = "Put Exam Day", leftClick = putExamDay(c, s));
   removeExamDay@GemButton(label = "Remove Exam Day", leftClick = removeExamDay(c));
+  readLecture@GemButton(label = "Read Lecture", leftClick = readLecture(c));
+  putFineLecture@GemButton(label = "Put Fine Lecture", leftClick = putFineLecture(c, s));
 }

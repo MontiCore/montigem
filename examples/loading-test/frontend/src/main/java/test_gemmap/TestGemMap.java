@@ -8,6 +8,7 @@ import loadingtests.Student;
 import loadingtests.Tutor;
 import umlp.backendrte.common.GemValueMap;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -235,5 +236,27 @@ public class TestGemMap extends TestGemMapTOP {
   @Override
   public Consumer<Void> removeExamDay(Course c) {
     return $ -> c.removeStudentByExamDay(LocalDate.of(2026, 11, 17));
+  }
+
+  /**
+   * an Instant key put by the backend, read with a key created here
+   */
+  @Override
+  public Consumer<Void> readLecture(Course c) {
+    return $ -> {
+      Student s = c.getStudentByLecture(Instant.parse("2026-11-17T09:00:00.123456Z"));
+      setResult("lecture=" + (s == null ? "-" : s.getName()));
+    };
+  }
+
+  /**
+   * a key finer than microseconds through the map: refused with a message, nothing stored
+   */
+  @Override
+  public Consumer<Void> putFineLecture(Course c, Student s) {
+    return $ -> {
+      c.getStudentByLectureMap().put(Instant.parse("2026-11-17T09:00:00.1234567Z"), s);
+      setResult("lectures=" + c.getStudentByLectureMap().size());
+    };
   }
 }

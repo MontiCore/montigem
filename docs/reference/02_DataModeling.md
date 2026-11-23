@@ -38,7 +38,8 @@ class Customer extends Person { String customerId; }
 | `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
 | `Instant` | `java.time.Instant` | `Temporal.Instant` | A point in time; SQL `TIMESTAMP WITH TIME ZONE`, rounded to the microsecond (Neo4j and the synchronization keep nanoseconds). |
 | `Duration` | `java.time.Duration` | `Temporal.Duration` | An exact length of time; SQL `BIGINT` nanoseconds, so up to about 292 years. |
-| `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
+| `List<T>` | `java.util.List<T>` | `Array<T>` | `List` and `Map` are the supported generic collections. |
+| `Map<K, V>` | `java.util.Map<K, V>` | `IUMLPMap<K, V>` (asynchronous) | `V` a domain class: a type qualified association (GemMap). `V` a simple type (primitive or boxed except `char`, `String`, enum, date/time type, `Duration`): a map attribute, `put<Attr>(key, value)`/`remove<Attr>(key)` synchronized and stored per entry, insertion ordered; changes through `get<Attr>Map()` are not synchronized. Keys: integral numbers within ±(2^53−1), `String`, `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant` (to the microsecond), domain classes only for domain class values. |
 | `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
 
 ## 2.2 Enums

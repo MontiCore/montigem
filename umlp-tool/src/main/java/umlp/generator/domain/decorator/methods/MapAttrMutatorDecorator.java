@@ -51,8 +51,6 @@ public class MapAttrMutatorDecorator extends MandatoryMutatorDecorator {
     // put/remove without scope
     methodList.addAll(createDelegatesWithoutScope(methodList));
 
-    cd4c.addImport(this.ast, "java.util.LinkedHashMap");
-    cd4c.addImport(this.ast, "java.util.Objects");
     if (isLongKey) {
       cd4c.addImport(this.ast, PathUtil.getBackendRTECommonPath("GemValueMap"));
     }

@@ -701,12 +701,14 @@ public class GenService {
 
   /**
    * whether the type can be the value of a map attribute with simple values ({@code Map<String, Integer> scores}):
-   * a primitive or boxed type, String, an enum, a date/time type or a Duration, like the elements of list attributes
+   * a primitive or boxed type except char (a number in Java, a string in the browser; use String), String, an enum, a
+   * date/time type or a Duration
    */
   public static boolean isSimpleMapValue(SymTypeExpression type) {
-    return type.isPrimitive() || SymTypeRelations.isNumericType(type) || SymTypeRelations.isBoolean(type)
+    boolean simple = type.isPrimitive() || SymTypeRelations.isNumericType(type) || SymTypeRelations.isBoolean(type)
         || SymTypeRelations.isString(type) || (type.hasTypeInfo() && isCDEnum(type))
         || isTimeValueType(type.printFullName());
+    return simple && !SymTypeRelations.isChar(type);
   }
 
   /** whether the type is a date/time type that can be a key, see {@link #TIME_TYPES} */

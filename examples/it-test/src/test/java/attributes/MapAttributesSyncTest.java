@@ -488,6 +488,29 @@ public class MapAttributesSyncTest extends AttributesMockTestSetup {
     assertEquals(Map.of("art", 1), sut.getScoresMap());
   }
 
+  /** the builder's setter of a whole map (also used by the DeSer) checks each entry like <attr>Put */
+  @Test
+  public void testWholeMapSetterChecksEntries() {
+    Map<Long, Double> weights = new LinkedHashMap<>();
+    weights.put(1L, 1.0);
+    weights.put(GemValueMap.MAX_SAFE_KEY + 1, 2.0);
+    Map<Instant, Double> readings = new LinkedHashMap<>();
+    readings.put(Instant.parse("2026-11-17T09:30:15.123456Z"), 1.0);
+    readings.put(Instant.parse("2026-11-17T09:30:15.1234567Z"), 2.0);
+    Map<String, Integer> scores = new LinkedHashMap<>();
+    scores.put("math", 1);
+    scores.put(null, 2);
+    scores.put("art", null);
+    var builder = AttributesManager.mapsOfSimpleTypesBuilder();
+    assertLogs("0xA7332", () -> builder.weights(weights));
+    assertLogs("0xA7336", () -> builder.readings(readings));
+    assertLogs("0xA7331", () -> builder.scores(scores));
+    var sut = builder.build().get();
+    assertEquals(Map.of(1L, 1.0), sut.getWeightsMap());
+    assertEquals(Map.of(Instant.parse("2026-11-17T09:30:15.123456Z"), 1.0), sut.getReadingsMap());
+    assertEquals(Map.of("math", 1), sut.getScoresMap());
+  }
+
   @Test
   public void testInvalidKeysAreRejected() {
     long unsafe = GemValueMap.MAX_SAFE_KEY + 1;

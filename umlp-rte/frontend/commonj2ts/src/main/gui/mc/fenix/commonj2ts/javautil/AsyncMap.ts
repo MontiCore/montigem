@@ -4,6 +4,7 @@ import {AsyncSet} from "./AsyncSet";
 import {AsyncMapEntrySet} from "./AsyncMapEntrySet";
 import {Collection} from "./Collection";
 import {TemporalKeys} from "./TemporalKeys";
+import {LocalDateTimeHelper} from "../types/LocalDateTimeHelper";
 
 /**
  * java.util.HashMap, LinkedHashMap, TreeMap, ... in transpiled code: wraps a native Map, i.e. keeps the
@@ -50,7 +51,9 @@ export class AsyncMap<K, V> extends AbstractAsyncMap<K, V> {
   }
 
   public toString(): string {
-    return "{" + Array.from(this._data.entries()).map(([k, v]) => String(k) + "=" + String(v)).join(", ") + "}";
+    // keys and values like Java, java.time values in their format
+    return "{" + Array.from(this._data.entries())
+      .map(([k, v]) => LocalDateTimeHelper.toJavaString(k) + "=" + LocalDateTimeHelper.toJavaString(v)).join(", ") + "}";
   }
 
   // ─── Core methods ─────────────────────────────────────────────────────────

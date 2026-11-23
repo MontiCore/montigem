@@ -20,4 +20,6 @@ page TestMapAttributes(Gradebook g, String result = "loaded") {
   putDueDate@GemButton(label = "Put Due Date", leftClick = putDueDate(g));
   countVisit@GemButton(label = "Count Visit", leftClick = countVisit(g));
   readVisits@GemButton(label = "Read Visits", leftClick = readVisits(g));
+  readTimes@GemButton(label = "Read Times", leftClick = readTimes(g));
+  putFineReading@GemButton(label = "Put Fine Reading", leftClick = putFineReading(g));
 }
