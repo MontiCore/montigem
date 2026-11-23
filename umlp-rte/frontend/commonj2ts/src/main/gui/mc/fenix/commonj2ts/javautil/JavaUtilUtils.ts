@@ -1,3 +1,5 @@
+import {Temporal} from "../types/Temporal";
+
 export class JavaUtilUtils {
 
   public static requireNonNull<T>(obj: T, message?: string): T {
@@ -41,6 +43,9 @@ export class JavaUtilUtils {
       }
       return true;
     }
+    if (JavaUtilUtils.isTemporal(a)) {
+      return JavaUtilUtils.temporalEquals(a, b);
+    }
     if (typeof a.equals === "function") {
       return await a.equals(b);
     }
@@ -68,10 +73,24 @@ export class JavaUtilUtils {
       }
       return true;
     }
+    if (JavaUtilUtils.isTemporal(a)) {
+      return JavaUtilUtils.temporalEquals(a, b);
+    }
     if (typeof a.equals === "function") {
       return a.equals(b);
     }
     return a === b;
+  }
+
+  /** a java.time value (LocalDate, LocalDateTime, LocalTime, Instant) */
+  private static isTemporal(value: any): boolean {
+    return value instanceof Temporal.PlainDate || value instanceof Temporal.PlainDateTime
+      || value instanceof Temporal.PlainTime || value instanceof Temporal.Instant;
+  }
+
+  /** equal only to a value of the same type, like java.time: Temporal's equals converts its argument */
+  private static temporalEquals(a: any, b: any): boolean {
+    return Object.getPrototypeOf(a) === Object.getPrototypeOf(b) && a.equals(b);
   }
 
   private static isListLike(value: any): boolean {

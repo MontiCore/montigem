@@ -71,4 +71,13 @@ public class LocalTimeRuntimeCheck {
     return Objects.equals(date, LocalDate.of(2024, 2, 29)) && !Objects.equals(date, none)
         && !Objects.equals(none, date) && Objects.equals(none, none);
   }
+
+  /** values of different java.time types are never equal, even if they denote the same day */
+  @JSweetTest
+  public static boolean checkObjectsEqualsOfDifferentTypes() {
+    LocalDate date = LocalDate.of(2024, 2, 29);
+    Object dateTime = date.atStartOfDay();
+    Object text = "2024-02-29";
+    return !Objects.equals(date, dateTime) && !Objects.equals(dateTime, date) && !Objects.equals(date, text);
+  }
 }
