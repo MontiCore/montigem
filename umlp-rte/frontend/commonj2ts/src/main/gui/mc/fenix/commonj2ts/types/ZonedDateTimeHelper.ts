@@ -1,7 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
 import {Temporal} from "./Temporal";
+import {TimeUnits} from "./TimeUnits";
 
 const OFFSET = /^([+-])(\d{1,2})(?::?(\d{2}))?(?::?(\d{2}))?$/;
+
+/** the largest offset like in Java, 18 hours */
+const MAX_OFFSET_SECONDS = 18 * TimeUnits.SECONDS_PER_HOUR;
 
 /**
  * java.time.ZoneId, ZoneOffset and the parts of ZonedDateTime that differ from the Temporal API, used by the transpiled
@@ -25,6 +29,18 @@ export class ZonedDateTimeHelper {
     return id;
   }
 
+  /** ZoneId.normalized(): a region without any offset change becomes its offset, like Java (UTC is Z) */
+  static normalized(zone: string): string {
+    if (zone === "Z" || OFFSET.test(zone)) {
+      return zone;
+    }
+    const start = new Temporal.ZonedDateTime(0n, zone);
+    if (start.getTimeZoneTransition("next") !== null || start.getTimeZoneTransition("previous") !== null) {
+      return zone;
+    }
+    return ZonedDateTimeHelper.ofTotalSeconds(start.offsetNanoseconds / TimeUnits.NANOS_PER_SECOND);
+  }
+
   /** ZoneId.systemDefault(): the zone of the browser */
   static systemDefault(): string {
     return Temporal.Now.timeZoneId();
@@ -39,34 +55,36 @@ export class ZonedDateTimeHelper {
     if (m == null) {
       throw new RangeError("Invalid ID for ZoneOffset: " + id);
     }
-    const seconds = Number(m[2]) * 3600 + Number(m[3] ?? 0) * 60 + Number(m[4] ?? 0);
-    return ZonedDateTimeHelper.ofTotalSeconds(m[1] === "-" ? -seconds : seconds);
+    return ZonedDateTimeHelper.ofTotalSeconds(ZonedDateTimeHelper.secondsOf(m));
   }
 
   static ofHours(hours: number): string {
-    return ZonedDateTimeHelper.ofTotalSeconds(hours * 3600);
+    return ZonedDateTimeHelper.ofTotalSeconds(hours * TimeUnits.SECONDS_PER_HOUR);
   }
 
   static ofHoursMinutes(hours: number, minutes: number): string {
-    return ZonedDateTimeHelper.ofTotalSeconds(hours * 3600 + minutes * 60);
+    return ZonedDateTimeHelper.ofTotalSeconds(hours * TimeUnits.SECONDS_PER_HOUR
+      + minutes * TimeUnits.SECONDS_PER_MINUTE);
   }
 
   static ofHoursMinutesSeconds(hours: number, minutes: number, seconds: number): string {
-    return ZonedDateTimeHelper.ofTotalSeconds(hours * 3600 + minutes * 60 + seconds);
+    return ZonedDateTimeHelper.ofTotalSeconds(hours * TimeUnits.SECONDS_PER_HOUR
+      + minutes * TimeUnits.SECONDS_PER_MINUTE + seconds);
   }
 
   /** ZoneOffset.ofTotalSeconds(seconds): "Z" for zero, otherwise +hh:mm[:ss] like Java */
   static ofTotalSeconds(seconds: number): string {
-    if (Math.abs(seconds) > 18 * 3600) {
+    if (Math.abs(seconds) > MAX_OFFSET_SECONDS) {
       throw new RangeError("Zone offset not in valid range: -18:00 to +18:00");
     }
     if (seconds === 0) {
       return "Z";
     }
     const abs = Math.abs(seconds);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return (seconds < 0 ? "-" : "+") + pad(Math.floor(abs / 3600)) + ":" + pad(Math.floor(abs % 3600 / 60))
-      + (abs % 60 !== 0 ? ":" + pad(abs % 60) : "");
+    const minutes = Math.floor(abs % TimeUnits.SECONDS_PER_HOUR / TimeUnits.SECONDS_PER_MINUTE);
+    const rest = abs % TimeUnits.SECONDS_PER_MINUTE;
+    return (seconds < 0 ? "-" : "+") + TimeUnits.pad(Math.floor(abs / TimeUnits.SECONDS_PER_HOUR)) + ":"
+      + TimeUnits.pad(minutes) + (rest !== 0 ? ":" + TimeUnits.pad(rest) : "");
   }
 
   /** ZoneOffset.getTotalSeconds() */
@@ -74,8 +92,13 @@ export class ZonedDateTimeHelper {
     if (offset === "Z") {
       return 0;
     }
-    const m = OFFSET.exec(offset);
-    const seconds = Number(m[2]) * 3600 + Number(m[3] ?? 0) * 60 + Number(m[4] ?? 0);
+    return ZonedDateTimeHelper.secondsOf(OFFSET.exec(offset));
+  }
+
+  /** the total seconds of an offset matched by OFFSET */
+  private static secondsOf(m: RegExpExecArray): number {
+    const seconds = Number(m[2]) * TimeUnits.SECONDS_PER_HOUR + Number(m[3] ?? 0) * TimeUnits.SECONDS_PER_MINUTE
+      + Number(m[4] ?? 0);
     return m[1] === "-" ? -seconds : seconds;
   }
 
@@ -93,7 +116,8 @@ export class ZonedDateTimeHelper {
   /** ZonedDateTime.parse(text): also without a zone in brackets, e.g. 2026-11-17T09:00+01:00 or 2026-11-17T08:00Z */
   static parse(text: string): Temporal.ZonedDateTime {
     if (text.includes("[")) {
-      return Temporal.ZonedDateTime.from(text);
+      // an offset that does not fit the zone keeps the instant, like Java
+      return Temporal.ZonedDateTime.from(text, {offset: "use"});
     }
     const offset = /(Z|[+-]\d{2}:\d{2}(?::\d{2})?)$/i.exec(text);
     if (offset == null) {

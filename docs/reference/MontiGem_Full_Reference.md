@@ -85,8 +85,8 @@ class Customer extends Person { String customerId; }
 | `LocalDateTime` | `java.time.LocalDateTime` | `Temporal.PlainDateTime` | Temporal API from `@umlp/commonj2ts`. |
 | `LocalDate` | `java.time.LocalDate` | `Temporal.PlainDate` | |
 | `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
-| `Instant` | `java.time.Instant` | `Temporal.Instant` | A point in time; SQL `TIMESTAMP WITH TIME ZONE`. |
-| `Duration` | `java.time.Duration` | `Temporal.Duration` | An exact length of time; SQL `BIGINT` nanoseconds. |
+| `Instant` | `java.time.Instant` | `Temporal.Instant` | A point in time; SQL `TIMESTAMP WITH TIME ZONE`, rounded to the microsecond (Neo4j and the synchronization keep nanoseconds). |
+| `Duration` | `java.time.Duration` | `Temporal.Duration` | An exact length of time; SQL `BIGINT` nanoseconds, so up to about 292 years. |
 | `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
 | `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
 
@@ -366,8 +366,8 @@ MontiGem uses JSweet to transpile Java to TypeScript. For a detailed guide on su
     *   `java.util.List`, `ArrayList`, `LinkedList` -> JS `Array`
     *   `java.util.Map`, `HashMap` -> JS `Map`
     *   `java.util.Optional` -> Unwrapped value (nullable)
-    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration` -> `Temporal.PlainDateTime`,
-        `PlainDate`, `PlainTime`, `Instant`, `Duration`
+    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration`, `ZonedDateTime` ->
+        `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`, `Instant`, `Duration`, `ZonedDateTime`
     *   `java.lang.String`, `Math`, `System.out.println`
 *   **Unsupported:**
     *   `java.util.stream` (Streams): **Do not use.** Use loops instead.

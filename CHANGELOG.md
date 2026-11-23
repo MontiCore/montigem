@@ -58,37 +58,29 @@ For MontiGem users:
 * **Breaking:** in the frontend, `java.time.LocalDate`, `LocalDateTime` and `LocalTime` are values of the
   Temporal API instead of JS `Date`: `Temporal.PlainDate`, `Temporal.PlainDateTime`, `Temporal.PlainTime`,
   imported from `@umlp/commonj2ts` (which takes them from the polyfill `@js-temporal/polyfill`). Like in Java,
-  they have no time zone and are exact to the nanosecond, so dates no longer shift with the browser's time zone
-  and `LocalDateTime` keeps its milliseconds and nanoseconds on the way to the backend and back. Transpiled Java
-  code is unaffected (the java.time methods are translated as before, now also `LocalTime`, `plusNanos`,
-  `with*`, `atTime`, `toLocalTime`, `toString` in string concatenation); handwritten TypeScript that treats
-  these values as `Date` has to use the Temporal API (e.g. `Temporal.Now.plainDateTimeISO()` instead of
-  `new Date()`). `LocalDateTimeHelper.toDate`/`fromDate` convert for libraries that need a `Date`.
-  `GemDateInput`, `GemTimeSeriesChart` and `GemTimelineChart` take Temporal values. The static methods of
-  `LocalDateTimeHelper` on `Date` (`plusDays(date, n)`, `withYear`, `setHours`, `atStartOfDay`, `atEndOfDay`, ...)
-  are removed, and `LocalDateDeSer` no longer extends `DateDeSer`.
-* `Objects.equals` with dates in transpiled code is null-safe, and values of different java.time types are not
-  equal, like in Java.
-* `java.time.Instant` for points in time: as attribute type (SQL `TIMESTAMP(6) WITH TIME ZONE`, Neo4j `DateTime`,
-  JSON as ISO string in UTC, e.g. `"2026-11-17T09:30:15.123Z"`) and in transpiled code as `Temporal.Instant`.
-  `GemTimeSeriesChart` also takes `Instant` time stamps from handwritten TypeScript (its data types keep
-  `LocalDateTime`).
+  they have no time zone and are exact to the nanosecond, so dates no longer shift with the browser's time zone.
+  Transpiled Java code is unaffected; handwritten TypeScript that treats these values as `Date` has to use the
+  Temporal API (e.g. `Temporal.Now.plainDateTimeISO()` instead of `new Date()`), and
+  `LocalDateTimeHelper.toDate`/`fromDate` convert for libraries that need a `Date`. `GemDateInput`,
+  `GemTimeSeriesChart` and `GemTimelineChart` take Temporal values. The static methods of `LocalDateTimeHelper` on
+  `Date` (`plusDays(date, n)`, `withYear`, `setHours`, `atStartOfDay`, `atEndOfDay`, ...) are removed, and
+  `LocalDateDeSer` no longer extends `DateDeSer`.
 * **Breaking:** `java.util.Date` is not supported in transpiled code any more (error `0xEE013`): use `Instant`
-  for points in time, or `LocalDate`, `LocalDateTime`, `LocalTime`.
-* `java.time.Duration` as attribute type (SQL `BIGINT` nanoseconds, Neo4j nanoseconds, JSON as ISO string like
-  `"PT1H30M"`) and in transpiled code as `Temporal.Duration` (`DurationHelper`: factories, `between`, `parse`,
-  arithmetic, `toString` like java.time), with `plus(duration)`/`minus(duration)` of the other java.time values and
-  the `ChronoUnit` methods `plus(n, unit)`, `minus(n, unit)`, `unit.between(start, end)`. Projects that registered
-  `Duration` themselves (generator extension, own DeSer) can drop that.
-* `java.time.ZonedDateTime`, `ZoneId` and `ZoneOffset` in transpiled code (not as attribute types): zones as their ids
-  (`"Europe/Berlin"`, `"+02:00"`, `"Z"`), `ZonedDateTime` as `Temporal.ZonedDateTime` with conversions (`atZone`,
-  `ofInstant`, `now(zone)`, `toInstant`, `withZoneSameInstant`), getters, arithmetic across DST changes and
-  `toString` like java.time. `toEpochSecond(offset)` and `ofEpochSecond(..., offset)` use the given offset (before,
-  every offset was taken as UTC); `parse(text, formatter)` is no longer translated (the formatter was ignored).
-* More java.time methods in transpiled code: `until(end, unit)`, `truncatedTo(unit)`, `withNano(n)`,
-  `Duration.toDaysPart()` ... `toNanosPart()` and `isPositive()`, `LocalTime.atDate(date)`, second and nano of day,
-  epoch day, `ChronoUnit.getDuration()`, `valueOf(name)`, `name()`. `ChronoUnit.toString()` and string concatenation
-  give the display name like Java (`"Days"`, before `"DAYS"`).
+  for points in time, or `LocalDate`, `LocalDateTime`, `LocalTime`. `parse(text, formatter)` of the java.time
+  types is no longer translated (the formatter was ignored).
+* `java.time.Instant` and `java.time.Duration` as attribute types, also in `List` and `Optional`: SQL
+  `TIMESTAMP(6) WITH TIME ZONE` (rounded to the microsecond) and `BIGINT` nanoseconds, Neo4j and JSON (ISO strings,
+  e.g. `"2026-11-17T09:30:15.123Z"`, `"PT1H30M"`) exact to the nanosecond; in transpiled code `Temporal.Instant` and
+  `Temporal.Duration`.
+  **Migration** for projects that registered `Instant` or `Duration` themselves: remove the own DeSers from the
+  `BaseClassObjectMapper` subclass, as the browser reads only the ISO strings of the built-in DeSers. A generator
+  extension for the SQL type can be removed if it stored the same column type (`TIMESTAMP WITH TIME ZONE`, `BIGINT`
+  nanoseconds); otherwise the existing columns have to be migrated, as the schema of an existing database is not
+  changed.
+* `java.time.ZonedDateTime`, `ZoneId` and `ZoneOffset` in transpiled code (not as attribute types), and many more
+  java.time methods (see `docs/JSweetUserGuide.md`). `toEpochSecond(offset)` and `ofEpochSecond(..., offset)` use
+  the given offset (before, every offset was taken as UTC), and `ChronoUnit.toString()` gives the display name like
+  Java (`"Days"`, before `"DAYS"`).
 * `Map<K, V>` attributes with simple values (primitive and boxed types, `String`, enums,
   `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant`, `Duration`), like list attributes:
   ```

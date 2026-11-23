@@ -22,8 +22,10 @@ public class TypeScriptBasicTypesPrettyPrinter extends MCBasicTypesPrettyPrinter
     if (this.isPrintComments()) {
       de.monticore.prettyprint.CommentPrettyPrinter.printPreComments(node, getPrinter());
     }
-    // print only last, except for a TypeScript type in a namespace (Temporal.PlainDate)
-    if (!node.getPartsList().isEmpty() && TypeScriptTypes.isNamespacedTSType(node.getQName())) {
+    // print only last, except for a TypeScript type in a namespace (Temporal.PlainDate) and a printed TypeScript type
+    // with type arguments that a type string split at its dots (Array<Temporal.PlainDate>)
+    if (!node.getPartsList().isEmpty()
+        && (TypeScriptTypes.isNamespacedTSType(node.getQName()) || node.getQName().contains("<"))) {
       getPrinter().print(node.getQName());
     } else if (!node.getPartsList().isEmpty()) {
       getPrinter().print(TypeScriptTypes.toTSType(node.getBaseName()));
@@ -48,8 +50,9 @@ public class TypeScriptBasicTypesPrettyPrinter extends MCBasicTypesPrettyPrinter
       return;
     }
     if (tsImportPath.isPresent()) {
-      getPrinter().print("import { " + TypeScriptTypes.toTSType(node.getQName())
-          + " } from '" + tsImportPath.get() + "';");
+      // a type in a namespace (Temporal.PlainDate) imports the namespace
+      String tsType = TypeScriptTypes.toTSType(node.getQName());
+      getPrinter().print("import { " + tsType.split("\\.")[0] + " } from '" + tsImportPath.get() + "';");
     }
     else if (!TypeScriptTypes.isDefault(node.getQName())) {
       getPrinter().print("import { ");

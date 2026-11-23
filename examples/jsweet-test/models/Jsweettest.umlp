@@ -1,5 +1,8 @@
 /* (c) https://github.com/MontiCore/monticore */
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 classdiagram Jsweettest {
   class A {
@@ -81,6 +84,15 @@ classdiagram Jsweettest {
 
   class Types {
     LocalDateTime timestamp;
+  }
+
+  // java.time attributes in the browser: DeSer in both directions, computations in transpiled code
+  class TimeValues {
+    Instant start;
+    Duration length;
+    LocalTime reminder;
+    Optional<Duration> pause;
+    List<Instant> history;
   }
 
   // async propagation

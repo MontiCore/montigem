@@ -2,6 +2,12 @@
 import {Temporal} from "./Temporal";
 import {DurationHelper} from "./DurationHelper";
 import {ZonedDateTimeHelper} from "./ZonedDateTimeHelper";
+import {JavaUtilUtils} from "../javautil/JavaUtilUtils";
+import {TimeUnits} from "./TimeUnits";
+
+/** the ISO formats of java.time (DateTimeFormatter.ISO_LOCAL_DATE, ISO_LOCAL_TIME); Temporal's from takes more */
+const ISO_DATE = "(?:\\d{4}|[+-]\\d{4,10})-\\d{2}-\\d{2}";
+const ISO_TIME = "\\d{2}:\\d{2}(?::\\d{2}(?:\\.\\d{1,9})?)?";
 
 type DateOrDateTime = Temporal.PlainDate | Temporal.PlainDateTime;
 type TimeOrDateTime = Temporal.PlainTime | Temporal.PlainDateTime;
@@ -10,22 +16,24 @@ type WithDate = DateOrDateTime | Temporal.ZonedDateTime;
 type WithTime = TimeOrDateTime | Temporal.ZonedDateTime;
 
 /**
- * java.time methods of LocalDate, LocalDateTime, LocalTime and Instant that have no direct counterpart in the Temporal
- * API, used by the transpiled code (see JavaTimeAdapter)
+ * java.time methods of LocalDate, LocalDateTime, LocalTime, Instant and ZonedDateTime that have no direct
+ * counterpart in the Temporal API, and toString of all java.time values, used by the transpiled code (see
+ * JavaTimeAdapter)
  */
 export class LocalDateTimeHelper {
 
   static readonly DAYS_OF_WEEK = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 
-  private static readonly EPOCH = new Temporal.PlainDate(1970, 1, 1);
-
   static readonly MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER",
     "OCTOBER", "NOVEMBER", "DECEMBER"];
+
+  private static readonly EPOCH = new Temporal.PlainDate(1970, 1, 1);
 
   /** LocalDateTime.of(year, month, day, hour, minute[, second[, nanoOfSecond]]) */
   static ofDateTime(year: number, month: number, day: number, hour: number, minute: number, second = 0,
                     nanoOfSecond = 0): Temporal.PlainDateTime {
-    return new Temporal.PlainDateTime(year, month, day, hour, minute, second, ...LocalDateTimeHelper.split(nanoOfSecond));
+    return new Temporal.PlainDateTime(year, month, day, hour, minute, second,
+      ...LocalDateTimeHelper.split(nanoOfSecond));
   }
 
   /** LocalTime.of(hour, minute[, second[, nanoOfSecond]]) */
@@ -35,34 +43,36 @@ export class LocalDateTimeHelper {
 
   /** LocalDateTime.ofEpochSecond(epochSecond, nanoOfSecond, offset) */
   static ofEpochSecond(epochSecond: number, nanoOfSecond = 0, offset = "Z"): Temporal.PlainDateTime {
-    const nanos = BigInt(epochSecond) * 1000000000n + BigInt(nanoOfSecond);
+    const nanos = BigInt(epochSecond) * BigInt(TimeUnits.NANOS_PER_SECOND) + BigInt(nanoOfSecond);
     return Temporal.Instant.fromEpochNanoseconds(nanos).toZonedDateTimeISO(ZonedDateTimeHelper.tz(offset))
       .toPlainDateTime();
   }
 
   /** Instant.ofEpochSecond(epochSecond[, nanoAdjustment]) */
   static instantOfEpochSecond(epochSecond: number, nanoAdjustment = 0): Temporal.Instant {
-    return Temporal.Instant.fromEpochNanoseconds(BigInt(epochSecond) * 1000000000n + BigInt(nanoAdjustment));
+    return Temporal.Instant.fromEpochNanoseconds(BigInt(epochSecond) * BigInt(TimeUnits.NANOS_PER_SECOND)
+      + BigInt(nanoAdjustment));
   }
 
   /** Instant.getEpochSecond() */
   static getEpochSecond(instant: Temporal.Instant): number {
-    return Math.floor(instant.epochMilliseconds / 1000);
+    return Math.floor(instant.epochMilliseconds / TimeUnits.MILLIS_PER_SECOND);
   }
 
   /** LocalDateTime.toEpochSecond(offset), ZonedDateTime.toEpochSecond() */
   static toEpochSecond(dateTime: Temporal.PlainDateTime | Temporal.ZonedDateTime, offset = "Z"): number {
     const zoned = dateTime instanceof Temporal.ZonedDateTime ? dateTime
       : dateTime.toZonedDateTime(ZonedDateTimeHelper.tz(offset));
-    return Math.floor(zoned.epochMilliseconds / 1000);
+    return Math.floor(zoned.epochMilliseconds / TimeUnits.MILLIS_PER_SECOND);
   }
 
   /** getNano() */
   static getNano(time: WithTime | Temporal.Instant): number {
     if (time instanceof Temporal.Instant) {
-      return Number(((time.epochNanoseconds % 1000000000n) + 1000000000n) % 1000000000n);
+      return Number(TimeUnits.nanoOf(time.epochNanoseconds));
     }
-    return time.millisecond * 1000000 + time.microsecond * 1000 + time.nanosecond;
+    return time.millisecond * TimeUnits.NANOS_PER_MILLI + time.microsecond * TimeUnits.NANOS_PER_MICRO
+      + time.nanosecond;
   }
 
   /** getDayOfWeek(), the name of the DayOfWeek */
@@ -75,9 +85,39 @@ export class LocalDateTimeHelper {
     return LocalDateTimeHelper.MONTHS[date.month - 1];
   }
 
+  /** LocalDate.parse(text): the format of java.time only (Temporal also takes e.g. a date-time or 20240101) */
+  static parseDate(text: string): Temporal.PlainDate {
+    return Temporal.PlainDate.from(LocalDateTimeHelper.checkFormat(text, ISO_DATE));
+  }
+
+  /** LocalDateTime.parse(text), see parseDate */
+  static parseDateTime(text: string): Temporal.PlainDateTime {
+    return Temporal.PlainDateTime.from(LocalDateTimeHelper.checkFormat(text, ISO_DATE + "[Tt]" + ISO_TIME));
+  }
+
+  /** LocalTime.parse(text), see parseDate */
+  static parseTime(text: string): Temporal.PlainTime {
+    return Temporal.PlainTime.from(LocalDateTimeHelper.checkFormat(text, ISO_TIME));
+  }
+
+  private static checkFormat(text: string, format: string): string {
+    if (text == null || !new RegExp("^" + format + "$").test(text)) {
+      throw new RangeError("Text '" + text + "' could not be parsed");
+    }
+    return text;
+  }
+
+  /**
+   * String(value) like Java for a value of a static type that may be a java.time value (Object, a type parameter):
+   * a java.time value in the format of java.time, as Temporal values refuse the conversion to a string
+   */
+  static toJavaString(value: any): string {
+    return JavaUtilUtils.isTemporal(value) ? LocalDateTimeHelper.toString(value) : String(value);
+  }
+
   /** withNano(nanoOfSecond) of a LocalDateTime, LocalTime or ZonedDateTime; a value out of range is rejected */
   static withNano<T extends WithTime>(time: T, nanoOfSecond: number): T {
-    if (nanoOfSecond < 0 || nanoOfSecond > 999999999) {
+    if (nanoOfSecond < 0 || nanoOfSecond >= TimeUnits.NANOS_PER_SECOND) {
       throw new RangeError("Invalid value for NanoOfSecond: " + nanoOfSecond);
     }
     const [millisecond, microsecond, nanosecond] = LocalDateTimeHelper.split(nanoOfSecond);
@@ -86,31 +126,36 @@ export class LocalDateTimeHelper {
 
   /** LocalTime.toSecondOfDay() */
   static toSecondOfDay(time: Temporal.PlainTime): number {
-    return time.hour * 3600 + time.minute * 60 + time.second;
+    return time.hour * TimeUnits.SECONDS_PER_HOUR + time.minute * TimeUnits.SECONDS_PER_MINUTE + time.second;
   }
 
   /** LocalTime.ofSecondOfDay(secondOfDay) */
   static ofSecondOfDay(secondOfDay: number): Temporal.PlainTime {
-    if (secondOfDay < 0 || secondOfDay >= 86400) {
+    if (secondOfDay < 0 || secondOfDay >= TimeUnits.SECONDS_PER_DAY) {
       throw new RangeError("Invalid value for SecondOfDay: " + secondOfDay);
     }
-    return new Temporal.PlainTime(Math.floor(secondOfDay / 3600), Math.floor(secondOfDay / 60) % 60, secondOfDay % 60);
+    return LocalDateTimeHelper.ofSecondAndNano(secondOfDay, 0);
   }
 
   /** LocalTime.toNanoOfDay() */
   static toNanoOfDay(time: Temporal.PlainTime): number {
-    return LocalDateTimeHelper.toSecondOfDay(time) * 1000000000 + LocalDateTimeHelper.getNano(time);
+    return LocalDateTimeHelper.toSecondOfDay(time) * TimeUnits.NANOS_PER_SECOND + LocalDateTimeHelper.getNano(time);
   }
 
   /** LocalTime.ofNanoOfDay(nanoOfDay) */
   static ofNanoOfDay(nanoOfDay: number): Temporal.PlainTime {
     const nanos = BigInt(nanoOfDay);
-    if (nanos < 0n || nanos >= 86400n * 1000000000n) {
+    if (nanos < 0n || nanos >= BigInt(TimeUnits.SECONDS_PER_DAY) * BigInt(TimeUnits.NANOS_PER_SECOND)) {
       throw new RangeError("Invalid value for NanoOfDay: " + nanoOfDay);
     }
-    const second = Number(nanos / 1000000000n);
-    return LocalDateTimeHelper.ofTime(Math.floor(second / 3600), Math.floor(second / 60) % 60, second % 60,
-      Number(nanos % 1000000000n));
+    return LocalDateTimeHelper.ofSecondAndNano(Number(TimeUnits.secondsOf(nanos)), Number(TimeUnits.nanoOf(nanos)));
+  }
+
+  /** the time of a second of the day and a nanosecond within it */
+  private static ofSecondAndNano(secondOfDay: number, nanoOfSecond: number): Temporal.PlainTime {
+    return LocalDateTimeHelper.ofTime(Math.floor(secondOfDay / TimeUnits.SECONDS_PER_HOUR),
+      Math.floor(secondOfDay % TimeUnits.SECONDS_PER_HOUR / TimeUnits.SECONDS_PER_MINUTE),
+      secondOfDay % TimeUnits.SECONDS_PER_MINUTE, nanoOfSecond);
   }
 
   /** LocalDate.toEpochDay(): the days since 1970-01-01 */
@@ -161,7 +206,7 @@ export class LocalDateTimeHelper {
     return value instanceof Temporal.PlainDateTime ? value.toPlainDate().toString() + "T" + s : s;
   }
 
-  /** milliseconds since 1970 of a wall time taken as UTC, for libraries that work with Date (e.g. charts) */
+  /** milliseconds since 1970 of a wall time taken as UTC, for libraries that show the UTC fields (e.g. Plotly) */
   static toEpochMilliseconds(value: DateOrDateTime): number {
     const dateTime = value instanceof Temporal.PlainDate ? value.toPlainDateTime() : value;
     return dateTime.toZonedDateTime("UTC").epochMilliseconds;
@@ -181,14 +226,14 @@ export class LocalDateTimeHelper {
 
   /** HH:mm[:ss[.fraction]] like java.time, the seconds always if withSeconds */
   private static timeString(time: Temporal.PlainTime, withSeconds: boolean): string {
-    const pad = (n: number, digits = 2) => String(n).padStart(digits, "0");
-    let s = pad(time.hour) + ":" + pad(time.minute);
+    let s = TimeUnits.pad(time.hour) + ":" + TimeUnits.pad(time.minute);
     const nano = LocalDateTimeHelper.getNano(time);
     if (withSeconds || time.second > 0 || nano > 0) {
-      s += ":" + pad(time.second);
+      s += ":" + TimeUnits.pad(time.second);
       if (nano > 0) {
-        s += "." + (nano % 1000000 === 0 ? pad(nano / 1000000, 3)
-          : nano % 1000 === 0 ? pad(nano / 1000, 6) : pad(nano, 9));
+        s += "." + (nano % TimeUnits.NANOS_PER_MILLI === 0 ? TimeUnits.pad(nano / TimeUnits.NANOS_PER_MILLI, 3)
+          : nano % TimeUnits.NANOS_PER_MICRO === 0 ? TimeUnits.pad(nano / TimeUnits.NANOS_PER_MICRO, 6)
+            : TimeUnits.pad(nano, 9));
       }
     }
     return s;
@@ -196,6 +241,8 @@ export class LocalDateTimeHelper {
 
   /** nanoOfSecond as millisecond, microsecond, nanosecond */
   private static split(nanoOfSecond: number): [number, number, number] {
-    return [Math.floor(nanoOfSecond / 1000000), Math.floor(nanoOfSecond / 1000) % 1000, nanoOfSecond % 1000];
+    return [Math.floor(nanoOfSecond / TimeUnits.NANOS_PER_MILLI),
+      Math.floor(nanoOfSecond % TimeUnits.NANOS_PER_MILLI / TimeUnits.NANOS_PER_MICRO),
+      nanoOfSecond % TimeUnits.NANOS_PER_MICRO];
   }
 }

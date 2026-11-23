@@ -5,12 +5,12 @@ import resources.exectests.AnonymousInnerClassRuntimeCheck;
 import resources.exectests.ArrayStreamAdapterRuntimeCheck;
 import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
+import resources.exectests.DurationRuntimeCheck;
 import resources.exectests.FunctionDisplayGraphRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
-import resources.exectests.LocalDateRuntimeCheck;
-import resources.exectests.DurationRuntimeCheck;
-import resources.exectests.ZonedDateTimeRuntimeCheck;
 import resources.exectests.InstantRuntimeCheck;
+import resources.exectests.JavaTimeStringRuntimeCheck;
+import resources.exectests.LocalDateRuntimeCheck;
 import resources.exectests.LocalTimeRuntimeCheck;
 import resources.exectests.MapRuntimeCheck;
 import resources.exectests.NestedFlatMapElement;
@@ -20,6 +20,7 @@ import resources.exectests.OptionalAdapterRuntimeCheck;
 import resources.exectests.StaticCollectionConstructorRuntimeCheck;
 import resources.exectests.StringSplitRuntimeCheck;
 import resources.exectests.UtilArraysRuntimeCheck;
+import resources.exectests.ZonedDateTimeRuntimeCheck;
 import util.ExecTestRunner;
 
 public class ExecutionTests {
@@ -77,6 +78,11 @@ public class ExecutionTests {
   @Test
   public void testDuration() {
     ExecTestRunner.runExecutionTest(DurationRuntimeCheck.class);
+  }
+
+  @Test
+  public void testJavaTimeString() {
+    ExecTestRunner.runExecutionTest(JavaTimeStringRuntimeCheck.class);
   }
 
   @Test

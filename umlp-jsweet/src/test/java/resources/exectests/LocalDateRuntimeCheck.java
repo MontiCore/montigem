@@ -5,6 +5,9 @@ import util.JSweetTest;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 public class LocalDateRuntimeCheck {
   @JSweetTest
@@ -118,5 +121,137 @@ public class LocalDateRuntimeCheck {
   public static boolean checkToLocalDate() {
     LocalDateTime dateTime = LocalDateTime.of(2024, 2, 29, 12, 34, 56);
     return dateTime.toLocalDate().equals(LocalDate.of(2024, 2, 29));
+  }
+
+  /** switch over a DayOfWeek */
+  @JSweetTest
+  public static String checkSwitchOverDayOfWeek() {
+    String result = "";
+    for (int day = 16; day <= 22; day++) {
+      switch (LocalDate.of(2026, 11, day).getDayOfWeek()) {
+        case SATURDAY:
+        case SUNDAY:
+          result += "w";
+          break;
+        case FRIDAY:
+          result += "f";
+          break;
+        default:
+          result += "d";
+      }
+    }
+    return result;
+  }
+
+  @JSweetTest
+  public static String checkLocalDateTimeNanos() {
+    LocalDateTime dateTime = LocalDateTime.of(2024, 2, 29, 12, 34, 56, 123_456_789);
+    return dateTime + " " + dateTime.getNano() + " " + LocalDateTime.parse("2024-02-29T12:34:56.000001") + " "
+        + dateTime.plusNanos(1);
+  }
+
+  @JSweetTest
+  public static String checkConversions() {
+    LocalDate date = LocalDate.of(2024, 2, 29);
+    LocalTime time = LocalTime.of(12, 34, 56);
+    LocalDateTime dateTime = LocalDateTime.of(date, time);
+    return dateTime + " " + dateTime.toLocalDate() + " " + dateTime.toLocalTime() + " " + date.atTime(time) + " "
+        + date.atTime(7, 30) + " " + date.atStartOfDay();
+  }
+
+  @JSweetTest
+  public static String checkWith() {
+    LocalDateTime dateTime = LocalDateTime.of(2024, 1, 31, 12, 0);
+    return dateTime.withMonth(2) + " " + dateTime.withYear(2023).withDayOfMonth(15) + " " + dateTime.withHour(23)
+        + " " + dateTime.withDayOfYear(60) + " " + dateTime.toLocalDate().lengthOfMonth() + " "
+        + dateTime.toLocalDate().isLeapYear();
+  }
+
+  @JSweetTest
+  public static boolean checkObjectsEqualsWithNull() {
+    LocalDate date = LocalDate.of(2024, 2, 29);
+    LocalDate none = null;
+    return Objects.equals(date, LocalDate.of(2024, 2, 29)) && !Objects.equals(date, none)
+        && !Objects.equals(none, date) && Objects.equals(none, none);
+  }
+
+  /** invalid values for the with methods are rejected, withYear and withMonth adjust the day */
+  @JSweetTest
+  public static String checkWithInvalid() {
+    LocalDate date = LocalDate.of(2024, 1, 31);
+    String result = date.withMonth(2) + " " + date.withYear(2023).withMonth(2);
+    try {
+      result += " " + date.withMonth(4).withDayOfMonth(31);
+    } catch (Exception e) {
+      result += " day rejected";
+    }
+    try {
+      result += " " + LocalDateTime.of(2024, 1, 31, 12, 0).withHour(24);
+    } catch (Exception e) {
+      result += " hour rejected";
+    }
+    try {
+      result += " " + LocalDate.of(2023, 1, 1).withDayOfYear(366);
+    } catch (Exception e) {
+      result += " day of year rejected";
+    }
+    return result;
+  }
+
+  /** values of different java.time types are never equal, even if they denote the same day */
+  @JSweetTest
+  public static boolean checkObjectsEqualsOfDifferentTypes() {
+    LocalDate date = LocalDate.of(2024, 2, 29);
+    Object dateTime = date.atStartOfDay();
+    Object text = "2024-02-29";
+    return !Objects.equals(date, dateTime) && !Objects.equals(dateTime, date) && !Objects.equals(date, text);
+  }
+
+  /** lengthOfYear, withSecond, LocalDate.getMonth, LocalDateTime.isEqual */
+  @JSweetTest
+  public static String checkLengthOfYearWithSecondIsEqual() {
+    LocalDateTime dateTime = LocalDateTime.of(2024, 2, 29, 12, 34, 56);
+    return dateTime.toLocalDate().lengthOfYear() + " " + LocalDate.of(2023, 6, 1).lengthOfYear() + " "
+        + dateTime.withSecond(7) + " " + dateTime.toLocalDate().getMonth() + " "
+        + dateTime.isEqual(LocalDateTime.of(2024, 2, 29, 12, 34, 56)) + " " + dateTime.isEqual(dateTime.plusNanos(1));
+  }
+
+  /** units a type does not support and invalid arguments are rejected, like Java */
+  @JSweetTest
+  public static String checkUnsupportedUnitsRejected() {
+    LocalDate date = LocalDate.of(2026, 11, 17);
+    LocalDateTime dateTime = date.atTime(9, 30);
+    String result = "";
+    try {
+      result += date.until(date.plusDays(1), ChronoUnit.HOURS);
+    } catch (Exception e) {
+      result += "until rejected";
+    }
+    try {
+      result += " " + dateTime.truncatedTo(ChronoUnit.WEEKS);
+    } catch (Exception e) {
+      result += " truncatedTo rejected";
+    }
+    try {
+      result += " " + LocalTime.of(9, 0).plus(1, ChronoUnit.DAYS);
+    } catch (Exception e) {
+      result += " plus rejected";
+    }
+    try {
+      result += " " + LocalTime.of(9, 0).until(LocalTime.of(10, 0), ChronoUnit.DAYS);
+    } catch (Exception e) {
+      result += " time until rejected";
+    }
+    try {
+      result += " " + date.plus(1, ChronoUnit.HOURS);
+    } catch (Exception e) {
+      result += " date plus rejected";
+    }
+    try {
+      result += " " + LocalTime.ofSecondOfDay(86_400);
+    } catch (Exception e) {
+      result += " second of day rejected";
+    }
+    return result;
   }
 }

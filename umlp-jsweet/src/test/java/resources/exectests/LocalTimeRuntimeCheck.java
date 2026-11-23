@@ -7,11 +7,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Objects;
 
 /**
- * LocalTime and the precision of LocalDateTime in transpiled code (Temporal.PlainTime/PlainDateTime): nanoseconds,
- * toString like java.time, conversions between the types
+ * LocalTime in transpiled code (Temporal.PlainTime): nanoseconds, toString like java.time, until, truncatedTo and
+ * withNano of the local types, second and nano of day
  */
 public class LocalTimeRuntimeCheck {
   @JSweetTest
@@ -39,84 +38,6 @@ public class LocalTimeRuntimeCheck {
     LocalTime later = LocalTime.of(8, 0, 0, 1);
     return earlier.isBefore(later) && later.isAfter(earlier) && earlier.compareTo(later) < 0
         && earlier.equals(LocalTime.of(8, 0)) && !earlier.equals(later);
-  }
-
-  @JSweetTest
-  public static String checkLocalDateTimeNanos() {
-    LocalDateTime dateTime = LocalDateTime.of(2024, 2, 29, 12, 34, 56, 123_456_789);
-    return dateTime + " " + dateTime.getNano() + " " + LocalDateTime.parse("2024-02-29T12:34:56.000001") + " "
-        + dateTime.plusNanos(1);
-  }
-
-  @JSweetTest
-  public static String checkConversions() {
-    LocalDate date = LocalDate.of(2024, 2, 29);
-    LocalTime time = LocalTime.of(12, 34, 56);
-    LocalDateTime dateTime = LocalDateTime.of(date, time);
-    return dateTime + " " + dateTime.toLocalDate() + " " + dateTime.toLocalTime() + " " + date.atTime(time) + " "
-        + date.atTime(7, 30) + " " + date.atStartOfDay();
-  }
-
-  @JSweetTest
-  public static String checkWith() {
-    LocalDateTime dateTime = LocalDateTime.of(2024, 1, 31, 12, 0);
-    return dateTime.withMonth(2) + " " + dateTime.withYear(2023).withDayOfMonth(15) + " " + dateTime.withHour(23)
-        + " " + dateTime.withDayOfYear(60) + " " + dateTime.toLocalDate().lengthOfMonth() + " "
-        + dateTime.toLocalDate().isLeapYear();
-  }
-
-  @JSweetTest
-  public static boolean checkObjectsEquals() {
-    LocalDate date = LocalDate.of(2024, 2, 29);
-    LocalDate none = null;
-    return Objects.equals(date, LocalDate.of(2024, 2, 29)) && !Objects.equals(date, none)
-        && !Objects.equals(none, date) && Objects.equals(none, none);
-  }
-
-  /** string building with java.time values: the format of java.time, not the one of Temporal */
-  @JSweetTest
-  public static String checkStringBuilding() {
-    LocalTime time = LocalTime.of(10, 15);
-    LocalDate date = LocalDate.of(2024, 2, 29);
-    String s = "at ";
-    s += time;
-    String[] parts = {"from "};
-    parts[0] += time;
-    StringBuilder sb = new StringBuilder("on ");
-    sb.append(date).append(' ').append(LocalDateTime.of(date, time));
-    return s + " " + parts[0] + " " + sb + " " + String.valueOf(time) + " " + String.valueOf((LocalTime) null);
-  }
-
-  /** invalid values for the with methods are rejected, withYear and withMonth adjust the day */
-  @JSweetTest
-  public static String checkWithInvalid() {
-    LocalDate date = LocalDate.of(2024, 1, 31);
-    String result = date.withMonth(2) + " " + date.withYear(2023).withMonth(2);
-    try {
-      result += " " + date.withMonth(4).withDayOfMonth(31);
-    } catch (Exception e) {
-      result += " day rejected";
-    }
-    try {
-      result += " " + LocalDateTime.of(2024, 1, 31, 12, 0).withHour(24);
-    } catch (Exception e) {
-      result += " hour rejected";
-    }
-    try {
-      result += " " + LocalDate.of(2023, 1, 1).withDayOfYear(366);
-    } catch (Exception e) {
-      result += " day of year rejected";
-    }
-    return result;
-  }
-
-  /** values of different java.time types are never equal, even if they denote the same day */
-  @JSweetTest
-  public static boolean checkObjectsEqualsOfDifferentTypes() {
-    LocalDate date = LocalDate.of(2024, 2, 29);
-    Object dateTime = date.atStartOfDay();
-    Object text = "2024-02-29";
-    return !Objects.equals(date, dateTime) && !Objects.equals(dateTime, date) && !Objects.equals(date, text);
   }
 
   /** until(end, unit), truncatedTo(unit), withNano(n) of the local types */

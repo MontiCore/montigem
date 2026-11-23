@@ -196,11 +196,11 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
         const blocks = blockList ? await GemListUtil.toArraySync(blockList) : undefined;
         if (!blocks) continue;
         for (const dataBlock of blocks) {
-        // start and end (LocalDateTime) in local time, as the chart shows it
+        // Plotly shows the UTC fields of milliseconds, so a wall time (LocalDateTime) is passed as UTC
+        const startMs = LocalDateTimeHelper.toEpochMilliseconds(dataBlock.getStart());
+        const endMs = LocalDateTimeHelper.toEpochMilliseconds(dataBlock.getEnd());
         const start = LocalDateTimeHelper.toDate(dataBlock.getStart());
         const end = LocalDateTimeHelper.toDate(dataBlock.getEnd());
-        const startMs = start.getTime();
-        const endMs = end.getTime();
 
         baseArray.push(startMs);
         xArray.push(endMs - startMs);
@@ -319,8 +319,9 @@ export class GemTimelineChart extends GemTimelineChartComponent implements OnIni
 
   public setShowAfter(event: any) {
     if (event && (event instanceof Date || event instanceof Temporal.PlainDateTime)) {
-      const date: Date = event instanceof Date ? event : LocalDateTimeHelper.toDate(event);
-      this._layout.xaxis.range = [date.getTime(), undefined];
+      // the wall time as UTC, like the blocks (a Date by its local fields)
+      const dateTime = event instanceof Date ? LocalDateTimeHelper.fromDate(event) : event;
+      this._layout.xaxis.range = [LocalDateTimeHelper.toEpochMilliseconds(dateTime), undefined];
       this._layout.xaxis.autorange = false;
     } else {
       this._layout.xaxis.autorange = true;

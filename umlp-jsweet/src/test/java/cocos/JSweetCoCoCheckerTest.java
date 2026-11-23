@@ -65,6 +65,22 @@ public class JSweetCoCoCheckerTest {
         "Should have found two java.util.Date errors (0xEE013). Findings: " + findings);
   }
 
+  /** the translated methods that java.time declares in interfaces or DayOfWeek are no 0xEE009, the others are */
+  @Test
+  public void testTimeMethodsOfInterfaces() throws IOException {
+    File input = Paths.get("src/test/resources/java/coco/TimeCoco.java").toFile();
+    JSweetTranspiler transpiler = TranspilerSetupUtil.transpilerModuleUMLPAdapter();
+    transpiler.transpile(new ErrorCountTranspilationHandler(new ConsoleTranspilationHandler()),
+        getSourceFiles(input));
+
+    List<String> findings = Log.getFindings().stream()
+        .map(Finding::getMsg)
+        .filter(s -> s.contains("0xEE009"))
+        .collect(Collectors.toList());
+    assertEquals(1, findings.size(), "Only getChronology is not translated. Findings: " + findings);
+    assertTrue(findings.get(0).contains("getChronology"), "Findings: " + findings);
+  }
+
   @Test
   public void testStaticFieldInit() throws IOException {
     File input = Paths.get("src/test/resources/java/coco/StaticFieldInit.java").toFile();

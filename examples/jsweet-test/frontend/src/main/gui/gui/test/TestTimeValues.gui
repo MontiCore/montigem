@@ -1,0 +1,15 @@
+/* (c) https://github.com/MontiCore/monticore */
+package gui.test;
+
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemButton;
+
+import Jsweettest.TimeValues;
+
+page TestTimeValues(List<TimeValues> values) {
+  @iterate(TimeValues v : values) {
+    @GemText(value = describe(v));
+    setA@GemButton(label = "Set A", leftClick = setA(v));
+    setB@GemButton(label = "Set B", leftClick = setB(v));
+  }
+}

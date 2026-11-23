@@ -1,4 +1,5 @@
 export * from "./DateDeser";
+export * from "./IsoStringDeSer";
 export * from "./LocalDateDeSer";
 export * from "./LocalDateTimeDeSer";
 export * from "./LocalTimeDeSer";

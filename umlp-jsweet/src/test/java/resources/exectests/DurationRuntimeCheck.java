@@ -128,4 +128,87 @@ public class DurationRuntimeCheck {
         + ChronoUnit.MONTHS.getDuration() + " " + ChronoUnit.NANOS.getDuration() + " " + sb + " "
         + String.valueOf(ChronoUnit.WEEKS);
   }
+
+  /** plusDays to minusNanos */
+  @JSweetTest
+  public static String checkShorthandArithmetic() {
+    Duration d = Duration.ofHours(1);
+    return d.plusDays(1) + " " + d.plusHours(2) + " " + d.plusMinutes(30) + " " + d.plusMillis(250) + " "
+        + d.minusDays(1) + " " + d.minusHours(2) + " " + d.minusMinutes(61) + " " + d.minusSeconds(1) + " "
+        + d.minusNanos(1);
+  }
+
+  /** invalid text, unknown units and too large truncation units are rejected, like Java */
+  @JSweetTest
+  public static String checkInvalidRejected() {
+    String result = "";
+    try {
+      result += Duration.parse("1H30M");
+    } catch (Exception e) {
+      result += "parse rejected";
+    }
+    try {
+      result += " " + ChronoUnit.valueOf("FORTNIGHTS");
+    } catch (Exception e) {
+      result += " unit rejected";
+    }
+    try {
+      result += " " + Duration.ofHours(30).truncatedTo(ChronoUnit.WEEKS);
+    } catch (Exception e) {
+      result += " truncation rejected";
+    }
+    try {
+      result += " " + Duration.ofHours(1).dividedBy(0);
+    } catch (Exception e) {
+      result += " division rejected";
+    }
+    return result;
+  }
+
+  /** months and years at the end of a month: a month counts once its day of month is reached, like Java */
+  @JSweetTest
+  public static String checkUnitsBetweenAtMonthEnds() {
+    LocalDate jan31 = LocalDate.of(2024, 1, 31);
+    LocalDate leapDay = LocalDate.of(2024, 2, 29);
+    return ChronoUnit.MONTHS.between(jan31, leapDay) + " " + ChronoUnit.MONTHS.between(leapDay, jan31) + " "
+        + ChronoUnit.MONTHS.between(LocalDate.of(2024, 3, 31), LocalDate.of(2024, 4, 30)) + " "
+        + ChronoUnit.MONTHS.between(jan31, LocalDate.of(2024, 3, 31)) + " "
+        + ChronoUnit.YEARS.between(leapDay, LocalDate.of(2025, 2, 28)) + " "
+        + ChronoUnit.YEARS.between(leapDay, LocalDate.of(2025, 3, 1)) + " "
+        + ChronoUnit.YEARS.between(LocalDate.of(2025, 3, 1), leapDay) + " "
+        + ChronoUnit.DECADES.between(leapDay, LocalDate.of(2034, 2, 28)) + " "
+        + ChronoUnit.WEEKS.between(jan31, LocalDate.of(2024, 2, 13)) + " "
+        + jan31.atTime(10, 0).until(leapDay.atTime(10, 0), ChronoUnit.MONTHS) + " "
+        + jan31.atTime(10, 0).until(LocalDate.of(2024, 2, 1).atTime(9, 59), ChronoUnit.DAYS) + " "
+        + LocalDate.of(2024, 2, 1).atTime(9, 59).until(jan31.atTime(10, 0), ChronoUnit.DAYS) + " "
+        + jan31.atTime(10, 0).until(LocalDate.of(2024, 3, 31).atTime(9, 0), ChronoUnit.MONTHS);
+  }
+
+  /** toMillis() of negative durations with a part below a millisecond, truncated towards zero like Java */
+  @JSweetTest
+  public static String checkNegativeToMillis() {
+    return Duration.ofNanos(-499_999_999).toMillis() + " " + Duration.ofNanos(-1).toMillis() + " "
+        + Duration.ofNanos(-1_000_001).toMillis() + " " + Duration.ofSeconds(-2).toMillis() + " "
+        + Duration.ofNanos(1_999_999).toMillis();
+  }
+
+  /** switch over a ChronoUnit */
+  @JSweetTest
+  public static String checkSwitchOverChronoUnit() {
+    String result = "";
+    ChronoUnit[] units = {ChronoUnit.DAYS, ChronoUnit.HOURS, ChronoUnit.MONTHS};
+    for (ChronoUnit unit : units) {
+      switch (unit) {
+        case DAYS:
+          result += "d";
+          break;
+        case HOURS:
+          result += "h";
+          break;
+        default:
+          result += "?";
+      }
+    }
+    return result;
+  }
 }

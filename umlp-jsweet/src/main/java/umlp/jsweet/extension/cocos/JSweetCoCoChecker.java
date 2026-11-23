@@ -17,10 +17,13 @@ import standalone.com.sun.source.tree.VariableTree;
 import standalone.com.sun.source.util.TreePath;
 import standalone.com.sun.source.util.Trees;
 import standalone.com.sun.tools.javac.code.Symbol;
+import umlp.jsweet.extension.common.JavaTimeAdapter;
 import de.se_rwth.commons.SourcePosition;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static umlp.jsweet.extension.common.FutureAdapter.isFutureAdaptedTypes;
 
@@ -83,7 +86,11 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
   @Override
   public Void visitVariable(VariableTree variableTree, Trees trees) {
     Symbol.VarSymbol varSymbol = (Symbol.VarSymbol) trees.getElement(getCurrentPath());
-    if (varSymbol != null && "java.util.Date".equals(varSymbol.asType().toString())) {
+    if (varSymbol == null) {
+      super.visitVariable(variableTree, trees);
+      return null;
+    }
+    if ("java.util.Date".equals(varSymbol.asType().toString())) {
       logDateError(variableTree);
     }
     if(varSymbol.enclClass() == null || !(varSymbol.owner instanceof Symbol.ClassSymbol)) {
@@ -271,20 +278,11 @@ public class JSweetCoCoChecker extends AbstractTreeScanner {
       return;
     }
 
-    if (ownerFqn.startsWith("java.time.")
-        && !ownerFqn.equals("java.time.LocalDateTime")
-        && !ownerFqn.equals("java.time.LocalDate")
-        && !ownerFqn.equals("java.time.LocalTime")
-        && !ownerFqn.equals("java.time.Instant")
-        && !ownerFqn.equals("java.time.Duration")
-        && !ownerFqn.equals("java.time.ZonedDateTime")
-        && !ownerFqn.equals("java.time.ZoneId")
-        && !ownerFqn.equals("java.time.ZoneOffset")
-        && !ownerFqn.equals("java.time.temporal.ChronoUnit")) {
+    if (ownerFqn.startsWith("java.time.") && !JavaTimeAdapter.SUPPORTED_TYPES.contains(ownerFqn)
+        && !JavaTimeAdapter.SUPPORTED_METHODS.getOrDefault(ownerFqn, Set.of()).contains(methodName)) {
       Log.warn("0xEE009: Calls to " + ownerFqn + "." + methodName + "(...) are not explicitly supported. "
-              + "Only java.time.LocalDateTime, LocalDate, LocalTime, Instant, Duration, ZonedDateTime, ZoneId, "
-              + "ZoneOffset and java.time.temporal.ChronoUnit with their standard methods are supported in "
-              + "transpiled code.",
+              + "Only the standard methods of " + String.join(", ", new TreeSet<>(JavaTimeAdapter.SUPPORTED_TYPES))
+              + " are supported in transpiled code.",
           getStartSourcePosition(getContext(),getCurrentPath().getCompilationUnit(),tree));
       return;
     }

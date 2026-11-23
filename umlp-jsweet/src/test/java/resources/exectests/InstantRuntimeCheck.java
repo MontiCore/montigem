@@ -65,4 +65,27 @@ public class InstantRuntimeCheck {
         + instant.until(instant.plusSeconds(3_600 * 26), ChronoUnit.DAYS) + " "
         + instant.until(before1970, ChronoUnit.MILLIS);
   }
+
+  /** date-based units are rejected for an Instant, like Java */
+  @JSweetTest
+  public static String checkUnsupportedUnitsRejected() {
+    Instant instant = Instant.parse("2026-11-17T09:30:00Z");
+    String result = "";
+    try {
+      result += instant.plus(1, ChronoUnit.MONTHS);
+    } catch (Exception e) {
+      result += "plus rejected";
+    }
+    try {
+      result += " " + instant.until(instant.plusSeconds(1), ChronoUnit.WEEKS);
+    } catch (Exception e) {
+      result += " until rejected";
+    }
+    try {
+      result += " " + instant.truncatedTo(ChronoUnit.WEEKS);
+    } catch (Exception e) {
+      result += " truncatedTo rejected";
+    }
+    return result;
+  }
 }

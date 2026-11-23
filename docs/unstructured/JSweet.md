@@ -40,8 +40,8 @@ This functionality is available in both profiles.
 #### Date & Time (`java.time`)
 
 The `java.time` types are mapped to the **Temporal API**, imported from `@umlp/commonj2ts` (which takes it from the
-polyfill `@js-temporal/polyfill`, as not every browser has Temporal yet). Like in Java, the values have no time zone
-and are exact to the nanosecond:
+polyfill `@js-temporal/polyfill`, as not every browser has Temporal yet). Like in Java, the values are exact to the
+nanosecond, and only a `ZonedDateTime` has a time zone:
 
 | Java | TypeScript |
 | :--- | :--------- |
@@ -63,18 +63,19 @@ Important methods:
 | :--- | :----------------- |
 | `now()` | `Temporal.Now.plainDateISO()` (`plainDateTimeISO()`, `plainTimeISO()`) |
 | `of(...)` | `new Temporal.PlainDate(y, m, d)`; `LocalDateTimeHelper.ofDateTime/ofTime(...)` |
-| `parse(String)` | `Temporal.PlainDate.from(str)` (`PlainDateTime`, `PlainTime`) |
+| `parse(String)` | `LocalDateTimeHelper.parseDate/parseDateTime/parseTime(str)`, the ISO formats of java.time only (other text is rejected like in Java) |
 | `isEqual/isAfter/isBefore(other)`, `compareTo(other)` | `Temporal.PlainDate.compare(this, other)` |
-| `equals(other)` | `other instanceof Temporal.PlainDate && this.equals(other)` |
+| `equals(other)` | `JavaUtilUtils.equalsSync(this, other)` (only equal to a value of the same type, like Java) |
 | `getYear()`, `getMonthValue()`, `getDayOfMonth()`, `getDayOfYear()`, `getHour()`, `getMinute()`, `getSecond()` | `.year`, `.month`, `.day`, `.dayOfYear`, `.hour`, `.minute`, `.second` |
 | `plusDays(n)`, `minusHours(n)`, ... (also `Nanos`) | `.add({days: n})`, `.subtract({hours: n})` |
 | `withYear(n)`, `withMonth(n)`, `withDayOfMonth(n)`, `withHour(n)`, ... | `.with({year: n})`, ... (invalid values are rejected like in Java, `withYear`/`withMonth` adjust the day) |
 | `toLocalDate()`, `toLocalTime()`, `atStartOfDay()`, `atTime(...)`, `LocalDateTime.of(date, time)` | `.toPlainDate()`, `.toPlainTime()`, `.toPlainDateTime(...)` |
-| `toString()`, string concatenation (`"" + date`, `s += date`, `sb.append(date)`, `String.valueOf(date)`) | `LocalDateTimeHelper.toString(...)`, the format of java.time |
+| `toString()`, string concatenation (`"" + date`, `s += date`, `sb.append(date)`, `String.valueOf(date)`) | `LocalDateTimeHelper.toString(...)`, the format of java.time; for a value of the static type `Object` or a type parameter `LocalDateTimeHelper.toJavaString(...)` |
 | `getNano()`, `getDayOfWeek()`, `getMonth()`, `withDayOfYear(n)` | `LocalDateTimeHelper.*(...)` |
-| `toEpochSecond(offset)`, `ofEpochSecond(sec, nanos, offset)` | `LocalDateTimeHelper.*(...)` |
+| `toEpochSecond(offset)`, `ofEpochSecond(sec, nanos, offset)`, `localDateTime.toInstant(offset)` | `LocalDateTimeHelper.*(...)`, `.toZonedDateTime(offset).toInstant()` |
 | `withNano(n)`, `toSecondOfDay()`, `toNanoOfDay()`, `ofSecondOfDay(n)`, `ofNanoOfDay(n)`, `toEpochDay()`, `ofEpochDay(n)` | `LocalDateTimeHelper.*(...)` |
 | `time.atDate(date)` | `date.toPlainDateTime(time)` |
+| `switch` over a `DayOfWeek` or `ChronoUnit` | the names of the constants as case labels |
 
 `Instant` (a point in time, exact to the nanosecond):
 
@@ -83,7 +84,7 @@ Important methods:
 | `Instant.now()`, `Instant.parse(str)`, `Instant.ofEpochMilli(ms)` | `Temporal.Now.instant()`, `Temporal.Instant.from(str)`, `Temporal.Instant.fromEpochMilliseconds(ms)` |
 | `toEpochMilli()` | `.epochMilliseconds` |
 | `plusSeconds/Millis/Nanos(n)`, `minus...` | `.add({seconds: n})`, `.subtract({milliseconds: n})`, ... |
-| `isAfter/isBefore(other)`, `compareTo(other)`, `equals(other)` | `Temporal.Instant.compare(this, other)`, `.equals` |
+| `isAfter/isBefore(other)`, `compareTo(other)`, `equals(other)` | `Temporal.Instant.compare(this, other)`, `JavaUtilUtils.equalsSync` |
 | `ofEpochSecond(sec[, nanos])`, `getEpochSecond()`, `getNano()`, `toString()` | `LocalDateTimeHelper.*(...)`, `toString` in the format of java.time (UTC, `Z`) |
 
 `Duration` (an exact length of time; all methods through `DurationHelper`, which keeps a duration balanced from hours
@@ -108,14 +109,15 @@ type: store an `Instant` and, if an object has a zone of its own, its id as a `S
 | :--- | :----------------- |
 | `ZoneId.of(id)`, `ZoneId.systemDefault()`, `ZoneOffset.UTC`, `ZoneOffset.ofHours(h)`, ... | the id, `ZonedDateTimeHelper.*(...)`; `systemDefault()` is the zone of the browser |
 | `localDateTime.atZone(zone)`, `instant.atZone(zone)`, `date.atStartOfDay(zone)` | `.toZonedDateTime(...)`, `.toZonedDateTimeISO(...)`; gaps and overlaps of DST changes like Java |
-| `ZonedDateTime.of(...)`, `ofInstant(instant, zone)`, `now(zone)`, `parse(text)`; `LocalDateTime/LocalDate/LocalTime.ofInstant(instant, zone)`, `now(zone)` | `Temporal.ZonedDateTime`, `ZonedDateTimeHelper.parse` (also without a zone in brackets) |
+| `ZonedDateTime.of(...)`, `ofInstant(instant, zone)`, `now(zone)`, `parse(text)`; `LocalDateTime/LocalDate/LocalTime.ofInstant(instant, zone)`, `now(zone)` | `Temporal.ZonedDateTime`, `ZonedDateTimeHelper.parse` (also without a zone in brackets; an offset that does not fit the zone keeps the instant, like Java) |
 | `toInstant()`, `toLocalDateTime()`, `toLocalDate()`, `toLocalTime()`, `toEpochSecond()`, `withZoneSameInstant(zone)`, `withZoneSameLocal(zone)`, `getZone()`, `getOffset()` | Temporal, `ZonedDateTimeHelper.*(...)` |
 | getters, `plus/minus*`, `with*`, `plus(duration)`, `plus(n, unit)`, `isBefore/isAfter/isEqual`, `compareTo`, `equals`, `toString()` | like `LocalDateTime`; days and longer units in local time (across a DST change, `plusDays(1)` keeps the wall time), hours and shorter exactly |
 | `toEpochSecond(offset)`, `ofEpochSecond(seconds, nanos, offset)` | with the given offset |
 
 For libraries that work with `Date` (date pickers, charts), `LocalDateTimeHelper.toDate(value)` gives a `Date` whose
-local fields show the wall time, `LocalDateTimeHelper.fromDate(date)` the way back; an `Instant` gives its
-`epochMilliseconds`.
+local fields show the wall time, `LocalDateTimeHelper.fromDate(date)` the way back; for libraries that show the UTC
+fields of milliseconds (Plotly), `LocalDateTimeHelper.toEpochMilliseconds(value)` gives the wall time as UTC; an
+`Instant` gives its `epochMilliseconds`.
 
 ---
 
@@ -558,7 +560,7 @@ The latter might work technically but are not specifically secured by our transp
 
 ---
 
-#### `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`, `java.time.Instant` – ✅ recommended
+#### `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration`, `ZonedDateTime` – ✅ recommended
 
 **Recommended and secured by adapters:**
 
@@ -566,7 +568,7 @@ The latter might work technically but are not specifically secured by our transp
   * `now()`
   * `of(...)` (for date/time)
 * Parsing:
-  * `parse(String)`
+  * `parse(String)` in the ISO formats of java.time
 * Comparisons:
   * `isAfter(...)`, `isBefore(...)`, `isEqual(...)`, `compareTo(...)`, `equals(...)`
 * Getters:
@@ -574,10 +576,10 @@ The latter might work technically but are not specifically secured by our transp
   * `getHour()`, `getMinute()`, `getSecond()`, `getNano()`
   * `lengthOfMonth()`, `lengthOfYear()`, `isLeapYear()`
 * Epoch functions:
-  * `toEpochSecond(ZoneOffset.UTC)`
-  * `ofEpochSecond(..., ZoneOffset.UTC)`
+  * `toEpochSecond(offset)`, `toInstant(offset)`
+  * `ofEpochSecond(..., offset)`
 * String representation:
-  * `toString()`, also in string concatenation
+  * `toString()`, also in string concatenation and for values of the static type `Object` or a type parameter
 * Calculation operations:
   * `plusYears/Months/Weeks/Days/Hours/Minutes/Seconds/Nanos`
   * `minusYears/Months/Weeks/Days/Hours/Minutes/Seconds/Nanos`
@@ -597,13 +599,15 @@ The latter might work technically but are not specifically secured by our transp
   * `toDaysPart()` ... `toNanosPart()`, `isPositive()`; `unit.getDuration()`, `ChronoUnit.valueOf(name)`, `name()`,
     `toString()`
 * `withNano(n)`, `LocalTime.atDate(date)`, `toSecondOfDay()`, `toNanoOfDay()`, `toEpochDay()` and the `of...` factories
+* `switch` over `DayOfWeek` and `ChronoUnit`
 
 **Not recommended / not supported:**
 
 * `java.util.Date`: not supported (error `0xEE013`), use `Instant`.
 * Other `java.time` types like `OffsetDateTime`, `OffsetTime`, `Period`, `Clock`; `DateTimeFormatter`
   (`format`, `parse(text, formatter)`).
-* Methods working with `TemporalAmount`/`TemporalAdjuster` (`plus(TemporalAmount)`, `with(TemporalAdjuster)`, etc.).
+* Methods working with a `TemporalAdjuster` or a `TemporalAmount` other than `Duration` (`with(TemporalAdjuster)`,
+  `plus(Period)`, etc.).
 
 ---
 
