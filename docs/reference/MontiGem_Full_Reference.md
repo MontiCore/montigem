@@ -82,8 +82,9 @@ class Customer extends Person { String customerId; }
 | `long`, `Long` | `long`, `Long` | `number` | JS numbers are doubles; precision loss possible for large longs. |
 | `double`, `Double` | `double`, `Double` | `number` | |
 | `String` | `String` | `string` | |
-| `LocalDate` | `java.time.LocalDate` | `Date` | |
-| `LocalDateTime` | `java.time.LocalDateTime` | `Date` | Mapped to native JS Date. |
+| `LocalDate` | `java.time.LocalDate` | `Temporal.PlainDate` | |
+| `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
+| `LocalDateTime` | `java.time.LocalDateTime` | `Temporal.PlainDateTime` | Temporal API from `@umlp/commonj2ts`. |
 | `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
 | `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
 
@@ -363,7 +364,7 @@ MontiGem uses JSweet to transpile Java to TypeScript. For a detailed guide on su
     *   `java.util.List`, `ArrayList`, `LinkedList` -> JS `Array`
     *   `java.util.Map`, `HashMap` -> JS `Map`
     *   `java.util.Optional` -> Unwrapped value (nullable)
-    *   `java.time.LocalDateTime`, `LocalDate` -> JS `Date`
+    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime` -> `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`
     *   `java.lang.String`, `Math`, `System.out.println`
 *   **Unsupported:**
     *   `java.util.stream` (Streams): **Do not use.** Use loops instead.

@@ -196,18 +196,16 @@ public class JavaBasicsAdapter extends AbstractAdapter {
             .print(")");
         return true;
       case "equals":
+        // java.util.Date by time; the java.time types are Temporal values with equals (JavaUtilUtils)
         boolean isDate = false;
         for (ExtendedElement argument : invocation.getArguments()) {
-          switch (argument.getType().toString()) {
-            case "java.time.LocalDateTime":
-            case "java.time.LocalDate":
-            case "java.util.Date":
-              isDate = true;
+          if ("java.util.Date".equals(argument.getType().toString())) {
+            isDate = true;
           }
         }
         if (isDate) {
           this.print("/* equals */")
-              .print("((a, b) => { return a.getTime() === b.getTime(); }) (")
+              .print("((a, b) => a === b || (a != null && b != null && a.getTime() === b.getTime())) (")
               .printArgList(invocation.getArguments())
               .print(")");
         }

@@ -155,8 +155,10 @@ public class GUI2AngularClassDecorator extends GUI2ClassDecorator implements GUI
       if (innerSTE.isPresent()) {
         innerType = new TSUtilsPrinter().printType(createTypeAndAddImports(innerSTE.get()));
       }
+      // a generic type: the type argument may be in a namespace (Temporal.PlainDate), which a type string would split
       ASTCDAttribute attr = getCDAttributeFacade().createAttribute(
-          CDModifier.PUBLIC.build(), "EventEmitter<" + innerType + ">", node.getName());
+          CDModifier.PUBLIC.build(), getMCTypeFacade().createBasicGenericTypeOf("EventEmitter", innerType),
+          node.getName());
       clazz.addCDMember(attr);
       addImportString("import { Output } from '@angular/core';");
       glex.replaceTemplate(GUI2ComponentTemplates.ANNOTATIONS, attr,
@@ -225,7 +227,7 @@ public class GUI2AngularClassDecorator extends GUI2ClassDecorator implements GUI
         String emitType = new TSUtilsPrinter().printType(mcType);
         ASTCDAttribute eventAttr = getCDAttributeFacade().createAttribute(
             CDModifier.PUBLIC.build(),
-            "EventEmitter<" + emitType + ">",
+            getMCTypeFacade().createBasicGenericTypeOf("EventEmitter", emitType),
             getRefParamEmitterName(node.getSymbol())
         );
         clazz.addCDMember(eventAttr);

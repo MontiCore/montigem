@@ -7,7 +7,8 @@
     "outDir": "./out",
     "paths": {
       "@umlp/commonj2ts": ["./commonj2ts-facade/index.ts"],
-      "@umlp/functiondisplay": ["./functiondisplay-facade/index.ts"]
+      "@umlp/functiondisplay": ["./functiondisplay-facade/index.ts"],
+      "@js-temporal/polyfill": ["./node_modules/@js-temporal/polyfill/index.d.cts"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true,

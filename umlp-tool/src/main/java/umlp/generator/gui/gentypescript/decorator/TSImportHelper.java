@@ -54,7 +54,9 @@ public class TSImportHelper {
       return;
     }
     if (tsImportPath.isPresent()) {
-      String importStr = "import { " + TypeScriptTypes.toTSType(importedQName) + alias
+      // a type in a namespace (Temporal.PlainDate) imports the namespace
+      String importedName = Iterables.getFirst(Splitter.on('.').split(TypeScriptTypes.toTSType(importedQName)), "");
+      String importStr = "import { " + importedName + alias
           + " } from '" + tsImportPath.get() + "';";
       addImportString(importStr);
     }

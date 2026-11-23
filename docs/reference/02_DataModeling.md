@@ -33,8 +33,9 @@ class Customer extends Person { String customerId; }
 | `long`, `Long` | `long`, `Long` | `number` | JS numbers are doubles; precision loss possible for large longs. |
 | `double`, `Double` | `double`, `Double` | `number` | |
 | `String` | `String` | `string` | |
-| `LocalDateTime` | `java.time.LocalDateTime` | `Date` | Mapped to native JS Date. |
-| `LocalDate` | `java.time.LocalDate` | `Date` | |
+| `LocalDateTime` | `java.time.LocalDateTime` | `Temporal.PlainDateTime` | Temporal API from `@umlp/commonj2ts`. |
+| `LocalDate` | `java.time.LocalDate` | `Temporal.PlainDate` | |
+| `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
 | `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
 | `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
 
