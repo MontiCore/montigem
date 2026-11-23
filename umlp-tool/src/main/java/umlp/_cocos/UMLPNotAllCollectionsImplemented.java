@@ -18,8 +18,8 @@ public class UMLPNotAllCollectionsImplemented implements CDBasisASTCDAttributeCo
     SymTypeExpression type = attr.getSymbol().getType();
 
     if (type.isGenericType()) {
-      // Map attributes become type qualified associations, checked by UMLPMapAttributeValueType and
-      // UMLPMapAttributeKeyType
+      // a Map with domain class values becomes a type qualified association, one with simple values a map attribute;
+      // UMLPMapAttributeValueType and UMLPMapAttributeKeyType check its types
       if(!(GenService.isList(type) || GenService.isOptional(type) || GenService.isMap(type))) {
         Log.error(
             String.format(ERROR_CODE + ERROR_MSG_FORMAT, attr.getName(), type.print()),
