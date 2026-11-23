@@ -159,4 +159,21 @@ public class OptionalAdapterRuntimeCheck {
     Optional<String> opt = Optional.ofNullable(null);
     return opt.stream().count();
   }
+
+  /** the Optional and the argument are evaluated once, like in Java (side effects, e.g. a load, happen once) */
+  @JSweetTest
+  public static String evaluatesTargetOnce() {
+    int[] calls = {0};
+    String result = counted(calls, "a").orElse("x") + counted(calls, null).orElse("x")
+        + counted(calls, null).orElseGet(() -> "y") + counted(calls, "b").map(s -> s + "!").orElse("-")
+        + counted(calls, "c").flatMap(s -> Optional.of(s + "?")).orElse("-")
+        + counted(calls, "d").filter(s -> s.equals("d")).orElse("-")
+        + counted(calls, "e").filter(s -> s.equals("x")).orElse("-");
+    return result + " " + calls[0];
+  }
+
+  private static Optional<String> counted(int[] calls, String value) {
+    calls[0]++;
+    return Optional.ofNullable(value);
+  }
 }

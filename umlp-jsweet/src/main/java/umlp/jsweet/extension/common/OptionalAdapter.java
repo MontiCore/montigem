@@ -111,49 +111,24 @@ public class OptionalAdapter extends AbstractAdapter {
       case "get":
         print("((v) => { if (v == null) throw new Error('NoSuchElementException'); return v; })(").print(target).print(")");
         return true;
+      // the target and the argument are evaluated once, outside the arrow function (they may contain an await), like
+      // in Java; an asynchronous argument is awaited
       case "orElse":
-        print("(").print(target).print(" != null ? ").print(target).print(" : ").print(args.get(0)).print(")");
+        printMacroName(methodName);
+        print("((v, other) => v != null ? v : other)(").print(target).print(", ").print(args.get(0)).print(")");
         return true;
       case "orElseGet":
-        printMacroName(methodName);
-        if (isAsyncArg(args.get(0))) {
-          print("(await ");
-        }
-        print("(").print(target).print(" != null ? ").print(target).print(" : (").print(args.get(0)).print(")())");
-        if (isAsyncArg(args.get(0))) {
-          print(")");
-        }
+        printApplied(methodName, "(v, get) => v != null ? v : (get)()", target, args.get(0));
         return true;
       case "map":
-        printMacroName(methodName);
-        if (isAsyncArg(args.get(0))) {
-          print("(await ");
-        }
-        print("(").print(target).print(" != null ? (").print(args.get(0)).print(")(").print(target).print(") : null)");
-        if (isAsyncArg(args.get(0))) {
-          print(")");
-        }
-        return true;
       case "flatMap":
         // Since we map Optional<T> to T | null, flatMap is same as map here if the mapper returns T | null
-        printMacroName(methodName);
-        if (isAsyncArg(args.get(0))) {
-          print("(await ");
-        }
-        print("(").print(target).print(" != null ? (").print(args.get(0)).print(")(").print(target).print(") : null)");
-        if (isAsyncArg(args.get(0))) {
-          print(")");
-        }
+        printApplied(methodName, "(v, f) => v != null ? (f)(v) : null", target, args.get(0));
         return true;
       case "filter":
-        printMacroName(methodName);
-        if (isAsyncArg(args.get(0))) {
-          print("(await ");
-        }
-        print("(").print(target).print(" != null && (").print(args.get(0)).print(")(").print(target).print(") ? ").print(target).print(" : null)");
-        if (isAsyncArg(args.get(0))) {
-          print(")");
-        }
+        printApplied(methodName, isAsyncArg(args.get(0))
+            ? "async (v, p) => v != null && (await (p)(v)) ? v : null" : "(v, p) => v != null && (p)(v) ? v : null",
+            target, args.get(0));
         return true;
       case "ifPresent":
         printMacroName(methodName);
@@ -193,6 +168,13 @@ public class OptionalAdapter extends AbstractAdapter {
         return true;
     }
     return false;
+  }
+
+  /** (function)(target, arg), awaited if arg is an asynchronous lambda */
+  private void printApplied(String methodName, String function, ExtendedElement target, ExtendedElement arg) {
+    printMacroName(methodName);
+    boolean async = isAsyncArg(arg);
+    print(async ? "(await (" : "((").print(function).print(")(").print(target).print(", ").print(arg).print("))");
   }
 
   private boolean isAsyncArg(ExtendedElement arg) {
