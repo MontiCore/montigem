@@ -60,8 +60,9 @@ public class JSweetCoCoCheckerTest {
     assertTrue(found0xEE004, "Should have found Concurrent violation (0xEE004). Findings: " + findings);
     assertTrue(findings.stream().anyMatch(s -> s.contains("0xEE012")),
         "Should have found sorted map warning (0xEE012). Findings: " + findings);
-    assertTrue(findings.stream().anyMatch(s -> s.contains("0xEE013")),
-        "Should have found java.util.Date deprecation (0xEE013). Findings: " + findings);
+    // java.util.Date: an error for the variable and for the constructor
+    assertEquals(2, Log.getFindings().stream().filter(f -> f.isError() && f.getMsg().contains("0xEE013")).count(),
+        "Should have found two java.util.Date errors (0xEE013). Findings: " + findings);
   }
 
   @Test

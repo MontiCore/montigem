@@ -83,7 +83,7 @@ export class JavaUtilUtils {
   }
 
   /** a java.time value (LocalDate, LocalDateTime, LocalTime, Instant) */
-  private static isTemporal(value: any): boolean {
+  public static isTemporal(value: any): boolean {
     return value instanceof Temporal.PlainDate || value instanceof Temporal.PlainDateTime
       || value instanceof Temporal.PlainTime || value instanceof Temporal.Instant;
   }
