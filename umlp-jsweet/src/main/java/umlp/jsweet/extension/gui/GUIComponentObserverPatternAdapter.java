@@ -43,6 +43,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+/**
+ * This adapter handle observing of all MontiGem data that is processed in a transpiled method.
+ */
 public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
 
   public static final String DOMAIN_OBSERVER_FUNCTION_NAME = "__regObsToDomainObj";
@@ -798,17 +801,17 @@ public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
 
     // Must be subtype of List
     if (!types().isSubtype(expressionType, types().erasure(util().getType(List.class)))) {
-      return false;
+      return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
     }
 
     // Must be a declared generic type
     if (expressionType.getKind() != TypeKind.DECLARED) {
-      return false;
+      return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
     }
 
     List<? extends TypeMirror> typeArguments = ((DeclaredType) expressionType).getTypeArguments();
     if (typeArguments.size() != 1) {
-      return false;
+      return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
     }
 
     TypeMirror innerType = typeArguments.get(0);
@@ -816,18 +819,18 @@ public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
     // Must be Domain type = subtype of GemIdentifiable
     if (!adapterUtils.isSubTypeOf(Util.getElement(innerType),
         RTEPathUtil.getBackendRTECommonPath("GemIdentifiable"))) {
-      return false;
+      return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
     }
 
     // Check for Domain observer param availability
     MethodTree surroundingMethodTree = getPrinter().getParent(MethodTree.class);
     if (surroundingMethodTree == null) {
-      return false;
+      return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
     }
     boolean hasDomainObserverParam = surroundingMethodTree.getParameters().stream()
         .anyMatch(param -> param.getName().toString().equals(DOMAIN_OBSERVER_FUNCTION_NAME));
     if (!hasDomainObserverParam) {
-      return false;
+      return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
     }
 
     // Print with additional sync logic

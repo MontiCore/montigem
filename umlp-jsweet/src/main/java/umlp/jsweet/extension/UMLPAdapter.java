@@ -37,7 +37,7 @@ public class UMLPAdapter extends PrinterAdapter {
         new JavaTimeAdapter(
         new BasicsAdapter(
         new AsyncConstructorAdapter(
-        new GUIComponentObserverPatternAdapter(
+        //new GUIComponentObserverPatternAdapter(
         new AngularSpecificsAdapter(
         new CollectionsAdapter(
         new JavaBasicsAdapter(
@@ -48,7 +48,7 @@ public class UMLPAdapter extends PrinterAdapter {
         new UMLPEnumAdapter(
         new AnnotationToDecoratorAdapter(
         parentAdapter
-    ))))))))))))))))));
+    )))))))))))))))));
   }
 
   @Override
