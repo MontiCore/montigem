@@ -36,6 +36,24 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-11-23: 7.10.0-SNAPSHOT
+* New components:
+    * `GemToggle` (`mc.fenix.advanced`): on/off switch with
+    * `GemStatusIcon` (`mc.fenix.advanced`): icon whose color (and optionally symbol) depends on a
+    status value, e.g. an enum constant.
+    * `GemDivider` (`mc.fenix.arrange`): separator line with, swap `width` and `height` for a vertical divider
+* All charts (line, pie, radar, scatter, sunburst, time series, timeline, Venn) have the attribute
+  `legendPosition` (`LEFT`, `TOP`, `RIGHT`, `BOTTOM`; `NONE` hides the legend), which can also be
+  changed in the chart's configuration panel. A legend next to the plot that doesn't fit moves
+  above the plot.
+* `GemNumberInput` has the attribute `min`
+* Fixes: 
+    * `GemDropdownInput` shows its initial entry
+    * `GemCard` sizes itself and its content correctly
+* Karma is removed completely, including the shared `karma.conf.js`. Angular library tests use the
+  builder `@angular/build:unit-test` instead of `@angular-devkit/build-angular:karma`
+    * Use `vitest`
+
 ## 2026-11-05: 7.10.0-SNAPSHOT
 * New module `@montigem/chat` with the components `GemChat`, `GemChatMessage` and `GemChatSource`
   for AI chats.
