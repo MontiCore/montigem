@@ -5,6 +5,8 @@
 # so the generated code can be compared (see diffNoIndex.ps1).
 # The Gradle task prepareGeneratorDiff runs the generators and writes the folders of the generated
 # code to <project>/build/prepareGeneratorDiff/dirs.txt, so both branches need that task.
+# If the output of the project already exists for the commit of a branch (from an earlier run, under
+# any branch name), the script asks whether to reuse it and skip the generation for that branch.
 #
 # Usage: generateBranches.ps1 [-p <project dir>] [<branchA> [<branchB>]]
 #   -p             folder of the Gradle project(s) to generate, default examples/vis-lib.
@@ -89,6 +91,26 @@ function Copy-Generated($project, $target) {
   }
 }
 
+# An earlier result folder for the commit that contains the project, preferring the given target
+function Find-ExistingResult($target, $shortId, $projectDir) {
+  $compareDir = Split-Path -Parent $target
+  $candidates = @($target) + @(Get-ChildItem -LiteralPath $compareDir -Directory -Filter "*_$shortId" -ErrorAction SilentlyContinue |
+      ForEach-Object { $_.FullName -replace '\\', '/' })
+  foreach ($candidate in $candidates) {
+    $candidateProject = if ($projectDir) { "$candidate/$projectDir" } else { $candidate }
+    if (Test-Path $candidateProject -PathType Container) { return $candidate }
+  }
+}
+
+# Asks a yes/no question, an empty answer means yes
+function Read-Skip($question) {
+  while ($true) {
+    $answer = "$(Read-Host "$question [Y/n]")".Trim()
+    if ($answer -eq '' -or $answer -match '^y(es)?$') { return $true }
+    if ($answer -match '^no?$') { return $false }
+  }
+}
+
 $root = (git -C $PSScriptRoot rev-parse --show-toplevel)
 if ($LASTEXITCODE -ne 0) { throw 'Not inside a git repository' }
 
@@ -128,12 +150,43 @@ try {
   Write-Host "First branch:  $($branches[0])"
   Write-Host "Second branch: $($branches[1])"
 
+  # all questions are asked before the first checkout, so the generation runs unattended afterwards
+  $plans = @()
+  foreach ($branch in $branches) {
+    $shortId = git rev-parse --verify -q --short "$branch^{commit}"
+    if (-not $shortId) { throw "Unknown branch $branch" }
+    $target = "$root/build/generate-compare/$($branch -replace '[\\/]', '-')_$shortId"
+    $reuse = $null
+
+    $earlier = $plans | Where-Object { $_.ShortId -eq $shortId } | Select-Object -First 1
+    if ($earlier) {
+      # both branches are at the same commit, the second run would generate the same output
+      if (Read-Skip "$branch is at the same commit $shortId as $($earlier.Branch). Skip its generation and reuse that output?") {
+        $reuse = if ($earlier.Reuse) { $earlier.Reuse } else { $earlier.Target }
+      }
+    }
+    else {
+      $existing = Find-ExistingResult $target $shortId $projectDir
+      if ($existing -and (Read-Skip "Output of $projectLabel for $branch (commit $shortId) already exists in $existing. Skip its generation?")) {
+        $reuse = $existing
+      }
+    }
+    $plans += [pscustomobject]@{ Branch = $branch; ShortId = $shortId; Target = $target; Reuse = $reuse }
+  }
+
   $results = @()
   try {
-    foreach ($branch in $branches) {
+    foreach ($plan in $plans) {
+      $branch = $plan.Branch
+      $target = $plan.Target
       Write-Host "`n=== $branch ===" -ForegroundColor Cyan
+      if ($plan.Reuse) {
+        Write-Host "Skipped, reusing $($plan.Reuse)"
+        $results += $plan.Reuse
+        continue
+      }
+
       Invoke-Native git checkout $branch
-      $shortId = git rev-parse --short HEAD
 
       if (-not (Test-Path $projectRoot -PathType Container)) {
         throw "Project folder $projectLabel does not exist on $branch"
@@ -148,7 +201,6 @@ try {
       if ($projects.Count -eq 0) { throw "$taskName did not write any $dirsFile below $projectLabel" }
 
       # only the part of this project is replaced, the results of other projects stay
-      $target = "$root/build/generate-compare/$($branch -replace '[\\/]', '-')_$shortId"
       $projectTarget = if ($projectDir) { "$target/$projectDir" } else { $target }
       if (Test-Path $projectTarget) { Remove-Item -Recurse -Force $projectTarget }
       foreach ($p in $projects) {

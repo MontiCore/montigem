@@ -6,6 +6,8 @@
 # so the generated code can be compared (see diffNoIndex.sh).
 # The Gradle task prepareGeneratorDiff runs the generators and writes the folders of the generated
 # code to <project>/build/prepareGeneratorDiff/dirs.txt, so both branches need that task.
+# If the output of the project already exists for the commit of a branch (from an earlier run, under
+# any branch name), the script asks whether to reuse it and skip the generation for that branch.
 #
 # Usage: generateBranches.sh [-p <project dir>] [<branchA> [<branchB>]]
 #   -p             folder of the Gradle project(s) to generate, default examples/vis-lib.
@@ -67,6 +69,30 @@ copy_generated() {
     mkdir -p "$target/$(dirname "$rel")"
     cp -r "$dir" "$target/$rel"
   done < <(generated_dirs "$project")
+}
+
+# Prints an earlier result folder for the commit that contains the project, preferring the given target
+existing_result() {
+  local target="$1" short_id="$2" project_dir="$3" candidate
+  for candidate in "$target" "${target%/*}"/*_"$short_id"; do
+    if [ -d "$candidate${project_dir:+/$project_dir}" ]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 0
+}
+
+# Asks a yes/no question, an empty answer (or no terminal to ask on) means yes
+ask_skip() {
+  local answer
+  while true; do
+    read -r -p "$1 [Y/n] " answer < /dev/tty || return 0
+    case "$answer" in
+      ''|y|Y|yes|Yes) return 0 ;;
+      n|N|no|No) return 1 ;;
+    esac
+  done
 }
 
 # Everything lives in main() so bash has read the whole script before any checkout happens
@@ -143,13 +169,51 @@ main() {
   echo "First branch:  ${branches[0]}"
   echo "Second branch: ${branches[1]}"
 
+  # all questions are asked before the first checkout, so the generation runs unattended afterwards
+  local short_ids=() targets=() reuses=() i j branch short_id target existing reuse
+  for i in "${!branches[@]}"; do
+    branch="${branches[$i]}"
+    if ! short_id="$(git rev-parse --verify -q --short "$branch^{commit}")"; then
+      echo "Unknown branch $branch" >&2
+      exit 1
+    fi
+    target="$root/build/generate-compare/${branch//[\/\\]/-}_$short_id"
+    reuse=''
+
+    local earlier=''
+    for j in "${!short_ids[@]}"; do
+      [ "${short_ids[$j]}" = "$short_id" ] && { earlier="$j"; break; }
+    done
+    if [ -n "$earlier" ]; then
+      # both branches are at the same commit, the second run would generate the same output
+      if ask_skip "$branch is at the same commit $short_id as ${branches[$earlier]}. Skip its generation and reuse that output?"; then
+        reuse="${reuses[$earlier]:-${targets[$earlier]}}"
+      fi
+    else
+      existing="$(existing_result "$target" "$short_id" "$project_dir")"
+      if [ -n "$existing" ] && ask_skip "Output of ${project_dir:-.} for $branch (commit $short_id) already exists in $existing. Skip its generation?"; then
+        reuse="$existing"
+      fi
+    fi
+    short_ids+=("$short_id")
+    targets+=("$target")
+    reuses+=("$reuse")
+  done
+
   trap "echo; echo 'Restoring $original'; git checkout '$original'" EXIT
 
-  local results=() branch short_id target project projects
-  for branch in "${branches[@]}"; do
+  local results=() project projects
+  for i in "${!branches[@]}"; do
+    branch="${branches[$i]}"
+    target="${targets[$i]}"
     printf '\n=== %s ===\n' "$branch"
+    if [ -n "${reuses[$i]}" ]; then
+      echo "Skipped, reusing ${reuses[$i]}"
+      results+=("${reuses[$i]}")
+      continue
+    fi
+
     git checkout "$branch"
-    short_id="$(git rev-parse --short HEAD)"
 
     if [ ! -d "$project_root" ]; then
       echo "Project folder ${project_dir:-.} does not exist on $branch" >&2
@@ -170,7 +234,6 @@ main() {
     fi
 
     # only the part of this project is replaced, the results of other projects stay
-    target="$root/build/generate-compare/${branch//[\/\\]/-}_$short_id"
     rm -rf "$target${project_dir:+/$project_dir}"
     for project in "${projects[@]}"; do
       copy_generated "$project" "$target/${project#"$root/"}"
