@@ -80,8 +80,8 @@ public class UMLAttrToAssocTrafo implements CDBasisVisitor2, CDInterfaceAndEnumV
                       attrType.print()));
       attrMap.put(astcdType, attr);
     } else if (GenService.isMap(attrType)) {
-      // Map<K, T>: the type qualified association Owner [K] -> (attr) T [1]; other maps are rejected by the CoCos
-      // UMLPMapAttributeValueType and UMLPMapAttributeKeyType
+      // Map<K, T>: the type qualified association Owner [K] -> (attr) T [1]; a map with simple values stays a map
+      // attribute; UMLPMapAttributeValueType and UMLPMapAttributeKeyType check the types
       Optional<SymTypeExpression> valueType = GenService.getMapTypeArgument(attrType, 1);
       Optional<ASTMCType> keyType = getMapKeyType(attr);
       if (valueType.isPresent() && GenService.isAssociationTarget(valueType.get()) && keyType.isPresent()) {

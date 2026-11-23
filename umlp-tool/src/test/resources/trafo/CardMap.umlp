@@ -6,7 +6,7 @@ classdiagram CardMap {
     class Foo {
       java.util.Map<String, Bar> byName;
       java.util.Map<Baz, Bar> byBaz;
-      // no domain class value: not transformed (rejected by the CoCo UMLPMapAttributeValueType)
+      // no domain class value: not transformed into an association, stays a map attribute
       java.util.Map<String, Integer> counts;
     }
 
