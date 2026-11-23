@@ -73,8 +73,9 @@ public class JavaTimeAdapter extends AbstractAdapter {
   private static final List<String> DURATION_METHODS = List.of(
       "plus", "minus", "plusDays", "plusHours", "plusMinutes", "plusSeconds", "plusMillis", "plusNanos", "minusDays",
       "minusHours", "minusMinutes", "minusSeconds", "minusMillis", "minusNanos", "multipliedBy", "dividedBy",
-      "negated", "abs", "isZero", "isNegative", "getSeconds", "getNano", "toDays", "toHours", "toMinutes", "toSeconds",
-      "toMillis", "toNanos", "compareTo", "equals", "toString");
+      "negated", "abs", "isZero", "isNegative", "isPositive", "getSeconds", "getNano", "toDays", "toHours", "toMinutes",
+      "toSeconds", "toMillis", "toNanos", "toDaysPart", "toHoursPart", "toMinutesPart", "toSecondsPart", "toMillisPart",
+      "toNanosPart", "truncatedTo", "compareTo", "equals", "toString");
 
   /** the Temporal duration units of the plus and minus methods of Instant, e.g. plusMillis */
   private static final Map<String, String> INSTANT_UNITS = Map.of(
@@ -200,13 +201,11 @@ public class JavaTimeAdapter extends AbstractAdapter {
     if (substituteStringBuilding(invocation, targetType)) {
       return true;
     }
-    if (CHRONO_UNIT.equals(targetType) && "between".equals(invocation.getMethodName())) {
-      // unit.between(start, end)
-      printMacroName("between");
-      List<ExtendedElement> args = new ArrayList<>();
-      args.add(invocation.getTargetExpression());
-      args.addAll(invocation.getArguments());
-      printDurationHelper("unitsBetween", args);
+    if (CHRONO_UNIT.equals(targetType) && substituteMethodInvocation_ChronoUnit(invocation)) {
+      return true;
+    }
+    if (TEMPORAL_TYPES.containsKey(targetType) && !"java.time.Duration".equals(targetType)
+        && substituteUnitMethods(invocation)) {
       return true;
     }
     if (ZONE_TYPES.contains(targetType) && substituteMethodInvocation_Zone(invocation, targetType)) {
@@ -298,6 +297,12 @@ public class JavaTimeAdapter extends AbstractAdapter {
       case "ofEpochSecond":
         printMacroName(methodName);
         printHelper("ofEpochSecond", args);
+        return true;
+      case "ofSecondOfDay":
+      case "ofNanoOfDay":
+      case "ofEpochDay":
+        printMacroName(methodName);
+        printHelper(methodName, args);
         return true;
       case "ofInstant":
         printMacroName(methodName);
@@ -414,8 +419,20 @@ public class JavaTimeAdapter extends AbstractAdapter {
         print(")");
         return true;
       case "withDayOfYear":
+      case "withNano":
         printMacroName(methodName);
         printHelper(methodName, List.of(target, args.get(0)));
+        return true;
+      case "toSecondOfDay":
+      case "toNanoOfDay":
+      case "toEpochDay":
+        printMacroName(methodName);
+        printHelper(methodName, List.of(target));
+        return true;
+      case "atDate":
+        // LocalTime.atDate(date)
+        printMacroName(methodName);
+        printTarget(args.get(0)).print(".toPlainDateTime(").print(target).print(")");
         return true;
       case "toLocalDate":
         printMacroName(methodName);
@@ -568,6 +585,64 @@ public class JavaTimeAdapter extends AbstractAdapter {
     return false;
   }
 
+  /** the methods of ChronoUnit on the name of the constant, see DurationHelper */
+  private boolean substituteMethodInvocation_ChronoUnit(MethodInvocationElement invocation) {
+    String methodName = invocation.getMethodName();
+    ExtendedElement target = invocation.getTargetExpression();
+    List<ExtendedElement> args = invocation.getArguments();
+    switch (methodName) {
+      case "between":
+        // unit.between(start, end)
+        printMacroName(methodName);
+        List<ExtendedElement> unitAndArgs = new ArrayList<>();
+        unitAndArgs.add(target);
+        unitAndArgs.addAll(args);
+        printDurationHelper("unitsBetween", unitAndArgs);
+        return true;
+      case "getDuration":
+        printMacroName(methodName);
+        printDurationHelper(methodName, List.of(target));
+        return true;
+      case "valueOf":
+        if (args.size() != 1 || !isStaticCall(invocation)) {
+          return false;
+        }
+        printMacroName(methodName);
+        printDurationHelper("unitOf", args);
+        return true;
+      case "name":
+        printMacroName(methodName);
+        printTarget(target);
+        return true;
+      case "toString":
+        printMacroName(methodName);
+        printDurationHelper("unitToString", List.of(target));
+        return true;
+    }
+    return false;
+  }
+
+  /** until(end, unit) and truncatedTo(unit) of the java.time values, see DurationHelper */
+  private boolean substituteUnitMethods(MethodInvocationElement invocation) {
+    String methodName = invocation.getMethodName();
+    ExtendedElement target = invocation.getTargetExpression();
+    List<ExtendedElement> args = invocation.getArguments();
+    if (target == null) {
+      return false;
+    }
+    if ("until".equals(methodName) && args.size() == 2) {
+      printMacroName(methodName);
+      printDurationHelper("unitsBetween", List.of(args.get(1), target, args.get(0)));
+      return true;
+    }
+    if ("truncatedTo".equals(methodName) && args.size() == 1) {
+      printMacroName(methodName);
+      printDurationHelper(methodName, List.of(target, args.get(0)));
+      return true;
+    }
+    return false;
+  }
+
   /**
    * plus(Duration) and minus(Duration) of a LocalDateTime, LocalTime or Instant (a LocalDate has no time, Java rejects
    * a Duration); plus(amount, unit) and minus(amount, unit) of all of them
@@ -640,7 +715,8 @@ public class JavaTimeAdapter extends AbstractAdapter {
     ExtendedElement left = binaryOperator.getLeftHandSide();
     ExtendedElement right = binaryOperator.getRightHandSide();
     if ("+".equals(binaryOperator.getOperator()) && binaryOperator.getType() != null
-        && "java.lang.String".equals(binaryOperator.getType().toString()) && (isTemporal(left) || isTemporal(right))) {
+        && "java.lang.String".equals(binaryOperator.getType().toString())
+        && (hasJavaString(left) || hasJavaString(right))) {
       printConcatOperand(left);
       print(" + ");
       printConcatOperand(right);
@@ -652,12 +728,12 @@ public class JavaTimeAdapter extends AbstractAdapter {
   /** string concatenation by +=, see substituteBinaryOperator */
   @Override
   public boolean substituteAssignmentWithOperator(AssignmentWithOperatorElement assignment) {
-    if ("+=".equals(assignment.getOperator()) && isTemporal(assignment.getValue()) && assignment.getType() != null
+    if ("+=".equals(assignment.getOperator()) && hasJavaString(assignment.getValue()) && assignment.getType() != null
         && "java.lang.String".equals(assignment.getType().toString())) {
       // the target from the tree: getTarget() supports variables only, not e.g. array elements
       getPrinter().print(((CompoundAssignmentTree) ExtendedElementFactory.toTree(assignment)).getVariable())
           .print(" += ");
-      printHelper("toString", List.of(assignment.getValue()));
+      printJavaString(assignment.getValue());
       return true;
     }
     return super.substituteAssignmentWithOperator(assignment);
@@ -668,7 +744,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
    * evaluated outside the lambda, as it may contain an await
    */
   private boolean substituteStringBuilding(MethodInvocationElement invocation, String targetType) {
-    if (invocation.getArgumentCount() != 1 || !isTemporal(invocation.getArgument(0))) {
+    if (invocation.getArgumentCount() != 1 || !hasJavaString(invocation.getArgument(0))) {
       return false;
     }
     String methodName = invocation.getMethodName();
@@ -676,7 +752,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
         && ("java.lang.StringBuilder".equals(targetType) || "java.lang.StringBuffer".equals(targetType))) {
       printMacroName(methodName);
       print("((sb, s) => { sb.str += s; return sb; })(").print(invocation.getTargetExpression()).print(", ");
-      printHelper("toString", invocation.getArguments());
+      printJavaString(invocation.getArgument(0));
       print(")");
       return true;
     }
@@ -684,7 +760,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
       // String(null) is "null", like Java
       printMacroName(methodName);
       print("String(");
-      printHelper("toString", invocation.getArguments());
+      printJavaString(invocation.getArgument(0));
       print(")");
       return true;
     }
@@ -697,11 +773,28 @@ public class JavaTimeAdapter extends AbstractAdapter {
   }
 
   private void printConcatOperand(ExtendedElement operand) {
-    if (isTemporal(operand)) {
-      useTemporal();
-      printHelper("toString", List.of(operand));
+    if (hasJavaString(operand)) {
+      printJavaString(operand);
     } else {
       print(operand);
+    }
+  }
+
+  /**
+   * whether the string of the element differs from the one JS makes: a java.time value (the format of java.time;
+   * Temporal values refuse the conversion) or a ChronoUnit (its display name, e.g. "Days")
+   */
+  public static boolean hasJavaString(ExtendedElement element) {
+    return isTemporal(element) || element.getType() != null && CHRONO_UNIT.equals(element.getType().toString());
+  }
+
+  /** the toString of the element like in Java, see hasJavaString */
+  private void printJavaString(ExtendedElement element) {
+    if (isTemporal(element)) {
+      useTemporal();
+      printHelper("toString", List.of(element));
+    } else {
+      printDurationHelper("unitToString", List.of(element));
     }
   }
 
