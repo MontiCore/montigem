@@ -19,10 +19,13 @@ This section complements the User Guide with technical details on the mapping of
 * `java.time.LocalDateTime`, `java.time.LocalDate`, `java.time.LocalTime`, `java.time.Instant`, `java.time.Duration`,
   `java.time.ZonedDateTime`
   * are mapped to `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`, `Instant`, `Duration`, `ZonedDateTime` (type
-    mappings in `JavaTimeAdapter`; `ZoneId` and `ZoneOffset` are strings,
-    `Temporal` from `@umlp/commonj2ts`); `java.util.Date` is not supported (error `0xEE013`).
-  * `now`, `parse`, comparison and getter methods as well as `toEpochSecond`/`ofEpochSecond` are explicitly translated into TS expressions.
-  * Calculation operations (`plus*/minus*`, `atStartOfDay`) are delegated via `LocalDateTimeHelper` (`@umlp/commonj2ts`).
+    mappings in `JavaTimeAdapter`, `Temporal` from `@umlp/commonj2ts`); `ZoneId`, `ZoneOffset`, `DayOfWeek` and
+    `ChronoUnit` are strings; `java.util.Date` is not supported (error `0xEE013`).
+  * Methods with a Temporal counterpart become Temporal calls (`plusDays` is `.add({days: n})`, `atStartOfDay` is
+    `.toPlainDateTime()`, getters are properties); the others call `LocalDateTimeHelper`, `DurationHelper` or
+    `ZonedDateTimeHelper` (`@umlp/commonj2ts`), which follow java.time (formats, rounding, rejected values).
+  * String building with java.time values prints their java.time format (Temporal values refuse the implicit
+    conversion to a string).
 
 ### 10.3 Collections
 

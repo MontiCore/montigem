@@ -502,4 +502,50 @@ public interface DbTypesTest extends AttributesTestSetup {
     assertEquals(sut.getBar_list_durationList(), clone.getBar_list_durationList());
     assertEquals(sut.getBar_opt_duration(), clone.getBar_opt_duration());
   }
+
+  /** empty Optionals stay empty (no PT0S), setters, emptied Optionals and list changes of Instant and Duration */
+  @Test
+  default void testUpdatesOfInstantAndDuration() {
+    MinimalJavaTime sut = AttributesManager.minimalJavaTimeBuilder()
+        .bar_local_date(LocalDate.of(2026, 11, 17))
+        .bar_local_time(LocalTime.of(9, 30))
+        .bar_local_date_time(LocalDateTime.of(2026, 11, 17, 9, 30))
+        .bar_instant(Instant.parse("2026-11-17T09:30:15.123456Z"))
+        .bar_duration(Duration.ofMinutes(90))
+        .build().get();
+    var dao = AttributesDAOFactory.getMinimalJavaTimeDAO();
+    var clone = dao.selectMinimalJavaTime(sut.gemId).get();
+    assertFalse(clone.getBar_opt_instant().isPresent());
+    assertFalse(clone.getBar_opt_duration().isPresent());
+    assertTrue(clone.getBar_list_instantList().isEmpty());
+    assertTrue(clone.getBar_list_durationList().isEmpty());
+
+    // set, set to present and back to empty
+    sut.setBar_instant(Instant.parse("1969-12-31T23:59:59.5Z"));
+    sut.setBar_duration(Duration.ofSeconds(-90, 250_000_000));
+    sut.setBar_opt_instant(Optional.of(Instant.parse("2026-11-18T00:00:00Z")));
+    sut.setBar_opt_duration(Optional.of(Duration.ofDays(2)));
+    clone = dao.selectMinimalJavaTime(sut.gemId).get();
+    assertEquals(Instant.parse("1969-12-31T23:59:59.5Z"), clone.getBar_instant());
+    assertEquals(Duration.ofSeconds(-90, 250_000_000), clone.getBar_duration());
+    assertEquals(Optional.of(Instant.parse("2026-11-18T00:00:00Z")), clone.getBar_opt_instant());
+    assertEquals(Optional.of(Duration.ofDays(2)), clone.getBar_opt_duration());
+    sut.setBar_opt_instant(Optional.empty());
+    sut.setBar_opt_duration(Optional.empty());
+    clone = dao.selectMinimalJavaTime(sut.gemId).get();
+    assertFalse(clone.getBar_opt_instant().isPresent());
+    assertFalse(clone.getBar_opt_duration().isPresent());
+
+    // add and remove list elements
+    sut.addBar_list_instant(0, Instant.parse("2026-11-17T09:30:00Z"));
+    sut.addBar_list_instant(0, Instant.parse("1970-01-01T00:00:00.000001Z"));
+    sut.addBar_list_duration(0, Duration.ofHours(1));
+    sut.addBar_list_duration(1, Duration.ZERO);
+    sut.addBar_list_duration(2, Duration.ofNanos(-1));
+    sut.removeBar_list_duration(1);
+    clone = dao.selectMinimalJavaTime(sut.gemId).get();
+    assertEquals(List.of(Instant.parse("1970-01-01T00:00:00.000001Z"), Instant.parse("2026-11-17T09:30:00Z")),
+        clone.getBar_list_instantList());
+    assertEquals(List.of(Duration.ofHours(1), Duration.ofNanos(-1)), clone.getBar_list_durationList());
+  }
 }
