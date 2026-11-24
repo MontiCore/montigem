@@ -15,7 +15,7 @@ import de.monticore.types.mccollectiontypes._ast.ASTMCGenericType;
 import java.util.List;
 
 /**
- * Accessors of a GemMap of an attribute qualified association, see GenService#isMap
+ * Accessors of a GemMap of a qualified association ([[attr]] or [Type]), see GenService#isMap
  */
 public class AssocMapAccessorDecorator extends MandatoryAccessorDecorator {
 

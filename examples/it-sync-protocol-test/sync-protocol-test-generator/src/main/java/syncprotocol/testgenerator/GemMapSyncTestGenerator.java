@@ -361,7 +361,7 @@ public final class GemMapSyncTestGenerator {
       content.append("    assertValuesNotLoaded(scenario);\n");
     }
     // VALUE_LOADED: the values' other side follows without the owner (whether the owner stays unloaded is not
-    // checked: changing a single other side by id loads its old value, known bug #18)
+    // checked: changing a single other side by id loads its old value, a known bug)
     // before the map's assertions, which load the owner
     appendOtherSideAssertion(content, operation, gemMap, "");
     appendExpectedAssertion(content, operation, gemMap, "");

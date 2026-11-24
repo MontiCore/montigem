@@ -10,8 +10,8 @@
      correct it. It differs from the value the server replaces if the sender's map was stale: concurrent puts under
      the same key, or an [[attr]] key the server corrected (0xA7306/0xA7316). Then the other side of the wrongly named
      value is released and the replaced one stays stale on the participants that loaded only the values. Fix with the
-     handling of concurrent commands (known bugs #15/#16), e.g. the server sets oldValueGemId from its map before it
-     puts, like the old owner (OldOwner.ftl). -->
+     handling of concurrent commands, e.g. the server sets oldValueGemId from its map before it puts, like the old
+     owner (OldOwner.ftl). -->
 ${tc.signature("classname", "managerName", "name", "otherSide", "otherSideIsList", "targettype", "targetTypeManager")}
 if (CommandManager.getParticipantId() != 0) {
 <#if !otherSideIsList>
