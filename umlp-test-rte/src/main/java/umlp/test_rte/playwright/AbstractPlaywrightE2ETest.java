@@ -80,6 +80,18 @@ public abstract class AbstractPlaywrightE2ETest implements PlaywrightUtils {
   }
 
   /**
+   * Checks whether JavaScript coverage tracking is enabled for this test run.
+   *
+   * <p>By default, this checks the umlp.coverage JVM system property. Subclasses may override this
+   * behavior to customize coverage behavior.
+   *
+   * @return true, if JavaScript coverage should be collected; otherwise false
+   */
+  protected boolean isCoverageEnabled(){
+    return Boolean.getBoolean("umlp.coverage");
+  }
+
+  /**
    * Starts the frontendServer with the {@link FrontendServer4Test}
    *
    * @throws IOException When an {@link IOException} occurs while starting the frontend
@@ -103,8 +115,10 @@ public abstract class AbstractPlaywrightE2ETest implements PlaywrightUtils {
    */
   @BeforeEach
   protected void autoInitCoverage(BrowserContext context){
-    coverageTracker = new CoverageTracker(context, getFrontendDistDirectory());
-    coverageTracker.startJSCoverage();
+    if(isCoverageEnabled()) {
+      coverageTracker = new CoverageTracker(context, getFrontendDistDirectory());
+      coverageTracker.startJSCoverage();
+    }
   }
 
   /**
