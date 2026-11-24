@@ -21,12 +21,13 @@ import static de.monticore.types.check.SymTypePrimitive.box;
  * The key of the GemMap generated for the target side of a qualified association.
  * Attribute qualified {@code Owner [[attr]] -> Target}: the key of a target object is the value of its attribute attr.
  * <ul>
- *   <li>attr of a primitive type or String: the GemMap is a GemValueMap keyed by the attribute value</li>
+ *   <li>attr of an integral type, String or a date/time type (LocalDate, LocalDateTime, LocalTime, Instant): the
+ *   GemMap is a GemValueMap keyed by the attribute value</li>
  *   <li>attr of a domain class (turned into a to-one association of Target by UMLAttrToAssocTrafo):
  *   the GemMap is a GemEntryMap keyed by the referenced object</li>
  * </ul>
  * Type qualified {@code Owner [Type] -> Target}: the key is chosen on put (not derived, see {@link #isDerived}), a
- * GemValueMap for numeric and String keys, a GemEntryMap for domain class keys.
+ * GemValueMap for integral, String and date/time keys, a GemEntryMap for domain class keys.
  */
 public class QualifierKey {
 
@@ -36,7 +37,8 @@ public class QualifierKey {
 
   protected final boolean isEntryKey;
 
-  // the key type: boxed attribute type, or the referenced domain class
+  // the key type: the boxed attribute or qualifier type (date/time types fully qualified), or the referenced domain
+  // class
   protected final String keyType;
 
   // the type of the old and new value in Target's notifySet<Attr> observer method
@@ -172,7 +174,8 @@ public class QualifierKey {
   }
 
   /**
-   * @return the key type: the boxed attribute type, or the referenced domain class (GemEntryMap)
+   * @return the key type: the boxed attribute or qualifier type (date/time types fully qualified), or the referenced
+   * domain class (GemEntryMap)
    */
   public String getKeyType() {
     return keyType;

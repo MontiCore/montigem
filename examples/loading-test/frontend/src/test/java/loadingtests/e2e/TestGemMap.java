@@ -339,8 +339,7 @@ public class TestGemMap extends AbstractLoadingTestsE2ETest {
   }
 
   /**
-   * a key finer than microseconds put through the map in the browser is refused with a message (the message used to
-   * throw for java.time keys), nothing is stored
+   * a key finer than microseconds put through the map in the browser is refused with a message, nothing is stored
    */
   @Test
   public void testFineTimeKeyRefusedInBrowser(Page page) {

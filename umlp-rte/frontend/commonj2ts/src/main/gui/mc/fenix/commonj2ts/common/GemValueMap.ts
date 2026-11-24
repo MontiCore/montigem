@@ -174,7 +174,7 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
    * puts value under key and returns the value stored for key before, like java.util.Map#put, but a value is stored
    * under one key only: an entry the value has under another key moves to key. The key of an attribute qualified
    * association is derived from the value, so a key that does not match is rejected; a null key is rejected as well,
-   * and so is a key the browser cannot represent exactly (see isSafeKey).
+   * and so is a key that is not safe (see isSafeKey).
    */
   async put(key: K, value: V): Promise<V> {
     if (key != null && this.refusesKey(key, value.getGemId())) {
@@ -228,9 +228,10 @@ export abstract class GemValueMap<K, V extends GemIdentifiable> extends Abstract
   }
 
   /**
-   * whether the browser represents key exactly: there, numbers are doubles, which hold the integers up to
-   * MAX_SAFE_KEY only; a larger long key would equal its neighbours in the browser, so the participants would
-   * disagree on the entries. Overridden by the maps of long keys, all other keys are safe.
+   * whether key is safe: in the browser, numbers are doubles, which hold the integers up to MAX_SAFE_KEY only; a
+   * larger long key would equal its neighbours in the browser, so the participants would disagree on the entries.
+   * Overridden by the maps of long keys and of chosen time keys (stored only to the microsecond), all other keys are
+   * safe.
    */
   public isSafeKey(key: K): boolean {
     return true;

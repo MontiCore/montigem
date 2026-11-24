@@ -88,7 +88,8 @@ For MontiGem users:
   the given offset (before, every offset was taken as UTC), and `ChronoUnit.toString()` gives the display name like
   Java (`"Days"`, before `"DAYS"`).
 * `Map<K, V>` attributes with simple values (primitive and boxed types except `char`, `String`, enums,
-  `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant`, `Duration`), like list attributes:
+  `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant`, `Duration`), like list attributes; before,
+  only domain class values were allowed (`0xCDC6E`):
   ```
   class Person { Map<String, Integer> scores; }
   ```
@@ -97,8 +98,8 @@ For MontiGem users:
   `scores(map)` and `scoresPut(key, value)`. Puts and removes are synchronized per entry (commands
   `Person_putScores`, `Person_removeScores`) and stored per entry (SQL table `person$scores$map`,
   Neo4j properties `Scores_keys` and `Scores_values`); the entries keep their insertion order. The
-  keys are those of type qualifiers without domain classes and `LocalDate`, `LocalDateTime`,
-  `LocalTime`, `Instant` (`0xCDC6F`); in the frontend, equal date/time keys are the same key, like
+  keys are those of type qualifiers except domain classes: `byte`, `short`, `int`, `long`,
+  `String`, `LocalDate`, `LocalDateTime`, `LocalTime`, `Instant` (`0xCDC6F`); in the frontend, equal date/time keys are the same key, like
   in Java. Refused, also when the builder gets a whole map: `null` keys and values (`0xA7331`,
   commands `0xA7334`), long keys beyond ±(2^53−1) (`0xA7332`, `0xA7335`) and time keys finer than
   the microseconds a database stores (`0xA7336`, `0xA7337`). `getScores(key)` of a missing key is an

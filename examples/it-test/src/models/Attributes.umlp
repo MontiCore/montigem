@@ -146,7 +146,7 @@ umlp Attributes {
   }
 
   /* map attributes with simple values: the keys of type qualifiers (byte, short, int, long, String) and date/time
-     keys, the values of list attributes (primitive and boxed types, String, enums, date/time types) */
+     keys; values of primitive and boxed types except char, String, enums, date/time types and Duration */
   // its name was also the name of the owner parameter of the map observers, next to oldValue
   class OldValue {
     Map<String, Double> readings;
