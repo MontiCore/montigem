@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+package gui.test;
+
+import mc.fenix.basic.GemText;
+import mc.fenix.input.GemTextInput;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
+page TestTimeInputs(LocalDate date, LocalTime time, LocalDateTime dateTime) {
+  dateInput@GemTextInput(labelText = "Date", inputType = "date", entry = date);
+  timeInput@GemTextInput(labelText = "Time", inputType = "time", entry = time);
+  dateTimeInput@GemTextInput(labelText = "Date and time", inputType = "datetime-local", entry = dateTime);
+  summary@GemText(value = describe(date, time, dateTime));
+}

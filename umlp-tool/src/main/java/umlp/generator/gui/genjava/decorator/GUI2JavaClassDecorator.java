@@ -1526,6 +1526,12 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
       return dateTime2StringConversion();
     }
 
+    boolean rightIsTime = right.printFullName()
+        .equals(TypeScriptTypes.LOCAL_TIME.getJavaQName().get());
+    if (leftIsString && rightIsTime) {
+      return time2StringConversion();
+    }
+
     boolean rightIsNumber = TypeScriptTypes.isNumber(right);
     if (leftIsString && rightIsNumber) {
       return number2StringConversion();
@@ -1556,6 +1562,13 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
     if (rightIsString && leftIsDateTime) {
       getSimpleType(createTypeAndAddImports(left));
       return string2DateTimeConversion();
+    }
+
+    boolean leftIsTime = left.printFullName()
+        .equals(TypeScriptTypes.LOCAL_TIME.getJavaQName().get());
+    if (rightIsString && leftIsTime) {
+      getSimpleType(createTypeAndAddImports(left));
+      return string2TimeConversion();
     }
 
     boolean leftIsNumber = TypeScriptTypes.isNumber(left);
@@ -1595,6 +1608,14 @@ public class GUI2JavaClassDecorator extends GUI2ClassDecorator implements GUIDSL
 
   protected Function<String, String> string2DateTimeConversion() {
     return s -> "LocalDateTime.parse(" + s + ")";
+  }
+
+  protected Function<String, String> time2StringConversion() {
+    return s -> s + ".toString()";
+  }
+
+  protected Function<String, String> string2TimeConversion() {
+    return s -> "LocalTime.parse(" + s + ")";
   }
 
   protected Function<String, String> number2StringConversion() {
