@@ -109,7 +109,7 @@ export class LocalDateTimeHelper {
 
   /**
    * String(value) like Java for a value of a static type that may be a java.time value (Object, a type parameter):
-   * a java.time value in the format of java.time, as Temporal values refuse the conversion to a string
+   * a java.time value in the format of java.time (Temporal's toString differs, its values refuse the + operator)
    */
   static toJavaString(value: any): string {
     return JavaUtilUtils.isTemporal(value) ? LocalDateTimeHelper.toString(value) : String(value);

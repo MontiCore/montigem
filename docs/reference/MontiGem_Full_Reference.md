@@ -87,8 +87,8 @@ class Customer extends Person { String customerId; }
 | `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
 | `Instant` | `java.time.Instant` | `Temporal.Instant` | A point in time; SQL `TIMESTAMP WITH TIME ZONE`, rounded to the microsecond (Neo4j and the synchronization keep nanoseconds). |
 | `Duration` | `java.time.Duration` | `Temporal.Duration` | An exact length of time; SQL `BIGINT` nanoseconds, so up to about 292 years. |
-| `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
-| `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
+| `List<T>` | `java.util.List<T>` | `IUMLPList<T>` (asynchronous) | Only `List` is supported as a generic collection. |
+| `Optional<T>` | `java.util.Optional<T>` | `T \| null` | `null` represents empty. |
 
 ### 2.2 Enums
 
@@ -363,9 +363,9 @@ Avoid overloading event handler methods in the GUI DSL. Use unique names (e.g., 
 MontiGem uses JSweet to transpile Java to TypeScript. For a detailed guide on supported types and methods, see the [JSweet User Guide](../unstructured/JSweet.md).
 
 *   **Supported APIs:** A large subset of the Java standard library is supported:
-    *   `java.util.List`, `ArrayList`, `LinkedList` -> JS `Array`
-    *   `java.util.Map`, `HashMap` -> JS `Map`
-    *   `java.util.Optional` -> Unwrapped value (nullable)
+    *   `java.util.List`, `ArrayList`, `LinkedList` -> `IUMLPList`, `AsyncList` (asynchronous)
+    *   `java.util.Map`, `HashMap` -> `IUMLPMap`, `AsyncMap` (asynchronous, insertion ordered)
+    *   `java.util.Optional` -> Unwrapped value (`null` when empty)
     *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration`, `ZonedDateTime` ->
         `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`, `Instant`, `Duration`, `ZonedDateTime`
     *   `java.lang.String`, `Math`, `System.out.println`

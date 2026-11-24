@@ -42,7 +42,7 @@ public class JSweetCoCoCheckerTest {
     SourceFile[] sourceFiles = getSourceFiles(input);
     transpiler.transpile(handler, sourceFiles);
 
-    // JSweetCoCoChecker logs warnings with Log.warn (0xEE...)
+    // JSweetCoCoChecker logs warnings with Log.warn and errors with Log.error (0xEE...)
     List<String> findings = Log.getFindings().stream()
         .map(Finding::getMsg)
         .collect(Collectors.toList());
@@ -95,7 +95,7 @@ public class JSweetCoCoCheckerTest {
     SourceFile[] sourceFiles = getSourceFiles(input);
     transpiler.transpile(handler, sourceFiles);
 
-    // JSweetCoCoChecker logs warnings with Log.warn (0xEE...)
+    // JSweetCoCoChecker logs warnings with Log.warn and errors with Log.error (0xEE...)
     List<String> findings = Log.getFindings().stream()
         .map(Finding::getMsg)
         .collect(Collectors.toList());
@@ -120,7 +120,7 @@ public class JSweetCoCoCheckerTest {
     SourceFile[] sourceFiles = getSourceFiles(input);
     transpiler.transpile(handler, sourceFiles);
 
-    // JSweetCoCoChecker logs warnings with Log.warn (0xEE...)
+    // JSweetCoCoChecker logs warnings with Log.warn and errors with Log.error (0xEE...)
     List<String> findings = Log.getFindings().stream()
         .map(Finding::getMsg)
         .collect(Collectors.toList());

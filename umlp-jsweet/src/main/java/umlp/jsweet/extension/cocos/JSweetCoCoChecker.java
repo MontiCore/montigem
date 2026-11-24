@@ -28,8 +28,8 @@ import java.util.TreeSet;
 import static umlp.jsweet.extension.common.FutureAdapter.isFutureAdaptedTypes;
 
 /**
- * This class does not adapt anything but throws warnings when finding Java Concepts that we cannot
- * transpile.
+ * This class does not adapt anything but reports Java concepts that we cannot transpile: warnings, and errors for
+ * those that never work (java.util.Date, 0xEE013).
  */
 public class JSweetCoCoChecker extends AbstractTreeScanner {
 

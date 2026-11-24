@@ -38,8 +38,8 @@ class Customer extends Person { String customerId; }
 | `LocalTime` | `java.time.LocalTime` | `Temporal.PlainTime` | |
 | `Instant` | `java.time.Instant` | `Temporal.Instant` | A point in time; SQL `TIMESTAMP WITH TIME ZONE`, rounded to the microsecond (Neo4j and the synchronization keep nanoseconds). |
 | `Duration` | `java.time.Duration` | `Temporal.Duration` | An exact length of time; SQL `BIGINT` nanoseconds, so up to about 292 years. |
-| `List<T>` | `java.util.List<T>` | `Array<T>` | Only `List` is supported as a generic collection. |
-| `Optional<T>` | `java.util.Optional<T>` | `T` | `undefined` represents empty. |
+| `List<T>` | `java.util.List<T>` | `IUMLPList<T>` (asynchronous) | Only `List` is supported as a generic collection. |
+| `Optional<T>` | `java.util.Optional<T>` | `T \| null` | `null` represents empty. |
 
 ## 2.2 Enums
 
