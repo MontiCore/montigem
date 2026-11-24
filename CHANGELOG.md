@@ -69,8 +69,10 @@ For MontiGem users:
   key moves it), `null` is no key, and the entries keep their insertion order.
 
 ## 2026-11-09: 7.10.0-SNAPSHOT
-* Qualified associations (attribute and type qualified) may be bidirectional. The owner side
-  needs an explicit cardinality, `[1]`, `[0..1]` or `[*]` (`0xCDC6D`); the value side stays `[1]`:
+* Qualified associations (attribute and type qualified) may be bidirectional; before, they had to
+  be unidirectional, now `0xCDC6A` only requires them to be navigable from the qualified side
+  (the owner). The owner side needs an explicit cardinality, `[1]`, `[0..1]` or `[*]`
+  (`0xCDC6D`); the value side stays `[1]`:
   ```
   association [0..1] Club [[code]] (club) <-> (memberByCode) Member [1];
   association [*] Club [String] (clubs) <-> (memberByRole) Member [1];

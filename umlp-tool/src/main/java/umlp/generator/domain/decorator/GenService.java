@@ -523,8 +523,8 @@ public class GenService {
   /**
    * whether the side is the other side of a GemMap, the value side of a bidirectional qualified association: it
    * navigates from a value to its owner ([1]/[0..1]: a single reference, [*]: a list, see
-   * UMLPAssociationQualifierNavigability). The map updates it on every participant (MINIMAL scope), as a bidirectional
-   * list updates its other side; it has no commands and no database rows of its own.
+   * UMLPAssociationQualifierOwnerCardinality). The map updates it on every participant (MINIMAL scope), as a
+   * bidirectional list updates its other side; it has no commands and no database rows of its own.
    */
   public static boolean isOtherSideOfMap(ASTCDAssocSide assoc) {
     if (!assoc.isPresentSymbol() || !assoc.getSymbol().isIsDefinitiveNavigable()

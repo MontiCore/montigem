@@ -1,5 +1,5 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-<#-- puts o under the chosen key (type qualified association); a null key is rejected like by the owner (PutKey) -->
+<#-- puts o under the chosen key (type qualified association); a null key is rejected like by the owner (_internal_put<Role>Id, methods/gemmap/InternalPutId) -->
 ${tc.signature("name", "keyType", "type", "builder")}
 ${cd4c.method("public ${builder} ${name}Put(${keyType} key, ${type} o)")}
 

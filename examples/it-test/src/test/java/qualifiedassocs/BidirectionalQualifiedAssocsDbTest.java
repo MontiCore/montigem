@@ -16,8 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Bidirectional qualified associations: the owner's GemMap is the source of truth and updates its other side (the
- * value side, read only) on every participant, like a bidirectional list; the other side is loaded from the map's
- * rows.
+ * value side; read only for type qualified maps, see OtherSideChangesDbTest for attribute qualified ones) on every
+ * participant, like a bidirectional list; the other side is loaded from the map's rows.
  * <ul>
  *   <li>[0..1] Club [String] (club) &lt;-&gt; (memberByCode) Person [1]: a single reference</li>
  *   <li>[1] Club [Department] (ledClub) &lt;-&gt; (leaderByDepartment) Person [1]: a single reference, entry map</li>

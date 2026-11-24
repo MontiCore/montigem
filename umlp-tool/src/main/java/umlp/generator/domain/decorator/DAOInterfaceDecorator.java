@@ -195,7 +195,7 @@ public class DAOInterfaceDecorator extends AbstractDecorator {
       removeAllMethodForAssocDAO(daoInterface,association, association.getRight(), association.getLeft());
       updateMethodForAssocDAO(daoInterface, association, association.getRight(), association.getLeft());
     }
-    // a type qualified association (unidirectional from the owner) stores the key of each value
+    // a type qualified association stores the key of each value
     GenService.getTypeQualifiedMapSide(association).ifPresent(mapSide -> keyMethodsForAssocDAO(daoInterface,
         association, mapSide.isLeft() ? association.getRight() : association.getLeft(), mapSide,
         QualifierKey.of(mapSide)));
