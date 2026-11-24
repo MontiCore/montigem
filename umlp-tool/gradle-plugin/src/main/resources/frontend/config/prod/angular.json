@@ -61,6 +61,12 @@
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
+            },
+            "coverage": {
+              "sourceMap": {
+                "scripts": true,
+                "vendor": true
+              }
             }
           },
           "defaultConfiguration": "production"

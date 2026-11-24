@@ -63,6 +63,10 @@ if(project.hasProperty('coverage')){
     systemProperty 'umlp.coverage', 'true'
   }
 
+  tasks.named('buildApp') {
+    args.add('--configuration=production,coverage')
+  }
+
   def agentPath = configurations.detachedConfiguration(
       dependencies.create("org.jacoco:org.jacoco.agent:${jacoco.toolVersion}:runtime")
   ).singleFile.absolutePath
