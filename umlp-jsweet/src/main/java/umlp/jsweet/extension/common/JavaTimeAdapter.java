@@ -737,7 +737,7 @@ public class JavaTimeAdapter extends AbstractAdapter {
 
   /**
    * whether the string of the element differs from the one JS makes: a java.time value (the format of java.time;
-   * Temporal values refuse the conversion), a ChronoUnit (its display name, e.g. "Days") or a value of an unknown type
+   * Temporal values refuse the + operator), a ChronoUnit (its display name, e.g. "Days") or a value of an unknown type
    * (see isUntyped)
    */
   public static boolean hasJavaString(ExtendedElement element) {

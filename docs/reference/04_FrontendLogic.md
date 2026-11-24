@@ -55,11 +55,11 @@ Avoid overloading event handler methods in the GUI DSL. Use unique names (e.g., 
 MontiGem uses JSweet to transpile Java to TypeScript. For a detailed guide on supported types and methods, see the [JSweet User Guide](../unstructured/JSweet.md).
 
 *   **Supported APIs:** A large subset of the Java standard library is supported:
-    *   `java.util.List`, `ArrayList`, `LinkedList` -> JS `Array`
-    *   `java.util.Map`, `HashMap` -> JS `Map`
-    *   `java.util.Optional` -> Unwrapped value (nullable)
-    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration` -> `Temporal.PlainDateTime`,
-        `PlainDate`, `PlainTime`, `Instant`, `Duration`
+    *   `java.util.List`, `ArrayList`, `LinkedList` -> `IUMLPList`, `AsyncList` (asynchronous)
+    *   `java.util.Map`, `HashMap` -> `IUMLPMap`, `AsyncMap` (asynchronous, insertion ordered)
+    *   `java.util.Optional` -> Unwrapped value (`null` when empty)
+    *   `java.time.LocalDateTime`, `LocalDate`, `LocalTime`, `Instant`, `Duration`, `ZonedDateTime` ->
+        `Temporal.PlainDateTime`, `PlainDate`, `PlainTime`, `Instant`, `Duration`, `ZonedDateTime`
     *   `java.lang.String`, `Math`, `System.out.println`
 *   **Unsupported:**
     *   `java.util.stream` (Streams): **Do not use.** Use loops instead.
