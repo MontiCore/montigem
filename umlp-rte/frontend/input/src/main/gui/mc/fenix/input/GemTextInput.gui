@@ -20,8 +20,11 @@ component GemTextInput(
     Commonly used types:
     `"text"`: Accept any input string.
     `"number"`: Accept numbers.
-    `"date"`: Date input with a calender selection.
+    `"date"`: Date input with a calender selection; entry in the format of LocalDate (2024-05-07).
+    `"time"`: Time input; entry in the format of LocalTime (10:30).
+    `"datetime-local"`: Date and time input; entry in the format of LocalDateTime (2024-05-07T10:30).
     `"password"`: Field hiding the input string.
+    An entry bound to a LocalDate, LocalTime or LocalDateTime is converted; use the input type of its format.
   */
   String inputType = "text",
   /**

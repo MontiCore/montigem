@@ -59,8 +59,9 @@ For MontiGem users:
   Temporal API instead of JS `Date`: `Temporal.PlainDate`, `Temporal.PlainDateTime`, `Temporal.PlainTime`,
   imported from `@umlp/commonj2ts` (which takes them from the polyfill `@js-temporal/polyfill`). Like in Java,
   they have no time zone and are exact to the nanosecond, so dates no longer shift with the browser's time zone.
-  Transpiled Java code is unaffected; handwritten TypeScript that treats these values as `Date` has to use the
-  Temporal API (e.g. `Temporal.Now.plainDateTimeISO()` instead of `new Date()`), and
+  Transpiled Java code is unaffected; handwritten TypeScript and `@Replace` bodies that treat these values as `Date`
+  have to use the Temporal API (e.g. `Temporal.Now.plainDateTimeISO()` instead of `new Date()`); `getHour()` and
+  the other getters no longer shift by the UTC offset, so `@Replace` workarounds for that can be removed; and
   `LocalDateTimeHelper.toDate`/`fromDate` convert for libraries that need a `Date`. `GemDateInput`,
   `GemTimeSeriesChart` and `GemTimelineChart` take Temporal values. The static methods of `LocalDateTimeHelper` on
   `Date` (`plusDays(date, n)`, `withYear`, `setHours`, `atStartOfDay`, `atEndOfDay`, ...) are removed, and
@@ -68,6 +69,11 @@ For MontiGem users:
 * **Breaking:** `java.util.Date` is not supported in transpiled code any more (error `0xEE013`): use `Instant`
   for points in time, or `LocalDate`, `LocalDateTime`, `LocalTime`. `parse(text, formatter)` of the java.time
   types is no longer translated (the formatter was ignored).
+* **Breaking:** `GemTextInput` with the input type `date`, `time` or `datetime-local` emits the value of the
+  native input, the format of `LocalDate`, `LocalTime` or `LocalDateTime` (`2024-05-07`, `10:30`,
+  `2024-05-07T10:30`); before, `date` appended the time of the old entry and `time` prepended its date. Bind a
+  `LocalDate` to `date`, a `LocalTime` to `time` (now converted as well) and a `LocalDateTime` to `datetime-local`;
+  a `LocalDateTime` bound to a `date` input gets a date only, which `LocalDateTime.parse` refuses.
 * `java.time.Instant` and `java.time.Duration` as attribute types, also in `List` and `Optional`: SQL
   `TIMESTAMP(6) WITH TIME ZONE` (rounded to the microsecond) and `BIGINT` nanoseconds, Neo4j and JSON (ISO strings,
   e.g. `"2026-11-17T09:30:15.123Z"`, `"PT1H30M"`) exact to the nanosecond; in transpiled code `Temporal.Instant` and
