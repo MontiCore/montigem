@@ -62,12 +62,9 @@ public class TestForNoErrorMessages extends AbstractLoadingTestsE2ETest {
     waitRdy(page);
 
     // Assert all persons were loaded
-    personGemIds.forEach(id -> {
-      System.out.println("Waiting for " + id);
-      var x = page.waitForFunction(isLoadedPersonFunction,id.intValue());
-      // The following is equivalent
-      assertEquals(Boolean.TRUE,page.evaluate(isLoadedPersonFunction,id.intValue()));
-    });
+    // isLoadedPerson is async in the browser: page.evaluate awaits its result
+    personGemIds.forEach(id -> waitUntil(() -> Boolean.TRUE.equals(page.evaluate(isLoadedPersonFunction, id.intValue())),
+        "person " + id + " in the browser"));
     waitRdy(page);
   }
 

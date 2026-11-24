@@ -255,6 +255,12 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
    */
   protected abstract List<LoadResult<V>> loadValueObjects(List<Long> gemIDs);
 
+  /**
+   * puts value under key and returns the value stored for key before, like {@link java.util.Map#put}, but a value
+   * is stored under one key only: an entry the value has under another key moves to key. The key of an attribute
+   * qualified association is derived from the value, so a key that does not match is rejected; a null key is
+   * rejected as well.
+   */
   @Override
   public V put(K key, V value) {
     if (isKeyDerived()) {
@@ -269,8 +275,13 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
       _internal_putValueAndSync(value);
       return oldElem;
     }
+    if (key == null) {
+      // a chosen key must be present (type qualified associations; the database stores it NOT NULL)
+      Log.error("0xA7318 The object with id " + value.getGemId() + " cannot be put under the key null");
+      return null;
+    }
     final V oldElem = get(key);
-    _internal_putAndSync(key.getGemId(), value.getGemId());
+    _internal_putAndSync(key, value);
     return oldElem;
   }
 
@@ -287,10 +298,20 @@ public abstract class GemEntryMap<K extends GemIdentifiable, V extends GemIdenti
 
 
   /**
+   * puts a value under a chosen key (type qualified associations, see {@link #_internal_putKeyValue});
    * to be overridden by a subclass to add synchronization
    */
-  protected void _internal_putAndSync(long keyGemID, long valueGemID) {
-    _internal_put(keyGemID, valueGemID);
+  protected void _internal_putAndSync(K key, V value) {
+    _internal_putKeyValue(key, value);
+  }
+
+  /**
+   * stores a value under a chosen key, without synchronization, replacing the value stored for key
+   * (type qualified associations, whose keys are not derived from the values); like a derived key, a value is
+   * stored under one key only: an entry it has under another key is moved to key, see {@link #_internal_putValueID}
+   */
+  public void _internal_putKeyValue(K key, V value) {
+    _internal_putValueID(key.getGemId(), value.getGemId());
   }
 
   public void _internal_put(long keyGemID, long valueGemID) {

@@ -7,14 +7,17 @@ import de.monticore.cd4codebasis._ast.ASTCDMethod;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
+import umlp.generator.domain.decorator.DomainTypeDecorator;
 import umlp.generator.domain.decorator.GenService;
 import umlp.generator.util.PathUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
- * Mutators of a GemMap of an attribute qualified association, see GenService#isMap.
- * The key of a value is derived from its qualifying attribute, so values are put without a key.
+ * Mutators of a GemMap of a qualified association, see GenService#isMap.
+ * Attribute qualified: the key of a value is derived from its qualifying attribute, so values are put without a key
+ * and rekeyed. Type qualified: values are put under a chosen key and never rekeyed.
  */
 public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
 
@@ -36,18 +39,41 @@ public class AssocMapMutatorDecorator extends AssocListMutatorDecorator {
     boolean isEntry = GenService.isGemEntryMap(ast);
     String storedKeyType = GenService.getGemMapStoredKeyType(ast);
 
-    // the server reports a put that replaces a value deriving the same key
-    methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
-        isEntry ? "0xA7317" : "0xA7307"));
+    boolean isKeyDerived = GenService.isKeyDerivedGemMap(ast);
+    // bidirectional: the map's put/remove update its other side, like a bidirectional list (empty if unidirectional);
+    // [*] owner side: the other side is a list; otherwise a single owner, a put moves the value
+    String otherSide = GenService.getOtherSideOfGemMap(ast).orElse("");
+    boolean otherSideIsList = GenService.isOtherSideOfGemMapList(ast);
+    String targetManager = ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MANAGER);
+    String ownerType = otherSide.isEmpty() ? ""
+        : ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MAP_OWNER);
+    String ownerManager = otherSide.isEmpty() ? ""
+        : ast.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_MAP_OWNER_MANAGER);
+    if (!otherSide.isEmpty()) {
+      cd4c.addImport(this.ast, "java.util.Collections");
+      cd4c.addImport(this.ast, "java.util.Optional");
+    }
+    if (isKeyDerived) {
+      // the server reports a put that replaces a value deriving the same key
+      methodList.add(createMethod("umlp.methods.gemmap.Put", name, targetName, sourceName, isEntry, storedKeyType,
+          isEntry ? "0xA7317" : "0xA7307", otherSide, otherSideIsList, targetManager, ownerType, ownerManager));
+    } else {
+      methodList.add(createMethod("umlp.methods.gemmap.PutKey", name, keyType, targetName, isEntry));
+    }
     cd4c.addImport(this.ast, PathUtil.getBackendRTECommandPath("CommandManager"));
     methodList.add(createMethod("umlp.methods.gemmap.Remove", name, keyType, isEntry));
     // put/remove without scope
     methodList.addAll(createNotifyMethods(methodList, ast.getModifier().isLocal()));
 
-    methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName));
-    // synchronization of keys: put as sent by the server without loading the value (command _put), rekeying
-    methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType));
-    methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
+    methodList.add(createMethod("umlp.methods.gemmap.InternalRemoveId", name, sourceName, otherSide, otherSideIsList,
+        targetName, targetManager));
+    // put by id: as sent by the server without loading the value (command _put), and the owner put of a type
+    // qualified association (chosen keys); rekeying
+    methodList.add(createMethod("umlp.methods.gemmap.InternalPutId", name, sourceName, storedKeyType, isEntry,
+        !isKeyDerived, otherSide, otherSideIsList, targetName, targetManager, ownerType, ownerManager));
+    if (isKeyDerived) {
+      methodList.add(createMethod("umlp.methods.gemmap.InternalRekey", name, sourceName, storedKeyType));
+    }
     methodList.add(createMethod("umlp.methods.gemmap.RemoveByIdSure", name));
     methodList.add(createMethod("umlp.methods.assocs.RemoveByIdSureNoScope", name, ast.getModifier().isLocal() ? "LOCAL" : "ALL"));
     return methodList;

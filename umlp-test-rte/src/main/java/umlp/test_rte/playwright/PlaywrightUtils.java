@@ -95,6 +95,27 @@ public interface PlaywrightUtils {
   }
 
   /**
+   * Waits until the condition holds, checking it again every 50 ms, and fails with the message after 10 seconds.
+   * For state that changes asynchronously, e.g. the backend after a command sent by the browser, or the browser after
+   * a command pushed by the backend: commands travel over the websocket, which {@link LoadState#NETWORKIDLE} (see
+   * {@link #waitRdy(Page)}) does not take into account.
+   */
+  default void waitUntil(java.util.function.BooleanSupplier condition, String message) {
+    long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
+    while (!condition.getAsBoolean()) {
+      if (System.nanoTime() > deadline) {
+        throw new AssertionError(message);
+      }
+      try {
+        Thread.sleep(50);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new AssertionError(message, e);
+      }
+    }
+  }
+
+  /**
    * Waits for a {@link Dialog} to occur on the provided {@link Page} while the trigger is run
    *
    * @param page    {@link Page} where the {@link Dialog} should occur

@@ -8,6 +8,7 @@ import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdassociation._ast.ASTCDCardinality;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
+import de.monticore.cd._symboltable.CDSymbolTables;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.cdbasis._symboltable.CDTypeSymbol;
 import de.monticore.class2mc.adapters.JClass2OOTypeSymbolAdapter;
@@ -267,6 +268,61 @@ public class GenService {
 
   /**
    * @param attr an attribute holding a GemMap, see {@link #isGemMap}
+   * @return whether its keys are derived from its values (attribute qualified association), see
+   * {@link #isKeyDerived(ASTCDAssocSide)}; marked by {@link DomainTypeDecorator#STEREOTYPE_KEY_DERIVED}
+   */
+  public static boolean isKeyDerivedGemMap(ASTCDAttribute attr) {
+    return attr.getModifier().isPresentStereotype()
+        && attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_KEY_DERIVED);
+  }
+
+  /**
+   * @return whether the association attribute is the other side of a GemMap, see {@link #isOtherSideOfMap};
+   * marked by {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE_OF_MAP}
+   */
+  public static boolean isOtherSideOfMapAttribute(ASTCDAttribute attr) {
+    return attr.getModifier().isPresentStereotype()
+        && attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_OF_MAP);
+  }
+
+  /**
+   * @param attr an association attribute
+   * @return the role of the map whose other side attr is, if attr can be changed through it (attribute qualified
+   * association: the key is derived from the value, see {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE_OF_MAP_SETTABLE});
+   * empty for any other attribute, also for the read-only other side of a type qualified map
+   */
+  public static String getMapOfSettableOtherSide(ASTCDAttribute attr) {
+    if (!attr.getModifier().isPresentStereotype()
+        || !attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_OF_MAP_SETTABLE)) {
+      return "";
+    }
+    return attr.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_OF_MAP);
+  }
+
+  /**
+   * @param attr an attribute holding a GemMap
+   * @return the role of the map's other side (bidirectional qualified association), see {@link #getOtherSideOfMap};
+   * marked by {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE}, as for a bidirectional list
+   */
+  public static Optional<String> getOtherSideOfGemMap(ASTCDAttribute attr) {
+    if (!attr.getModifier().isPresentStereotype()
+        || !attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE)) {
+      return Optional.empty();
+    }
+    return Optional.of(attr.getModifier().getStereotype().getValue(DomainTypeDecorator.STEREOTYPE_OTHERSIDE));
+  }
+
+  /**
+   * @return whether the other side of the GemMap attr is a list (owner side [*]), see {@link #getOtherSideOfGemMap};
+   * marked by {@link DomainTypeDecorator#STEREOTYPE_OTHERSIDE_ISLIST}
+   */
+  public static boolean isOtherSideOfGemMapList(ASTCDAttribute attr) {
+    return attr.getModifier().isPresentStereotype()
+        && attr.getModifier().getStereotype().contains(DomainTypeDecorator.STEREOTYPE_OTHERSIDE_ISLIST);
+  }
+
+  /**
+   * @param attr an attribute holding a GemMap, see {@link #isGemMap}
    * @return the type its keys are stored and synchronized as: the key type of a GemValueMap,
    * the gemId of the key object (Long) for a GemEntryMap
    */
@@ -369,13 +425,22 @@ public class GenService {
   }
 
   /**
-   * The target side of an association qualified by an attribute of the target class
-   * ({@code Owner [[attr]] -> Target}) is a GemMap of the qualified side, keyed by attr.
-   * Type qualifiers ({@code [Type]}) are not supported yet and ignored.
+   * The target side of a qualified association is a GemMap of the qualified side: qualified by an attribute of the
+   * target class ({@code Owner [[attr]] -> Target}), the key of a value is derived from attr (see
+   * {@link #isKeyDerived}); qualified by a type ({@code Owner [Type] -> Target}), the key is chosen on put.
    *
    * @param assoc the target side, as returned by e.g. CDSymbolTables.getAssociations(owner)
    */
   public static boolean isMap(ASTCDAssocSide assoc) {
+    return getQualifierAttributeName(assoc).isPresent() || getQualifierType(assoc).isPresent();
+  }
+
+  /**
+   * whether the keys of the GemMap of the target side are derived from its values, i.e. the association is qualified
+   * by an attribute of the target ({@code [[attr]]}): the values are rekeyed when attr changes. The keys of a type
+   * qualified association ({@code [Type]}) are chosen on put and never rekeyed.
+   */
+  public static boolean isKeyDerived(ASTCDAssocSide assoc) {
     return getQualifierAttributeName(assoc).isPresent();
   }
 
@@ -384,15 +449,45 @@ public class GenService {
    * @return the name of the target attribute qualifying the association, if any
    */
   public static Optional<String> getQualifierAttributeName(ASTCDAssocSide assoc) {
+    // the qualifier stands on the qualified (opposite) side, but names an attribute of the target
+    return getQualifiedSide(assoc)
+        .filter(side -> side.getCDQualifier().isPresentByAttributeName())
+        .map(side -> side.getCDQualifier().getByAttributeName());
+  }
+
+  /**
+   * @param assoc the target side of an association
+   * @return the type qualifying the association (the key type), if any
+   */
+  public static Optional<ASTMCType> getQualifierType(ASTCDAssocSide assoc) {
+    return getQualifiedSide(assoc)
+        .filter(side -> side.getCDQualifier().isPresentByType())
+        .map(side -> side.getCDQualifier().getByType());
+  }
+
+  /**
+   * @return the target side (the GemMap role) of a type qualified association, if assoc is one: its keys are stored
+   * in the database, see {@link QualifierKey#getColumnName}
+   */
+  public static Optional<ASTCDAssocSide> getTypeQualifiedMapSide(ASTCDAssociation assoc) {
+    if (getQualifierType(assoc.getRight()).isPresent()) {
+      return Optional.of(assoc.getRight());
+    }
+    if (getQualifierType(assoc.getLeft()).isPresent()) {
+      return Optional.of(assoc.getLeft());
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * @return the opposite side of the target side assoc, if it carries a qualifier
+   */
+  protected static Optional<ASTCDAssocSide> getQualifiedSide(ASTCDAssocSide assoc) {
     if (!assoc.isPresentSymbol() || !assoc.getSymbol().getOtherSide().isPresentAssocSide()) {
       return Optional.empty();
     }
-    // the qualifier stands on the qualified (opposite) side, but names an attribute of the target
     ASTCDAssocSide qualifiedSide = assoc.getSymbol().getOtherSide().getAssocSide();
-    if (qualifiedSide.isPresentCDQualifier() && qualifiedSide.getCDQualifier().isPresentByAttributeName()) {
-      return Optional.of(qualifiedSide.getCDQualifier().getByAttributeName());
-    }
-    return Optional.empty();
+    return qualifiedSide.isPresentCDQualifier() ? Optional.of(qualifiedSide) : Optional.empty();
   }
 
   /**
@@ -414,8 +509,66 @@ public class GenService {
     return assoc.isPresentCDCardinality() && assoc.getCDCardinality().isOpt() && !isMap(assoc);
   }
 
+  /**
+   * whether both sides are navigable and kept consistent by the association's own commands (Assoc_add/_set/_remove).
+   * Not for qualified associations: the owner's GemMap alone synchronizes a bidirectional one (its put/remove/rekey
+   * commands, index based association commands do not fit a map) and updates its other side (see
+   * {@link #isOtherSideOfMap}), which sends nothing itself.
+   */
   public static boolean isBidirectional(ASTCDAssocSide assoc) {
-    return assoc.getSymbol().isIsDefinitiveNavigable() && assoc.getSymbol().getOtherSide().isIsDefinitiveNavigable();
+    return assoc.getSymbol().isIsDefinitiveNavigable() && assoc.getSymbol().getOtherSide().isIsDefinitiveNavigable()
+        && !isMap(assoc) && !isOtherSideOfMap(assoc);
+  }
+
+  /**
+   * whether the side is the other side of a GemMap, the value side of a bidirectional qualified association: it
+   * navigates from a value to its owner ([1]/[0..1]: a single reference, [*]: a list, see
+   * UMLPAssociationQualifierOwnerCardinality). The map updates it on every participant (MINIMAL scope), as a
+   * bidirectional list updates its other side; it has no commands and no database rows of its own.
+   */
+  public static boolean isOtherSideOfMap(ASTCDAssocSide assoc) {
+    if (!assoc.isPresentSymbol() || !assoc.getSymbol().isIsDefinitiveNavigable()
+        || !assoc.getSymbol().getOtherSide().isPresentAssocSide()) {
+      return false;
+    }
+    return isMap(assoc.getSymbol().getOtherSide().getAssocSide());
+  }
+
+  /**
+   * @return the manager of the type the side refers to, for templates (see AbstractDecorator#getCorrectManager)
+   */
+  public static String getManagerOfType(ASTCDAssocSide side) {
+    return umlp.generator.AbstractDecorator.getCorrectManager(side);
+  }
+
+  /**
+   * @return the GemMap sides of type (declared in it or a supertype) whose association is bidirectional, i.e. that have
+   * an other side, see {@link #getOtherSideOfMap}; not derived associations, they have no maps
+   */
+  public static List<ASTCDAssocSide> getBidirectionalMaps(ASTCDType type) {
+    return CDSymbolTables.getAssociationsInHierarchy(type).stream()
+        .filter(side -> !isSymbolDerived(side))
+        .filter(side -> getOtherSideOfMap(side).isPresent())
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * the other side of the GemMap side map, on the value side (see {@link #isOtherSideOfMap}), if the association is
+   * bidirectional
+   */
+  public static Optional<ASTCDAssocSide> getOtherSideOfMap(ASTCDAssocSide map) {
+    if (!isMap(map) || !map.getSymbol().getOtherSide().isIsDefinitiveNavigable()) {
+      return Optional.empty();
+    }
+    return Optional.of(map.getSymbol().getOtherSide().getAssocSide());
+  }
+
+  /**
+   * whether the GemMap side map belongs to a bidirectional association with a single owner ([1]/[0..1] owner side):
+   * a put moves the value from its old owner's map, so the put command names the old owner as well
+   */
+  public static boolean hasSingleOwner(ASTCDAssocSide map) {
+    return getOtherSideOfMap(map).filter(otherSide -> !isList(otherSide)).isPresent();
   }
 
   public static boolean isSymbolDerived(ASTCDAssocSide side) {
@@ -511,6 +664,36 @@ public class GenService {
       return ((SymTypeOfGenerics) type).getBaseName().equals("Set");
     }
     return false;
+  }
+
+  /**
+   * whether the type is {@code java.util.Map}, generic or raw; a {@code Map<K, V>} attribute with a domain class value
+   * becomes a type qualified association (UMLAttrToAssocTrafo)
+   */
+  public static boolean isMap(SymTypeExpression type) {
+    if (type instanceof SymTypeOfGenerics) {
+      return ((SymTypeOfGenerics) type).getBaseName().equals("Map");
+    }
+    return type.hasTypeInfo() && type.getTypeInfo().getName().equals("Map");
+  }
+
+  /**
+   * @param type a {@code Map} type, see {@link #isMap(SymTypeExpression)}
+   * @return its type argument at index (0: key, 1: value), empty for a raw {@code Map}
+   */
+  public static Optional<SymTypeExpression> getMapTypeArgument(SymTypeExpression type, int index) {
+    if (type instanceof SymTypeOfGenerics && ((SymTypeOfGenerics) type).sizeArguments() == 2) {
+      return Optional.of(((SymTypeOfGenerics) type).getArgument(index));
+    }
+    return Optional.empty();
+  }
+
+  /**
+   * whether the type is a domain class or interface (no enum, no POJO), i.e. a GemIdentifiable that can be the value
+   * of an association
+   */
+  public static boolean isAssociationTarget(SymTypeExpression type) {
+    return type.hasTypeInfo() && isDomainType(type) && !isCDEnum(type);
   }
 
   public static boolean isCollection(SymTypeExpression type) {

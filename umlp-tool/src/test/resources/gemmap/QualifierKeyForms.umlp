@@ -14,4 +14,9 @@ umlp QualifierKeyForms {
 
   association Course [[student]] (studentCourse) -> (byStudent) Enrollment [1];
   association Course [[tutor]] (tutorCourse) -> (byTutor) Enrollment [1];
+
+  // type qualified: the key is chosen on put
+  association Course [String] (codeCourse) -> (byCode) Enrollment [1];
+  association Course [int] (seatCourse) -> (bySeat) Enrollment [1];
+  association Course [Student] (assistantCourse) -> (byAssistant) Enrollment [1];
 }

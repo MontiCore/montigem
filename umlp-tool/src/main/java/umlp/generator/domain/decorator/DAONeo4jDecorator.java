@@ -149,6 +149,34 @@ public class DAONeo4jDecorator extends DAODecorator {
   }
 
   @Override
+  protected void keyMethodsForAssocDAO(ASTCDType daoClass, ASTCDAssociation assoc, ASTCDAssocSide ownerSide,
+                                       ASTCDAssocSide mapSide, QualifierKey key) {
+    // bidirectional: the relationship from the value to the owner is stored as well, the value side reads it
+    String otherSideRole = GenService.getOtherSideOfMap(mapSide).map(ASTCDAssocSide::getName).orElse("");
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutInitNeo4jForAssocDAO", assoc.getName(),
+        ownerSide.getSymbol().getType().print(), mapSide.getSymbol().getType().print(), mapSide.getName(),
+        key.getNeo4jPropertyName(), otherSideRole);
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutForAssocDAONeo4j", assoc, key.getStoredKeyType(),
+        ownerSide.isLeft());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.PutManyForAssocDAONeo4j", assoc, ownerSide.getName(),
+        key.getStoredKeyType());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectInitNeo4jWithKeysForAssocDAO", ownerSide.getName(),
+        mapSide.getName(), CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), key.getNeo4jPropertyName());
+    getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectWithKeysForAssocDAONeo4j", ownerSide.getName(),
+        mapSide.getName(), key.getStoredKeyType(), key.getNeo4jKeyExpression("record.get(1)"));
+    if (key.isEntryKey()) {
+      getCD4C().addMethod(daoClass, "umlp.dao.associations.RemoveAllWithKeyForAssocDAONeo4j", assoc,
+          CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), mapSide.getName(),
+          key.getNeo4jPropertyName(), otherSideRole);
+      if (!otherSideRole.isEmpty()) {
+        getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectOwnerIdsWithKeyForAssocDAONeo4j", assoc,
+            CD4CodeMill.prettyPrint(ownerSide.getMCQualifiedType(), false), mapSide.getName(),
+            key.getNeo4jPropertyName());
+      }
+    }
+  }
+
+  @Override
   protected void selectInitMethodForListAssocDAO(ASTCDType daoClass, String assocName, ASTCDAssocSide start, ASTCDAssocSide end, String numerus) {
     getCD4C().addMethod(daoClass, "umlp.dao.associations.SelectInitNeo4jForAssocDAO", start.getName(),
         end.getName(), CD4CodeMill.prettyPrint(start.getMCQualifiedType(), false), assocName, numerus);
@@ -156,7 +184,8 @@ public class DAONeo4jDecorator extends DAODecorator {
 
   @Override
   protected void deleteMethod(ASTCDType daoClass, ASTCDClass domainClass, Map<ASTCDAssocSide, ASTCDAssociation> assocSideToAssoc) {
-    getCD4C().addMethod(daoClass, "umlp.dao.DeleteNeo4j", domainClass.getName(), assocSideToAssoc);
+    getCD4C().addMethod(daoClass, "umlp.dao.DeleteNeo4j", cdName, domainClass.getName(), assocSideToAssoc,
+        GemMapOwnerRole.typeQualifiedKeyedBy(origCD, domainClass));
   }
 
   @Override

@@ -1,11 +1,13 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp.generator.domain.decorator.commands;
 
+import com.google.common.collect.Lists;
 import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdbasis._ast.ASTCDClass;
 import de.monticore.cdbasis._ast.ASTCDCompilationUnit;
 import de.monticore.cdbasis._ast.ASTCDType;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
+import umlp.generator.domain.decorator.GenService;
 import umlp.generator.domain.decorator.QualifierKey;
 
 import java.util.List;
@@ -30,9 +32,41 @@ public class RekeyDecorator extends PutDecorator {
     return REKEY_SUFFIX;
   }
 
+  /**
+   * only maps whose keys are derived from the values are rekeyed; the keys of type qualified maps are chosen on put
+   */
+  @Override
+  protected boolean hasCommand(ASTCDAssocSide a) {
+    return GenService.isMap(a) && GenService.isKeyDerived(a);
+  }
+
   @Override
   protected List<String> getKeyFields() {
     return List.of("oldKey", "newKey");
+  }
+
+  /**
+   * a rekey moves a value within its owner's map: nothing is replaced (a taken key refuses it)
+   */
+  @Override
+  protected boolean hasOldValue(ASTCDAssocSide a) {
+    return false;
+  }
+
+  /**
+   * a rekey moves a value within its owner's map: no other owner is involved
+   */
+  @Override
+  protected boolean hasOldOwner(ASTCDAssocSide a) {
+    return false;
+  }
+
+  /**
+   * the owner only: the value's other side does not change
+   */
+  @Override
+  protected List<String> getEffectedGemIds(ASTCDAssocSide a) {
+    return Lists.newArrayList("gemId");
   }
 
   @Override
@@ -43,7 +77,7 @@ public class RekeyDecorator extends PutDecorator {
   }
 
   @Override
-  protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType) {
+  protected void addCheckAccessPolicy(ASTCDClass ast, ASTCDType domainType, ASTCDAssocSide a) {
     getCD4C().addMethod(ast, "umlp.commands.rekey.CheckAccessPolicy");
   }
 }

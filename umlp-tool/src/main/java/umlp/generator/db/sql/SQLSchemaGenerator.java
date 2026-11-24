@@ -3,6 +3,7 @@ package umlp.generator.db.sql;
 
 import com.google.common.base.CaseFormat;
 import de.monticore.cd._symboltable.CDSymbolTables;
+import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdassociation._ast.ASTCDAssociation;
 import de.monticore.cdbasis._ast.ASTCDAttribute;
 import de.monticore.cdbasis._ast.ASTCDBasisNode;
@@ -20,6 +21,7 @@ import de.monticore.types.check.SymTypeOfGenerics;
 import de.se_rwth.commons.logging.Log;
 import umlp._prettyprint.UMLPFullPrettyPrinter;
 import umlp.generator.domain.decorator.GenService;
+import umlp.generator.domain.decorator.QualifierKey;
 import umlp.generator.util.UMLPSymbolTables;
 
 import java.nio.charset.StandardCharsets;
@@ -406,6 +408,19 @@ public class SQLSchemaGenerator {
     p.println(" BIGINT NOT NULL,");
 
     //p.println("CONSTRAINT fk_" + r2 + "_" + tableName + " FOREIGN KEY (" + r2 + "_id) REFERENCES " + convertClassName(rSymbolOpt.get().getName(), AttributeType.QUOTED) + ",");
+
+    // a type qualified association (a GemMap whose keys are chosen on put) stores the key of each value; the primary
+    // key stays (owner, value), a value has one key per owner. Attribute qualified associations derive their keys.
+    Optional<ASTCDAssocSide> mapSide = GenService.getTypeQualifiedMapSide(association);
+    if (mapSide.isPresent()) {
+      QualifierKey key = QualifierKey.of(mapSide.get());
+      String column = checkIdentifier(tableName, key.getColumnName(), origin);
+      String sqlType = key.isEntryKey() ? "BIGINT" : fqnClassNameToType.get(key.getKeyType());
+      if (sqlType == null) {
+        Log.error("0xdf110 Can not transform the key type " + key.getKeyType() + " of " + origin + " to SQL");
+      }
+      p.println(column + " " + sqlType + " NOT NULL,");
+    }
 
     p.println("CONSTRAINT " + checkIdentifier("", "pk_" + tableName, origin) + " PRIMARY KEY (" + r1 + "_id, " + r2 + "_id)");
 

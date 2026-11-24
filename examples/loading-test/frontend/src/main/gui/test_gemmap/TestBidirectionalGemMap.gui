@@ -1,0 +1,29 @@
+/* (c) https://github.com/MontiCore/monticore */
+package test_gemmap;
+
+import mc.fenix.basic.GemText;
+import mc.fenix.basic.GemButton;
+
+import LoadingTests.Club;
+import LoadingTests.Member;
+
+// Bidirectional qualified associations, changed from either side like test_assoc/TestBidirecti. GemMaps cannot be
+// accessed in GUI models (CoCo 0x00032): the buttons change them in the hwc, "Read" shows both sides in result
+page TestBidirectionalGemMap(Club c1, Club c2, Member m, String result = "loaded") {
+  resultText@GemText(value = result);
+
+  // [0..1] Club [[code]] (club) <-> (memberByCode) Member [1]
+  putIntoClub1@GemButton(label = "Put Into Club 1", leftClick = putIntoClub(c1, m));
+  putIntoClub2@GemButton(label = "Put Into Club 2", leftClick = putIntoClub(c2, m));
+  removeFromClub1@GemButton(label = "Remove From Club 1", leftClick = removeFromClub(c1, m));
+  setClub1@GemButton(label = "Set Club 1", leftClick = setClub(m, c1));
+  setClub2@GemButton(label = "Set Club 2", leftClick = setClub(m, c2));
+  clearClub@GemButton(label = "Clear Club", leftClick = clearClub(m));
+  read@GemButton(label = "Read", leftClick = read(c1, c2, m));
+
+  // [*] Club [String] (clubs) <-> (memberByRole) Member [1]
+  putRoleIntoClub1@GemButton(label = "Put Role Into Club 1", leftClick = putRole(c1, m));
+  putRoleIntoClub2@GemButton(label = "Put Role Into Club 2", leftClick = putRole(c2, m));
+  removeRoleFromClub1@GemButton(label = "Remove Role From Club 1", leftClick = removeRole(c1));
+  readRoles@GemButton(label = "Read Roles", leftClick = readRoles(c1, c2, m));
+}

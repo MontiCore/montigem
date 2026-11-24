@@ -64,6 +64,33 @@ if (!buildFinished) {
     </#if>
 </#list>
 }
+<#list assocList as assoc>
+  <#if genService.isMap(assoc) && genService.getOtherSideOfMap(assoc).isPresent()>
+    <#assign otherSide=genService.getOtherSideOfMap(assoc).get()>
+    <#assign valueType=assoc.getSymbol().getType().print()>
+    <#assign valueManager=genService.getManagerOfType(assoc)>
+    <#assign ownerType=otherSide.getSymbol().getType().print()>
+    <#assign ownerManager=genService.getManagerOfType(otherSide)>
+// bidirectional qualified association: the other side of the values put before building refers to this owner now,
+// like for a bidirectional list (a single owner: they leave their old owner's map; the server removes them with ALL,
+// the create command does not reach the old owner's subscribers, like the GLOBAL set of a bidirectional association
+// above). Not for a deserialized object: loaded ones are consistent, for one created elsewhere its create command does so
+if (!INTERNAL_deser_mode) {
+  for (long valueID : this._${assoc.getName()}.getValueIDs()) {
+    <#if !genService.isList(otherSide)>
+    ${tc.includeArgs("umlp.methods.gemmap.OtherSideMove", ["valueID", "this.getGemId()", assoc.getName(),
+        otherSide.getName(), valueType, valueManager, ownerType, ownerManager,
+        "CommandManager.getParticipantId() == 0 ? NotificationScope.ALL : NotificationScope.LOCAL", ""])}
+    </#if>
+    if (${valueManager}.isLoaded${valueType}(valueID)) {
+      ${valueType} value = ${valueManager}.get${valueType}Sure(valueID);
+      ${tc.includeArgs("umlp.methods.gemmap.OtherSideRefer", ["value", "this.getGemId()", otherSide.getName(),
+          genService.isList(otherSide)])}
+    }
+  }
+}
+  </#if>
+</#list>
 ${name?uncap_first}Observers.forEach(obs -> obs.notifyBuild(this)); //+ an initial notification
 }
 return Optional.of(this);

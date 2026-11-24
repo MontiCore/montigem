@@ -103,6 +103,8 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
         // TODO @CBU, @AHe how to handle association inherited from superclass from imported CD?
         .filter(e -> UMLPSymbolTables.getDiagramFor(e.getKey()).getCDDefinition().getName().equals(origCD.getCDDefinition().getName()))
         .filter(e -> !(e.getValue().getModifier().isDerived() || e.getValue().getModifier().isReadonly()))
+        // the other side of a GemMap sends nothing: its map's commands change it on every participant
+        .filter(e -> !GenService.isOtherSideOfMap(e.getKey()))
         .forEach(e -> {
           ASTCDAssocSide a = e.getKey();
           ASTCDCompilationUnit cd = UMLPSymbolTables.getDiagramFor(a);
@@ -113,12 +115,13 @@ public class CommandSendingObserverDecorator extends AbstractDecorator {
           SymTypeExpression oneType = e.getKey().getSymbol().getType();
           SymTypeExpression otherType = e.getKey().getSymbol().getOtherSide().getType();
           if (GenService.isMap(a)) {
-            // maps (always unidirectional): values are put under a key and rekeyed, there are no positions
+            // maps: values are put under a key and rekeyed (derived keys only), there are no positions
             String keyType = QualifierKey.of(a).getStoredKeyType();
             String role = StringTransformations.capitalize(a.getName());
-            setOverrideAnnotation(getCD4C().addMethod(ast, putAttributeTmplt(), a.getName(), keyType, otherType.print()));
+            setOverrideAnnotation(getCD4C().addMethod(ast, putAttributeTmplt(), a.getName(), keyType, otherType.print(),
+                GenService.getOtherSideOfMap(a).isPresent(), GenService.hasSingleOwner(a)));
             getCD4C().addImport(ast, getPackageName(cd, COMMAND_PACKAGE) + "." + otherType.print() + "_put" + role);
-            if (rekeyAttributeTmplt().isPresent()) {
+            if (rekeyAttributeTmplt().isPresent() && GenService.isKeyDerived(a)) {
               setOverrideAnnotation(getCD4C().addMethod(ast, rekeyAttributeTmplt().get(), a.getName(), keyType,
                   otherType.print()));
               getCD4C().addImport(ast, getPackageName(cd, COMMAND_PACKAGE) + "." + otherType.print() + "_rekey" + role);
