@@ -27,6 +27,10 @@ public enum TemplateSourceMapping {
    */
   INCLUDE_SOURCES;
 
+  public boolean isEnabled() {
+    return this != OFF;
+  }
+
   public static TemplateSourceMapping of(String value){
     if(value == null) {
       Log.warn("0xA0149 [null] provided as value for TemplateSourceMapping, fallback to OFF.");

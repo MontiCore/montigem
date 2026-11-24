@@ -12,6 +12,7 @@ import umlp.MillConf;
 import umlp.TagRelated;
 import umlp.UMLPMill;
 import umlp.UMLPTool;
+import umlp.UMLPToolOptions;
 import umlp._symboltable.IUMLPArtifactScope;
 import umlp.cli.common.IOperation;
 import umlp.cli.common.Pipeline;
@@ -99,7 +100,11 @@ public class RTEDataPipeline extends Pipeline<UMLPPipelineData> {
   };
 
   public final IOperation.ISimpleOperation<DataWithAstAndGen> model_pipe_init_cd4c =
-      data -> CD4C.init(data.getGenSetup());
+      data -> {
+        CD4C.init(data.getGenSetup());
+        CD4C.getInstance().setDeferredTemplateEvaluation(
+            UMLPToolOptions.templateSourceMapping(data.getData().cmd).isEnabled());
+      };
 
   public final IOperation.ISimpleOperation<DataWithAstAndGen> model_pipe_init_gen_config =
       data -> {

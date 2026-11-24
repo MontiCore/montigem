@@ -174,6 +174,8 @@ public class GuiPipeline extends Pipeline<UMLPPipelineData> {
             data.getTool().createGlex(data.getTool().getModuleConfigTemplates(data.getCMD()));
         genSetup.setGlex(glex);
         CD4C.init(genSetup);
+        CD4C.getInstance().setDeferredTemplateEvaluation(
+            UMLPToolOptions.templateSourceMapping(data.getCMD()).isEnabled());
 
         data.setGenSetup(genSetup);
       };
