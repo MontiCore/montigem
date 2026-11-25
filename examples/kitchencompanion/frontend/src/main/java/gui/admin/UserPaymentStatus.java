@@ -9,6 +9,9 @@ public class UserPaymentStatus extends UserPaymentStatusTOP {
 
   @Override
   public String getInvoiceAmount(Receipt receipt) {
+    if (receipt.isPaidFromBalance()) {
+      return (receipt.getSum() + receipt.getDebt()) + " €";
+    }
     return receipt.getAmountToPay() + " €";
   }
 
@@ -36,18 +39,25 @@ public class UserPaymentStatus extends UserPaymentStatusTOP {
   }
 
   @Override
+  public Boolean canConfirm(Receipt receipt) {
+    return !receipt.isConfirmed();
+  }
+
+  @Override
+  public Boolean canReset(Receipt receipt) {
+    return receipt.isConfirmed() && !receipt.isPaidFromBalance();
+  }
+
+  @Override
   public Consumer<Void> reset() {
     return $ -> {
-      if (getReceipt().isConfirmed() && getReceipt().isPaid()) {
-        if (getReceipt().getAmountPaid() >= getReceipt().getAmountToPay() &&
-            !((getReceipt().getAmountPaid() == getReceipt().getPastBalance())
-                && (getReceipt().getAmountPaid() == getReceipt().getSum() + getReceipt().getDebt()))) {
-          double addedBalance = getReceipt().getAmountPaid() - getReceipt().getAmountToPay();
-          getUser().setBalance(getUser().getBalance() - addedBalance);
-          getReceipt().setPaid(false);
-          setPaidChecked(false);
-          getReceipt().setConfirmed(false);
-        }
+      Receipt r = getReceipt();
+      if (!r.isPaid() || !canReset(r)) {
+        return;
+      }
+      if (r.getAmountPaid() >= r.getAmountToPay()) {
+        getUser().setBalance(getUser().getBalance() - (r.getAmountPaid() - r.getAmountToPay()));
+        setPaidChecked(false);
       }
     };
   }

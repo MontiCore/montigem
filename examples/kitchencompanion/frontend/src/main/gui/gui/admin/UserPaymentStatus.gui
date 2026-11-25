@@ -27,8 +27,12 @@ component UserPaymentStatus(User user, Receipt receipt){
           entry = receipt.amountPaid
         );
         @GemRow(components = [
-          @GemButton(label = "confirm", leftClick = confirm()),
-          @GemButton(label = "reset", leftClick = reset())
+          @guard(canConfirm(receipt)) {
+            confirmBtn@GemButton(label = "confirm", leftClick = confirm());
+          },
+          @guard(canReset(receipt)) {
+            resetBtn@GemButton(label = "reset", leftClick = reset());
+          }
         ]);
       }
     ])
