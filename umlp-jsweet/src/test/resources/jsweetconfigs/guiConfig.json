@@ -1,6 +1,7 @@
 {
   "adapters": [
-    "umlp.jsweet.extension.GUIAdapter",
+    "umlp.jsweet.extension.gui.GUIComponentObserverPatternAdapter",
+    "umlp.jsweet.extension.UMLPAdapter",
     "domainAdapter.DomainImportAdapter"
   ],
   "domainName": "Domain"
