@@ -6,6 +6,7 @@ import de.monticore.codegen.javagen.operationprinter.JavaEqualityOperationHandle
 import de.monticore.prettyprint.IndentPrinter;
 import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.mccollectiontypes.types3.MCCollectionSymTypeRelations;
+import de.monticore.types3.SymTypeRelations;
 
 public class OCL2JavaEqualityOperationHandler extends JavaEqualityOperationHandler {
   @Override
@@ -14,22 +15,15 @@ public class OCL2JavaEqualityOperationHandler extends JavaEqualityOperationHandl
     // convert to same type beforehand to assure implicit conversion happens
     // (e.g., SI Units)
 
-    // slight optimization for numbers:
-    if (JavaGenSymTypeRelations.generatesToJavaNumeric(leftType) && JavaGenSymTypeRelations.generatesToJavaNumeric(rightType)) {
-      printWithEqualsOperator(
-          printer, leftType, rightType,
-          leftExprPrintAction, rightExprPrintAction
-      );
-    }
-
     // Object identity for normal objects
-    else if ((leftType.isObjectType() || isGenericButNotCollection(leftType))
-        && (rightType.isObjectType() || isGenericButNotCollection(rightType))) {
+    if (isComparedByIdentity(leftType) && isComparedByIdentity(rightType)) {
       printWithEqualsOperator(
           printer, leftType, rightType,
           leftExprPrintAction, rightExprPrintAction
       );
     }
+    // Numbers: MontiGem generates boxed getters (int -> Integer),
+    // so "==" would compare references
     // In OCL: Collections
     // Everywhere: tuples, arrays, etc.
     else {
@@ -39,6 +33,13 @@ public class OCL2JavaEqualityOperationHandler extends JavaEqualityOperationHandl
       printRightConverted(printer, leftType, rightType, rightExprPrintAction);
       printer.print(")");
     }
+  }
+
+  protected boolean isComparedByIdentity(SymTypeExpression t) {
+    if (JavaGenSymTypeRelations.generatesToJavaNumeric(t) || SymTypeRelations.isString(t)) {
+      return false;
+    }
+    return t.isObjectType() || isGenericButNotCollection(t);
   }
 
   protected boolean isGenericButNotCollection(SymTypeExpression t){
