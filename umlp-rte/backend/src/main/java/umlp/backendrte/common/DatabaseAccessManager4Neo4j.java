@@ -11,11 +11,17 @@ import org.neo4j.driver.SessionConfig;
 import org.neo4j.driver.Value;
 import org.neo4j.driver.async.AsyncSession;
 import org.neo4j.driver.async.AsyncTransaction;
+import org.neo4j.driver.async.ResultCursor;
+import org.neo4j.driver.exceptions.Neo4jException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 
 public class DatabaseAccessManager4Neo4j extends DatabaseAccessManager {
 
@@ -73,10 +79,15 @@ public class DatabaseAccessManager4Neo4j extends DatabaseAccessManager {
       this.batchSize = batchSize;
     }
 
+    // the queries sent in the open transaction, only read if its commit fails, see logRollback
+    final List<CompletionStage<ResultCursor>> sentResults = new ArrayList<>();
+    final List<String> sentQueries = new ArrayList<>();
+    final List<Value> sentParameters = new ArrayList<>();
+
     synchronized void executeFireAndForget(String query) {
       ensureExistingTransaction();
       queryCounter++;
-      fireAndForgetTransaction.runAsync(query);
+      remember(fireAndForgetTransaction.runAsync(query), query, null);
       if(queryCounter == batchSize) {
         close();
       }
@@ -85,10 +96,16 @@ public class DatabaseAccessManager4Neo4j extends DatabaseAccessManager {
     synchronized void executeFireAndForget(String query, Value vals) {
       ensureExistingTransaction();
       queryCounter++;
-      fireAndForgetTransaction.runAsync(query, vals);
+      remember(fireAndForgetTransaction.runAsync(query, vals), query, vals);
       if(queryCounter == batchSize) {
         close();
       }
+    }
+
+    void remember(CompletionStage<ResultCursor> result, String query, Value vals) {
+      sentResults.add(result);
+      sentQueries.add(query);
+      sentParameters.add(vals);
     }
 
     synchronized void ensureExistingTransaction() {
@@ -100,12 +117,54 @@ public class DatabaseAccessManager4Neo4j extends DatabaseAccessManager {
 
     synchronized void close() {
       if(fireAndForgetTransaction != null) {
+        Throwable[] failure = new Throwable[1];
         fireAndForgetTransaction.commitAsync().exceptionally(ex -> {
-          System.err.println("Transaction rolled back due to: " + ex.getMessage());
+          failure[0] = ex;
           return null;
         }).toCompletableFuture().join();
-        fireAndForgetTransaction = null;
+        try {
+          if (failure[0] != null) {
+            logRollback(failure[0]);
+          }
+        } finally {
+          // also if Log.error throws (fail quick): the next write starts a new transaction
+          sentResults.clear();
+          sentQueries.clear();
+          sentParameters.clear();
+          fireAndForgetTransaction = null;
+        }
       }
+    }
+
+    /**
+     * all queries of the transaction are lost: once one of them fails, Neo4j ignores the following ones and the commit
+     * fails ("Commit exchange contains ignored messages"); names the query that failed first and its error
+     */
+    void logRollback(Throwable commitFailure) {
+      for (int i = 0; i < sentResults.size(); i++) {
+        try {
+          sentResults.get(i).thenCompose(ResultCursor::consumeAsync).toCompletableFuture().join();
+        } catch (RuntimeException ex) {
+          String error = describe(ex);
+          if (!error.contains("ignored")) {
+            Log.error("0xDB010 Neo4j rolled back the " + sentResults.size() + " queries of a transaction: query "
+                + (i + 1) + " failed: " + sentQueries.get(i) + " (parameters "
+                + (sentParameters.get(i) == null ? "none" : sentParameters.get(i).keys()) + "): " + error);
+            return;
+          }
+        }
+      }
+      Log.error("0xDB010 Neo4j rolled back the " + sentResults.size() + " queries of a transaction: "
+          + describe(commitFailure));
+    }
+
+    static String describe(Throwable ex) {
+      Throwable t = ex;
+      while (t instanceof CompletionException && t.getCause() != null) {
+        t = t.getCause();
+      }
+      String code = t instanceof Neo4jException ? ((Neo4jException) t).code() + " " : "";
+      return code + t.getMessage();
     }
   }
 
