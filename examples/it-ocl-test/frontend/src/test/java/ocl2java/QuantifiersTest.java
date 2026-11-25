@@ -126,17 +126,17 @@ public interface QuantifiersTest extends IOCL2XTest<University> {
     Student alice = MydomainManager.studentBuilder()
         .name("Bob")
         .age(21)
-        .matrNr(1)
+        .matrNr(1000)
         .build().get();
     Student bob = MydomainManager.studentBuilder()
         .name("Alice")
         .age(21)
-        .matrNr(2)
+        .matrNr(2000)
         .build().get();
     Student studentError = MydomainManager.studentBuilder()
         .name("Alice2")
         .age(21)
-        .matrNr(2)
+        .matrNr(2000)
         .build().get();
 
     uni.addStudents(alice);
@@ -254,17 +254,17 @@ public interface QuantifiersTest extends IOCL2XTest<University> {
     Student alice = MydomainManager.studentBuilder()
         .name("Bob")
         .age(21)
-        .matrNr(1)
+        .matrNr(1000)
         .build().get();
     Student bob = MydomainManager.studentBuilder()
         .name("Alice")
         .age(21)
-        .matrNr(2)
+        .matrNr(2000)
         .build().get();
     Student carol = MydomainManager.studentBuilder()
         .name("Carol")
         .age(21)
-        .matrNr(1)
+        .matrNr(1000)
         .build().get();
 
     uni.addStudents(alice);
