@@ -27,6 +27,11 @@ public class LoginPage extends LoginPageTOP {
     };
   }
   
+  @Override
+  public Boolean isPasswordMissing(String pw) {
+    return pw == null || pw.isEmpty();
+  }
+
   private GemTextInputValidity validity = new GemTextInputValidity("Success","validity hasnt been checked yet");
   
   @Override

@@ -20,7 +20,7 @@ page LoginPage(String pw, boolean loggedIn, String startingPage, boolean changeP
         inputType = "password",
         validity = null
       ),
-      @GemButton(label = "Login", leftClick = login(pw))
+      loginBtn@GemButton(label = "Login", leftClick = login(pw), disabled = isPasswordMissing(pw))
     ])
   );
   @Footer(

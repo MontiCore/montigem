@@ -18,7 +18,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class TallyAndReceiptTest extends KitchenCompanionMockTestSetup {
 
-  private static final double EPS = 1e-9;
+  // doubles are compared with a tolerance, since e.g. 0.1 + 0.2 is not exactly 0.3
+  private static final double DOUBLE_TOLERANCE = 1e-9;
 
   public TallyAndReceiptTest() {
     super(ClientSetup.of(0));
@@ -63,14 +64,14 @@ public class TallyAndReceiptTest extends KitchenCompanionMockTestSetup {
 
   @Test
   public void amountToPayIsSumPlusDebtMinusBalance() {
-    assertEquals(4.5, receipt(3.0, 2.5, 1.0).getAmountToPay(), EPS);
-    assertEquals(3.0, receipt(3.0, 0.0, 0.0).getAmountToPay(), EPS);
+    assertEquals(4.5, receipt(3.0, 2.5, 1.0).getAmountToPay(), DOUBLE_TOLERANCE);
+    assertEquals(3.0, receipt(3.0, 0.0, 0.0).getAmountToPay(), DOUBLE_TOLERANCE);
   }
 
   @Test
   public void amountToPayIsNegativeWhenTheBalanceExceedsTheBill() {
-    assertEquals(-4.0, receipt(1.0, 0.0, 5.0).getAmountToPay(), EPS);
-    assertEquals(0.0, receipt(0.0, 0.0, 0.0).getAmountToPay(), EPS);
+    assertEquals(-4.0, receipt(1.0, 0.0, 5.0).getAmountToPay(), DOUBLE_TOLERANCE);
+    assertEquals(0.0, receipt(0.0, 0.0, 0.0).getAmountToPay(), DOUBLE_TOLERANCE);
   }
 
   @Test

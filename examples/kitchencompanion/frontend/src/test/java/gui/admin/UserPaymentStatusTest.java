@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
 
-  private static final double EPS = 1e-9;
+  // doubles are compared with a tolerance, since e.g. 0.1 + 0.2 is not exactly 0.3
+  private static final double DOUBLE_TOLERANCE = 1e-9;
 
   public UserPaymentStatusTest() {
     super(ClientSetup.of(1));
@@ -63,17 +64,17 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
   }
 
   /**
-   * Guards in UserPaymentStatus.gui: 3 = receipt.paid, 5 = receipt.confirmed (reset in the if
-   * branch, confirm in the else branch), 6 = canReset(receipt).
+   * Guards in UserPaymentStatus.gui: 3 = receipt.paid around both buttons,
+   * 5 = canConfirm(receipt) around confirm, 6 = canReset(receipt) around reset.
    */
   private static boolean resetButtonShown(UserPaymentStatus card) {
     assertEquals("reset", card.getResetBtnLabel());
-    return card.getGuard3Condition() && card.getGuard5Condition() && card.getGuard6Condition();
+    return card.getGuard3Condition() && card.getGuard6Condition();
   }
 
   private static boolean confirmButtonShown(UserPaymentStatus card) {
     assertEquals("confirm", card.getConfirmBtnLabel());
-    return card.getGuard3Condition() && !card.getGuard5Condition();
+    return card.getGuard3Condition() && card.getGuard5Condition();
   }
 
   private User backendUser(long userId) {
@@ -86,18 +87,19 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
                                           double amountToPay) {
     User server = backendUser(userId);
     Receipt receipt = server.getReceipts(0);
-    assertEquals(balanceLeft, server.getBalance(), EPS);
+    assertEquals(balanceLeft, server.getBalance(), DOUBLE_TOLERANCE);
     assertTrue(receipt.isPaid());
     assertTrue(receipt.isConfirmed());
-    assertEquals(pastBalance, receipt.getPastBalance(), EPS);
-    assertEquals(pastBalance, receipt.getAmountPaid(), EPS);
-    assertEquals(amountToPay, receipt.getAmountToPay(), EPS);
+    assertEquals(pastBalance, receipt.getPastBalance(), DOUBLE_TOLERANCE);
+    assertEquals(pastBalance, receipt.getAmountPaid(), DOUBLE_TOLERANCE);
+    assertEquals(amountToPay, receipt.getAmountToPay(), DOUBLE_TOLERANCE);
   }
 
   /**
    * Tom has 10 €, buys 1.50 € and the month end pays the bill from his balance (8.50 € left).
    * That payment is final: the card offers neither confirm nor reset, and triggering reset anyway
-   * changes nothing. The amount to pay is negative: the balance exceeded the bill by 8.50 €.
+   * changes nothing. The amount to pay is negative (the balance exceeded the bill by 8.50 €),
+   * but the card shows the full bill instead, since "-8.5 €" would read like a debt.
    */
   @Test
   public void receiptPaidFromTheBalanceCannotBeReset() {
@@ -106,12 +108,12 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     assertStillPaidFromBalance(tom, 8.5, 10.0, -8.5);
 
     getClients(0).activate();
-    assertEquals("-8.5 €", card.getGemText2Value());
+    assertEquals("1.5 €", card.getGemText2Value());
     assertFalse(confirmButtonShown(card));
     assertFalse(resetButtonShown(card));
     card.resetBtnLeftClick(null);
 
-    assertEquals(8.5, card.getUser().getBalance(), EPS);
+    assertEquals(8.5, card.getUser().getBalance(), DOUBLE_TOLERANCE);
     assertStillPaidFromBalance(tom, 8.5, 10.0, -8.5);
   }
 
@@ -123,6 +125,7 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     assertStillPaidFromBalance(tom, 0.0, 1.5, 0.0);
 
     getClients(0).activate();
+    assertEquals("1.5 €", card.getGemText2Value());
     assertFalse(confirmButtonShown(card));
     assertFalse(resetButtonShown(card));
     card.resetBtnLeftClick(null);
@@ -152,7 +155,7 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     card.confirmBtnLeftClick(null);
 
     User server = backendUser(tom);
-    assertEquals(3.0, server.getBalance(), EPS);
+    assertEquals(3.0, server.getBalance(), DOUBLE_TOLERANCE);
     assertTrue(server.getReceipts(0).isPaid());
     assertTrue(server.getReceipts(0).isConfirmed());
 
@@ -162,11 +165,11 @@ public class UserPaymentStatusTest extends KitchenCompanionMockTestSetup {
     card.resetBtnLeftClick(null);
 
     server = backendUser(tom);
-    assertEquals(0.0, server.getBalance(), EPS);
+    assertEquals(0.0, server.getBalance(), DOUBLE_TOLERANCE);
     assertFalse(server.getReceipts(0).isPaid());
     assertFalse(server.getReceipts(0).isConfirmed());
-    assertEquals(0.0, server.getReceipts(0).getAmountPaid(), EPS);
-    assertEquals(2.0, server.getReceipts(0).getAmountToPay(), EPS);
+    assertEquals(0.0, server.getReceipts(0).getAmountPaid(), DOUBLE_TOLERANCE);
+    assertEquals(2.0, server.getReceipts(0).getAmountToPay(), DOUBLE_TOLERANCE);
 
     getClients(0).activate();
     assertFalse(confirmButtonShown(card));

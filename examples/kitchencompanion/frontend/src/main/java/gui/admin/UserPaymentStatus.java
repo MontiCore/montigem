@@ -9,6 +9,9 @@ public class UserPaymentStatus extends UserPaymentStatusTOP {
 
   @Override
   public String getInvoiceAmount(Receipt receipt) {
+    if (receipt.isPaidFromBalance()) {
+      return (receipt.getSum() + receipt.getDebt()) + " €";
+    }
     return receipt.getAmountToPay() + " €";
   }
 
@@ -36,15 +39,20 @@ public class UserPaymentStatus extends UserPaymentStatusTOP {
   }
 
   @Override
+  public Boolean canConfirm(Receipt receipt) {
+    return !receipt.isConfirmed();
+  }
+
+  @Override
   public Boolean canReset(Receipt receipt) {
-    return !receipt.isPaidFromBalance();
+    return receipt.isConfirmed() && !receipt.isPaidFromBalance();
   }
 
   @Override
   public Consumer<Void> reset() {
     return $ -> {
       Receipt r = getReceipt();
-      if (!r.isConfirmed() || !r.isPaid() || !canReset(r)) {
+      if (!r.isPaid() || !canReset(r)) {
         return;
       }
       if (r.getAmountPaid() >= r.getAmountToPay()) {

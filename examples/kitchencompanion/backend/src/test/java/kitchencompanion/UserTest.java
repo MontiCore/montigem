@@ -21,7 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class UserTest extends KitchenCompanionMockTestSetup {
 
-  private static final double EPS = 1e-9;
+  // doubles are compared with a tolerance, since e.g. 0.1 + 0.2 is not exactly 0.3
+  private static final double DOUBLE_TOLERANCE = 1e-9;
 
   public UserTest() {
     super(ClientSetup.of(0));
@@ -53,8 +54,8 @@ public class UserTest extends KitchenCompanionMockTestSetup {
     u.addPrevTallies(tally(coffee, 4));
     u.addPrevTallies(tally(mate, 1));
 
-    assertEquals(0.5 + 1.0 + 1.0, u.getSum(), EPS);
-    assertEquals(u.calculateSum(), u.getSum(), EPS);
+    assertEquals(0.5 + 1.0 + 1.0, u.getSum(), DOUBLE_TOLERANCE);
+    assertEquals(u.calculateSum(), u.getSum(), DOUBLE_TOLERANCE);
   }
 
   @Test
@@ -122,7 +123,7 @@ public class UserTest extends KitchenCompanionMockTestSetup {
 
     u.endPurchase();
 
-    assertEquals(before, u.getSum(), EPS);
+    assertEquals(before, u.getSum(), DOUBLE_TOLERANCE);
   }
 
   @Test
@@ -189,7 +190,7 @@ public class UserTest extends KitchenCompanionMockTestSetup {
     User u = user("Tom", "Hanks", "THa", KitchenCompanionRole.USER);
 
     assertTrue(u.isPaid());
-    assertEquals(0.0, u.getPastSum(), EPS);
+    assertEquals(0.0, u.getPastSum(), DOUBLE_TOLERANCE);
   }
 
   @Test
@@ -200,7 +201,7 @@ public class UserTest extends KitchenCompanionMockTestSetup {
 
     assertEquals(2, u.getReceiptsList().size());
     assertFalse(u.isPaid());
-    assertEquals(3.5, u.getPastSum(), EPS);
+    assertEquals(3.5, u.getPastSum(), DOUBLE_TOLERANCE);
   }
 
   private static Receipt receipt(double sum, boolean paid) {

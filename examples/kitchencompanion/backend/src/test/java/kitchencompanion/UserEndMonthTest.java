@@ -20,7 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
 
-  private static final double EPS = 1e-9;
+  // doubles are compared with a tolerance, since e.g. 0.1 + 0.2 is not exactly 0.3
+  private static final double DOUBLE_TOLERANCE = 1e-9;
 
   private Offer coffee;
   private Offer mate;
@@ -55,7 +56,7 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
     u.endMonth();
 
     assertTrue(u.getReceiptsList().isEmpty());
-    assertEquals(5.0, u.getBalance(), EPS);
+    assertEquals(5.0, u.getBalance(), DOUBLE_TOLERANCE);
   }
 
   @Test
@@ -68,15 +69,15 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
 
     assertEquals(1, u.getReceiptsList().size());
     Receipt r = u.getReceipts(0);
-    assertEquals(1.5, r.getSum(), EPS);
-    assertEquals(10.0, r.getPastBalance(), EPS);
-    assertEquals(0.0, r.getDebt(), EPS);
+    assertEquals(1.5, r.getSum(), DOUBLE_TOLERANCE);
+    assertEquals(10.0, r.getPastBalance(), DOUBLE_TOLERANCE);
+    assertEquals(0.0, r.getDebt(), DOUBLE_TOLERANCE);
     assertTrue(r.isPaid());
     assertTrue(r.isConfirmed());
-    assertEquals(-8.5, r.getAmountToPay(), EPS);
+    assertEquals(-8.5, r.getAmountToPay(), DOUBLE_TOLERANCE);
     // the whole balance is used to pay; whatever is not needed stays on the user's balance
-    assertEquals(10.0, r.getAmountPaid(), EPS);
-    assertEquals(8.5, u.getBalance(), EPS);
+    assertEquals(10.0, r.getAmountPaid(), DOUBLE_TOLERANCE);
+    assertEquals(8.5, u.getBalance(), DOUBLE_TOLERANCE);
     assertTrue(u.isPaid());
   }
 
@@ -89,7 +90,7 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
     u.endMonth();
 
     assertTrue(u.getReceipts(0).isPaid());
-    assertEquals(0.0, u.getBalance(), EPS);
+    assertEquals(0.0, u.getBalance(), DOUBLE_TOLERANCE);
   }
 
   @Test
@@ -100,13 +101,13 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
     u.endMonth();
 
     Receipt r = u.getReceipts(0);
-    assertEquals(3.0, r.getSum(), EPS);
-    assertEquals(1.0, r.getPastBalance(), EPS);
+    assertEquals(3.0, r.getSum(), DOUBLE_TOLERANCE);
+    assertEquals(1.0, r.getPastBalance(), DOUBLE_TOLERANCE);
     assertFalse(r.isPaid());
     assertFalse(r.isConfirmed());
-    assertEquals(0.0, r.getAmountPaid(), EPS);
-    assertEquals(2.0, r.getAmountToPay(), EPS);
-    assertEquals(0.0, u.getBalance(), EPS);
+    assertEquals(0.0, r.getAmountPaid(), DOUBLE_TOLERANCE);
+    assertEquals(2.0, r.getAmountToPay(), DOUBLE_TOLERANCE);
+    assertEquals(0.0, u.getBalance(), DOUBLE_TOLERANCE);
     assertFalse(u.isPaid());
   }
 
@@ -120,10 +121,10 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
 
     assertEquals(2, u.getReceiptsList().size());
     Receipt r = u.getReceipts(0);
-    assertEquals(0.0, r.getSum(), EPS);
-    assertEquals(2.0, r.getDebt(), EPS);
+    assertEquals(0.0, r.getSum(), DOUBLE_TOLERANCE);
+    assertEquals(2.0, r.getDebt(), DOUBLE_TOLERANCE);
     assertFalse(r.isPaid());
-    assertEquals(2.0, r.getAmountToPay(), EPS);
+    assertEquals(2.0, r.getAmountToPay(), DOUBLE_TOLERANCE);
   }
 
   @Test
@@ -137,10 +138,10 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
     u.endMonth();
 
     Receipt r = u.getReceipts(0);
-    assertEquals(1.0, r.getSum(), EPS);
-    assertEquals(2.0, r.getDebt(), EPS);
+    assertEquals(1.0, r.getSum(), DOUBLE_TOLERANCE);
+    assertEquals(2.0, r.getDebt(), DOUBLE_TOLERANCE);
     assertTrue(r.isPaid());
-    assertEquals(5.0 - 1.0 - 2.0, u.getBalance(), EPS);
+    assertEquals(5.0 - 1.0 - 2.0, u.getBalance(), DOUBLE_TOLERANCE);
 
     // nothing left over, so the following month creates no receipt
     u.endMonth();
@@ -167,7 +168,7 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
     for (Tally t : u.getPrevTalliesList()) {
       assertEquals(0, t.getCount());
     }
-    assertEquals(0.0, u.getSum(), EPS);
+    assertEquals(0.0, u.getSum(), DOUBLE_TOLERANCE);
     assertFalse(u.hasOrderedTallies());
   }
 
@@ -192,8 +193,8 @@ public class UserEndMonthTest extends KitchenCompanionMockTestSetup {
     order(u, mate, 1);
     u.endMonth();
 
-    assertEquals(1.0, u.getReceipts(0).getSum(), EPS);
-    assertEquals(0.25, u.getReceipts(1).getSum(), EPS);
-    assertEquals(1.0, u.getPastSum(), EPS);
+    assertEquals(1.0, u.getReceipts(0).getSum(), DOUBLE_TOLERANCE);
+    assertEquals(0.25, u.getReceipts(1).getSum(), DOUBLE_TOLERANCE);
+    assertEquals(1.0, u.getPastSum(), DOUBLE_TOLERANCE);
   }
 }
