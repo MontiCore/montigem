@@ -17,7 +17,7 @@ import umlp.jsweet.extension.common.UMLPEnumAdapter;
 import umlp.jsweet.extension.common.UMLPRTEImportAdapter;
 import umlp.jsweet.extension.gui.AngularSpecificsAdapter;
 import umlp.jsweet.extension.gui.AnnotationToDecoratorAdapter;
-import umlp.jsweet.extension.gui.GUIComponentObserverPatternAdapter;
+import umlp.jsweet.extension.imports.PrintImportsAtBottomAdapter;
 import umlp.jsweet.extension.gui.GUITypesImportAdapter;
 import umlp.jsweet.extension.gui.GUIUtilAdapter;
 import umlp.jsweet.extension.gui.TSTypesAdapter;
@@ -30,6 +30,7 @@ import umlp.jsweet.extension.util.UMLPAdapterUtils;
 public class UMLPAdapter extends PrinterAdapter {
   public UMLPAdapter(PrinterAdapter parentAdapter) {
     super(
+        new PrintImportsAtBottomAdapter(
         new GUITypesImportAdapter(
         new OptionalAdapter(
         new FutureAdapter(
@@ -37,7 +38,6 @@ public class UMLPAdapter extends PrinterAdapter {
         new JavaTimeAdapter(
         new BasicsAdapter(
         new AsyncConstructorAdapter(
-        //new GUIComponentObserverPatternAdapter(
         new AngularSpecificsAdapter(
         new CollectionsAdapter(
         new JavaBasicsAdapter(
@@ -48,7 +48,7 @@ public class UMLPAdapter extends PrinterAdapter {
         new UMLPEnumAdapter(
         new AnnotationToDecoratorAdapter(
         parentAdapter
-    )))))))))))))))));
+    ))))))))))))))))));
   }
 
   @Override

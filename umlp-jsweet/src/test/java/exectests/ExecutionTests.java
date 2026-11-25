@@ -7,6 +7,7 @@ import resources.exectests.CollectionsSingletonRuntimeCheck;
 import resources.exectests.DateArithmeticAsyncArgumentRuntimeCheck;
 import resources.exectests.FunctionDisplayGraphRuntimeCheck;
 import resources.exectests.FutureAdapterRuntimeCheck;
+import resources.exectests.JsonArrayMemberRuntimeCheck;
 import resources.exectests.LocalDateRuntimeCheck;
 import resources.exectests.MapRuntimeCheck;
 import resources.exectests.NestedFlatMapElement;
@@ -48,6 +49,12 @@ public class ExecutionTests {
   @Test
   public void testUtilArrays() {
     ExecTestRunner.runExecutionTest(UtilArraysRuntimeCheck.class);
+  }
+
+  /** JsonObject#getArrayMember and #getArrayMemberOpt become AsyncLists over the elements of the JSON array */
+  @Test
+  public void testJsonArrayMember() {
+    ExecTestRunner.runExecutionTest(JsonArrayMemberRuntimeCheck.class);
   }
 
   @Test

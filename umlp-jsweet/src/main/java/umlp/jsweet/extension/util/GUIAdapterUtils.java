@@ -228,6 +228,17 @@ public class GUIAdapterUtils extends UMLPAdapterUtils {
     return sunTypesHelper.getNewIdent(variableName);
   }
 
+  /** @see SunTypesHelper#getNewIteratorNextInvocation */
+  public standalone.com.sun.tools.javac.tree.JCTree.JCMethodInvocation getNewIteratorNextInvocation(
+      standalone.com.sun.tools.javac.util.Name iteratorName, standalone.com.sun.tools.javac.code.Symbol owner,
+      standalone.com.sun.tools.javac.code.Type iteratorType,
+      standalone.com.sun.tools.javac.code.Symbol.MethodSymbol next,
+      standalone.com.sun.tools.javac.code.Type nextType, standalone.com.sun.tools.javac.code.Type elementType,
+      int pos) {
+    return sunTypesHelper.getNewIteratorNextInvocation(iteratorName, owner, iteratorType, next, nextType, elementType,
+        pos);
+  }
+
   // TODO this should be removed, since we have Annotations for it
   public boolean isStateVarGetter(MethodInvocationElement invocation,
       Element parentElement, GUIComponentObserverPatternAdapter guiComponentObserverPatternAdapter) {

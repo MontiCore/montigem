@@ -1,3 +1,5 @@
+export * from "./JavaAsyncIterator";
+export * from "./JavaAsyncIterable";
 export * from "./Collection";
 export * from "./AsyncList";
 export * from "./AsyncSet";

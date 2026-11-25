@@ -1,17 +1,16 @@
 import {GemList} from "../common/GemList";
 import {GemIdentifiable} from "../common/GemIdentifiable";
 import {CommandManager} from "../command/CommandManager";
+import {JavaAsyncIterator} from "../javautil/JavaAsyncIterator";
 
-export class GemListAsyncIterator<E extends GemIdentifiable> implements AsyncIterator<E> {
+export class GemListAsyncIterator<E extends GemIdentifiable> implements JavaAsyncIterator<E> {
   private index: number;
-  private done: boolean;
   private prefetchedUpTo: number;
   // in-flight background load of the next window; resolves to the new prefetchedUpTo
   private nextPrefetch: Promise<number> | null;
 
   constructor(private gemList: GemList<E>, private batchSize: number = CommandManager.loadBatchSize) {
     this.index = 0;
-    this.done = false;
     this.prefetchedUpTo = 0;
     this.nextPrefetch = null;
   }
@@ -27,13 +26,13 @@ export class GemListAsyncIterator<E extends GemIdentifiable> implements AsyncIte
     })().catch(() => from);
   }
 
-  async next(): Promise<IteratorResult<E>> {
-    if (this.done) {
-      return {done: true, value: undefined};
-    }
-    if (this.index >= await this.gemList.size()) {
-      this.done = true;
-      return {done: true, value: undefined};
+  async hasNext(): Promise<boolean> {
+    return this.index < await this.gemList.size();
+  }
+
+  async next(): Promise<E> {
+    if (!await this.hasNext()) {
+      throw new Error("NoSuchElementException: the iteration has no more elements");
     }
     // cursor left the prefetched window: wait for the in-flight load or start one
     if (this.index >= this.prefetchedUpTo) {
@@ -50,6 +49,6 @@ export class GemListAsyncIterator<E extends GemIdentifiable> implements AsyncIte
     }
     const value = await this.gemList.get(this.index);
     ++this.index;
-    return {done: false, value};
+    return value;
   }
 }

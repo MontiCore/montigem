@@ -1,6 +1,7 @@
 /* (c) https://github.com/MontiCore/monticore */
 import {AsyncStream} from "./AsyncStream";
 import {Collection} from "./Collection";
+import {JavaAsyncIterator, JavaAsyncIteratorAdapter} from "./JavaAsyncIterator";
 import {JavaUtilUtils} from "./JavaUtilUtils";
 import {AbstractAsyncMap} from "./AbstractAsyncMap";
 
@@ -119,9 +120,8 @@ export abstract class AbstractMapCollection<E> implements Collection<E> {
     throw new Error('removeIndex() is not supported by the views of a Map. Use removeElement() instead.');
   }
 
-  /** @throws — use [Symbol.asyncIterator]() instead */
-  iterator(): AsyncIterator<E> {
-    throw new Error('iterator() returns Iterator<E>. Use [Symbol.asyncIterator]() instead.');
+  iterator(): JavaAsyncIterator<E> {
+    return new JavaAsyncIteratorAdapter(this[Symbol.asyncIterator]());
   }
 
   /** @throws — the views of a map have no listIterator */

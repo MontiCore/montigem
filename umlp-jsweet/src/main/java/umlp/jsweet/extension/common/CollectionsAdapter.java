@@ -2,6 +2,8 @@
 package umlp.jsweet.extension.common;
 
 import de.se_rwth.commons.logging.Log;
+import org.jsweet.JSweetConfig;
+import org.jsweet.transpiler.JSweetContext;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
@@ -17,15 +19,19 @@ import standalone.com.sun.source.tree.ExpressionTree;
 import standalone.com.sun.source.tree.MemberSelectTree;
 import standalone.com.sun.source.tree.MethodInvocationTree;
 import standalone.com.sun.source.tree.TypeCastTree;
+import standalone.com.sun.tools.javac.code.Symbol;
+import standalone.com.sun.tools.javac.code.Type;
 import standalone.com.sun.tools.javac.tree.JCTree;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeMirror;
 import java.util.AbstractList;
 import java.util.AbstractMap;
@@ -531,28 +537,57 @@ public class CollectionsAdapter extends AbstractAdapter {
     if (loop.getExpression() instanceof TypeCastTree || loop.getExpression() instanceof MethodInvocationTree) {
       print(")");
     }
-    print(".iterator();" + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
+    // hasNext is awaited if asyncjre.json makes it async (the loop's method is then
+    // async as well, see UMLPAsyncAwaitPropagationScanner#visitEnhancedForLoop)
+    String awaitHasNext = isAsyncIteratorMethod(getContext(), util(), "hasNext") ? "await " : "";
+    print(".iterator();" + awaitHasNext + indexVarName + ".hasNext();) {").println().startIndent().printIndent();
 
-    getPrinter().print(Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " " +
-            loop.getVariable().getName().toString() + " = ")
-        .print(indexVarName + ".next();").println();
+    Symbol.VarSymbol variable = ((JCTree.JCVariableDecl) loop.getVariable()).sym;
+    // The inferred type may not occur anywhere in the Java source (for example with var), so
+    // explicitly register every type named by the printed variable type.
+    ensureTypeModulesUsed(variable.asType());
+    // the value of the loop variable is the invocation iterator.next(), printed by the printer, so the adapters can
+    // substitute it (substituteMethodInvocation, e.g. GUIComponentObserverPatternAdapter)
+    getPrinter().print(loop.getVariable())
+        .print(" = ").print(createIteratorNextInvocation(loop, variable, indexVarName)).print(";").println();
     getPrinter().printIndent().print(loop.getStatement());
     endIndent().println().printIndent().print("}");
   }
 
-  protected void printAwaitForEachLoop(EnhancedForLoopTree loop, String indexVarName) {
-    print("for await(" + Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " ")
-        // Rename JS keywords (e.g. a variable named "function") like the body does
-        .print(adapterUtils.getJSweetVariableName(loop.getVariable().getName().toString()) + " of <AsyncIterable<");
-    TypeMirror variableType = ((JCTree.JCVariableDecl) loop.getVariable()).sym.asType();
-    // The inferred type may not occur anywhere in the Java source (for example with var), so
-    // explicitly register every type named by the generated AsyncIterable cast.
-    ensureTypeModulesUsed(variableType);
-    print(getMappedTypeArgument(variableType)).print(">>(");
-    print(loop.getExpression()).print(" ?? (async function* () {})())");
-    getPrinter().print(") {").println().startIndent().printIndent()
-        .printIndent().print(loop.getStatement())
-        .endIndent().println().printIndent().print("}");
+  /**
+   * Creates the invocation indexVarName.next() of the iterator loop printed for the for-each loop (javac's Lower would
+   * create it when desugaring the loop, but JSweet transpiles the trees before that). It is awaited if
+   * java.util.Iterator#next is async, like UMLPAsyncAwaitPropagationScanner would register it, which does not see
+   * this tree.
+   *
+   * @param variable the loop variable, which owns the type of the elements
+   */
+  protected JCTree.JCMethodInvocation createIteratorNextInvocation(EnhancedForLoopTree loop, Symbol.VarSymbol variable,
+                                                                   String indexVarName) {
+    TypeElement iteratorElement = util().getTypeElementByName(getContext(), "java.util.Iterator");
+    Symbol.MethodSymbol next = (Symbol.MethodSymbol) util().findFirstMethodDeclarationInType(iteratorElement, "next");
+    // Iterator<E> with the (boxed) type of the loop variable as E, so next returns the type of the loop variable
+    TypeMirror elementType = variable.asType().getKind().isPrimitive()
+        ? types().boxedClass((PrimitiveType) variable.asType()).asType()
+        : variable.asType();
+    DeclaredType iteratorType = types().getDeclaredType(iteratorElement, elementType);
+    JCTree.JCMethodInvocation invocation = ((GUIAdapterUtils) adapterUtils).getNewIteratorNextInvocation(
+        variable.name.table.fromString(indexVarName), variable.owner, (Type) iteratorType, next,
+        (Type) types().asMemberOf(iteratorType, next), (Type) elementType, ((JCTree) loop).pos);
+    if (getContext().hasAnnotationType(next, JSweetConfig.ANNOTATION_ASYNC)) {
+      getContext().addAwaitInvocation(invocation);
+    }
+    return invocation;
+  }
+
+  /**
+   * @return whether the method symbol java.util.Iterator#methodName (hasNext or next) is annotated @Async (e.g. by
+   * asyncjre.json), so the invocations in the iterator loops printed for for-each loops must be awaited
+   */
+  public static boolean isAsyncIteratorMethod(JSweetContext context, Util util, String methodName) {
+    ExecutableElement method = util.findFirstMethodDeclarationInType(
+        util.getTypeElementByName(context, "java.util.Iterator"), methodName);
+    return context.hasAnnotationType(method, JSweetConfig.ANNOTATION_ASYNC);
   }
 
   private void ensureTypeModulesUsed(TypeMirror type) {

@@ -1,6 +1,7 @@
 import {IUMLPList} from "../common/IUMLPList";
 import {GemList} from "../common/GemList";
 import {Collection} from "../javautil/Collection";
+import {JavaAsyncIterator, JavaAsyncIteratorAdapter} from "./JavaAsyncIterator";
 import {AsyncStream} from "../javautil/AsyncStream";
 
 export class AsyncList<E> implements IUMLPList<E> {
@@ -81,7 +82,10 @@ export class AsyncList<E> implements IUMLPList<E> {
 
   async* [Symbol.asyncIterator](): AsyncIterator<E> {
     if (this._delegate) {
-      yield* this._delegate;
+      const iterator = this._delegate.iterator();
+      while (await iterator.hasNext()) {
+        yield await iterator.next();
+      }
     } else {
       for (const item of this._data) {
         yield item;
@@ -423,9 +427,8 @@ export class AsyncList<E> implements IUMLPList<E> {
 
   // ─── Still unsupported (return complex non-primitive types) ──────────────
 
-  /** @throws — use [Symbol.asyncIterator]() instead */
-  iterator(): AsyncIterator<E> {
-    throw new Error('iterator() returns Iterator<E>. Use [Symbol.asyncIterator]() instead.');
+  iterator(): JavaAsyncIterator<E> {
+    return new JavaAsyncIteratorAdapter(this[Symbol.asyncIterator]());
   }
 
   /** @throws — use [Symbol.asyncIterator]() instead */

@@ -33,6 +33,9 @@ public class BasicsAdapter extends AbstractAdapter {
 
   private void initTypeMappings() {
     getTypeMirrorMappings().add(0, computeMCJSonTypeMapping());
+    // also by name: getMappedType (e.g. of type arguments, as in Optional<List<JsonElement>>) only applies these
+    addTypeMapping("de.monticore.symboltable.serialization.json.JsonObject", "any");
+    addTypeMapping("de.monticore.symboltable.serialization.json.JsonElement", "any");
   }
 
   public Function<TypeMirror, String> computeMCJSonTypeMapping() {
@@ -133,7 +136,6 @@ public class BasicsAdapter extends AbstractAdapter {
       case "getNumberAsInteger":
       case "getNumberAsLong":
       case "getValue":
-      case "getValues":
         //          case "putMember":
         //          case "removeMember":
         //          case "getMemberNames":
@@ -181,10 +183,36 @@ public class BasicsAdapter extends AbstractAdapter {
         this.print("(typeof ").print(invocation.getTargetExpression()).print("[").printArgList(
             invocation.getArguments()).print("] == \"number\")");
         return true;
+      case "getValues":
+        // JsonArray#getValues: List<JsonElement> -> an AsyncList over the elements of the JSON array
+        adapterUtils.printMacroName(methodName);
+        this.print("(await new " + CollectionsAdapter.CustomAsyncListImplementationConstructor + "(")
+            .print(invocation.getTargetExpression()).print("))");
+        getPrinter().useModule(new ModuleImportDescriptor(CollectionsAdapter.CustomAsyncListImplementationName,
+            getLibraryLocation()));
+        return true;
+      case "getArrayMember":
+        // List<JsonElement> -> an AsyncList over the elements of the JSON array (not AsyncList.of, which would
+        // make the whole array its only element)
+        adapterUtils.printMacroName(methodName);
+        this.print("(await new " + CollectionsAdapter.CustomAsyncListImplementationConstructor + "(")
+            .print(invocation.getTargetExpression()).print("[")
+            .printArgList(invocation.getArguments()).print("]))");
+        getPrinter().useModule(new ModuleImportDescriptor(CollectionsAdapter.CustomAsyncListImplementationName,
+            getLibraryLocation()));
+        return true;
+      case "getArrayMemberOpt":
+        // Optional<List<JsonElement>> -> AsyncList | null (see OptionalAdapter): empty if the member is no JSON array
+        adapterUtils.printMacroName(methodName);
+        this.print("(await (async (array) => Array.isArray(array) ? await new "
+                + CollectionsAdapter.CustomAsyncListImplementationConstructor + "(array) : null)(")
+            .print(invocation.getTargetExpression()).print("[")
+            .printArgList(invocation.getArguments()).print("]))");
+        getPrinter().useModule(new ModuleImportDescriptor(CollectionsAdapter.CustomAsyncListImplementationName,
+            getLibraryLocation()));
+        return true;
       case "getStringMember":
       case "getStringMemberOpt":
-      case "getArrayMember":
-      case "getArrayMemberOpt":
       case "getBooleanMember":
       case "getBooleanMemberOpt":
       case "getObjectMember":
