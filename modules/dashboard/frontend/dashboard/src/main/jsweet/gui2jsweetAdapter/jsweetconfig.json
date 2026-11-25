@@ -1,7 +1,8 @@
 {
   "adapters": [
     "umlp.jsweet.extension.imports.RelativeImportAdapter",
-    "umlp.jsweet.extension.GUIAdapter",
+    "umlp.jsweet.extension.gui.GUIComponentObserverPatternAdapter",
+    "umlp.jsweet.extension.UMLPAdapter",
     "umlp.jsweet.extension.umlp.DashboardModuleImportAdapter"
   ]
 }
