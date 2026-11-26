@@ -403,19 +403,6 @@ public abstract class FrontendPlugin implements Plugin<Project> {
       }
     });
 
-    // prints where the generated GUI code is, for the scripts in devScripts/generatorcompare
-    PrepareGeneratorDiffTask.register(project).configure(task -> {
-      task.dependsOn(guiJava2ts, cd2java, cd2sym);
-      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getOutputDir));
-      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getSymbolOutDir));
-      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getJSweetAdapterDir));
-      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getCD2JavaJSweetAdapterDir));
-      // only exist if the app has .cd files
-      task.addDir(cd2java.flatMap(CD2JavaTask::getOutputDir));
-      task.addDir(cd2sym.flatMap(CD2SymTask::getOutput));
-      task.addDir(cd2java.flatMap(CD2JavaTask::getSymbolOutDir));
-    });
-
     TaskProvider<UMLP2JSweetObserverTask> umlp2jsweetObserver = project.getTasks().register(
         UMLP2JSWEET_OBSERVER_TASK, UMLP2JSweetObserverTask.class, task -> {
           task.setGroup(UMLP_GROUP_NAME);
@@ -428,6 +415,23 @@ public abstract class FrontendPlugin implements Plugin<Project> {
           task.getSymbolPath().from(project.getConfigurations().named(MONTIGEM_MODULE_IMPORT_MAP_CONFIG));
           task.getModelDir().from(project.getConfigurations().named(MONTIGEM_MODULE_UMLP_MODELS_CONFIG));
         });
+
+    // writes where the generated code is, for the scripts in devScripts/generatorcompare
+    PrepareGeneratorDiffTask.register(project).configure(task -> {
+      task.dependsOn(umlp2sym, umlpJava2ts, umlp2jsweetObserver, guiJava2ts, cd2java, cd2sym);
+      task.addDir(umlp2sym.flatMap(CommonMCTask::getOutputDir));
+      task.addDir(umlpJava2ts.flatMap(UMLPJava2TSTask::getOutputDir));
+      task.addDir(umlpJava2ts.flatMap(UMLPJava2TSTask::getJSweetAdapterDir));
+      task.addDir(umlp2jsweetObserver.flatMap(CommonMCTask::getOutputDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getOutputDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getSymbolOutDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getJSweetAdapterDir));
+      task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getCD2JavaJSweetAdapterDir));
+      // only exist if the app has .cd files
+      task.addDir(cd2java.flatMap(CD2JavaTask::getOutputDir));
+      task.addDir(cd2sym.flatMap(CD2SymTask::getOutput));
+      task.addDir(cd2java.flatMap(CD2JavaTask::getSymbolOutDir));
+    });
 
     addJSweetDependencies(project);
 

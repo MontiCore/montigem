@@ -530,9 +530,13 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
           task.onlyIf(t -> guiPresent);
         });
 
-        // writes where the generated GUI code is, for the scripts in devScripts/generatorcompare
-        PrepareGeneratorDiffTask.register(subproject).configure(task -> {
-          task.dependsOn(guiJava2ts, gui2sym, cd2java, cd2sym);
+        // writes where the generated code is, for the scripts in devScripts/generatorcompare
+        TaskProvider<PrepareGeneratorDiffTask> prepareGeneratorDiff = PrepareGeneratorDiffTask.register(subproject);
+        prepareGeneratorDiff.configure(task -> {
+          task.dependsOn(umlpJava2ts, guiJava2ts, gui2sym, cd2java, cd2sym);
+          // only exist if the lib has a domain model
+          task.addDir(umlpJava2ts.flatMap(UMLPJava2TSTask::getOutputDir));
+          task.addDir(umlpJava2ts.flatMap(UMLPJava2TSTask::getJSweetAdapterDir));
           task.addDir(guiJava2ts.flatMap(GUIJava2TSTask::getOutputDir));
           // the symbols of a lib are written by gui2sym, guiJava2ts has no symbol folder here
           task.addDir(gui2sym.flatMap(GUI2SymTask::getOutputDir));
@@ -565,6 +569,11 @@ public class ModuleFrontendPlugin extends ALazyPublishingPlugin implements Plugi
             }
             task.getOutputDir().set(umlp2tsDir);
             task.getTslib().set(libQName);
+          });
+          prepareGeneratorDiff.configure(task -> {
+            task.dependsOn(umlp2ts);
+            task.addDir(umlp2ts.flatMap(UMLP2TSTask::getOutputDir));
+            task.addDir(umlp2ts.flatMap(UMLP2TSTask::getSymbolOutDir));
           });
 
           umlp2impJar.configure(task -> {
