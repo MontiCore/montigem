@@ -7,18 +7,35 @@ package mc.fenix.cad;
 classdiagram GemCADTypes {
 
   /**
-    A data container representing a specific point of interest within the 3D CAD model.
+    Makes one part of the CAD model interactive. Parts without a Marker are only rendered.
+    A marked part is highlighted on hover, shows its label as a tooltip (if not empty),
+    and emits GemCAD's onNodeClick event with the nodeName when clicked.
+
+    Requirements on the CAD (glTF) file:
+    - Each interactive part must be a root node of the glTF scene, i.e. a node listed directly in
+      "scenes[].nodes" (in Blender: a top-level object without parent). Nested nodes cannot be
+      referenced; a hit on any nested mesh is attributed to its root node. If an exporter wraps the
+      whole model in a single root node, only that node can be marked.
+    - The node must have a "name". Names should be unique and consist only of letters, digits,
+      "_" and "-" (see nodeName for how other names are altered while loading).
+
+    Example: for a glTF file with
+      "scenes": [{ "nodes": [0, 1] }],
+      "nodes": [{ "name": "red", "mesh": 0 }, { "name": "blue", "mesh": 1 }]
+    the parts are referenced as Marker("Red cube", "red") and Marker("", "blue").
   */
   public class Marker {
     /**
-      The human-readable text label displayed at the marker position.
+      The tooltip text shown while the mouse hovers over the marked part.
+      An empty string shows no tooltip; the part is still highlighted and clickable.
     */
     String label;
 
     /**
-      The unique identifier of the target node within the hierarchical structure of the CAD model.
-      This identifier corresponds to the specific name assigned to a geometric object or group
-      within the source CAD file (e.g., the object name in an .obj or .stl file structure).
+      The name of the referenced root node in the glTF file (field "name" of the node), compared
+      exactly and case-sensitively. Note that the loader alters names: whitespace becomes "_",
+      the characters [ ] . : / are removed, and duplicate names get a suffix "_1", "_2", ...
+      The nodeName must match the altered name (e.g. "Part 1.0" becomes "Part_10").
     */
     String nodeName;
 

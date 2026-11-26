@@ -33,7 +33,13 @@ export class GemCAD extends GemCADComponent implements OnInit, OnDestroy, OnChan
   private highlightedObject: THREE.Object3D | null = null;
   private originalEmissiveColors = new Map<string, { color: THREE.Color, intensity: number }>();
 
-  private internalMarkers: Marker[] = [];
+  /**
+   * The markers as plain array. The generated `markers` input also accepts an IUMLPList and converts it
+   * asynchronously via setMarkers(), so the raw value in ngOnChanges must not be used directly.
+   */
+  private get internalMarkers(): Marker[] {
+    return this.getMarkers() ?? [];
+  }
 
   private get containerWidth(): number {
     return this.canvasContainer.nativeElement.clientWidth;
@@ -55,7 +61,6 @@ export class GemCAD extends GemCADComponent implements OnInit, OnDestroy, OnChan
     }
 
     if (changes['markers']) {
-      this.internalMarkers = changes['markers'].currentValue || [];
       this.unhighlightObject();
       if (this.popup) this.popup.style.display = 'none';
     }
