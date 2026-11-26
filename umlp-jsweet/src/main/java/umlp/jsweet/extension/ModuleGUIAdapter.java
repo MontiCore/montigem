@@ -86,6 +86,7 @@ public class ModuleGUIAdapter extends PrinterAdapter {
   }
 
   public void propagateAsyncFromRTECalls() {
-    new UMLPAsyncAwaitPropagationScanner(context, false).process(getContext().compilationUnits, getContext().trees);
+    new UMLPAsyncAwaitPropagationScanner(context, false)
+        .process(getContext().compilationUnits, getContext().trees);
   }
 }

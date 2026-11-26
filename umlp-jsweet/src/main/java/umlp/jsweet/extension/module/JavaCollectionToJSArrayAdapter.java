@@ -299,12 +299,6 @@ public class JavaCollectionToJSArrayAdapter extends AbstractAdapter {
   }
 
   @Override
-  public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength,
-      String indexVarName) {
-    return super.substituteForEachLoop(foreachLoop, targetHasLength, indexVarName);
-  }
-
-  @Override
   public Java2TypeScriptTranslator getPrinter() {
     if (super.getPrinter() instanceof Java2TypeScriptTranslator) {
       return (Java2TypeScriptTranslator) super.getPrinter();

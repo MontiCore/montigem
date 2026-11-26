@@ -66,6 +66,7 @@ public class UMLPAdapter extends PrinterAdapter {
   public void propagateAsyncFromRTECalls() {
     UMLPAdapterUtils.addAsyncAnnotationsForJREToContext(this.getContext());
 
-    new UMLPAsyncAwaitPropagationScanner(context, true).process(getContext().compilationUnits, getContext().trees);
+    new UMLPAsyncAwaitPropagationScanner(context, true)
+        .process(getContext().compilationUnits, getContext().trees);
   }
 }
