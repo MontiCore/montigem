@@ -2,7 +2,7 @@
 ${tc.signature("name", "returnType", "paramSignature", "paramCallsite", "isVoid", "paramsPresent", "actualCall", "signature")}
 ${cd4c.method("public ${returnType} ${name}(${paramSignature})")}
 
-var monitor = MethodMonitor.reportMethodCall(this, "${signature}", "${name}" <#if paramsPresent>, ${paramCallsite}</#if>);
+MethodMonitor monitor = MethodMonitor.reportMethodCall(this, "${signature}", "${name}" <#if paramsPresent>, ${paramCallsite}</#if>);
 <#if !isVoid>${returnType} res;</#if>
 try {
 <#if isVoid>
