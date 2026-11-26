@@ -8,10 +8,10 @@ import KitchenCompanion.User;
 import KitchenCompanion.KitchenCompanionRole;
 
 component UserPanel(List<User> allUsers, String searchLetter, boolean adminPage, KitchenCompanionRole role){
-  @GemRow(hAlign = "center", colGap = "1rem", rowGap = "1rem", wrap = "wrap", components = [
+  userGrid@GemRow(hAlign = "center", colGap = "1rem", rowGap = "1rem", wrap = "wrap", components = [
     @iterate(User user : allUsers){
       @guard(search(searchLetter, user, role)) {
-        @GemButton(
+        userButton@GemButton(
           label = user.formattedName,
           width = "20rem",
           margin = "0",

@@ -156,6 +156,53 @@
   }
 }
 
+@include tablet-portrait {
+  :host ::ng-deep {
+    gem-grid.grid,
+    .grid,
+    [class*="grid"] {
+      grid-template-columns: 52px 1fr 52px !important;
+      padding-top: 8px;
+    }
+
+    .titleSlot {
+      column-gap: 14px !important;
+    }
+
+    .img {
+      width: 52px !important;
+      height: 52px !important;
+    }
+
+    .mainText {
+      font-size: 2.25rem !important;
+    }
+
+    button:has(mat-icon),
+    .gem-button {
+      width: 52px !important;
+      height: 52px !important;
+      min-width: 52px;
+      line-height: 52px;
+
+      mat-icon, i, svg, span, p {
+        font-size: 52px !important;
+        line-height: 52px;
+      }
+    }
+
+    mat-progress-spinner,
+    .gem-spinner,
+    mat-loading-spinner {
+      width: 42px !important;
+      height: 42px !important;
+      max-width: 42px;
+      max-height: 42px;
+      margin: 0 !important;
+    }
+  }
+}
+
 @include phone {
   :host ::ng-deep {
     gem-grid.grid,

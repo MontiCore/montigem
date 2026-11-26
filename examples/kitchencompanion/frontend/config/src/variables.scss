@@ -162,6 +162,11 @@ $bp-phone: 600px;
   @media (max-width: $bp-phone) { @content; }
 }
 
+// Tablet held upright (e.g. the Galaxy Tab S7 FE kiosk), excluding phones
+@mixin tablet-portrait {
+  @media (min-width: $bp-phone + 1) and (max-width: $bp-tablet) and (orientation: portrait) { @content; }
+}
+
 @mixin hover {
   @media (hover: hover) {
     &:hover { @content; }

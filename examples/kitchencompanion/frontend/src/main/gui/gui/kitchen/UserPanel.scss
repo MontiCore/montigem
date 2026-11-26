@@ -69,6 +69,60 @@
   min-height: 3.5rem;
 }
 
+@include tablet-portrait {
+  :host {
+    display: block;
+    align-self: stretch;
+    width: 100%;
+  }
+
+  // 4 equal columns with full names; every name button has exactly the same size,
+  // overly long names wrap to a second line inside the fixed-height button
+  :host ::ng-deep .userGrid {
+    display: grid !important;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem !important;
+    width: 100% !important;
+    max-width: none;
+  }
+
+  :host ::ng-deep .userGrid > .userButton {
+    width: auto !important;
+    min-width: 0;
+  }
+
+  :host ::ng-deep .gem-button {
+    height: 3.5rem;
+    min-height: 0;
+    padding: 0.25rem 0.4rem;
+    font-size: 15px;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  :host(.ordinaryPanel) ::ng-deep .gem-button {
+    min-height: 0;
+  }
+
+  // VIPs share the full width: 1 → full, 2 → halves, 3 → thirds (more wrap, last row stretches)
+  :host(.leadPanel) ::ng-deep .userGrid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+
+  :host(.leadPanel) ::ng-deep .userGrid > .userButton {
+    flex: 1 1 calc((100% - 1rem) / 3);
+  }
+
+  // VIPs stay the biggest, easiest targets
+  :host(.leadPanel) ::ng-deep .gem-button {
+    height: 5rem;
+    min-height: 0;
+    font-size: 1.2rem;
+  }
+}
+
 @include phone {
   :host {
     display: block;
