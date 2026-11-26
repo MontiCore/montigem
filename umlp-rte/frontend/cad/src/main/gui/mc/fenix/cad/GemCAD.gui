@@ -18,16 +18,23 @@ component GemCAD(
 
    /**
      The relative or absolute path to the CAD file resource.
+     Supported formats: glTF 2.0, either as `.gltf` (JSON, with external or embedded buffers/textures)
+     or as binary `.glb`. Other CAD formats (e.g. STEP, STL, OBJ) must be converted to glTF first.
+     Compressed glTF (Draco, KTX2, Meshopt) is not supported.
    */
    String filePath = "",
 
    /**
-     A collection of Marker objects to be rendered as annotations on the CAD model.
+     The interactive parts of the CAD model. Each Marker references a root node of the glTF scene
+     by its name (Marker.nodeName); only these parts are highlighted on hover, show the
+     Marker.label as tooltip and trigger onNodeClick. All other parts are only rendered.
+     See Marker in GemCADTypes.cd for the requirements on the CAD file.
    */
    List<Marker> markers,
 
    /**
-     The event emitted when a user interacts with a specific node in the CAD model.
+     The event emitted when the user clicks a part of the CAD model that has a Marker.
+     The payload is the clicked node's name (Marker.nodeName). Clicks on unmarked parts emit nothing.
    */
    Event<String> onNodeClick
 )
