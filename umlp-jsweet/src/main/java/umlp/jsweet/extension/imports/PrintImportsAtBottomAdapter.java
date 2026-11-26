@@ -37,7 +37,8 @@ public class PrintImportsAtBottomAdapter extends PrinterAdapter {
 
     alreadyImported.add(lookupKey);
 
-    if(path.startsWith("@")){
+    // relative paths are chosen by the RelativeImportAdapter, they stay as they are
+    if(path.startsWith("@") || path.startsWith(".")){
       return descriptor;
     }
 

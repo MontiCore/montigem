@@ -31,8 +31,9 @@ import umlp.jsweet.extension.util.UMLPAdapterUtils;
 public class UMLPAdapter extends PrinterAdapter {
   public UMLPAdapter(PrinterAdapter parentAdapter) {
     super(
-        new RelativeImportAdapter(
+        // outside of RelativeImportAdapter, so it sees the relative paths and leaves them alone
         new PrintImportsAtBottomAdapter(
+        new RelativeImportAdapter(
         new GUITypesImportAdapter(
         new OptionalAdapter(
         new FutureAdapter(
