@@ -21,6 +21,7 @@ import umlp.jsweet.extension.imports.PrintImportsAtBottomAdapter;
 import umlp.jsweet.extension.gui.GUITypesImportAdapter;
 import umlp.jsweet.extension.gui.GUIUtilAdapter;
 import umlp.jsweet.extension.gui.TSTypesAdapter;
+import umlp.jsweet.extension.imports.RelativeImportAdapter;
 import umlp.jsweet.extension.umlp.BackendOnlyAdapter;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
 
@@ -30,6 +31,7 @@ import umlp.jsweet.extension.util.UMLPAdapterUtils;
 public class UMLPAdapter extends PrinterAdapter {
   public UMLPAdapter(PrinterAdapter parentAdapter) {
     super(
+        new RelativeImportAdapter(
         new PrintImportsAtBottomAdapter(
         new GUITypesImportAdapter(
         new OptionalAdapter(
@@ -48,7 +50,7 @@ public class UMLPAdapter extends PrinterAdapter {
         new UMLPEnumAdapter(
         new AnnotationToDecoratorAdapter(
         parentAdapter
-    ))))))))))))))))));
+    )))))))))))))))))));
   }
 
   @Override

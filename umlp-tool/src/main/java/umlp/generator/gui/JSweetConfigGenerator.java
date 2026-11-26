@@ -42,7 +42,7 @@ public class JSweetConfigGenerator {
 
   public void generate(String outputDir, boolean forCD, List<String> srcDirs) {
     if(forCD) {
-      createJsweetConfig("umlp/jsweetconfig/jsweetCDConfig.json", outputDir, srcDirs);
+      createJsweetConfig("umlp/jsweetconfig/JSweetConfigDomainJSON.json", outputDir, srcDirs);
     } else {
       createJsweetConfig("umlp/jsweetconfig/jsweetGUINoDomain.json", outputDir, srcDirs);
     }
