@@ -1,6 +1,7 @@
 package kitchencompanion;
 
 import jsweet.lang.Erased;
+import org.slf4j.LoggerFactory;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -36,6 +37,16 @@ public abstract class MailService {
     Transport t = session.getTransport();
     t.connect();
     t.sendMessage(mail, mail.getAllRecipients());
+  }
+
+  public static boolean trySendMail(String mailText, String email, String subject) {
+    try {
+      sendMail(mailText, email, subject);
+      return true;
+    } catch (MessagingException | RuntimeException e) {
+      LoggerFactory.getLogger(MailService.class).error("Could not send mail to " + email, e);
+      return false;
+    }
   }
 
   private static void addToProperties(String key, Object defaultValue) {
