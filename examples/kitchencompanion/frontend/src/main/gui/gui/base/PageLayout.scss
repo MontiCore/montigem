@@ -37,6 +37,15 @@
   }
 }
 
+@include tablet-portrait {
+  :host ::ng-deep .topColumn,
+  :host ::ng-deep .columnOverflow {
+    padding-left: 1rem;
+    padding-right: 1rem;
+    box-sizing: border-box;
+  }
+}
+
 @include phone {
   :host ::ng-deep .topColumn,
   :host ::ng-deep .columnOverflow {

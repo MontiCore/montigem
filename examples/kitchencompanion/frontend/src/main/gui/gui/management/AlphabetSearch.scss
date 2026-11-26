@@ -53,6 +53,41 @@
   100% { --fade-left: 2rem; --fade-right: 0px; }
 }
 
+// Exactly two rows: A–N, then O–Z followed by a double-width "Clear"
+@include tablet-portrait {
+  :host {
+    display: block;
+    width: 100%;
+  }
+
+  :host ::ng-deep {
+    .letterRow {
+      display: grid !important;
+      grid-template-columns: repeat(14, minmax(0, 1fr));
+      gap: 0.4rem !important;
+      width: 100% !important;
+
+      > gem-button {
+        width: auto !important;
+        min-width: 0;
+        margin: 0 !important;
+      }
+
+      > gem-button.clear {
+        order: 1;
+        grid-column: span 2;
+      }
+
+      .gem-button {
+        width: 100%;
+        min-width: 0;
+        min-height: 3rem;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
 @include phone {
   :host {
     display: block;
