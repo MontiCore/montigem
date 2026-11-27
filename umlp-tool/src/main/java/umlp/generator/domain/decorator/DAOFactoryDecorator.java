@@ -65,7 +65,7 @@ public class DAOFactoryDecorator extends AbstractDecorator {
                                                            "protected final List<Runnable> accessListeners",
                                                            "new ArrayList<>()");
 
-    getNonDerivedDomainClasses(origCD).forEach(c -> addClassElements(c, daoFactory));
+    getNonDerivedNonPojoDomainClasses(origCD).forEach(c -> addClassElements(c, daoFactory));
 
     // TODO remove this cancerous check for multiple associations with the same name introduced by CDMerge
     origCD.getCDDefinition().getCDAssociationsList().stream()
@@ -80,7 +80,7 @@ public class DAOFactoryDecorator extends AbstractDecorator {
                    daoFactory.getName(),
                    accessListenersAttribute.getName());
     cd4C.addMethod(daoFactory, CUSTOM_TEMPLATE_PATH + "StaticAddAccessListener");
-    List<ASTCDClass> concreteDomainClasses = getConcreteDomainClasses(origCD);
+    List<ASTCDClass> concreteDomainClasses = getConcreteNonPojoDomainClasses(origCD);
 
     cd4C.addMethod(daoFactory, CUSTOM_TEMPLATE_PATH + "Init", name + DAOFactoryDecorator.SUFFIX,
                    concreteDomainClasses, origCD.getCDDefinition().getCDAssociationsList().stream()

@@ -24,7 +24,7 @@ public class GetFilteredDecorator extends AbstractDeSerDecorator {
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     addedDeSers.clear();
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, COMMAND_PACKAGE);
-    getNonDerivedDomainClasses(origCD).forEach(c -> {
+    getNonDerivedNonPojoDomainClasses(origCD).forEach(c -> {
       astcdPackage.addCDElement(withOrigin(createClass(origCD, c, astcdPackage.getName())));
       astcdPackage.addCDElement(withOrigin(createDeSer(origCD, c)));
     });

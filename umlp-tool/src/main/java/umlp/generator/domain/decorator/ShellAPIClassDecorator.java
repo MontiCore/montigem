@@ -44,7 +44,7 @@ public class ShellAPIClassDecorator extends DomainClassDecorator {
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, SHELLAPI_PACKAGE);
     String cdName = origCD.getCDDefinition().getName();
-    getConcreteDomainClasses(origCD).forEach(cdClass -> astcdPackage.addCDElement(withOrigin(createAPI(origCD,
+    getConcreteNonPojoDomainClasses(origCD).forEach(cdClass -> astcdPackage.addCDElement(withOrigin(createAPI(origCD,
                                                                                                        cdName,
                                                                                                        cdClass))));
   }

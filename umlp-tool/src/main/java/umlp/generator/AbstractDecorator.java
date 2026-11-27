@@ -421,6 +421,21 @@ public abstract class AbstractDecorator {
   }
 
   /**
+   * Gets all {@link ASTCDClass}es of a class diagramm which are not derived nor pojo (but may be abstract!)
+   *
+   * @param cd A class diagramm
+   * @return A list of all non-derived, non-pojo domain classes
+   * @see #getConcreteDomainClasses(ASTCDCompilationUnit)
+   */
+  protected List<ASTCDClass> getNonDerivedNonPojoDomainClasses(ASTCDCompilationUnit cd) {
+    return getDomainClasses(cd, Filter.DERIVED.or(Filter.POJO).negate());
+  }
+
+  protected List<ASTCDClass> getConcreteNonPojoDomainClasses(ASTCDCompilationUnit cd) {
+    return getDomainClasses(cd, Filter.DERIVED.or(Filter.ABSTRACT).or(Filter.POJO).negate());
+  }
+
+  /**
    * Gets all classes from the specified class diagramm which match the given filter. Best used in
    * combination with {@link Filter}
    *

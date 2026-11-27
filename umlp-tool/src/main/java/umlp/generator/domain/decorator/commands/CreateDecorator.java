@@ -28,7 +28,7 @@ public class CreateDecorator extends AbstractDeSerDecorator {
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     addedDeSers.clear();
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, COMMAND_PACKAGE);
-    getConcreteDomainClasses(origCD).forEach(c -> {
+    getConcreteNonPojoDomainClasses(origCD).forEach(c -> {
       astcdPackage.addCDElement(withOrigin(createClass(origCD, c, astcdPackage.getName())));
       astcdPackage.addCDElement(withOrigin(createDeSer(origCD, c)));
     });

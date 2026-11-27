@@ -8,6 +8,7 @@ import de.monticore.cdassociation._ast.ASTCDAssocSide;
 import de.monticore.cdbasis._ast.*;
 import de.monticore.generating.templateengine.GlobalExtensionManagement;
 import de.monticore.io.paths.MCPath;
+import de.monticore.types.check.SymTypeExpression;
 import de.monticore.types.check.SymTypeOfGenerics;
 import de.se_rwth.commons.Joiners;
 import umlp.UMLPMill;
@@ -130,30 +131,35 @@ public class DeSerDecorator extends DomainClassDecorator {
     boolean useDeSer = false;
     String type = GenService.createType(attr.getSymbol().getType()).printType();
     String innerTypeFull = "";
-    String innerType = "";
     String jsonStr = "";
+    boolean isDomainType = false;
     if (GenService.isList(attr)) {
       isList = true;
-      jsonStr = GenService.calculateJSon(((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0));
-      innerTypeFull = ((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0).printFullName();
-      useDeSer = supportedDesers.contains(innerTypeFull);
+      SymTypeExpression innerType = ((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0);
+      jsonStr = GenService.calculateJSon(innerType);
+      innerTypeFull = innerType.printFullName();
+      isDomainType = GenService.isDomainType(innerType) && !GenService.isCDEnum(innerType);
+      useDeSer = supportedDesers.contains(innerTypeFull) || isDomainType;
     } else if (GenService.isOptional(attr)) {
       isOptional = true;
-      jsonStr = GenService.calculateJSon(((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0));
-      innerTypeFull = ((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0).printFullName();
-      useDeSer = supportedDesers.contains(innerTypeFull);
+      SymTypeExpression innerType = ((SymTypeOfGenerics) attr.getSymbol().getType()).getArgument(0);
+      jsonStr = GenService.calculateJSon(innerType);
+      innerTypeFull = innerType.printFullName();
+      isDomainType = GenService.isDomainType(innerType) && !GenService.isCDEnum(innerType);
+      useDeSer = supportedDesers.contains(innerTypeFull) || isDomainType;
     } else {
       jsonStr = GenService.calculateJSon(attr.getSymbol().getType());
-      useDeSer = supportedDesers.contains(type);
+      isDomainType = GenService.isDomainType(attr.getSymbol().getType()) && !GenService.isCDEnum(attr.getSymbol().getType());
+      useDeSer = supportedDesers.contains(type) || isDomainType;
     }
     boolean makeAbstract = jsonStr.isEmpty() && !useDeSer;
 
     getCD4C().addMethod(deSer, getSerializeSimpleFieldTemplate(),
         originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, cdName + BaseClassObjectMapperDecorator.SUFFIX);
+        isDomainType, useDeSer, cdName + BaseClassObjectMapperDecorator.SUFFIX, cdName + ManagerDecorator.SUFFIX);
     getCD4C().addMethod(deSer, getDeserializeSimpleFieldTemplate(),
         originalClassName, attr, type, jsonStr, isList, innerTypeFull, isOptional,
-        useDeSer, cdName + BaseClassObjectMapperDecorator.SUFFIX);
+        isDomainType, useDeSer, cdName + BaseClassObjectMapperDecorator.SUFFIX, cdName + ManagerDecorator.SUFFIX);
 
     if (makeAbstract) {
       deSer.setModifier(PUBLIC_ABSTRACT.build());

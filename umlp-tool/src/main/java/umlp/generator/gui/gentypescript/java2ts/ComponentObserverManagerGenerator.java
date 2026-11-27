@@ -84,7 +84,7 @@ public class ComponentObserverManagerGenerator {
   }
 
   protected List<ASTCDClass> getConcreteDomainClasses(ASTCDDefinition cd) {
-    return getDomainClasses(cd, Filter.DERIVED.negate());
+    return getDomainClasses(cd, Filter.DERIVED.or(Filter.POJO).negate());
   }
 
   protected String getCorrectPackage(ASTCDType type) {

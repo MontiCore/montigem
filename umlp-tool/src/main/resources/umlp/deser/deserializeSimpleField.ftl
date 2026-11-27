@@ -1,6 +1,8 @@
 <#-- (c) https://github.com/MontiCore/monticore -->
-${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType", "isOptional", "useDeSer", "objectMapperName")}
+${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType", "isOptional", "isDomainType", "useDeSer", "objectMapperName", "managerName")}
 <#assign fieldName=attr.getName()>
+<#assign simpleType = fieldType?contains(".")?then(fieldType?keep_after_last("."), fieldType)>
+<#assign simpleInnerType = innerType?contains(".")?then(innerType?keep_after_last("."), innerType)>
 <#assign contextParameter=(objectMapperName == "context" && useDeSer)?then(", PojoGraphContext context", "")>
 <#assign contextSuffix=(objectMapperName == "context" && useDeSer)?then("WithContext", "")>
 <#if !jsonStr?has_content && !useDeSer>
@@ -13,7 +15,11 @@ ${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType
       return result;
       }
       for(de.monticore.symboltable.serialization.json.JsonElement e : json.getArrayMember("${fieldName}")) {
-      <#if useDeSer>
+      <#if isDomainType>
+      if (e.isJsonNumber()) {
+        ${managerName}.${simpleInnerType?uncap_first}Opt(e.getAsJsonNumber().getNumberAsLong()).ifPresent(result::add);
+      }
+      <#elseif useDeSer>
       <#if objectMapperName == "context">
       result.add((${innerType}) context.deserializeValue(e, "${innerType}"));
       <#else>
@@ -29,7 +35,9 @@ ${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType
       return result;
     <#elseif isOptional>
       if(json.hasMember("${fieldName}")){
-      <#if useDeSer>
+      <#if isDomainType>
+        return ${managerName}.${simpleInnerType?uncap_first}Opt(json.getLongMember("${fieldName}"));
+      <#elseif useDeSer>
       JsonElement value = json.getMember("${fieldName}");
       <#if objectMapperName == "context">
       return Optional.of((${innerType}) context.deserializeValue(value, "${innerType}"));
@@ -48,7 +56,9 @@ ${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType
       }
     <#else>
     <#-- TODO: default values -->
-      <#if useDeSer>
+      <#if isDomainType>
+      return json.hasMember("${fieldName}") ? ${managerName}.${simpleType?uncap_first}Opt(json.getLongMember("${fieldName}")).orElse(null) : null;
+      <#elseif useDeSer>
       JsonElement value = json.getMember("${fieldName}");
       <#if objectMapperName == "context">
       return (${fieldType}) context.deserializeValue(value, "${fieldType}");
@@ -60,7 +70,7 @@ ${tc.signature("className", "attr", "fieldType", "jsonStr", "isList", "innerType
       return ${fieldType}.valueOf(json.getMember("${fieldName}").${jsonStr});
         <#else>
       return json.getMember("${fieldName}").${jsonStr};
-          </#if>
+           </#if>
       </#if>
     </#if>
 

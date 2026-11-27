@@ -59,7 +59,7 @@ public class DiagramObserverDecorator extends AbstractDecorator {
     CD4C cd4C = getCD4C();
 
     // Methods
-    getConcreteDomainClasses(origCD).forEach(c -> {
+    getConcreteNonPojoDomainClasses(origCD).forEach(c -> {
       String cName = c.getName();
       generationSummary.addMethod(cd4C.addMethod(ast, NOTIFY_ADD_TEMPLATE, cName), NOTIFY_ADD_TEMPLATE, c);
       generationSummary.addMethod(cd4C.addMethod(ast, NOTIFY_DELETE_TEMPLATE, cName), NOTIFY_DELETE_TEMPLATE, c);

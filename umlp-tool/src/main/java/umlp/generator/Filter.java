@@ -17,6 +17,7 @@ public interface Filter {
       .isDerived(); //TODO is this really the intended behaviour if a symbol is not present?
   Predicate<Wrapper> ABSTRACT = c -> c.getModifier().isAbstract();
   Predicate<Wrapper> SINGLETON = c -> GenService.hasStereotype(c.getModifier(), "singleton");
+  Predicate<Wrapper> POJO = c -> GenService.hasStereotype(c.getModifier(), "pojo");
 
   //bundles the properties of
   interface Wrapper {

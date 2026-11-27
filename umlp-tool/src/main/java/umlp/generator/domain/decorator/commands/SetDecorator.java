@@ -46,7 +46,7 @@ public class SetDecorator extends AbstractDeSerDecorator {
   public void transform(ASTCDCompilationUnit origCD, ASTCDCompilationUnit decoratedCD) {
     addedDeSers.clear();
     ASTCDPackage astcdPackage = getPackage(origCD, decoratedCD, COMMAND_PACKAGE);
-    getConcreteDomainClasses(origCD).forEach(c -> {
+    getConcreteNonPojoDomainClasses(origCD).forEach(c -> {
       CDSymbolTables.getAttributesInHierarchy(c)
           .stream()
           .filter(a -> !a.getModifier().isDerived())
