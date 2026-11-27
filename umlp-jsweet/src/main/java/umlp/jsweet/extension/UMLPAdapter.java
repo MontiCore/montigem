@@ -18,7 +18,7 @@ import umlp.jsweet.extension.common.UMLPRTEImportAdapter;
 import umlp.jsweet.extension.gui.AngularSpecificsAdapter;
 import umlp.jsweet.extension.gui.AnnotationToDecoratorAdapter;
 import umlp.jsweet.extension.imports.PrintImportsAtBottomAdapter;
-import umlp.jsweet.extension.gui.GUITypesImportAdapter;
+import umlp.jsweet.extension.imports.TSModuleImportAdapter;
 import umlp.jsweet.extension.gui.GUIUtilAdapter;
 import umlp.jsweet.extension.gui.TSTypesAdapter;
 import umlp.jsweet.extension.imports.RelativeImportAdapter;
@@ -34,7 +34,7 @@ public class UMLPAdapter extends PrinterAdapter {
         // outside of RelativeImportAdapter, so it sees the relative paths and leaves them alone
         new PrintImportsAtBottomAdapter(
         new RelativeImportAdapter(
-        new GUITypesImportAdapter(
+        new TSModuleImportAdapter(
         new OptionalAdapter(
         new FutureAdapter(
         new UMLPRTEImportAdapter(

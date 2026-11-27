@@ -16,7 +16,7 @@ import umlp.jsweet.extension.common.UMLPEnumAdapter;
 import umlp.jsweet.extension.gui.AngularSpecificsAdapter;
 import umlp.jsweet.extension.gui.AnnotationToDecoratorAdapter;
 import umlp.jsweet.extension.gui.GUIComponentObserverPatternAdapter;
-import umlp.jsweet.extension.gui.GUITypesImportAdapter;
+import umlp.jsweet.extension.imports.TSModuleImportAdapter;
 import umlp.jsweet.extension.gui.GUIUtilAdapter;
 import umlp.jsweet.extension.gui.TSTypesAdapter;
 import umlp.jsweet.extension.module.JavaCollectionToJSArrayAdapter;
@@ -43,7 +43,7 @@ public class ModuleGUIAdapter extends PrinterAdapter {
         new JavaCollectionToJSArrayAdapter(
         new GUIComponentObserverPatternAdapter(
         new AngularSpecificsAdapter(
-        new GUITypesImportAdapter(
+        new TSModuleImportAdapter(
         new TSTypesAdapter(
         new GUIUtilAdapter(
         new BackendOnlyAdapter(

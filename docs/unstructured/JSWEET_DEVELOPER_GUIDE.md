@@ -62,7 +62,7 @@ This section describes how to integrate **new types or methods** into the transp
 
 Transpilation runs via a **chain of `PrinterAdapter` instances**, e.g.
 ```text
-UMLPAdapter └─ GUITypesImportAdapter └─ CollectionsAdapter └─ JavaBasicsAdapter └─ UMLPRTEImportAdapter └─ BasicsAdapter └─ BackendOnlyAdapter └─ MutexAdapter └─ UMLPEnumAdapter └─ JSweet-Standardadapter
+UMLPAdapter └─ TSModuleImportAdapter └─ CollectionsAdapter └─ JavaBasicsAdapter └─ UMLPRTEImportAdapter └─ BasicsAdapter └─ BackendOnlyAdapter └─ MutexAdapter └─ UMLPEnumAdapter └─ JSweet-Standardadapter
 ```
 Each adapter can:
 
@@ -205,7 +205,7 @@ If a completely new adapter is needed:
    public class UMLPAdapter extends PrinterAdapter {
      public UMLPAdapter(PrinterAdapter parentAdapter) {
        super(
-           new GUITypesImportAdapter(
+           new TSModuleImportAdapter(
                new CollectionsAdapter(
                    new JavaBasicsAdapter(
                        new UMLPRTEImportAdapter(

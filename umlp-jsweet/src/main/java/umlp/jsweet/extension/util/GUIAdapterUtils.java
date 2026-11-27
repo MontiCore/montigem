@@ -50,6 +50,8 @@ public class GUIAdapterUtils extends UMLPAdapterUtils {
 
   public static final String AMODULE_ANNOTATION = "umlp.jsweet.extension.annotation.AnnotationModule";
 
+  public static final String TS_MODULE_ANNOTATION = "umlp.jsweet.extension.annotation.TSModule";
+
   public static final String DECORATOR_NO_OBJ_ANNOTATION = "umlp.jsweet.extension.annotation.DecoratorNoObj";
 
   public static final String CD2JAVA_ANNOTATION = "umlp.jsweet.extension.annotation.CD2Java";
