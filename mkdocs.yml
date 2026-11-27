@@ -85,4 +85,6 @@ nav:
     - Reference: 'MontiGem_Documentation.md'
     - Helpful Links: 'HelpfulLinks.md'
     - GUI Validity Generator Internals: 'GUIValidityDev.md'
+    - Working with a Fork: 'WorkingWithAFork.md'
+    - Student Contributions: 'StudentContribution.md'
   - License: http://monticore.github.io/monticore/00.org/Licenses/LICENSE-MONTICORE-3-LEVEL/
