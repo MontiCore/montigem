@@ -35,8 +35,10 @@ public class RelativeImportAdapter extends PrinterAdapter {
     String qName = importedClass.getQualifiedName().toString();
     ModuleImportDescriptor res = super.getModuleImportDescriptor(compilationUnit, importedName, importedClass);
 
-    // erased classes (e.g., backend-only helpers) are not transpiled, thus there is nothing to import
-    if (qName != null && !context.hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
+    // erased classes (e.g., backend-only helpers) and classes excluded from the sources
+    // (e.g., *ServerApplication) are not transpiled, thus there is nothing to import
+    if (qName != null && util().isSourceElement(importedClass)
+        && !context.hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
       Optional<String> tsPath = getRelativePath(
           compilationUnit.getPackage().getQualifiedName().toString(), qName);
       if (tsPath.isPresent()) {
