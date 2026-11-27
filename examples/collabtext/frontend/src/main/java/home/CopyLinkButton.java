@@ -1,5 +1,6 @@
 package home;
 
+import jsweet.lang.Async;
 import jsweet.lang.Replace;
 import umlp.jsweet.extension.annotation.Component;
 
@@ -9,16 +10,26 @@ import java.util.function.Consumer;
 public class CopyLinkButton extends CopyLinkButtonTOP {
 
   @Override
-  @Replace("""
-      return async () => {
-        if (this.isCopying()) {
-          return;
-        }
+  public Consumer<Void> copyLink() {
+    return VOID -> {
+      if (this.isCopying()) {
+        return;
+      }
+      this.setCopying(true);
+      String text = this.getText();
+      boolean copied = false;
+      try {
+        copied = doCopy(text);
+      } finally {
+        this.setCopying(false);
+        this.setCopyMessage(copied ? "Link copied!" : "Select and copy the link above.");
+      }
+    };
+  }
 
-        this.setCopying(true);
-        const text = this.getText();
-        let copied = false;
-        try {
+  @Async
+  @Replace("""
+          let copied = false;
           if (navigator.clipboard?.writeText) {
             try {
               await navigator.clipboard.writeText(text);
@@ -36,15 +47,9 @@ public class CopyLinkButton extends CopyLinkButtonTOP {
               pendingCopy.destroy();
             }
           }
-        } catch {
-          copied = false;
-        } finally {
-          this.setCopying(false);
-          this.copyMessageChange.emit(copied ? 'Link copied!' : 'Select and copy the link above.');
-        }
-      };
+          return copied;
       """)
-  public Consumer<Void> copyLink() {
-    return null;
+  boolean doCopy(String text) {
+    return false;
   }
 }

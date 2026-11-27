@@ -39,7 +39,7 @@ For MontiGem users:
 ## 2026-11-27: 7.10.0-SNAPSHOT
 * New module `@montigem/collabtext` with the component `GemCollabTextarea`, in which several users
   edit a plain text at the same time and see each other's cursors.
-* The dashboard example shows it on the page `home/CollabDemo`.
+* See demo application in examples/collabtext
 
 ## 2026-11-23: 7.10.0-SNAPSHOT
 * New components:
