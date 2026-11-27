@@ -1,0 +1,21 @@
+package home;
+
+import mc.fenix.arrange.GemRow;
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemImage;
+
+/** Links to the framework and the Chair of Software Engineering. */
+component BrandLinks(String montiGemUrl = "https://www.montigem.de/", String softwareEngineeringUrl = "https://www.se-rwth.de/") {
+  brandLogos@GemRow(vAlign = "center", colGap = "16px", components = [
+    montiGemBrand@GemButton(ariaLabel = "MontiGem", margin = "0",
+      leftClick = openMontiGem(), content = [
+        montiGemLogo@GemImage(source = "assets/images/Gem.svg", height = "32px")
+      ]
+    ),
+    softwareEngineeringBrand@GemButton(ariaLabel = "Chair of Software Engineering, RWTH Aachen University", margin = "0",
+      leftClick = openSoftwareEngineering(), content = [
+        softwareEngineeringLogo@GemImage(source = "assets/images/logo/rwth_se_rgb.png", height = "32px")
+      ]
+    )
+  ]);
+}

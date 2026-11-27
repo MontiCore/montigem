@@ -36,6 +36,11 @@ For MontiGem users:
   * line 11 - allow lists in `iterate`
   
 -->
+## 2026-11-27: 7.10.0-SNAPSHOT
+* New module `@montigem/collabtext` with the component `GemCollabTextarea`, in which several users
+  edit a plain text at the same time and see each other's cursors.
+* See demo application in examples/collabtext
+
 ## 2026-11-23: 7.10.0-SNAPSHOT
 * New components:
     * `GemToggle` (`mc.fenix.advanced`): on/off switch with

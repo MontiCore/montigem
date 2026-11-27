@@ -1,0 +1,16 @@
+/* (c) https://github.com/MontiCore/monticore */
+package mc.fenix.collabtext;
+
+import CollabTextModule.CollabText;
+
+/** Shared text area that manages the current user's cursor and displays the other participants. */
+component GemCollabTextarea(
+  CollabText text,
+  String userName = "",
+  String userColor = "",
+  String placeholder = "",
+  boolean disabled = false,
+  boolean showChunks = false,
+  String width = "100%",
+  String height = "100%"
+)

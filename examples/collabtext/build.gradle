@@ -1,0 +1,2 @@
+clean.dependsOn(subprojects.collect{it.getTasksByName("clean", false)})
+build.dependsOn(subprojects.collect{ it.getTasksByName("build", false)})

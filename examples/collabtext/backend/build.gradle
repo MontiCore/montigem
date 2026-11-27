@@ -1,0 +1,30 @@
+/* (c) https://github.com/MontiCore/monticore */
+
+import de.montigem.gradle.specific.UMLP2JavaTask
+
+plugins {
+  id 'de.rwth.se.montigem-backend'
+  id 'com.google.cloud.tools.jib' version '3.4.4'
+  id 'org.springframework.boot' version "${spring_version}"
+}
+
+jib {
+  container.mainClass = application.mainClass.get()
+  from.image = "$container_from_image"
+  to.image = "${container_target_image_base}collabtext_backend:latest"
+}
+
+dependencies {
+  implementation "com.h2database:h2:${h2_database}"
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: spring_version
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: spring_version
+  implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux', version: spring_version
+  implementation group: 'org.slf4j', name: 'slf4j-simple', version: slf4j_version
+
+  montigemModule project(':modules:collabtext')
+  montigemModuleUMLPModels project(':modules:collabtext')
+}
+
+tasks.named("umlp2java", UMLP2JavaTask) {
+  modelDir.from(configurations.montigemModuleUMLPModels)
+}
