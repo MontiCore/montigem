@@ -1,5 +1,5 @@
 /* (c) https://github.com/MontiCore/monticore */
-package umlp.jsweet.extension;
+package umlp.jsweet.extension.common;
 
 import de.se_rwth.commons.logging.Log;
 import org.jsweet.transpiler.Java2TypeScriptTranslator;
@@ -7,14 +7,11 @@ import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.CompilationUnitElement;
 import org.jsweet.transpiler.model.ImportElement;
-import umlp.jsweet.extension.util.GUIAdapterUtils;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
 
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import java.util.LinkedHashMap;
-
-import static umlp.jsweet.extension.util.GUIAdapterUtils.CD2JAVA_ANNOTATION;
 
 /**
  * Combines common elements for all Adapters

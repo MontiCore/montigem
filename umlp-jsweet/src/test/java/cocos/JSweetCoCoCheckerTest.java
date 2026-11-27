@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import static org.jsweet.transpiler.SourceFile.getSourceFiles;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.HashSet;
 
 public class JSweetCoCoCheckerTest {
 
@@ -40,7 +41,7 @@ public class JSweetCoCoCheckerTest {
         new ConsoleTranspilationHandler());
 
     SourceFile[] sourceFiles = getSourceFiles(input);
-    transpiler.transpile(handler, sourceFiles);
+    transpiler.transpile(handler, new HashSet<>(), sourceFiles);
 
     // JSweetCoCoChecker logs warnings with Log.warn (0xEE...)
     List<String> findings = Log.getFindings().stream()
@@ -74,7 +75,7 @@ public class JSweetCoCoCheckerTest {
         new ConsoleTranspilationHandler());
 
     SourceFile[] sourceFiles = getSourceFiles(input);
-    transpiler.transpile(handler, sourceFiles);
+    transpiler.transpile(handler, new HashSet<>(), sourceFiles);
 
     // JSweetCoCoChecker logs warnings with Log.warn (0xEE...)
     List<String> findings = Log.getFindings().stream()
@@ -99,7 +100,7 @@ public class JSweetCoCoCheckerTest {
         new ConsoleTranspilationHandler());
 
     SourceFile[] sourceFiles = getSourceFiles(input);
-    transpiler.transpile(handler, sourceFiles);
+    transpiler.transpile(handler, new HashSet<>(), sourceFiles);
 
     // JSweetCoCoChecker logs warnings with Log.warn (0xEE...)
     List<String> findings = Log.getFindings().stream()

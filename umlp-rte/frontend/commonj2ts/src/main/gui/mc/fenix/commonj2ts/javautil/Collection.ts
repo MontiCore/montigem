@@ -1,6 +1,7 @@
 import {AsyncStream} from "./AsyncStream";
+import {JavaAsyncIterable} from "./JavaAsyncIterable";
 
-export interface Collection<E> extends AsyncIterable<E> {
+export interface Collection<E> extends JavaAsyncIterable<E> {
 
   hashCode(): Promise<number>;
 
@@ -34,17 +35,10 @@ export interface Collection<E> extends AsyncIterable<E> {
 
   size(): Promise<number>;
 
-  // java.util.Iterator Interface
-  iterator(): AsyncIterator<E>;
-
-  forEach(consumer: (element: E) => void): Promise<void>;
-
   stream() : AsyncStream<E>;
 
   // TypeScript specifics
   toArrayDeepSync(startIndex?: number, endIndex?: number): Promise<Array<any>>;
-
-  [Symbol.asyncIterator](): AsyncIterator<E>;
 
   listIterator(from?: any): AsyncIterator<E>;
 

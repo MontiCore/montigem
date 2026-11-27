@@ -1,12 +1,9 @@
 /* (c) https://github.com/MontiCore/monticore */
 package umlp.jsweet.extension.common;
 
-import org.jsweet.transpiler.AsyncAwaitPropagationScanner;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.CompilationUnitElement;
-import org.jsweet.transpiler.model.ImportElement;
-import umlp.jsweet.extension.AbstractAdapter;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 import umlp.jsweet.extension.util.RTEPathUtil;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
@@ -15,15 +12,13 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * This adapter is responsible for including the umlp RTE correctly.
- * It redirects the import of all RTE classes to the RTE ts library, adds implemetations
+ * It imports the Angular annotations from Angular and adds implementations
  * for default methods implemented in the java RTE.
- * Also, it adds types for some default classes like {@link de.se_rwth.commons.logging.Log}
+ * The RTE classes themselves are imported from the RTE ts library via the {@code @TSModule}
+ * annotation of their packages (see {@link umlp.jsweet.extension.imports.TSModuleImportAdapter}).
  */
 public class UMLPRTEImportAdapter extends AbstractAdapter {
 
@@ -37,65 +32,20 @@ public class UMLPRTEImportAdapter extends AbstractAdapter {
   }
 
   @Override
-  public String needsImport(ImportElement importElement, String qualifiedName) {
-    if (importElement.getImportedType() != null && isRTEIncluded(qualifiedName)) {
-      return getRootRelativeName(importElement.getImportedType());
-    }
-    return super.needsImport(importElement, qualifiedName);
-  }
-
-  @Override
   public ModuleImportDescriptor getModuleImportDescriptor(
       CompilationUnitElement currentCompilationUnit, String importedName,
       TypeElement importedClass) {
     String fqn = importedClass.getQualifiedName().toString();
-    if (getContext().hasAnnotationType(importedClass, "umlp.jsweet.extension.annotation.AnnotationModule")) {
-      // Similar to @Module, just for annotations
+    if (fqn.equals(GUIAdapterUtils.COMPONENT_ANNOTATION)
+        || fqn.equals(GUIAdapterUtils.DIRECTIVE_ANNOTATION)
+        || fqn.equals(GUIAdapterUtils.INPUT_ANNOTATION)
+        || fqn.equals(GUIAdapterUtils.OUTPUT_ANNOTATION)
+    ) {
       return new ModuleImportDescriptor(false,
           (PackageElement) importedClass.getEnclosingElement(), importedName,
-          getContext().getAnnotationValue(importedClass, "umlp.jsweet.extension.annotation.AnnotationModule", String.class, "##missing##"), importedClass);
-    }
-    if (fqn != null) {
-      if (fqn.equals(GUIAdapterUtils.COMPONENT_ANNOTATION)
-          || fqn.equals(GUIAdapterUtils.DIRECTIVE_ANNOTATION)
-          || fqn.equals(GUIAdapterUtils.INPUT_ANNOTATION)
-          || fqn.equals(GUIAdapterUtils.OUTPUT_ANNOTATION)
-      ) {
-        return new ModuleImportDescriptor(false,
-            (PackageElement) importedClass.getEnclosingElement(), importedName,
-            ANGULAR_CORE_PATH, importedClass);
-      }
-      else if (isRTEIncluded(fqn)) {
-        return new ModuleImportDescriptor(false,
-            (PackageElement) importedClass.getEnclosingElement(), importedName,
-            getLibraryLocation(), importedClass);
-      }
+          ANGULAR_CORE_PATH, importedClass);
     }
     return super.getModuleImportDescriptor(currentCompilationUnit, importedName, importedClass);
-  }
-
-  protected boolean isRTEIncluded(String fullyQualifiedName) {
-    if (isSpecificRTEClass(fullyQualifiedName)) {
-      return true;
-    }
-    if (!fullyQualifiedName.startsWith(RTEPathUtil.getBackendRTEPath())) {
-      return false;
-    }
-    for (Pattern exclude : getExcludes()) {
-      if (exclude.matcher(fullyQualifiedName).matches()) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private boolean isSpecificRTEClass(String fullyQualifiedName) {
-    switch (fullyQualifiedName) {
-      case "mc.fenix.commonj2ts.deser.DeSerRepository":
-        return true;
-      default:
-        return false;
-    }
   }
 
   @Override
@@ -130,12 +80,4 @@ public class UMLPRTEImportAdapter extends AbstractAdapter {
         printIndent().printIndent().print("return true;").println().
         printIndent().print("}").println().println();
   }
-
-  protected List<Pattern> getExcludes() {
-    return excludes;
-  }
-
-  private static final List<Pattern> excludes = Arrays.asList(
-      Pattern.compile("umlp\\.backendrte\\.service\\.websocket\\.WebSocketConfig")
-  );
 }

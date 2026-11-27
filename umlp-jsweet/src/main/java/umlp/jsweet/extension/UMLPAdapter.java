@@ -15,7 +15,13 @@ import umlp.jsweet.extension.common.OptionalAdapter;
 import umlp.jsweet.extension.common.UMLPAsyncAwaitPropagationScanner;
 import umlp.jsweet.extension.common.UMLPEnumAdapter;
 import umlp.jsweet.extension.common.UMLPRTEImportAdapter;
-import umlp.jsweet.extension.gui.GUITypesImportAdapter;
+import umlp.jsweet.extension.gui.AngularSpecificsAdapter;
+import umlp.jsweet.extension.gui.AnnotationToDecoratorAdapter;
+import umlp.jsweet.extension.imports.PrintImportsAtBottomAdapter;
+import umlp.jsweet.extension.imports.TSModuleImportAdapter;
+import umlp.jsweet.extension.gui.GUIUtilAdapter;
+import umlp.jsweet.extension.gui.TSTypesAdapter;
+import umlp.jsweet.extension.imports.RelativeImportAdapter;
 import umlp.jsweet.extension.umlp.BackendOnlyAdapter;
 import umlp.jsweet.extension.util.UMLPAdapterUtils;
 
@@ -25,23 +31,27 @@ import umlp.jsweet.extension.util.UMLPAdapterUtils;
 public class UMLPAdapter extends PrinterAdapter {
   public UMLPAdapter(PrinterAdapter parentAdapter) {
     super(
-        new PrintImportsAtBottomAdapter( // must be outermost adapter to do its job
-        //new JavaStreamAdapter(
-        // new RelativeImportAdapter(
-        new GUITypesImportAdapter(
+        // outside of RelativeImportAdapter, so it sees the relative paths and leaves them alone
+        new PrintImportsAtBottomAdapter(
+        new RelativeImportAdapter(
+        new TSModuleImportAdapter(
         new OptionalAdapter(
         new FutureAdapter(
         new UMLPRTEImportAdapter(
         new JavaTimeAdapter(
         new BasicsAdapter(
         new AsyncConstructorAdapter(
+        new AngularSpecificsAdapter(
         new CollectionsAdapter(
         new JavaBasicsAdapter(
+        new TSTypesAdapter(
+        new GUIUtilAdapter(
         new BackendOnlyAdapter(
         new MutexAdapter(
         new UMLPEnumAdapter(
+        new AnnotationToDecoratorAdapter(
         parentAdapter
-    ))))))))))))));
+    )))))))))))))))))));
   }
 
   @Override
@@ -59,6 +69,7 @@ public class UMLPAdapter extends PrinterAdapter {
   public void propagateAsyncFromRTECalls() {
     UMLPAdapterUtils.addAsyncAnnotationsForJREToContext(this.getContext());
 
-    new UMLPAsyncAwaitPropagationScanner(context, true).process(getContext().compilationUnits, getContext().trees);
+    new UMLPAsyncAwaitPropagationScanner(context, true)
+        .process(getContext().compilationUnits, getContext().trees);
   }
 }

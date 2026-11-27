@@ -11,7 +11,6 @@ import org.jsweet.transpiler.util.Util;
 import standalone.com.sun.source.tree.LambdaExpressionTree;
 import standalone.com.sun.source.tree.MethodTree;
 import standalone.com.sun.source.tree.Tree;
-import umlp.jsweet.extension.AbstractAdapter;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;

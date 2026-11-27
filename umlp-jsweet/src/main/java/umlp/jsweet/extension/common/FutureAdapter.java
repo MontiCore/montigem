@@ -4,7 +4,6 @@ package umlp.jsweet.extension.common;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.ExtendedElement;
 import org.jsweet.transpiler.model.MethodInvocationElement;
-import umlp.jsweet.extension.AbstractAdapter;
 
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;

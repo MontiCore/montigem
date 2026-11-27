@@ -1,13 +1,11 @@
 /* (c) https://github.com/MontiCore/monticore */
-package umlp.jsweet.extension.module;
+package umlp.jsweet.extension.imports;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jsweet.JSweetConfig;
 import org.jsweet.transpiler.ModuleImportDescriptor;
 import org.jsweet.transpiler.extension.PrinterAdapter;
 import org.jsweet.transpiler.model.CompilationUnitElement;
-import org.jsweet.transpiler.model.ImportElement;
-import org.jsweet.transpiler.model.TypeCastElement;
 import umlp.jsweet.extension.util.GUIAdapterUtils;
 
 import javax.lang.model.element.PackageElement;
@@ -37,8 +35,10 @@ public class RelativeImportAdapter extends PrinterAdapter {
     String qName = importedClass.getQualifiedName().toString();
     ModuleImportDescriptor res = super.getModuleImportDescriptor(compilationUnit, importedName, importedClass);
 
-    // erased classes (e.g., backend-only helpers) are not transpiled, thus there is nothing to import
-    if (qName != null && !context.hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
+    // erased classes (e.g., backend-only helpers) and classes excluded from the sources
+    // (e.g., *ServerApplication) are not transpiled, thus there is nothing to import
+    if (qName != null && util().isSourceElement(importedClass)
+        && !context.hasAnnotationType(importedClass, JSweetConfig.ANNOTATION_ERASED)) {
       Optional<String> tsPath = getRelativePath(
           compilationUnit.getPackage().getQualifiedName().toString(), qName);
       if (tsPath.isPresent()) {

@@ -1,6 +1,7 @@
 {
   "adapters": [
-    "umlp.jsweet.extension.PluginGUIAdapter",
+    "umlp.jsweet.extension.gui.GUIComponentObserverPatternAdapter",
+    "umlp.jsweet.extension.UMLPAdapter",
     "umlp.jsweet.extension.umlp.LoginModuleImportAdapter"
   ]
 }

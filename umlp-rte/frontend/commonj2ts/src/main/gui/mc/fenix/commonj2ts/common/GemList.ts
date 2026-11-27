@@ -9,6 +9,7 @@ import {IUMLPList} from "../common/IUMLPList";
 import {AsyncList} from "../javautil/AsyncList";
 import {AsyncSet} from "../javautil/AsyncSet";
 import {Collection} from "../javautil/Collection";
+import {JavaAsyncIterator} from "../javautil/JavaAsyncIterator";
 import {AsyncStream} from "../javautil";
 
 export abstract class GemList<E extends GemIdentifiable> implements GemBuildable, IUMLPList<E> {
@@ -473,8 +474,11 @@ export abstract class GemList<E extends GemIdentifiable> implements GemBuildable
     return <IUMLPList<E>> await new AsyncList<E>().__AsyncListConstructor(result);
   }
 
-  [Symbol.asyncIterator](): AsyncIterator<E> {
-    return new GemListAsyncIterator(this);
+  async* [Symbol.asyncIterator](): AsyncIterator<E> {
+    const iterator = this.iterator();
+    while (await iterator.hasNext()) {
+      yield await iterator.next();
+    }
   }
 
   public async indexOf(o: any): Promise<number> {
@@ -488,8 +492,8 @@ export abstract class GemList<E extends GemIdentifiable> implements GemBuildable
     return -1; // TODO
   }
 
-  iterator(): AsyncIterator<E> {
-    return this[Symbol.asyncIterator]();
+  iterator(): JavaAsyncIterator<E> {
+    return new GemListAsyncIterator(this);
   }
 
   public async lastIndexOf(o: any): Promise<number> {

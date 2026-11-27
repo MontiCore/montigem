@@ -1,0 +1,20 @@
+/* (c) https://github.com/MontiCore/monticore */
+package gui.test;
+
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.input.GemTextInput;
+
+// sumsOfC2s sums the attributes of the C2s in a for each loop, so the text is only updated on changes of a C2 if the
+// domain observer is registered on the loop variable (see ForEachSumE2ETest).
+page TestForEachSum(long c1Id = 0L) {
+  c1IdInput@GemTextInput(
+    id = "forEachSumC1Id",
+    labelText = "Id of the C1"
+  );
+  show@GemButton(label = "Show C1", leftClick = showC1());
+
+  @guard(c1Id != 0) {
+    sums@GemText(value = sumsOfC2s());
+  }
+}

@@ -43,6 +43,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+/**
+ * This adapter handle observing of all MontiGem data that is processed in a transpiled method.
+ */
 public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
 
   public static final String DOMAIN_OBSERVER_FUNCTION_NAME = "__regObsToDomainObj";
@@ -272,11 +275,6 @@ public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
       ((JCTree.JCMethodInvocation) tree).args =
           ((JCTree.JCMethodInvocation) tree).args.append(domainObserver).append(statevarObserver);
     }
-  }
-
-  private void addTriggerObserverLogicToMethodBody(ExecutableElement executable, TypeElement classElement) {
-    MethodTree tree = trees().getTree(executable);
-
   }
 
   private Map<String, Set<OverloadScanner.Overload>> overloads = new LinkedHashMap<>();
@@ -619,7 +617,13 @@ public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
     Stack<Tree> stack = getPrinter().getStack();
     for (int i = stack.size() - 1; i >= 0; i--) {
       Tree treeAtIndex = stack.get(i);
-      Element element = trees().getElement(trees().getPath(getCompilationUnitTree(), treeAtIndex));
+      standalone.com.sun.source.util.TreePath path = trees().getPath(getCompilationUnitTree(), treeAtIndex);
+      if (path == null) {
+        // a tree created by an adapter (e.g. iterator.next() of a for-each loop, see CollectionsAdapter), which is not
+        // part of the compilation unit and thus no GUIUtils invocation
+        continue;
+      }
+      Element element = trees().getElement(path);
       if (element != null && element instanceof Symbol.MethodSymbol &&
           ((Symbol.MethodSymbol) element).owner.getQualifiedName().toString().equals("umlp.guiutil.GUIUtils") &&
           (((Symbol.MethodSymbol) element).getSimpleName().toString().equals("registerObserverToDomainObject") ||
@@ -791,78 +795,4 @@ public class GUIComponentObserverPatternAdapter extends PrinterAdapter {
     };
   }
 
-  @Override
-  public boolean substituteForEachLoop(ForeachLoopElement foreachLoop, boolean targetHasLength, String indexVarName) {
-    EnhancedForLoopTree loop = ExtendedElementFactory.toTree(foreachLoop);
-    TypeMirror expressionType = Util.getType(loop.getExpression());
-
-    // Must be subtype of List
-    if (!types().isSubtype(expressionType, types().erasure(util().getType(List.class)))) {
-      return false;
-    }
-
-    // Must be a declared generic type
-    if (expressionType.getKind() != TypeKind.DECLARED) {
-      return false;
-    }
-
-    List<? extends TypeMirror> typeArguments = ((DeclaredType) expressionType).getTypeArguments();
-    if (typeArguments.size() != 1) {
-      return false;
-    }
-
-    TypeMirror innerType = typeArguments.get(0);
-
-    // Must be Domain type = subtype of GemIdentifiable
-    if (!adapterUtils.isSubTypeOf(Util.getElement(innerType),
-        RTEPathUtil.getBackendRTECommonPath("GemIdentifiable"))) {
-      return false;
-    }
-
-    // Check for Domain observer param availability
-    MethodTree surroundingMethodTree = getPrinter().getParent(MethodTree.class);
-    if (surroundingMethodTree == null) {
-      return false;
-    }
-    boolean hasDomainObserverParam = surroundingMethodTree.getParameters().stream()
-        .anyMatch(param -> param.getName().toString().equals(DOMAIN_OBSERVER_FUNCTION_NAME));
-    if (!hasDomainObserverParam) {
-      return false;
-    }
-
-    // Print with additional sync logic
-    printForEachLoopWithObserver(loop);
-    return true;
-  }
-
-  /**
-   * Prints the for each loop and adds line __regObsToDomainObj(${loopVar}); before the actual statement.
-   * This activates the jsweet -> angular sync if on of the iterated elements changes
-   * @param loop
-   */
-  protected void printForEachLoopWithObserver(EnhancedForLoopTree loop){
-    String loopVarName = avoidJSKeyword(loop.getVariable().getName().toString());
-    print("for (" + Java2TypeScriptTranslator.VAR_DECL_KEYWORD + " ")
-        .print(loopVarName + " of ");
-    boolean parentheses = loop.getExpression() instanceof TypeCastTree
-        || loop.getExpression() instanceof MethodInvocationTree;
-    if (parentheses) {
-      print("(");
-    }
-    print(loop.getExpression());
-    if (parentheses) {
-      print(")");
-    }
-    getPrinter().print(") {").println().startIndent()
-        .printIndent().println(DOMAIN_OBSERVER_FUNCTION_NAME + "(" + loopVarName + ");")
-        .printIndent().print(loop.getStatement())
-        .endIndent().println().printIndent().print("}");
-  }
-
-  private String avoidJSKeyword(String name) {
-    if (JSweetConfig.JS_KEYWORDS.contains(name)) {
-      name = JSweetConfig.JS_KEYWORD_PREFIX + name;
-    }
-    return name;
-  }
 }

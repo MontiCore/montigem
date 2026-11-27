@@ -95,6 +95,9 @@
       "java.lang.String.join",
       "java.lang.Iterable.forEach",
 
+      "java.util.Iterator.hasNext",
+      "java.util.Iterator.next",
+
       "java.util.Arrays.asList",
 
       "java.util.concurrent.CompletableFuture.get",

@@ -50,6 +50,8 @@ public class GUIAdapterUtils extends UMLPAdapterUtils {
 
   public static final String AMODULE_ANNOTATION = "umlp.jsweet.extension.annotation.AnnotationModule";
 
+  public static final String TS_MODULE_ANNOTATION = "umlp.jsweet.extension.annotation.TSModule";
+
   public static final String DECORATOR_NO_OBJ_ANNOTATION = "umlp.jsweet.extension.annotation.DecoratorNoObj";
 
   public static final String CD2JAVA_ANNOTATION = "umlp.jsweet.extension.annotation.CD2Java";
@@ -226,6 +228,17 @@ public class GUIAdapterUtils extends UMLPAdapterUtils {
 
   public standalone.com.sun.tools.javac.tree.JCTree.JCIdent getNewIdent(String variableName) {
     return sunTypesHelper.getNewIdent(variableName);
+  }
+
+  /** @see SunTypesHelper#getNewIteratorNextInvocation */
+  public standalone.com.sun.tools.javac.tree.JCTree.JCMethodInvocation getNewIteratorNextInvocation(
+      standalone.com.sun.tools.javac.util.Name iteratorName, standalone.com.sun.tools.javac.code.Symbol owner,
+      standalone.com.sun.tools.javac.code.Type iteratorType,
+      standalone.com.sun.tools.javac.code.Symbol.MethodSymbol next,
+      standalone.com.sun.tools.javac.code.Type nextType, standalone.com.sun.tools.javac.code.Type elementType,
+      int pos) {
+    return sunTypesHelper.getNewIteratorNextInvocation(iteratorName, owner, iteratorType, next, nextType, elementType,
+        pos);
   }
 
   // TODO this should be removed, since we have Annotations for it

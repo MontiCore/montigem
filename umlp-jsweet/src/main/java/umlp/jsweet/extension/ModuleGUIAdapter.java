@@ -16,11 +16,11 @@ import umlp.jsweet.extension.common.UMLPEnumAdapter;
 import umlp.jsweet.extension.gui.AngularSpecificsAdapter;
 import umlp.jsweet.extension.gui.AnnotationToDecoratorAdapter;
 import umlp.jsweet.extension.gui.GUIComponentObserverPatternAdapter;
-import umlp.jsweet.extension.gui.GUITypesImportAdapter;
+import umlp.jsweet.extension.imports.TSModuleImportAdapter;
 import umlp.jsweet.extension.gui.GUIUtilAdapter;
 import umlp.jsweet.extension.gui.TSTypesAdapter;
 import umlp.jsweet.extension.module.JavaCollectionToJSArrayAdapter;
-import umlp.jsweet.extension.module.RelativeImportAdapter;
+import umlp.jsweet.extension.imports.RelativeImportAdapter;
 import umlp.jsweet.extension.umlp.BackendOnlyAdapter;
 
 import javax.lang.model.element.Element;
@@ -43,7 +43,7 @@ public class ModuleGUIAdapter extends PrinterAdapter {
         new JavaCollectionToJSArrayAdapter(
         new GUIComponentObserverPatternAdapter(
         new AngularSpecificsAdapter(
-        new GUITypesImportAdapter(
+        new TSModuleImportAdapter(
         new TSTypesAdapter(
         new GUIUtilAdapter(
         new BackendOnlyAdapter(
@@ -86,6 +86,7 @@ public class ModuleGUIAdapter extends PrinterAdapter {
   }
 
   public void propagateAsyncFromRTECalls() {
-    new UMLPAsyncAwaitPropagationScanner(context, false).process(getContext().compilationUnits, getContext().trees);
+    new UMLPAsyncAwaitPropagationScanner(context, false)
+        .process(getContext().compilationUnits, getContext().trees);
   }
 }

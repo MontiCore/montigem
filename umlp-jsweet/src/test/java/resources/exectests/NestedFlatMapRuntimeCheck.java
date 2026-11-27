@@ -29,7 +29,7 @@ public class NestedFlatMapRuntimeCheck {
     TimeEntry entry = new TimeEntry(LocalDateTime.of(2024, 2, 29, 12, 34, 56));
     User user = new User(List.of(new TimeSheet(List.of(new Day(List.of(entry))))));
 
-    for (var currentDay : user.getTimeSheets().stream()
+    for (Day currentDay : user.getTimeSheets().stream()
         .flatMap(timeSheet -> timeSheet.getDays().stream()).toList()) {
       return currentDay.getEntries().get(0).getEnd().equals(entry.getEnd());
     }
@@ -38,7 +38,7 @@ public class NestedFlatMapRuntimeCheck {
 
   @JSweetTest
   public static boolean checkInferredExternalLoopElement() {
-    for (var element : NestedFlatMapElementSource.elements()) {
+    for (NestedFlatMapElement element : NestedFlatMapElementSource.elements()) {
       return element.getValue() == 42;
     }
     return false;

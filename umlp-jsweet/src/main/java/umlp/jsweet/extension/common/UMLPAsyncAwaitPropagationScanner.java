@@ -155,12 +155,18 @@ public class UMLPAsyncAwaitPropagationScanner extends AbstractTreeScanner {
     return super.visitNewClass(invocation, trees);
   }
 
-  // For UMLP all List iterations are asynchronous, making methods using for each loops also asynchronous
+  // For UMLP all List iterations are asynchronous, making methods using for each loops also asynchronous.
+  // The same holds for every non-array for each loop if Iterator#hasNext or #next is async, as these loops are
+  // printed as awaited iterator loops (CollectionsAdapter#printForEachLoop).
   @Override
   public Void visitEnhancedForLoop(EnhancedForLoopTree node, Trees trees) {
     if (umlpRulesOff == 0) {
       TypeMirror expressionType = Util.getType(node.getExpression());
-      if (types().isSubtype(types().erasure(expressionType), types().erasure(util().getType(List.class)))) {
+      boolean asyncIteration = expressionType.getKind() != TypeKind.ARRAY
+          && (CollectionsAdapter.isAsyncIteratorMethod(context, util(), "hasNext")
+          || CollectionsAdapter.isAsyncIteratorMethod(context, util(), "next"));
+      if (asyncIteration
+          || types().isSubtype(types().erasure(expressionType), types().erasure(util().getType(List.class)))) {
         addAsyncKeywordToMethod();
         addAsyncKeywordToLambda();
       }

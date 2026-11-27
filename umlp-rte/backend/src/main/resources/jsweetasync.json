@@ -3,6 +3,10 @@
       "allOverloadsByName": [
         "mc.fenix.commonj2ts.deser.DeSerRepository.getDeSerMap",
 
+        "de.monticore.symboltable.serialization.json.JsonObject.getArrayMember",
+        "de.monticore.symboltable.serialization.json.JsonObject.getArrayMemberOpt",
+        "de.monticore.symboltable.serialization.json.JsonArray.getValues",
+
         "umlp.backendrte.command.CommandManager.executeCommand",
         "umlp.backendrte.command.CommandManager._executeCommand",
         "umlp.backendrte.command.CommandManager.register",

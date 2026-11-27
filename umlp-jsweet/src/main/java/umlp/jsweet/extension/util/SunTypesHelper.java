@@ -78,6 +78,30 @@ public class SunTypesHelper {
     return jcVariableDecl;
   }
 
+  /**
+   * Creates the invocation iterator.next() on a new local variable named iteratorName (owned by owner), like javac's
+   * Lower does when desugaring an enhanced for loop (the trees JSweet transpiles are not desugared).
+   *
+   * @param iteratorName the name of the iterator variable
+   * @param owner        the owner of the iterator variable (the method containing the loop)
+   * @param iteratorType the type of the iterator variable, e.g. Iterator&lt;C2&gt;
+   * @param next         the symbol of java.util.Iterator#next
+   * @param nextType     the type of next as a member of iteratorType, e.g. ()C2
+   * @param elementType  the type of the invocation, e.g. C2
+   * @param pos          the source position of the invocation (the one of the loop)
+   */
+  public JCTree.JCMethodInvocation getNewIteratorNextInvocation(Name iteratorName, Symbol owner, Type iteratorType,
+                                                                 Symbol.MethodSymbol next, Type nextType,
+                                                                 Type elementType, int pos) {
+    treeMaker.at(pos);
+    Symbol.VarSymbol iterator = new Symbol.VarSymbol(0, iteratorName, iteratorType, owner);
+    JCTree.JCFieldAccess select = treeMaker.Select(treeMaker.Ident(iterator), next);
+    select.type = nextType;
+    JCTree.JCMethodInvocation invocation = treeMaker.Apply(List.nil(), select, List.nil());
+    invocation.type = elementType;
+    return invocation;
+  }
+
   public standalone.com.sun.tools.javac.tree.JCTree.JCLiteral getNewLiteral(String name) {
     JCTree.JCLiteral result = treeMaker.Literal(TypeTag.CLASS, name);
     result.pos = 42;

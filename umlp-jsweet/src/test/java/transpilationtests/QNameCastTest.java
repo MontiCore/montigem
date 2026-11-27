@@ -17,6 +17,7 @@ import java.util.List;
 import static org.jsweet.transpiler.SourceFile.getSourceFiles;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.util.HashSet;
 
 public class QNameCastTest {
 
@@ -37,7 +38,7 @@ public class QNameCastTest {
     ErrorCountTranspilationHandler handler = new ErrorCountTranspilationHandler(
         new ConsoleTranspilationHandler());
     SourceFile[] files = getSourceFiles(input);
-    transpiler.transpile(handler, files);
+    transpiler.transpile(handler, new HashSet<>(), files);
 
     assertEquals(0, handler.getErrorCount());
     assertNotNull(files[0]);

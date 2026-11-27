@@ -1,0 +1,21 @@
+/* (c) https://github.com/MontiCore/monticore */
+package gui.test;
+
+import mc.fenix.basic.GemButton;
+import mc.fenix.basic.GemText;
+import mc.fenix.input.GemTextInput;
+
+// The A is no parameter of valueOfA: the method loads it into a variable, so only the domain observer registered on
+// that variable can update the text when the A changes (see DomainObsOnVariableE2ETest).
+page TestDomainObsOnVariable(long aId = 0L) {
+  aIdInput@GemTextInput(
+    id = "domainObsOnVariableAId",
+    labelText = "Id of the A"
+  );
+  show@GemButton(label = "Show A", leftClick = showA());
+
+  @guard(aId != 0) {
+    aValue@GemText(value = valueOfA());
+    rename@GemButton(label = "Rename A", leftClick = renameA());
+  }
+}
