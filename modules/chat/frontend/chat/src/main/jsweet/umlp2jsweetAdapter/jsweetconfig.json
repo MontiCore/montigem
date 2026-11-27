@@ -1,6 +1,5 @@
 {
   "adapters": [
-    "umlp.jsweet.extension.imports.RelativeImportAdapter",
     "umlp.jsweet.extension.UMLPAdapter",
     "umlp.jsweet.extension.umlp.ChatModuleImportAdapter"
   ]
