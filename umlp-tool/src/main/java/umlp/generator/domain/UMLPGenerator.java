@@ -10,6 +10,7 @@ import de.monticore.cdbasis._ast.ASTCDDefinition;
 import de.monticore.generating.GeneratorSetup;
 import de.monticore.generating.templateengine.TemplateController;
 import de.monticore.generating.templateengine.TemplateHookPoint;
+import de.monticore.generating.templateengine.reporting.Reporting;
 import de.se_rwth.commons.logging.Log;
 import de.monticore.ocl.ocl._ast.ASTOCLCompilationUnit;
 import umlp.generator.db.sql.SQLSchemaGenerator;
@@ -44,20 +45,26 @@ public class UMLPGenerator {
 
   public void generate(ASTCDCompilationUnit cdAST, String configTemplate,
                        List<ASTOCLCompilationUnit> oclCompilationUnits) {
-    // create an empty classdiagram
-    ASTCDCompilationUnit decoratedAST = createCompilationUnit(cdAST);
+    try {
+      Reporting.addConfigTemplate(configTemplate);
 
-    genSetup.getGlex().setGlobalValue("UMLPGeneratorConfig", config);
+      // create an empty classdiagram
+      ASTCDCompilationUnit decoratedAST = createCompilationUnit(cdAST);
 
-    TemplateController tc = genSetup.getNewTemplateController(configTemplate);
-    TemplateHookPoint hpp = new TemplateHookPoint(configTemplate);
-    // translate the CD-AST into Java with the CD Generator
-    hpp.processValue(tc, cdAST, Arrays.asList(decoratedAST,
-        genSetup.getGlex(),
-        genSetup.getHandcodedPath(),
-        cdGenerator,
-        schemaGenerator,
-        oclCompilationUnits));
+      genSetup.getGlex().setGlobalValue("UMLPGeneratorConfig", config);
+
+      TemplateController tc = genSetup.getNewTemplateController(configTemplate);
+      TemplateHookPoint hpp = new TemplateHookPoint(configTemplate);
+      // translate the CD-AST into Java with the CD Generator
+      hpp.processValue(tc, cdAST, Arrays.asList(decoratedAST,
+          genSetup.getGlex(),
+          genSetup.getHandcodedPath(),
+          cdGenerator,
+          schemaGenerator,
+          oclCompilationUnits));
+    }finally {
+      Reporting.clearConfigTemplates();
+    }
   }
 
   protected static void logTrafoExec(String trafo, ASTCDCompilationUnit ast){

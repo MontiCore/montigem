@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Transpiles with JSweet. It runs in a JSweet class loader that stays open between builds, see {@link Java2TSAction}.
@@ -83,15 +84,22 @@ public class JSweetInvoker {
       throw new RuntimeException("JSweet Transpile failed with errors.");
     }
     if (settings.outputList != null) {
-      writeOutputList(settings.outputList, sourceFiles);
+      writeOutputList(settings.outputList, sourceFiles, settings.sourceMaps);
     }
   }
 
-  static void writeOutputList(File outputList, SourceFile[] sourceFiles) {
+  static void writeOutputList(File outputList, SourceFile[] sourceFiles, boolean sourceMaps) {
     List<String> outputs = Arrays.stream(sourceFiles)
         .map(SourceFile::getTsFile)
         .filter(Objects::nonNull)
-        .map(File::getAbsolutePath)
+        .flatMap(f -> {
+          if(sourceMaps) {
+            File mapFile = new File(f.getAbsolutePath() + ".map");
+            if (mapFile.exists())
+              return Stream.of(f.getAbsolutePath(), mapFile.getAbsolutePath());
+          }
+          return Stream.of(f.getAbsolutePath());
+        })
         .collect(Collectors.toList());
     try {
       Files.write(outputList.toPath(), outputs, StandardCharsets.UTF_8);

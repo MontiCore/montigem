@@ -19,6 +19,7 @@ import umlp.MillConf;
 import umlp.TagRelated;
 import umlp.UMLPMill;
 import umlp.UMLPTool;
+import umlp.UMLPToolOptions;
 import umlp._symboltable.IUMLPArtifactScope;
 import umlp._symboltable.UMLPSymbols2Json;
 import umlp.cli.common.IOperation;
@@ -253,6 +254,8 @@ public class UMLPFilePipeline extends Pipeline<UMLPPipelineData> {
       // set template path
       data.genSetup.setAdditionalTemplatePaths(data.data.fpPath.getEntries().stream().map(Path::toFile).collect(Collectors.toList()));
       CD4C.init(data.genSetup);
+      CD4C.getInstance().setDeferredTemplateEvaluation(
+          UMLPToolOptions.templateSourceMapping(data.data.cmd).isEnabled());
     });
 
     // Finally, generate
